@@ -321,6 +321,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"ExperimentalGMTune", PERSISTENT},
     {"ExperimentalModels", PERSISTENT},
     {"Fahrenheit", PERSISTENT},
+    {"FavoriteDestinations", PERSISTENT},
     {"FlashPanda", CLEAR_ON_MANAGER_START},
     {"ForceAutoTune", PERSISTENT},
     {"ForceAutoTuneOff", PERSISTENT},

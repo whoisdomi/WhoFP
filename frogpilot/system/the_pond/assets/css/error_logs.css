@@ -1,0 +1,84 @@
+#errorLogs p {
+  margin: 0;
+  padding: 0;
+}
+
+#errorLogs > div {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#errorLogs #fileList,
+#errorLogs #fileViewer {
+  background-color: var(--sidebar-bg);
+  border: var(--border-width-thick) solid var(--sidebar-border-color);
+  border-radius: var(--border-radius-lg);
+  max-width: min(95%, 900px);
+}
+
+#errorLogs #fileList {
+  margin-bottom: var(--border-radius-xl);
+  max-height: 200px;
+  min-width: var(--width-lg);
+  overflow-y: auto;
+}
+
+#errorLogs .fileEntry {
+  border-bottom: var(--border-width-thin) solid var(--sidebar-border-color);
+  display: flex;
+  justify-content: space-between;
+  padding: var(--padding-sm) var(--border-radius-xl);
+}
+
+#errorLogs .fileEntry:hover {
+  background-color: var(--sidebar-active-bg);
+}
+
+#errorLogs #fileViewer {
+  max-height: calc(100vh - 270px);
+  max-width: min(95%, 860px);
+  overflow: auto;
+  padding: var(--padding-base);
+  scrollbar-color: #626365 #1c1d21;
+  scrollbar-width: thin;
+}
+
+#errorLogs #fileViewer > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+#errorLogs #fileViewer button {
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--main-fg);
+  height: 3var(--border-width-thick);
+  padding: var(--padding-sm);
+  transition: background-color var(--transition-base);
+  width: 3var(--border-width-thick);
+}
+
+#errorLogs #fileViewer button:hover {
+  background-color: var(--sidebar-active-bg);
+}
+
+#errorLogs #fileViewer pre {
+  color: var(--main-fg);
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+@media only screen and (max-width: 76var(--border-radius-md)) {
+  #errorLogs #fileList,
+  #errorLogs #fileViewer {
+    min-width: 0;
+    width: calc(100% - var(--padding-xl));
+  }
+
+  #errorLogs #fileViewer {
+    width: calc(100% - var(--padding-xl) - 40px);
+  }
+}
