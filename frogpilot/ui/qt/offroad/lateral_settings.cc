@@ -236,7 +236,6 @@ void FrogPilotLateralPanel::showEvent(QShowEvent *event) {
   hasNNFFLog = parent->hasNNFFLog;
   hasOpenpilotLongitudinal = parent->hasOpenpilotLongitudinal;
   isHKGCanFd = parent->isHKGCanFd;
-  isHonda = parent->isHonda;
   isTorqueCar = parent->isTorqueCar;
   latAccelFactor = parent->latAccelFactor;
   steerActuatorDelay = parent->steerActuatorDelay;
@@ -367,12 +366,10 @@ void FrogPilotLateralPanel::updateToggles() {
 
     if (key == "NNFF") {
       setVisible &= hasNNFFLog;
-      setVisible &= !isHonda;
     }
 
     if (key == "NNFFLite") {
       setVisible &= !usingNNFF;
-      setVisible &= !isHonda;
     }
 
     if (key == "SteerDelay") {

@@ -530,7 +530,7 @@ class FrogPilotVariables:
     has_auto_tune = car_make in {"hyundai", "toyota"} and CP.lateralTuning.which() == "torque"
     has_bsm = CP.enableBsm
     toggle.has_cc_long = bool(CP.flags & GMFlags.CC_LONG.value)
-    has_nnff = not comma_nnff_supported(car_model) and nnff_supported(car_model) and car_make != "honda"
+    has_nnff = not comma_nnff_supported(car_model) and nnff_supported(car_model)
     has_pedal = CP.enableGasInterceptor
     has_radar = not CP.radarUnavailable
     has_sng = CP.autoResumeSng
