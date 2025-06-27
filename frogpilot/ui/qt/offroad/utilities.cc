@@ -48,6 +48,8 @@ FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent
       params_memory.remove("ForceOffroad");
       params_memory.remove("ForceOnroad");
     }
+
+    updateFrogPilotToggles();
   });
   forceStartedBtn->setCheckedButton(2);
   addItem(forceStartedBtn);
