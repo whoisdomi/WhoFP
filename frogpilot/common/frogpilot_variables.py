@@ -453,7 +453,7 @@ class FrogPilotVariables:
         openpilot_longitudinal = CP.openpilotLongitudinalControl
         pcm_cruise = CP.pcmCruise
         stoppingDecelRate = CP.stoppingDecelRate
-        taco_hacks_allowed = car_make == "hyundai" and CP.safetyConfigs[0].safetyModel == SafetyModel.hyundaiCanfd and CP.safetyConfigs[0].safetyParam != Panda.FLAG_HYUNDAI_CANFD_HDA2
+        taco_hacks_allowed = car_make == "hyundai" and CP.safetyConfigs[0].safetyModel == SafetyModel.hyundaiCanfd
         toggle.use_lkas_for_aol = not openpilot_longitudinal and CP.safetyConfigs[0].safetyModel == SafetyModel.hyundaiCanfd
         vEgoStopping = CP.vEgoStopping
         vEgoStarting = CP.vEgoStarting

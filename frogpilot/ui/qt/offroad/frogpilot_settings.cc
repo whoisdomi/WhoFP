@@ -285,7 +285,7 @@ void FrogPilotSettingsWindow::updateVariables() {
     cereal::FrogPilotCarParams::Reader FPCP = fpcmsg.getRoot<cereal::FrogPilotCarParams>();
 
     openpilotLongitudinalControlDisabled = FPCP.getOpenpilotLongitudinalControlDisabled();
-    tacoHacksAllowed = isHKGCanFd && !FPCP.getIsHDA2();
+    tacoHacksAllowed = isHKGCanFd;
   }
 
   isC3 = util::read_file("/sys/firmware/devicetree/base/model").find("tici") != std::string::npos;
