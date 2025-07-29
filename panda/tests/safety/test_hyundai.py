@@ -53,7 +53,7 @@ class TestHyundaiSafety(HyundaiButtonBase, common.PandaCarSafetyTest, common.Dri
   MAX_RATE_UP = 3
   MAX_RATE_DOWN = 7
   MAX_TORQUE = 384
-  MAX_RT_DELTA = 112
+  MAX_RT_DELTA = 90
   RT_INTERVAL = 250000
   DRIVER_TORQUE_ALLOWANCE = 50
   DRIVER_TORQUE_FACTOR = 2
