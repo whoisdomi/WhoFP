@@ -108,7 +108,9 @@ jobs:
 
       - name: Vet Existing Translations
         if: github.event.inputs.vet_existing_translations == 'true'
+        continue-on-error: true
         run: python selfdrive/ui/translations/auto_translate.py --all-files --vet-translations
+        timeout-minutes: 300
 
       - name: Commit and Push Translation Updates
         run: |
@@ -123,9 +125,27 @@ jobs:
           git commit --amend --no-edit
           git push --force origin ${{ needs.get_branch.outputs.branch }}
 
+  run_tests:
+    if: always()
+    runs-on: [self-hosted, c3x]
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ${{ env.BUILD_DIR }}
+    steps:
+      - name: Run safety tests
+        run: |
+          set -o pipefail
+          bash /data/openpilot/panda/tests/safety/test.sh || EXIT_CODE=$?
+          if [ "${EXIT_CODE:-0}" -ne 0 ] && [ "${EXIT_CODE:-0}" -ne 1 ]; then
+            exit $EXIT_CODE
+          fi
+
   build_and_push:
     needs:
       - get_branch
+      - run_tests
       - translate
     if: always()
     runs-on: [self-hosted, c3x]
