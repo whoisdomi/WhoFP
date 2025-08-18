@@ -553,7 +553,7 @@ class FrogPilotVariables:
 
     is_torque_car = CP.lateralTuning.which() == "torque"
     if not is_torque_car:
-      CarInterfaceBase.configure_torque_tune(CP.carFingerprint, CP.lateralTuning)
+      CarInterfaceBase.configure_torque_tune("MOCK", CP.lateralTuning)
 
 
     always_on_lateral_set = bool(CP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
