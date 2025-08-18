@@ -1,11 +1,11 @@
 #include "safety_hyundai_common.h"
 
 const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
-  .max_steer = 330,
-  .max_rt_delta = 112,
+  .max_steer = 720,
+  .max_rt_delta = 90,
   .max_rt_interval = 250000,
-  .max_rate_up = 2,
-  .max_rate_down = 3,
+  .max_rate_up = 10,
+  .max_rate_down = 10,
   .driver_torque_allowance = 250,
   .driver_torque_factor = 2,
   .type = TorqueDriverLimited,
@@ -248,16 +248,16 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
     bool steer_req = GET_BIT(to_send, 52U);
 
     // 2m/s margin
-    if (hyundai_canfd_taco_tune_hack && (hyundai_canfd_front_left_vego < (11.f + 2.f) || hyundai_canfd_rear_right_vego < (11.f + 2.f))) {
+    if (hyundai_canfd_taco_tune_hack && (hyundai_canfd_front_left_vego < (14.f + 2.f) || hyundai_canfd_rear_right_vego < (14.f + 2.f))) {
       bool violation = false;
       uint32_t ts = microsecond_timer_get();
 
       if (controls_allowed || lkas_on) {
         // *** global torque limit check ***
-        violation |= max_limit_check(desired_torque, 384, -384);
+        violation |= max_limit_check(desired_torque, 720, -720);
 
         // ready to blend in limits
-        desired_torque_last = MAX(-330, MIN(desired_torque, 330));
+        desired_torque_last = MAX(-680, MIN(desired_torque, 680));
         rt_torque_last = desired_torque;
         ts_torque_check_last = ts;
       }
