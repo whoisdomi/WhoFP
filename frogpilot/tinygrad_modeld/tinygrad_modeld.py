@@ -47,30 +47,18 @@ MIN_LAT_CONTROL_SPEED = 0.3
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
                           lat_action_t: float, long_action_t: float, v_ego: float) -> log.ModelDataV2.Action:
     plan = model_output['plan'][0]
-    desired_accel, should_stop = get_accel_from_plan_tomb_raider(plan[:,Plan.VELOCITY][:,0],
-                                                                 plan[:,Plan.ACCELERATION][:,0],
-                                                                 ModelConstants.T_IDXS,
-                                                                 action_t=long_action_t)
+    desired_accel, should_stop = get_accel_from_plan_tomb_raider(
+        plan[:, Plan.VELOCITY][:, 0],
+        plan[:, Plan.ACCELERATION][:, 0],
+        ModelConstants.T_IDXS,
+        action_t=long_action_t,
+    )
     desired_accel = smooth_value(desired_accel, prev_action.desiredAcceleration, LONG_SMOOTH_SECONDS)
 
-    # v8/v9 export desired_curvature; v11 does not. Fall back to plan-derived curvature when absent.
-    if 'desired_curvature' in model_output:
-      desired_curvature = float(model_output['desired_curvature'][0, 0])
-    else:
-      try:
-        curv = get_curvature_from_plan(plan)
-        desired_curvature = float(curv[0] if hasattr(curv, '__len__') else curv)
-      except Exception:
-        # last resort: hold previous curvature to stay safe
-        desired_curvature = prev_action.desiredCurvature
-    if v_ego > MIN_LAT_CONTROL_SPEED:
-      desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
-    else:
-      desired_curvature = prev_action.desiredCurvature
-
-    return log.ModelDataV2.Action(desiredCurvature=float(desired_curvature),
-                                  desiredAcceleration=float(desired_accel),
-                                  shouldStop=bool(should_stop))
+    return log.ModelDataV2.Action(
+        desiredAcceleration=float(desired_accel),
+        shouldStop=bool(should_stop),
+    )
 
 class FrameMeta:
   frame_id: int = 0
@@ -123,45 +111,39 @@ class ModelState:
     self.policy_input_shapes =  policy_metadata['input_shapes']
     self.policy_output_slices = policy_metadata['output_slices']
     policy_output_size = policy_metadata['output_shapes']['outputs'][1]
-    # Add policy_generation attribute after loading policy_metadata
-    self.policy_generation = policy_metadata.get("generation", policy_metadata.get("version", "v8"))
-    self.is_v11 = (self.policy_generation == "v11")
-    # Fallback: if the model doesn't expose desired_curvature, treat as v11
-    if 'desired_curvature' not in self.policy_output_slices:
-      self.is_v11 = True
 
-    self.frames = {name: DrivingModelFrame(context, ModelConstants.TEMPORAL_SKIP) for name in self.vision_input_names}
+    # History buffers used to derive temporal inputs
     self.prev_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
-
     self.full_features_buffer = np.zeros((1, ModelConstants.FULL_HISTORY_BUFFER_LEN,  ModelConstants.FEATURE_LEN), dtype=np.float32)
     self.full_desire = np.zeros((1, ModelConstants.FULL_HISTORY_BUFFER_LEN, ModelConstants.DESIRE_LEN), dtype=np.float32)
-    if not self.is_v11:
-      self.full_prev_desired_curv = np.zeros((1, ModelConstants.FULL_HISTORY_BUFFER_LEN, ModelConstants.PREV_DESIRED_CURV_LEN), dtype=np.float32)
     self.temporal_idxs = slice(-1-(ModelConstants.TEMPORAL_SKIP*(ModelConstants.INPUT_HISTORY_BUFFER_LEN-1)), None, ModelConstants.TEMPORAL_SKIP)
+    # Only keep legacy curvature history if the policy expects it
+    has_prev_desired_curv = 'prev_desired_curv' in self.policy_input_shapes
+    if has_prev_desired_curv:
+      self.full_prev_desired_curv = np.zeros((1, ModelConstants.FULL_HISTORY_BUFFER_LEN, ModelConstants.PREV_DESIRED_CURV_LEN), dtype=np.float32)
 
-    # policy inputs
-    self.numpy_inputs = {
-      'desire': np.zeros((1, ModelConstants.INPUT_HISTORY_BUFFER_LEN, ModelConstants.DESIRE_LEN), dtype=np.float32),
-      'traffic_convention': np.zeros((1, ModelConstants.TRAFFIC_CONVENTION_LEN), dtype=np.float32),
-      'features_buffer': np.zeros((1, ModelConstants.INPUT_HISTORY_BUFFER_LEN,  ModelConstants.FEATURE_LEN), dtype=np.float32),
-    }
+    # Support plural variant expected by some bundles (history of scalar curvature)
+    has_prev_desired_curvs = 'prev_desired_curvs' in self.policy_input_shapes
+    if has_prev_desired_curvs:
+      # last dimension may be 1; derive from metadata for safety
+      _curvs_lastdim = int(self.policy_input_shapes['prev_desired_curvs'][-1])
+      self.full_prev_desired_curvs = np.zeros(
+          (1, ModelConstants.FULL_HISTORY_BUFFER_LEN, _curvs_lastdim), dtype=np.float32)
 
-    # Add optional inputs for non-v11 models
-    if not self.is_v11:
-      self.numpy_inputs['lateral_control_params'] = np.zeros((1, ModelConstants.LATERAL_CONTROL_PARAMS_LEN), dtype=np.float32)
-      self.numpy_inputs['prev_desired_curv'] = np.zeros((1, ModelConstants.INPUT_HISTORY_BUFFER_LEN, ModelConstants.PREV_DESIRED_CURV_LEN), dtype=np.float32)
-
+    # Allocate policy inputs exactly from metadata
+    self.numpy_inputs: dict[str, np.ndarray] = {}
+    for name, shape in self.policy_input_shapes.items():
+      self.numpy_inputs[name] = np.zeros(tuple(shape), dtype=np.float32)
 
     # img buffers are managed in openCL transform code
     self.vision_inputs: dict[str, Tensor] = {}
     self.vision_output = np.zeros(vision_output_size, dtype=np.float32)
-    self.policy_inputs = {k: Tensor(v, device='NPY').realize() for k,v in self.numpy_inputs.items()}
-    # For v11 policy networks, ensure we don't pass legacy inputs
-    if getattr(self, 'is_v11', False):
-      self.policy_inputs.pop('lateral_control_params', None)
-      self.policy_inputs.pop('prev_desired_curv', None)
+    # Create tensors for policy inputs (NPY device shares host memory)
+    self.policy_inputs = {k: Tensor(v, device='NPY').realize() for k, v in self.numpy_inputs.items()}
     self.policy_output = np.zeros(policy_output_size, dtype=np.float32)
     self.parser = Parser()
+
+    self.frames = {name: DrivingModelFrame(context, ModelConstants.TEMPORAL_SKIP) for name in self.vision_input_names}
 
     with open(VISION_PKL_PATH, "rb") as f:
       self.vision_run = pickle.load(f)
@@ -175,18 +157,27 @@ class ModelState:
 
   def run(self, bufs: dict[str, VisionBuf], transforms: dict[str, np.ndarray],
                 inputs: dict[str, np.ndarray], prepare_only: bool) -> dict[str, np.ndarray] | None:
-    # Model decides when action is completed, so desire input is just a pulse triggered on rising edge
+    # Model decides when action is completed, so desire input is a pulse on rising edge
     inputs['desire'][0] = 0
     new_desire = np.where(inputs['desire'] - self.prev_desire > .99, inputs['desire'], 0)
     self.prev_desire[:] = inputs['desire']
 
-    self.full_desire[0,:-1] = self.full_desire[0,1:]
-    self.full_desire[0,-1] = new_desire
-    self.numpy_inputs['desire'][:] = self.full_desire.reshape((1,ModelConstants.INPUT_HISTORY_BUFFER_LEN,ModelConstants.TEMPORAL_SKIP,-1)).max(axis=2)
+    # Maintain temporal history and downsample for policy input if present
+    if 'desire' in self.numpy_inputs:
+      self.full_desire[0,:-1] = self.full_desire[0,1:]
+      self.full_desire[0,-1] = new_desire
+      self.numpy_inputs['desire'][:] = self.full_desire.reshape((1,ModelConstants.INPUT_HISTORY_BUFFER_LEN,ModelConstants.TEMPORAL_SKIP,-1)).max(axis=2)
 
-    self.numpy_inputs['traffic_convention'][:] = inputs['traffic_convention']
-    if 'lateral_control_params' in self.numpy_inputs:
+    if 'traffic_convention' in self.numpy_inputs:
+      self.numpy_inputs['traffic_convention'][:] = inputs['traffic_convention']
+
+    if 'lateral_control_params' in self.numpy_inputs and 'lateral_control_params' in inputs:
       self.numpy_inputs['lateral_control_params'][:] = inputs['lateral_control_params']
+
+    # Forward any other optional inputs provided by the caller
+    for k, v in inputs.items():
+      if k in self.numpy_inputs and k not in ('desire','traffic_convention','lateral_control_params','features_buffer','prev_desired_curv'):
+        self.numpy_inputs[k][:] = v
     imgs_cl = {name: self.frames[name].prepare(bufs[name], transforms[name].flatten()) for name in self.vision_input_names}
 
     if TICI:
@@ -205,53 +196,48 @@ class ModelState:
     self.vision_output = self.vision_run(**self.vision_inputs).numpy().flatten()
     vision_outputs_dict = self.parser.parse_vision_outputs(self.slice_outputs(self.vision_output, self.vision_output_slices))
 
+    # Update temporal features buffer and map to policy input if present
     self.full_features_buffer[0,:-1] = self.full_features_buffer[0,1:]
     self.full_features_buffer[0,-1] = vision_outputs_dict['hidden_state'][0, :]
-    self.numpy_inputs['features_buffer'][:] = self.full_features_buffer[0, self.temporal_idxs]
+    if 'features_buffer' in self.numpy_inputs:
+      self.numpy_inputs['features_buffer'][:] = self.full_features_buffer[0, self.temporal_idxs]
 
-    # Match policy inputs to the model's expected argument names to avoid JIT mismatches across generations
+    # Execute policy with arguments matched to captured expected names (avoids JIT mismatches)
     expected = getattr(getattr(self.policy_run, 'captured', None), 'expected_names', None)
     if expected is not None:
       policy_inputs_to_run = {k: self.policy_inputs[k] for k in expected if k in self.policy_inputs}
     else:
-      # Fallback based on detected generation
-      if getattr(self, 'is_v11', False):
-        policy_inputs_to_run = {k: self.policy_inputs[k] for k in ('desire', 'features_buffer', 'traffic_convention') if k in self.policy_inputs}
-      else:
-        policy_inputs_to_run = self.policy_inputs
+      policy_inputs_to_run = self.policy_inputs
 
     self.policy_output = self.policy_run(**policy_inputs_to_run).numpy().flatten()
     policy_outputs_dict = self.parser.parse_policy_outputs(self.slice_outputs(self.policy_output, self.policy_output_slices))
 
-    # Update legacy curvature history only if the output exists on this generation
-    if hasattr(self, 'full_prev_desired_curv'):
-      if 'desired_curvature' in policy_outputs_dict:
-        self.full_prev_desired_curv[0,:-1] = self.full_prev_desired_curv[0,1:]
-        self.full_prev_desired_curv[0,-1,:] = policy_outputs_dict['desired_curvature'][0, :]
-        # Set prev_desired_curv differently depending on policy_generation
-        if getattr(self, "policy_generation", "v8") == "v9":
-          if 'prev_desired_curv' in self.numpy_inputs:
-            self.numpy_inputs['prev_desired_curv'][:] = 0*self.full_prev_desired_curv[0, self.temporal_idxs]
-        else:
-          if 'prev_desired_curv' in self.numpy_inputs:
-            self.numpy_inputs['prev_desired_curv'][:] = self.full_prev_desired_curv[0, self.temporal_idxs]
-      else:
-        # No desired_curvature present (e.g. v11): don't advance history; ensure legacy input is benign
-        if 'prev_desired_curv' in self.numpy_inputs:
-          self.numpy_inputs['prev_desired_curv'][:] = 0
-        # Also mark as v11 defensively so later cleanups run
-        self.is_v11 = True
+    # Feedback: update lat planner state from solution (if both exist)
+    if 'lat_planner_solution' in policy_outputs_dict and 'lat_planner_state' in self.numpy_inputs:
+      sol = policy_outputs_dict['lat_planner_solution'][0]
+      try:
+        self.numpy_inputs['lat_planner_state'][0, 2] = np.interp(DT_MDL, ModelConstants.T_IDXS, sol[:, 2])
+        self.numpy_inputs['lat_planner_state'][0, 3] = np.interp(DT_MDL, ModelConstants.T_IDXS, sol[:, 3])
+      except Exception:
+        pass
 
-    # If running a v11 model, make sure legacy buffers don't linger from older gens
-    if getattr(self, 'is_v11', False):
-      if hasattr(self, 'full_prev_desired_curv'):
-        delattr(self, 'full_prev_desired_curv')
-      if 'prev_desired_curv' in self.numpy_inputs:
-        self.numpy_inputs.pop('prev_desired_curv', None)
-        self.policy_inputs.pop('prev_desired_curv', None)
-      if 'lateral_control_params' in self.numpy_inputs and 'lateral_control_params' not in policy_inputs_to_run:
-        self.numpy_inputs.pop('lateral_control_params', None)
-        self.policy_inputs.pop('lateral_control_params', None)
+    # Legacy curvature input only when the model expects it
+    if 'prev_desired_curv' in self.numpy_inputs and 'desired_curvature' in policy_outputs_dict:
+      self.full_prev_desired_curv[0,:-1] = self.full_prev_desired_curv[0,1:]
+      self.full_prev_desired_curv[0,-1,:] = policy_outputs_dict['desired_curvature'][0, :]
+      self.numpy_inputs['prev_desired_curv'][:] = self.full_prev_desired_curv[0, self.temporal_idxs]
+
+    if 'prev_desired_curvs' in self.numpy_inputs and 'desired_curvature' in policy_outputs_dict:
+      # roll scalar history
+      self.full_prev_desired_curvs[0, :-1, :] = self.full_prev_desired_curvs[0, 1:, :]
+      # take the model's current desired_curvature (first element if provided as [B, T, 1])
+      _curv_now = policy_outputs_dict['desired_curvature'][0, 0]
+      if np.ndim(_curv_now) == 0:
+        self.full_prev_desired_curvs[0, -1, 0] = float(_curv_now)
+      else:
+        # assume shape (1,) and copy
+        self.full_prev_desired_curvs[0, -1, :len(_curv_now)] = _curv_now
+      self.numpy_inputs['prev_desired_curvs'][:] = self.full_prev_desired_curvs[0, self.temporal_idxs]
 
     combined_outputs_dict = {**vision_outputs_dict, **policy_outputs_dict}
     if SEND_RAW_PRED:
@@ -409,9 +395,21 @@ def main(demo=False):
       'desire': vec_desire,
       'traffic_convention': traffic_convention,
     }
-    # include lateral control params only if the loaded model expects them
     if 'lateral_control_params' in model.numpy_inputs:
       inputs['lateral_control_params'] = lateral_control_params
+
+    if 'driving_style' in model.numpy_inputs:
+      inputs['driving_style'] = np.array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], dtype=np.float32)
+
+    # Provide defaults for any remaining expected policy inputs
+    for k in model.numpy_inputs.keys():
+      if k in inputs or k in ('desire','traffic_convention','features_buffer','prev_desired_curv','prev_desired_curvs','driving_style'):
+        continue
+      if k == 'lat_planner_state':
+        # preserve stateful feedback rather than zeroing it each tick
+        inputs[k] = model.numpy_inputs[k]
+      else:
+        inputs[k] = np.zeros_like(model.numpy_inputs[k])
 
     mt1 = time.perf_counter()
     model_output = model.run(bufs, transforms, inputs, prepare_only)
