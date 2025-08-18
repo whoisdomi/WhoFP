@@ -32,7 +32,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   // automatic updates toggle
   ParamControl *automaticUpdatesToggle = new ParamControl("AutomaticUpdates", tr("Automatically Update FrogPilot"),
                                                        tr("FrogPilot will automatically update itself and it's assets when you're offroad and have an active internet connection."), "");
-  automaticUpdatesToggle->setVisible(params.getBool("IsReleaseBranch"));
+  automaticUpdatesToggle->setVisible(true);
   connect(automaticUpdatesToggle, &ToggleControl::toggleFlipped, this, &updateFrogPilotToggles);
   addItem(automaticUpdatesToggle);
 
@@ -138,8 +138,8 @@ void SoftwarePanel::showEvent(QShowEvent *event) {
   // FrogPilot variables
   FrogPilotUIState &fs = *frogpilotUIState();
   FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
-
-  if (frogpilot_scene.online && params.get("UpdaterState") == "idle") {
+  // Only auto-check if online, idle, and AutomaticUpdates toggle is enabled, 
+  if (frogpilot_scene.online && params.get("UpdaterState") == "idle" && params.getBool("AutomaticUpdates")) {
     checkForUpdates();
   }
 }
