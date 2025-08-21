@@ -397,6 +397,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"MinimumBackupSize", PERSISTENT},
     {"MinimumLaneChangeSpeed", PERSISTENT},
     {"Model", PERSISTENT},
+    {"ModelVersion", PERSISTENT},
     {"ModelDownloadProgress", CLEAR_ON_MANAGER_START},
     {"ModelDrivesAndScores", PERSISTENT},
     {"ModelRandomizer", PERSISTENT},
