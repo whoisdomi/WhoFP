@@ -19,7 +19,7 @@ LongCtrlState = car.CarControl.Actuators.LongControlState
 # All slightly below EPS thresholds to avoid fault
 MAX_ANGLE = 88
 MAX_ANGLE_FRAMES = 89
-MAX_ANGLE_CONSECUTIVE_FRAMES = 2
+MAX_ANGLE_CONSECUTIVE_FRAMES = 5
 
 
 def process_hud_alert(enabled, fingerprint, hud_control):
