@@ -531,7 +531,7 @@ class Controls:
     # entrance in SOFT_DISABLING state
     self.soft_disable_timer = max(0, self.soft_disable_timer - 1)
 
-    self.current_alert_types = [ET.PERMANENT]
+    self.current_alert_types = [ET.PERMANENT, ET.SOUND_ONLY]
 
     # ENABLED, SOFT DISABLING, PRE ENABLING, OVERRIDING
     if self.state != State.disabled:

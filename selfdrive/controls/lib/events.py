@@ -46,6 +46,7 @@ class ET:
   SOFT_DISABLE = 'softDisable'
   IMMEDIATE_DISABLE = 'immediateDisable'
   PERMANENT = 'permanent'
+  SOUND_ONLY = 'soundOnly'
 
 
 # get event name from enum
@@ -1028,6 +1029,14 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   EventName.lkasDisabled: {
     ET.PERMANENT: NormalPermanentAlert("LKAS Disabled: Enable LKAS to engage"),
     ET.NO_ENTRY: NoEntryAlert("LKAS Disabled"),
+  },
+
+  EventName.lkasEnable: {
+    ET.PERMANENT: EngagementAlert(AudibleAlert.engage),
+  },
+
+  EventName.lkasDisable: {
+    ET.PERMANENT: EngagementAlert(AudibleAlert.disengage),
   },
 
   EventName.vehicleSensorsInvalid: {

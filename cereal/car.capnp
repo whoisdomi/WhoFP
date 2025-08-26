@@ -85,6 +85,8 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupNoCar @76;
     startupNoControl @77;
     startupNoSecOcKey @121;
+    lkasEnable @122;
+    lkasDisable @123;
     startupMaster @78;
     startupNoFw @104;
     fcw @79;

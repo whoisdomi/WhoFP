@@ -121,6 +121,7 @@ class CarInterfaceBase(ABC):
 
     # FrogPilot variables
     self.always_on_lateral_allowed = False
+    self.always_on_lateral_allowed_previous = False
 
   def apply(self, c: car.CarControl, now_nanos: int, frogpilot_toggles) -> tuple[car.CarControl.Actuators, list[tuple[int, int, bytes, int]]]:
     return self.CC.update(c, self.CS, now_nanos, frogpilot_toggles)
@@ -408,6 +409,11 @@ class CarInterfaceBase(ABC):
       # FrogPilot button presses
       if b.type == FrogPilotButtonType.lkas and b.pressed:
         self.always_on_lateral_allowed = not self.always_on_lateral_allowed
+
+    # Play sound on LKAS button press
+    if self.always_on_lateral_allowed != self.always_on_lateral_allowed_previous:
+      events.add(EventName.lkasEnable if self.always_on_lateral_allowed else EventName.lkasDisable)
+    self.always_on_lateral_allowed_previous = self.always_on_lateral_allowed
 
     # Handle permanent and temporary steering faults
     self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
