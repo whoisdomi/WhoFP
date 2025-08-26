@@ -14,6 +14,7 @@ FrogPilot Master
 + HKG Flag fix
 
 Tuning Changes:
+
 Max Steer: 610 //Max available torque, this is very car specific, I only know how much torque I have because someone used Plotjuggler or Cavana to look at requested torque. Even then, there might be differences by spec or year of car depending on EPS motor used
 
 Steer Up: 5 //Rate at which torque can increase. 3 is safe but less aggressive, 5 has a tiny bit of overshoot.
@@ -26,5 +27,7 @@ Damp_Factor: 100 //Dampens steering wheel, making it firmer and less suseptible 
 
 HKG Flag fix: Added flags to values.py so that Ioniq 6 uses 32bit address in DBC and not 16bit address. From testing it didn't change anything.
 https://claude.ai/public/artifacts/18e1941a-9d7c-4546-89fc-ec3c231bfa51
+
+IMPORTANT: PANDA VALUES ARE ALSO CHANGED TO ALLOW SOME OF THESE VALUES.
 
 
