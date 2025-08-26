@@ -1,3 +1,5 @@
+THIS IS A TESTING ENVIORNMENT AND MIGHT GET YOU BANNED IF YOU UPLOAD TO COMMA. I HAVE NO IDEA. UPLOAD TO KONIK.
+
 This is my STABLEish fork of StarPilot (Dom branch), which is a fork of FrogPilot Master, which is a fork of OPGM, which is a fork of Comma OpenPilot.
 
 THIS IS AN IONIQ 6 TUNING SPECIFIC HKG BRANCH.
