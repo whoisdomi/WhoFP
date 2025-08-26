@@ -20,8 +20,15 @@ from openpilot.frogpilot.controls.lib.neural_network_feedforward import LOW_SPEE
 # friction in the steering wheel that needs to be overcome to
 # move it at all, this is compensated for too.
 
-LOW_SPEED_X = [0, 5, 10, 20, 30]
-LOW_SPEED_Y = [20, 15, 13, 10, 5]
+# STOCK VALUES
+#LOW_SPEED_X = [0, 10, 20, 30]
+#LOW_SPEED_Y = [15, 13, 10, 5]
+
+#LOW_SPEED_X = [0, 5, 10, 20, 30]
+#LOW_SPEED_Y = [22, 15, 13, 10, 5]
+
+LOW_SPEED_X = [0, 5, 10, 20, 30, 32, 35]
+LOW_SPEED_Y = [22, 20, 15, 10, 4, 2, 1]
 
 
 class LatControlTorque(LatControl):
