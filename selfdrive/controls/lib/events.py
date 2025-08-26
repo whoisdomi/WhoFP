@@ -1023,6 +1023,14 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: NoEntryAlert("LKAS Disabled"),
   },
 
+  EventName.lkasEnable: {
+    ET.ENABLE: EngagementAlert(AudibleAlert.engage),
+  },
+
+  EventName.lkasDisable: {
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.disengage),
+  },
+
   EventName.vehicleSensorsInvalid: {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Vehicle Sensors Invalid"),
     ET.PERMANENT: NormalPermanentAlert("Vehicle Sensors Calibrating", "Drive to Calibrate"),
