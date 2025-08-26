@@ -43,6 +43,7 @@ class ET:
   SOFT_DISABLE = 'softDisable'
   IMMEDIATE_DISABLE = 'immediateDisable'
   PERMANENT = 'permanent'
+  SOUND_ONLY = 'soundOnly'
 
 
 # get event name from enum
