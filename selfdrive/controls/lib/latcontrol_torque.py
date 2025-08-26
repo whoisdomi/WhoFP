@@ -21,7 +21,7 @@ from openpilot.frogpilot.controls.lib.neural_network_feedforward import LOW_SPEE
 # move it at all, this is compensated for too.
 
 LOW_SPEED_X = [0, 5, 10, 20, 30]
-LOW_SPEED_Y = [25, 22, 13, 10, 5]
+LOW_SPEED_Y = [30, 25, 13, 10, 5]
 
 
 class LatControlTorque(LatControl):
@@ -85,7 +85,7 @@ class LatControlTorque(LatControl):
                                             desired_lateral_accel - actual_lateral_accel, lateral_accel_deadzone, friction_compensation=True,
                                             gravity_adjusted=True)
 
-      freeze_integrator = steer_limited or CS.steeringPressed or CS.vEgo < 2
+      freeze_integrator = steer_limited or CS.steeringPressed or CS.vEgo < 5
       self.pid._k_p = frogpilot_toggles.steerKp
       output_torque = self.pid.update(pid_log.error,
                                       feedforward=ff,
