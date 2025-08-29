@@ -9,6 +9,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 from openpilot.common.conversions import Conversions as CV
+from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
 from openpilot.frogpilot.common.frogpilot_utilities import run_cmd
@@ -106,79 +107,81 @@ def install_influxdb_client():
     run_cmd(["sudo", "mount", "-o", f"remount,{stock_mount_options}", "/"], "Successfully restored stock mount options", "Failed to restore stock mount options")
 
 def send_stats():
-  frogpilot_toggles = get_frogpilot_toggles()
-
-  if frogpilot_toggles.frogs_go_moo:
-    return
-
-  if frogpilot_toggles.car_make == "mock":
-    return
-
-  install_influxdb_client()
-
-  from influxdb_client import InfluxDBClient, Point
-  from influxdb_client.client.write_api import SYNCHRONOUS
-
-  bucket = os.environ.get("STATS_BUCKET", "")
-  org_ID = os.environ.get("STATS_ORG_ID", "")
-  token = os.environ.get("STATS_TOKEN", "")
-  url = os.environ.get("STATS_URL", "")
-
-  frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
-
-  location = json.loads(params.get("LastGPSPosition") or "{}")
-  if not (location.get("latitude") and location.get("longitude")):
-    return
-  original_latitude = location.get("latitude")
-  original_longitude = location.get("longitude")
-  latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
-
-  theme_sources = [
-    frogpilot_toggles.icon_pack.replace("-animated", ""),
-    frogpilot_toggles.color_scheme,
-    frogpilot_toggles.distance_icons.replace("-animated", ""),
-    frogpilot_toggles.signal_icons.replace("-animated", ""),
-    frogpilot_toggles.sound_pack
-  ]
-
-  theme_counter = Counter(theme_sources)
-  most_common = theme_counter.most_common()
-  max_count = most_common[0][1]
-
-  selected_theme = random.choice([item for item, count in most_common if count == max_count]).replace("-user_created", "").replace("_", " ")
-
-  point = (Point("user_stats")
-    .field("car_make", "GM" if frogpilot_toggles.car_make == "gm" else frogpilot_toggles.car_make.title())
-    .field("car_model", frogpilot_toggles.car_model)
-    .field("city", city)
-    .field("country", country)
-    .field("driving_model", frogpilot_toggles.model_name.replace("🗺️", "").replace("📡", "").replace("👀", "").replace("(Default)", "").strip())
-    .field("event", 1)
-    .field("frogpilot_drives", params_tracking.get_int("FrogPilotDrives"))
-    .field("frogpilot_hours", params_tracking.get_int("FrogPilotMinutes") / 60)
-    .field("frogpilot_miles", params_tracking.get_int("FrogPilotKilometers") * CV.KPH_TO_MPH)
-    .field("has_cc_long", frogpilot_toggles.has_cc_long)
-    .field("has_openpilot_longitudinal", frogpilot_toggles.openpilot_longitudinal)
-    .field("has_pedal", frogpilot_toggles.has_pedal)
-    .field("has_sdsu", frogpilot_toggles.has_sdsu)
-    .field("has_zss", frogpilot_toggles.has_zss)
-    .field("latitude", latitude)
-    .field("longitude", longitude)
-    .field("state", state)
-    .field("theme", selected_theme.title())
-    .field("total_aol_seconds", float(frogpilot_stats.get("TotalAOLTime", 0)))
-    .field("total_lateral_seconds", float(frogpilot_stats.get("TotalLateralTime", 0)))
-    .field("total_longitudinal_seconds", float(frogpilot_stats.get("TotalLongitudinalTime", 0)))
-    .field("total_tracked_seconds", float(frogpilot_stats.get("TotalTrackedTime", 0)))
-    .field("using_stock_acc", not (frogpilot_toggles.has_cc_long or frogpilot_toggles.openpilot_longitudinal))
-
-    .tag("branch", get_build_metadata().channel)
-    .tag("dongle_id", params.get("FrogPilotDongleId", encoding="utf-8"))
-
-    .time(datetime.now(timezone.utc))
-  )
-
   try:
+    frogpilot_toggles = get_frogpilot_toggles()
+
+    if frogpilot_toggles.frogs_go_moo:
+      return
+
+    if frogpilot_toggles.car_make == "mock":
+      return
+
+    install_influxdb_client()
+
+    from influxdb_client import InfluxDBClient, Point
+    from influxdb_client.client.write_api import SYNCHRONOUS
+
+    bucket = os.environ.get("STATS_BUCKET", "")
+    org_ID = os.environ.get("STATS_ORG_ID", "")
+    token = os.environ.get("STATS_TOKEN", "")
+    url = os.environ.get("STATS_URL", "")
+
+    frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
+
+    location = json.loads(params.get("LastGPSPosition") or "{}")
+    if not (location.get("latitude") and location.get("longitude")):
+      return
+    original_latitude = location.get("latitude")
+    original_longitude = location.get("longitude")
+    latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
+
+    theme_sources = [
+      frogpilot_toggles.icon_pack.replace("-animated", ""),
+      frogpilot_toggles.color_scheme,
+      frogpilot_toggles.distance_icons.replace("-animated", ""),
+      frogpilot_toggles.signal_icons.replace("-animated", ""),
+      frogpilot_toggles.sound_pack
+    ]
+
+    theme_counter = Counter(theme_sources)
+    most_common = theme_counter.most_common()
+    max_count = most_common[0][1]
+
+    selected_theme = random.choice([item for item, count in most_common if count == max_count]).replace("-user_created", "").replace("_", " ")
+
+    point = (Point("user_stats")
+      .field("car_make", "GM" if frogpilot_toggles.car_make == "gm" else frogpilot_toggles.car_make.title())
+      .field("car_model", frogpilot_toggles.car_model)
+      .field("city", city)
+      .field("country", country)
+      .field("device", HARDWARE.get_device_type())
+      .field("driving_model", frogpilot_toggles.model_name.replace("🗺️", "").replace("📡", "").replace("👀", "").replace("(Default)", "").strip())
+      .field("event", 1)
+      .field("frogpilot_drives", params_tracking.get_int("FrogPilotDrives"))
+      .field("frogpilot_hours", params_tracking.get_int("FrogPilotMinutes") / 60)
+      .field("frogpilot_miles", params_tracking.get_int("FrogPilotKilometers") * CV.KPH_TO_MPH)
+      .field("has_cc_long", frogpilot_toggles.has_cc_long)
+      .field("has_openpilot_longitudinal", frogpilot_toggles.openpilot_longitudinal)
+      .field("has_pedal", frogpilot_toggles.has_pedal)
+      .field("has_sdsu", frogpilot_toggles.has_sdsu)
+      .field("has_zss", frogpilot_toggles.has_zss)
+      .field("latitude", latitude)
+      .field("longitude", longitude)
+      .field("state", state)
+      .field("theme", selected_theme.title())
+      .field("total_aol_seconds", float(frogpilot_stats.get("TotalAOLTime", 0)))
+      .field("total_lateral_seconds", float(frogpilot_stats.get("TotalLateralTime", 0)))
+      .field("total_longitudinal_seconds", float(frogpilot_stats.get("TotalLongitudinalTime", 0)))
+      .field("total_tracked_seconds", float(frogpilot_stats.get("TotalTrackedTime", 0)))
+      .field("tuning_level", params.get_int("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
+      .field("using_stock_acc", not (frogpilot_toggles.has_cc_long or frogpilot_toggles.openpilot_longitudinal))
+
+      .tag("branch", get_build_metadata().channel)
+      .tag("dongle_id", params.get("FrogPilotDongleId", encoding="utf-8"))
+
+      .time(datetime.now(timezone.utc))
+    )
+
     InfluxDBClient(org=org_ID, token=token, url=url).write_api(write_options=SYNCHRONOUS).write(bucket=bucket, org=org_ID, record=point)
     print("Successfully sent FrogPilot stats!")
   except Exception as exception:
