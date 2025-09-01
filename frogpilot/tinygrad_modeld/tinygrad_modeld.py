@@ -131,8 +131,9 @@ class ModelState:
     self.numpy_inputs = {}
 
     # Always-supported inputs (if model expects them)
-    if any(k.startswith('desire') for k in self.policy_input_shapes):
-      self.numpy_inputs[self.desire_key] = np.zeros((1, ModelConstants.INPUT_HISTORY_BUFFER_LEN, ModelConstants.DESIRE_LEN), dtype=np.float32)
+    desire_key_init = next((k for k in self.policy_input_shapes if k.startswith('desire')), None)
+    if desire_key_init:
+      self.numpy_inputs[desire_key_init] = np.zeros((1, ModelConstants.INPUT_HISTORY_BUFFER_LEN, ModelConstants.DESIRE_LEN), dtype=np.float32)
     if 'traffic_convention' in self.policy_input_shapes:
       self.numpy_inputs['traffic_convention'] = np.zeros((1, ModelConstants.TRAFFIC_CONVENTION_LEN), dtype=np.float32)
     if 'features_buffer' in self.policy_input_shapes:
