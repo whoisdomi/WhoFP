@@ -102,14 +102,16 @@ def install_influxdb_client():
     print("influxdb-client not found. Attempting installation...")
     stock_mount_options = subprocess.run(["findmnt", "-no", "OPTIONS", "/"], capture_output=True, text=True, check=True).stdout.strip()
 
-    run_cmd(["sudo", "mount", "-o", "remount,rw", "/"], "Successfully remounted / as read-write", "Failed to remount / as read-write")
+    run_cmd(["sudo", "mount", "-o", "remount,rw", "/"], "Successfully remounted / as read-write", "Failed to remount / as read-write", report=False)
     run_cmd(["sudo", sys.executable, "-m", "pip", "install", "influxdb-client"], "Successfully installed influxdb-client", "Failed to install influxdb-client", report=False)
-    run_cmd(["sudo", "mount", "-o", f"remount,{stock_mount_options}", "/"], "Successfully restored stock mount options", "Failed to restore stock mount options")
+    run_cmd(["sudo", "mount", "-o", f"remount,{stock_mount_options}", "/"], "Successfully restored stock mount options", "Failed to restore stock mount options", report=False)
 
 def is_up_to_date(build_metadata):
-  remote_commit = run_cmd(["git", "ls-remote", "origin", build_metadata.channel], f"Fetched remote commit", "Failed to fetch remote commit")
+  remote_commit = subprocess.check_output(["git", "ls-remote", "origin", build_metadata.channel], text=True, stderr=subprocess.DEVNULL).strip()
+
   if remote_commit:
-    return build_metadata.commit == remote_commit.strip().split()[0]
+    return build_metadata.openpilot.git_commit == remote_commit.split()[0]
+
   return True
 
 def send_stats():
