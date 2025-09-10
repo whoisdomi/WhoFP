@@ -51,7 +51,7 @@ class CarInterface(CarInterfaceBase):
       ret.pcmCruise = not ret.openpilotLongitudinalControl
 
       if candidate == CAR.HONDA_CIVIC_BOSCH:
-        CarControllerParams.BOSCH_GAS_LOOKUP_V = [0, 750]
+        CarControllerParams.BOSCH_GAS_LOOKUP_V = [0, 1000]
     else:
       ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.hondaNidec)]
       ret.enableGasInterceptor = 0x201 in fingerprint[CAN.pt]
