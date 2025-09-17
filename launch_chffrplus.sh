@@ -43,6 +43,7 @@ function one_time_setup {
     rm -rf /persist/params/d/*
     rm -rf /cache/params/d/*
     rm -rf /data/media/0/realdata/*
+    touch /persist/comma/living-in-the-moment
     echo "Old params wiped."
 
     touch "$ONCE_FLAG_FILE"
