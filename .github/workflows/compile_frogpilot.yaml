@@ -108,7 +108,9 @@ jobs:
 
       - name: Vet Existing Translations
         if: github.event.inputs.vet_existing_translations == 'true'
+        continue-on-error: true
         run: python selfdrive/ui/translations/auto_translate.py --all-files --vet-translations
+        timeout-minutes: 300
 
       - name: Commit and Push Translation Updates
         run: |

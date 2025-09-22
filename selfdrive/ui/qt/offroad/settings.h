@@ -49,7 +49,6 @@ private:
 
   // FrogPilot variables
   Params params;
-  Params paramsTracking{"/cache/tracking"};
 
   bool panelOpen;
   bool subPanelOpen;
