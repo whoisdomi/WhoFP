@@ -2804,8 +2804,8 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
         <translation type="gpt-5-generated">警告：这些设置存在风险，可能会极大改变 openpilot 的驾驶方式。只有在你完全了解其作用时才进行更改！</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">所有切换项的说明当前均已展开。您可以随时点击切换项的名称来打开或关闭其说明。</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">所有切换项的说明目前均已展开。你可以随时点击切换项的名称来打开或关闭其说明！</translation>
     </message>
 </context>
 <context>
@@ -5128,14 +5128,6 @@ This may take up to a minute.</source>
         <translation type="gpt-5-generated">必须在切换前下载此分支。现在要下载吗？</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">是否要删除深度存储的 FrogPilot 资源？这将包括用于快速重新安装的切换设置。</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">你确定吗？这将100%无法恢复，如果你重新安装 FrogPilot，你将丢失之前的所有设置！</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">错误日志</translation>
     </message>
@@ -5146,6 +5138,14 @@ This may take up to a minute.</source>
     <message>
         <source>View the error log for openpilot crashes.</source>
         <translation type="gpt-5-generated">查看 openpilot 崩溃的错误日志。</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">是否要执行完全出厂重置？所有已保存的资产和设置将被永久删除！</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">这是一次完整的出厂重置，且无法撤销。您确定要继续吗？</translation>
     </message>
 </context>
 <context>

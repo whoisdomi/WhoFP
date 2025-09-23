@@ -2,11 +2,22 @@ name: Update Tinygrad
 
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: "Select the runner"
+        required: true
+        default: "c3"
+        type: choice
+        options:
+          - c3
+          - c3x
 
 jobs:
   update_tinygrad:
     name: Update Tinygrad
-    runs-on: [self-hosted, c3x]
+    runs-on:
+      - self-hosted
+      - ${{ github.event.inputs.runner }}
 
     steps:
       - name: Get version

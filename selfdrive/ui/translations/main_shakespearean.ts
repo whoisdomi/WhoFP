@@ -2810,8 +2810,8 @@ Developer - Most customizable settings for well-tried enthusiasts</translation>
         <translation type="gpt-5-generated">WARNING: These settings be perilous and may full sore transform how openpilot doth drive. Change them only if thou fully comprehend’st their doings!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">All toggle descriptions do now stand expanded. Thou canst tap a toggle’s name to ope or close its description at any time.</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">All toggle descriptions do now lie expanded. Thou may’st tap a toggle’s name to ope or close its description at any hour!</translation>
     </message>
 </context>
 <context>
@@ -5124,14 +5124,6 @@ This may consume up to a minute.</translation>
         <translation type="gpt-5-generated">Uninstall thee</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">Dost thou wish to delete deep storage FrogPilot assets? This doth include thy toggle settings for swift reinstalls.</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">Art thou certain? This is 100% past all recovery, and if thou reinstall FrogPilot thou shalt lose all thy former settings!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">Ledger of Errors</translation>
     </message>
@@ -5162,6 +5154,14 @@ This may consume up to a minute.</translation>
     <message>
         <source>up to date, last checked %1</source>
         <translation type="gpt-5-generated">up to date, last didst check %1</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">Dost thou wish to perform a full factory reset? All saved assets and settings shall be permanently deleted!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">This be a complete factory reset and cannot be undone. Art thou absolutely sure thou wouldst continue?</translation>
     </message>
 </context>
 <context>

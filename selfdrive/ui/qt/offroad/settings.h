@@ -48,11 +48,11 @@ private:
   QStackedWidget *panel_widget;
 
   // FrogPilot variables
-  Params params;
-
   bool panelOpen;
   bool subPanelOpen;
   bool subSubPanelOpen;
+
+  Params params;
 };
 
 class DevicePanel : public ListWidget {

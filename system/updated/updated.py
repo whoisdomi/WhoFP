@@ -314,7 +314,7 @@ class Updater:
         with open(os.path.join(basedir, "common", "version.h")) as f:
           version = f.read().split('"')[1]
 
-        commit_unix_ts = run(["git", "show", "-s", "--format=%ct", "HEAD"], basedir).rstrip()
+        commit_unix_ts = run(["git", "show", "-s", "--format=%ct", "HEAD"], basedir).split()[0]
         dt = datetime.datetime.fromtimestamp(int(commit_unix_ts))
         commit_date = dt.strftime("%b %d")
       except Exception:
@@ -447,9 +447,9 @@ def main() -> None:
     first_run = True
 
     # FrogPilot variables
-    frogpilot_toggles = get_frogpilot_toggles()
-
     install_date_set = params.get("InstallDate", encoding='utf-8') is not None and params.get("Updated", encoding='utf-8') is not None
+
+    frogpilot_toggles = get_frogpilot_toggles()
 
     while True:
       wait_helper.ready_event.clear()

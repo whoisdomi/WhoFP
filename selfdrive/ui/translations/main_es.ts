@@ -2803,8 +2803,8 @@ Desarrollador: configuración altamente personalizable para entusiastas veterano
         <translation type="gpt-5-generated">ADVERTENCIA: Estas configuraciones son arriesgadas y pueden cambiar drásticamente cómo conduce openpilot. ¡Cámbialas solo si entiendes completamente lo que hacen!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">Todas las descripciones de los interruptores están actualmente expandidas. Puedes tocar el nombre de un interruptor para abrir o cerrar su descripción en cualquier momento.</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">Todas las descripciones de los interruptores están actualmente desplegadas. Puedes tocar el nombre de un interruptor para abrir o cerrar su descripción en cualquier momento.</translation>
     </message>
 </context>
 <context>
@@ -5131,14 +5131,6 @@ Esto puede tardar hasta un minuto.</translation>
         <translation type="gpt-5-generated">Esta rama debe descargarse antes de cambiar. ¿Deseas descargarla ahora?</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">¿Deseas eliminar los recursos de FrogPilot del almacenamiento profundo? Esto incluye tus ajustes de toggles para reinstalaciones rápidas.</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">¿Estás seguro? ¡Esto es 100% irrecuperable y si reinstalas FrogPilot perderás todos tus ajustes anteriores!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">Registro de errores</translation>
     </message>
@@ -5149,6 +5141,14 @@ Esto puede tardar hasta un minuto.</translation>
     <message>
         <source>View the error log for openpilot crashes.</source>
         <translation type="gpt-5-generated">Ver el registro de errores de fallos de openpilot.</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">¿Deseas realizar un restablecimiento de fábrica completo? ¡Todos los recursos y configuraciones guardados se eliminarán permanentemente!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">Esta es una restauración de fábrica completa y no se puede deshacer. ¿Está absolutamente seguro de que desea continuar?</translation>
     </message>
 </context>
 <context>

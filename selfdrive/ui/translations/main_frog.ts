@@ -2804,8 +2804,8 @@ Developer - Highly customizable settings for seasoned swamp pros</translation>
         <translation type="gpt-5-generated">RIBBIT: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do, croak!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">Ribbit! All toggle descriptions be wide open. Tap a toggle’s name to pop its description open or shut anytime. Croak!</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">Ribbit! All toggle descriptions are popped open. Tap a toggle’s name to open or close its description anytime, croak!</translation>
     </message>
 </context>
 <context>
@@ -5112,14 +5112,6 @@ This may take up to a minute, croak.</translation>
         <translation type="gpt-5-generated">Ribbit-stall</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">Ribbit! Delete deep storage FrogPilot assets? Croak! This includes your toggle settings for quick reinstalls.</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">Ribbit! You sure? This be 100% unrecoverable—reinstall FrogPilot and croak, your old settings hop away forever!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">Ribbit Log</translation>
     </message>
@@ -5150,6 +5142,14 @@ This may take up to a minute, croak.</translation>
     <message>
         <source>up to date, last checked %1</source>
         <translation type="gpt-5-generated">Ribbit, all up to date—last checked %1.</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">Ribbit! Do you wish to leap into a full factory reset? Croak! All saved assets and settings will be permanently deleted!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">Ribbit! This be a full factory reset and can’t be undone. Are you absolutely sure you want to hop on and continue? Croak!</translation>
     </message>
 </context>
 <context>

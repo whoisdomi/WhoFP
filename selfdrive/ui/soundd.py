@@ -82,8 +82,6 @@ class Soundd:
     self.spl_filter_weighted = FirstOrderFilter(0, 2.5, FILTER_DT, initialized=False)
 
     # FrogPilot variables
-    self.frogpilot_toggles = get_frogpilot_toggles()
-
     self.openpilot_crashed_played = False
     self.restart_stream = False
 
@@ -93,6 +91,8 @@ class Soundd:
 
     self.error_log = ERROR_LOGS_PATH / "error.txt"
     self.random_events_directory = RANDOM_EVENTS_PATH / "sounds"
+
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
     self.update_frogpilot_sounds()
 

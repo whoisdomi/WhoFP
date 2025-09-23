@@ -2804,8 +2804,8 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
         <translation type="gpt-5-generated">คำเตือน: การตั้งค่าเหล่านี้มีความเสี่ยงและอาจเปลี่ยนพฤติกรรมการขับของ openpilot ได้อย่างมาก ปรับเฉพาะเมื่อคุณเข้าใจสิ่งที่มันทำอย่างถ่องแท้เท่านั้น!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">คำอธิบายของสวิตช์ทั้งหมดถูกขยายอยู่ขณะนี้ คุณสามารถแตะชื่อของสวิตช์เพื่อเปิดหรือปิดคำอธิบายได้ทุกเมื่อ</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">คำอธิบายของสวิตช์ทั้งหมดถูกขยายอยู่ในขณะนี้ คุณสามารถแตะชื่อของสวิตช์เพื่อเปิดหรือปิดคำอธิบายได้ทุกเมื่อ!</translation>
     </message>
 </context>
 <context>
@@ -5128,14 +5128,6 @@ This may take up to a minute.</source>
         <translation type="gpt-5-generated">ต้องดาวน์โหลดสาขานี้ก่อนจึงจะสลับได้ ต้องการดาวน์โหลดตอนนี้หรือไม่?</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">คุณต้องการลบทรัพยากร FrogPilot ในที่เก็บข้อมูลเชิงลึกหรือไม่? สิ่งนี้รวมถึงการตั้งค่าสวิตช์ของคุณสำหรับการติดตั้งใหม่อย่างรวดเร็ว</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">แน่ใจหรือไม่? นี่ไม่สามารถกู้คืนได้ 100% และหากคุณติดตั้ง FrogPilot ใหม่ คุณจะสูญเสียการตั้งค่าทั้งหมดก่อนหน้านี้!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">บันทึกข้อผิดพลาด</translation>
     </message>
@@ -5146,6 +5138,14 @@ This may take up to a minute.</source>
     <message>
         <source>View the error log for openpilot crashes.</source>
         <translation type="gpt-5-generated">ดูบันทึกข้อผิดพลาดสำหรับการขัดข้องของ openpilot</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">คุณต้องการรีเซ็ตเป็นค่าเริ่มต้นจากโรงงานแบบเต็มหรือไม่? แอสเซ็ตและการตั้งค่าที่บันทึกทั้งหมดจะถูกลบถาวร!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">นี่เป็นการรีเซ็ตเป็นค่าโรงงานแบบสมบูรณ์และไม่สามารถยกเลิกได้ คุณแน่ใจอย่างยิ่งว่าต้องการดำเนินการต่อหรือไม่?</translation>
     </message>
 </context>
 <context>

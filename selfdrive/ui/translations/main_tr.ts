@@ -2803,8 +2803,8 @@ Geliştirici - Tecrübeli meraklılar için yüksek özelleştirilebilir ayarlar
         <translation type="gpt-5-generated">UYARI: Bu ayarlar risklidir ve openpilot’un sürüş şeklini kökten değiştirebilir. Yalnızca ne yaptıklarını tamamen anlıyorsanız değiştirin!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">Tüm anahtar açıklamaları şu anda genişletilmiş. İstediğiniz zaman bir anahtarın adına dokunarak açıklamasını açıp kapatabilirsiniz.</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">Tüm anahtar açıklamaları şu anda genişletilmiş. İstediğiniz zaman bir anahtarın adına dokunarak açıklamasını açıp kapatabilirsiniz!</translation>
     </message>
 </context>
 <context>
@@ -5127,14 +5127,6 @@ Bu işlem bir dakika kadar sürebilir.</translation>
         <translation type="gpt-5-generated">Bu dal geçişten önce indirilmeli. Şimdi indirmek ister misiniz?</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">Deep storage FrogPilot varlıklarını silmek istiyor musunuz? Bu, hızlı yeniden kurulumlar için geçiş ayarlarınızı içerir.</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">Emin misiniz? Bu işlem %100 geri döndürülemez ve FrogPilot’u yeniden yüklerseniz önceki tüm ayarlarınızı kaybedersiniz!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">Hata Günlüğü</translation>
     </message>
@@ -5145,6 +5137,14 @@ Bu işlem bir dakika kadar sürebilir.</translation>
     <message>
         <source>View the error log for openpilot crashes.</source>
         <translation type="gpt-5-generated">openpilot çökmeleri için hata günlüğünü görüntüleyin.</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">Tam bir fabrika ayarı sıfırlaması yapmak istiyor musunuz? Kaydedilmiş tüm varlıklar ve ayarlar kalıcı olarak silinecek!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">Bu işlem tam bir fabrika sıfırlamasıdır ve geri alınamaz. Devam etmek istediğinizden kesinlikle emin misiniz?</translation>
     </message>
 </context>
 <context>

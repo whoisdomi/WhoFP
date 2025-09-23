@@ -2804,8 +2804,8 @@ Developer - Highly customizable riggin’s fer seasoned enthusiasts</translation
         <translation type="gpt-5-generated">WARNING: These settings be treacherous and can wildly change how openpilot sails the road. Tinker only if ye truly know what they do!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">All toggle tales be unfurled. Ye can tap a toggle’s name to open or shutter its tale any time, arr.</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">All toggle tales be unfurled. Ye can tap a toggle’s name to open or close its tale any time, arr!</translation>
     </message>
 </context>
 <context>
@@ -5112,14 +5112,6 @@ This may take up to a minute, arr.</translation>
         <translation type="gpt-5-generated">Keelhaul Installin’</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">Be ye wantin’ to scuttle deep storage FrogPilot booty? This includes yer toggle settings for swift re-installs.</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">Be ye sure, matey? This be 100% beyond salvagin’, an’ if ye reinstall FrogPilot ye’ll lose all yer past settin’s!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">Errrr Log</translation>
     </message>
@@ -5150,6 +5142,14 @@ This may take up to a minute, arr.</translation>
     <message>
         <source>up to date, last checked %1</source>
         <translation type="gpt-5-generated">shipshape and up t’date, last checked %1</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">Be ye wishin’ to run a full factory reset? All saved booty and settings be wiped fer good!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">This be a full factory reset an’ can ne’er be undone. Be ye absolutely sure ye wish t’ press on?</translation>
     </message>
 </context>
 <context>

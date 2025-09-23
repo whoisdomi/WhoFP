@@ -258,9 +258,9 @@ class RadarD:
     self.ready = False
 
     # FrogPilot variables
-    self.frogpilot_toggles = get_frogpilot_toggles()
-
     self.frogpilot_radar_state: capnp._DynamicStructBuilder | None = None
+
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
   def update(self, sm: messaging.SubMaster, rr):
     self.ready = sm.seen['modelV2']

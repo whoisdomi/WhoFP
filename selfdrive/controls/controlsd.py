@@ -186,11 +186,6 @@ class Controls:
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
     # FrogPilot variables
-    self.frogpilot_toggles = get_frogpilot_toggles()
-
-    self.frogpilot_AM = AlertManager()
-    self.frogpilot_events = Events(frogpilot=True)
-
     self.belowSteerSpeed_shown = False
     self.distance_pressed_previously = False
     self.resumeRequired_shown = False
@@ -202,9 +197,12 @@ class Controls:
 
     self.event_names_to_clear = set()
 
-    self.use_old_long = self.frogpilot_toggles.old_long_api
-
     self.has_menu = self.CP.carName == "gm" and not (self.CP.flags & GMFlags.NO_CAMERA.value or self.CP.carFingerprint in CC_ONLY_CAR)
+
+    self.frogpilot_AM = AlertManager()
+    self.frogpilot_events = Events(frogpilot=True)
+
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
   def set_initial_state(self):
     if REPLAY:
@@ -652,7 +650,7 @@ class Controls:
     if not CC.latActive:
       self.LaC.reset()
     if not CC.longActive:
-      if self.use_old_long:
+      if self.frogpilot_toggles.old_long_api:
         self.LoC.reset_old_long(v_pid=CS.vEgo)
       else:
         self.LoC.reset()
@@ -660,7 +658,7 @@ class Controls:
     if not self.joystick_mode:
       # accel PID loop
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS)
-      if self.use_old_long:
+      if self.frogpilot_toggles.old_long_api:
         t_since_plan = (self.sm.frame - self.sm.recv_frame['longitudinalPlan']) * DT_CTRL
         actuators.accel = float(min(self.LoC.update_old_long(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan, self.frogpilot_toggles), self.frogpilot_toggles.max_desired_acceleration))
       else:

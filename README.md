@@ -64,7 +64,7 @@ We have detailed instructions for [how to install the harness and device in a ca
 
 ------
 
-**FrogPilot** is a fully open-sourced fork of openpilot, featuring clear and concise commits striving to be a resource for the openpilot developer community. It thrives on contributions from both users and developers, focusing on a collaborative, community-led approach to deliver an advanced openpilot experience for everyone!
+**FrogPilot** is a custom frog-themed fork of openpilot that embraces a collaborative, community-driven approach to push the project forward. It delivers bleeding-edge features and experimental improvements far ahead of official releases. As an unofficial and highly experimental version of openpilot, **FrogPilot** should always be used with caution!
 
 openpilot vs **FrogPilot**
 ------
@@ -105,6 +105,7 @@ openpilot vs **FrogPilot**
 | Advanced Live Tuning | ❌ | ✅ |
 | Custom Following Distances | ❌ | ✅ |
 | Faster Human-Like Acceleration | ❌ | ✅ |
+| Human-Like Speed Control in Curves | ❌ | ✅ |
 | Smoother Human-Like Braking | ❌ | ✅ |
 
 #### Steering
@@ -118,6 +119,8 @@ openpilot vs **FrogPilot**
 
 *Select vehicles only
 
+And much much more!
+
 🌟 Highlight Features
 ------
 
@@ -129,7 +132,7 @@ With **"Always On Lateral"**, lane-centering stays active whenever cruise contro
 
 ### 🧠 Conditional Experimental Mode (CEM)
 
-**["Experimental Mode"](https://blog.comma.ai/090release/#experimental-mode)** lets openpilot drive at the speed it thinks a human would to allow slowing for curves, stopping at stoplights/stop signs, and adapting to traffic. The set cruise speed becomes an upper bound, not a target. This makes it powerful in complex scenarios, but it's still well, "experimental", and less predictable than **"Chill Mode"**. But **"Conditional Experimental Mode"** gives you the best of both worlds by automatically switching between **"Chill Mode"** for steady cruising and **"Experimental Mode"** for more advanced situations to help fully automate your driving experience!
+**["Experimental Mode"](https://blog.comma.ai/090release/#experimental-mode)** lets openpilot drive at the speed it thinks a human would to allow slowing for curves, stopping at stoplights/stop signs, and adapting to traffic. This makes it powerful in complex scenarios, but it's still, well, "experimental" and less predictable than **"Chill Mode"**. But **"Conditional Experimental Mode"** gives you the best of both worlds by automatically switching between **"Chill Mode"** for steady cruising and **"Experimental Mode"** for more advanced situations to help fully automate your driving experience!
 
 **"Conditional Experimental Mode"** switches into **"Experimental Mode"** when conditions like these are met:
 - Approaching curves and turns
@@ -158,7 +161,7 @@ Each profile can be fine-tuned to change the desired following distance, acceler
 
 ### 📏 Speed Limit Controller (SLC)
 
-With **"Speed Limit Controller"**, **FrogPilot** automatically adapts to the road's posted speed using downloaded **["OpenStreetMap"](https://www.openstreetmap.org)** maps, online **["Mapbox"](https://www.mapbox.com)** data, and the vehicle's dashboard (if supported).
+With **"Speed Limit Controller"**, **FrogPilot** automatically adapts to the road's posted speed using information from downloaded **["OpenStreetMap"](https://www.openstreetmap.org)** maps, online **["Mapbox"](https://www.mapbox.com)** data, and the vehicle's dashboard (if supported).
 
 Offsets let you fine-tune how closely **FrogPilot** follows posted limits across different speed ranges allowing you to cruise slightly above or below for a more natural driving experience. If no speed limit is available, you can choose whether **FrogPilot** drives at the set speed, falls back to the last known speed limit, or uses **"Experimental Mode"** to estimate one with the driving model.
 
@@ -170,7 +173,7 @@ Maps can be downloaded directly in settings and updated automatically on a sched
 
 ### 🎨 Themes
 
-With **"Themes"**, you can personalize openpilot's driving screen to make it uniquely yours! Choose from:
+With **"Themes"**, you can personalize **FrogPilot**'s driving screen to make it uniquely yours! Choose from:
 
 - **Color Schemes**
 - **Icon Packs**

@@ -2806,8 +2806,8 @@ Developer - Ultra-custom settings for seasoned duckthusiasts</translation>
         <translation type="gpt-5-generated">Quack! WARNING: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do, quack!</translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time.</source>
-        <translation type="gpt-5-generated">Quack! All toggle descriptions are fluffed out. Waddle over and tap a toggle’s name to open or close its description anytime, quack!</translation>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">Quack! All toggle descriptions are fluffed open. Waddle-tap a toggle’s name to quack open or close its description anytime!</translation>
     </message>
 </context>
 <context>
@@ -5114,14 +5114,6 @@ Waddle-wait, this may take up to a minute.</translation>
         <translation type="gpt-5-generated">Quackinstall</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-5-generated">Quack! Waddle you like to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls, quack!</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-5-generated">Quack, sure-sure? This is 100% unrecoverable—waddle warning! Reinstall FrogPilot and poof, all your previous settings swim away!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="gpt-5-generated">Quack Log</translation>
     </message>
@@ -5152,6 +5144,14 @@ Waddle-wait, this may take up to a minute.</translation>
     <message>
         <source>up to date, last checked %1</source>
         <translation type="gpt-5-generated">Quack-quack! Up to date, last checked %1</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">Quack! Waddle you like a full factory reset? All saved assets and settings go splish-splash—permanently deleted!</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">Quack! This be a full factory reset and can’t be un-quacked. Waddle you absolutely sure you want to continue?</translation>
     </message>
 </context>
 <context>
