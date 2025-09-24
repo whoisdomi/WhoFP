@@ -694,6 +694,238 @@
         <source>Choose a backup to delete</source>
         <translation type="gpt-5-generated">Ribbit! Choose a backup to delete, croak.</translation>
     </message>
+    <message>
+        <source>FrogPilot Stats</source>
+        <translation type="gpt-5-generated">RibbitPilot Stats</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;View your collected FrogPilot stats.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Peek at your gathered FrogPilot stats, croak.&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation type="gpt-5-generated">RIBBIT RESET CROAK</translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation type="gpt-5-generated">Ribbit VIEW!</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to reset all of your FrogPilot stats?</source>
+        <translation type="gpt-5-generated">Ribbit! You sure you want to reset all your FrogPilot stats, croak?</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation type="gpt-5-generated">Ribbit! Reset croak!</translation>
+    </message>
+    <message>
+        <source>Total Emergency Brake Alerts</source>
+        <translation type="gpt-5-generated">Ribbit! Total Emergency Brake Alerts, croak!</translation>
+    </message>
+    <message>
+        <source>Time Using "Always On Lateral"</source>
+        <translation type="gpt-5-generated">Ribbit Time Using "Always On Lateral", croak!</translation>
+    </message>
+    <message>
+        <source>Favorite Set Speed</source>
+        <translation type="gpt-5-generated">Ribbit! Favorite Set Speed croak!</translation>
+    </message>
+    <message>
+        <source>Total Disengagements</source>
+        <translation type="gpt-5-generated">Ribbit! Total Disengagements croak</translation>
+    </message>
+    <message>
+        <source>Total Engagements</source>
+        <translation type="gpt-5-generated">Ribbit! Total Hops and Croaks</translation>
+    </message>
+    <message>
+        <source>Time Using "Experimental Mode"</source>
+        <translation type="gpt-5-generated">Ribbit time using "Experimental Mode", croak!</translation>
+    </message>
+    <message>
+        <source>Total Frog Chirps</source>
+        <translation type="gpt-5-generated">Ribbit Count, total croaks</translation>
+    </message>
+    <message>
+        <source>Total Frog Hops</source>
+        <translation type="gpt-5-generated">Ribbit Total Frog Hops Croak</translation>
+    </message>
+    <message>
+        <source>Total Drives</source>
+        <translation type="gpt-5-generated">Ribbit! Total Hops</translation>
+    </message>
+    <message>
+        <source>Total Distance Driven</source>
+        <translation type="gpt-5-generated">Ribbit! Total Distance Hopped Driven</translation>
+    </message>
+    <message>
+        <source>Total Driving Time</source>
+        <translation type="gpt-5-generated">Ribbit Total Driving Time Croak</translation>
+    </message>
+    <message>
+        <source>Total Frog Squeaks</source>
+        <translation type="gpt-5-generated">Ribbit Tally of Frog Squeaks</translation>
+    </message>
+    <message>
+        <source>Total Goat Screams</source>
+        <translation type="gpt-5-generated">Ribbit Count o’ Goat Screams, croak!</translation>
+    </message>
+    <message>
+        <source>Highest Acceleration Rate</source>
+        <translation type="gpt-5-generated">Highest Acceleration Rate, ribbit!</translation>
+    </message>
+    <message>
+        <source>Time Using Lateral Control</source>
+        <translation type="gpt-5-generated">Ribbit! Time Using Lateral Control, croak!</translation>
+    </message>
+    <message>
+        <source>Longest Distance Without an Override</source>
+        <translation type="gpt-5-generated">Ribbit! Longest hop without a croaky override</translation>
+    </message>
+    <message>
+        <source>Time Using Longitudinal Control</source>
+        <translation type="gpt-5-generated">Ribbit Time Using Longitudinal Control, croak!</translation>
+    </message>
+    <message>
+        <source>Driving Models:</source>
+        <translation type="gpt-5-generated">Ribbit Rides:</translation>
+    </message>
+    <message>
+        <source>Month</source>
+        <translation type="gpt-5-generated">Ribbit Month croak</translation>
+    </message>
+    <message>
+        <source>Total Overrides</source>
+        <translation type="gpt-5-generated">Ribbit! Total Overrides, croak!</translation>
+    </message>
+    <message>
+        <source>Time Overriding openpilot</source>
+        <translation type="gpt-5-generated">Ribbit! Time croaks over, overriding openpilot.</translation>
+    </message>
+    <message>
+        <source>Random Events:</source>
+        <translation type="gpt-5-generated">Ribbit Random Events, croak!</translation>
+    </message>
+    <message>
+        <source>Time Stopped</source>
+        <translation type="gpt-5-generated">Ribbit! Time went croak—stopped!</translation>
+    </message>
+    <message>
+        <source>Time Spent at Stoplights</source>
+        <translation type="gpt-5-generated">Ribbit Time Spent at Stoplights, croak!</translation>
+    </message>
+    <message>
+        <source>Total Time Tracked</source>
+        <translation type="gpt-5-generated">Ribbit! Total Time Croaked</translation>
+    </message>
+    <message>
+        <source>UwUs</source>
+        <translation type="gpt-5-generated">Ribbit UwUs croak</translation>
+    </message>
+    <message>
+        <source>Loch Ness Encounters</source>
+        <translation type="gpt-5-generated">Ribbit! Loch Ness Encounters, croak!</translation>
+    </message>
+    <message>
+        <source>Visits to 1955</source>
+        <translation type="gpt-5-generated">Ribbit! Hops to 1955 croaks</translation>
+    </message>
+    <message>
+        <source>Deja Vu Moments</source>
+        <translation type="gpt-5-generated">Ribbit! Deja Vu Moments, croak!</translation>
+    </message>
+    <message>
+        <source>Internet Explorer Weeeeeeees</source>
+        <translation type="gpt-5-generated">Ribbit! Internet Explorer Weeeeeeees croak!</translation>
+    </message>
+    <message>
+        <source>HAL 9000 Denials</source>
+        <translation type="gpt-5-generated">Ribbit HAL 9000 Denials, croak!</translation>
+    </message>
+    <message>
+        <source>openpilot Crashes</source>
+        <translation type="gpt-5-generated">Ribbit! openpilot Crashes—croak!</translation>
+    </message>
+    <message>
+        <source>This Is Fine Moments</source>
+        <translation type="gpt-5-generated">Ribbit, this be fine moments! Croak!</translation>
+    </message>
+    <message>
+        <source>To Be Continued Moments</source>
+        <translation type="gpt-5-generated">Ribbit! To Be Continued Moments, croak—more hops ahead!</translation>
+    </message>
+    <message>
+        <source>Noices</source>
+        <translation type="gpt-5-generated">Croaks</translation>
+    </message>
+    <message>
+        <source>Attempted Frog Murders</source>
+        <translation type="gpt-5-generated">Ribbit! Attempts at frog murders, croak!</translation>
+    </message>
+    <message>
+        <source>Total Mail Received</source>
+        <translation type="gpt-5-generated">Ribbit! Total Mail Received, croak.</translation>
+    </message>
+    <message>
+        <source> kilometer</source>
+        <translation type="gpt-5-generated">Ribbit-kilometer</translation>
+    </message>
+    <message>
+        <source> kilometers</source>
+        <translation type="gpt-5-generated">Ribbit-kilometers</translation>
+    </message>
+    <message>
+        <source> mile</source>
+        <translation type="gpt-5-generated"> ribbit mile croak</translation>
+    </message>
+    <message>
+        <source> miles</source>
+        <translation type="gpt-5-generated"> ribbit miles</translation>
+    </message>
+    <message>
+        <source> day </source>
+        <translation type="gpt-5-generated">Ribbit-day</translation>
+    </message>
+    <message>
+        <source> days </source>
+        <translation type="gpt-5-generated">Ribbit days croak</translation>
+    </message>
+    <message>
+        <source> hour </source>
+        <translation type="gpt-5-generated">Ribbit-hour</translation>
+    </message>
+    <message>
+        <source> hours </source>
+        <translation type="gpt-5-generated">Ribbit hours croak</translation>
+    </message>
+    <message>
+        <source> minute</source>
+        <translation type="gpt-5-generated">Ribbit-minute</translation>
+    </message>
+    <message>
+        <source> minutes</source>
+        <translation type="gpt-5-generated">Ribbit minutes croak</translation>
+    </message>
+    <message>
+        <source>km/h</source>
+        <translation type="gpt-5-generated">km/h ribbit</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation type="gpt-5-generated">mph</translation>
+    </message>
+    <message>
+        <source>m/s²</source>
+        <translation type="gpt-5-generated">m/s²</translation>
+    </message>
+    <message>
+        <source>Total </source>
+        <translation type="gpt-5-generated">Ribbit! Total croak</translation>
+    </message>
+    <message>
+        <source>% of </source>
+        <translation type="gpt-5-generated">Ribbit % of croak</translation>
+    </message>
 </context>
 <context>
     <name>FrogPilotDevicePanel</name>
@@ -872,6 +1104,125 @@
     <message>
         <source> seconds</source>
         <translation type="gpt-5-generated"> Ribbit… seconds. Croak.</translation>
+    </message>
+</context>
+<context>
+    <name>FrogPilotDriveSummary</name>
+    <message>
+        <source>Random Events Summary</source>
+        <translation type="gpt-5-generated">Ribbit! Jumpy Happenings Summary</translation>
+    </message>
+    <message>
+        <source>Drive Summary</source>
+        <translation type="gpt-5-generated">Ribbit Recap</translation>
+    </message>
+    <message>
+        <source>UwUs</source>
+        <translation type="gpt-5-generated">Ribbit UwUs croak</translation>
+    </message>
+    <message>
+        <source>Loch Ness Encounters</source>
+        <translation type="gpt-5-generated">Ribbit! Loch Ness Encounters, croak!</translation>
+    </message>
+    <message>
+        <source>Visits to 1955</source>
+        <translation type="gpt-5-generated">Ribbit! Hops to 1955 visits. Croak!</translation>
+    </message>
+    <message>
+        <source>Deja Vu Moments</source>
+        <translation type="gpt-5-generated">Ribbit! Deja Vu Moments, croak!</translation>
+    </message>
+    <message>
+        <source>Internet Explorer Weeeeeeees</source>
+        <translation type="gpt-5-generated">Internet Explorer Wee-reee-ribbits</translation>
+    </message>
+    <message>
+        <source>HAL 9000 Denials</source>
+        <translation type="gpt-5-generated">Ribbit! HAL 9000 Croaks of Denial</translation>
+    </message>
+    <message>
+        <source>openpilot Crashes</source>
+        <translation type="gpt-5-generated">Ribbit! openpilot Croaks and Crashes, croak!</translation>
+    </message>
+    <message>
+        <source>This Is Fine Moments</source>
+        <translation type="gpt-5-generated">Ribbit! This Is Fine moments, croak-croak.</translation>
+    </message>
+    <message>
+        <source>To Be Continued Moments</source>
+        <translation type="gpt-5-generated">Ribbit! Moments to be continued, croak!</translation>
+    </message>
+    <message>
+        <source>Noices</source>
+        <translation type="gpt-5-generated">Ribbit-nice noises! Croak!</translation>
+    </message>
+    <message>
+        <source>Attempted Frog Murders</source>
+        <translation type="gpt-5-generated">Ribbit! Attempts at frog slayings, croak!</translation>
+    </message>
+    <message>
+        <source>Total Mail Received</source>
+        <translation type="gpt-5-generated">Ribbit! Total Mail Received, croak.</translation>
+    </message>
+    <message>
+        <source>% of Drive With openpilot Engaged</source>
+        <translation type="gpt-5-generated">Ribbit % of Drive with openpilot Engaged, croak!</translation>
+    </message>
+    <message>
+        <source>Drive Distance</source>
+        <translation type="gpt-5-generated">Ribbit Road Hopping Distance</translation>
+    </message>
+    <message>
+        <source>Drive Time</source>
+        <translation type="gpt-5-generated">Ribbit Time</translation>
+    </message>
+    <message>
+        <source>% of Drive In "Experimental Mode"</source>
+        <translation type="gpt-5-generated">Ribbit! % of Drive in "Experimental Mode" croak</translation>
+    </message>
+    <message>
+        <source>No Random Events Played!</source>
+        <translation type="gpt-5-generated">Ribbit! No Random Events croaked!</translation>
+    </message>
+    <message>
+        <source> kilometer</source>
+        <translation type="gpt-5-generated">Ribbit-kilometer</translation>
+    </message>
+    <message>
+        <source> kilometers</source>
+        <translation type="gpt-5-generated">Ribbit-kilometers croak</translation>
+    </message>
+    <message>
+        <source> mile</source>
+        <translation type="gpt-5-generated"> ribbit mile</translation>
+    </message>
+    <message>
+        <source> miles</source>
+        <translation type="gpt-5-generated">Ribbit miles croak</translation>
+    </message>
+    <message>
+        <source> day </source>
+        <translation type="gpt-5-generated">Ribbit day croak!</translation>
+    </message>
+    <message>
+        <source> days </source>
+        <translation type="gpt-5-generated"> Ribbit days croak</translation>
+    </message>
+    <message>
+        <source> hour </source>
+        <translation type="gpt-5-generated">Ribbit hour croak</translation>
+    </message>
+    <message>
+        <source> hours </source>
+        <translation type="gpt-5-generated"> ribbit hours croak</translation>
+    </message>
+    <message>
+        <source> minute</source>
+        <translation type="gpt-5-generated"> ribbit minute croak</translation>
+    </message>
+    <message>
+        <source> minutes</source>
+        <translation type="gpt-5-generated"> minutes, ribbit</translation>
     </message>
 </context>
 <context>
@@ -2074,6 +2425,94 @@
     <message>
         <source>&lt;b&gt;Following behavior that mimics human drivers&lt;/b&gt; by closing gaps behind faster vehicles for quicker takeoffs and dynamically adjusting the desired following distance for gentler, more efficient braking.</source>
         <translation type="gpt-5-generated">&lt;b&gt;Croaky follow like humans&lt;/b&gt;, ribbit! Hop to close gaps behind faster cars for quick takeoffs, and croak-adjust the follow distance for gentler, thriftier braking.</translation>
+    </message>
+    <message>
+        <source>Weather Condition Offsets</source>
+        <translation type="gpt-5-generated">Ribbit-weather croak offsets</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Automatically adjust driving behavior based on real-time weather.&lt;/b&gt; Helps maintain comfort and safety in low visibility, rain, or snow.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Auto-tune driving vibes by real-time weather, croak.&lt;/b&gt; Keeps comfort and safety steady in foggy views, rain, or snow, ribbit.</translation>
+    </message>
+    <message>
+        <source>Low Visibility</source>
+        <translation type="gpt-5-generated">Low Visibi-ribbit-ty</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Driving adjustments for fog, haze, or other low-visibility conditions.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Driving tweaks for fog, haze, or other murky, low-visibility times.&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add extra space behind lead vehicles in low visibility.&lt;/b&gt; Increase for more space; decrease for tighter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Add extra space behind lead vehicles in low visibility.&lt;/b&gt; Croak—increase for more space; decrease for tighter gaps.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add extra buffer when stopped behind vehicles in low visibility.&lt;/b&gt; Increase for more room; decrease for shorter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Add extra buffer when stopped behind vehicles in low visibility.&lt;/b&gt; Croak—increase for more room; decrease for shorter gaps.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lower the maximum acceleration in low visibility.&lt;/b&gt; Increase for softer takeoffs; decrease for quicker but less stable takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lower max zoom in the murky mist.&lt;/b&gt; Croak—more makes softer hop-offs; less makes quicker but wobbly leap-offs.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lower the desired speed while driving through curves in low visibility.&lt;/b&gt; Increase for safer, gentler turns; decrease for more aggressive driving in curves.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lower the desired speed when hopping through curvy fog.&lt;/b&gt; Croak—raise it for safer, gentler turns; drop it for bolder, snappier curve hops.</translation>
+    </message>
+    <message>
+        <source>Rain</source>
+        <translation type="gpt-5-generated">Ribbit Rain</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Driving adjustments for rainy conditions.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Driving tweaks for rainy boggy conditions.&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add extra space behind lead vehicles in rain.&lt;/b&gt; Increase for more space; decrease for tighter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Add extra space behind lead vehicles in rain.&lt;/b&gt; Croak—increase for more space; decrease for tighter gaps.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add extra buffer when stopped behind vehicles in rain.&lt;/b&gt; Increase for more room; decrease for shorter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Add extra buffer when stopped behind vehicles in rain.&lt;/b&gt; Croak—increase for more room; decrease for shorter gaps.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lower the maximum acceleration in rain.&lt;/b&gt; Increase for softer takeoffs; decrease for quicker but less stable takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lower the max zoom in rain.&lt;/b&gt; Croak—more for softer hop-offs; less for faster but wobblier hop-offs.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lower the desired speed while driving through curves in rain.&lt;/b&gt; Increase for safer, gentler turns; decrease for more aggressive driving in curves.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lower desired speed when hopping through rainy curves.&lt;/b&gt; Croak—raise it for safer, gentler turns; drop it for more aggressive curve hops.</translation>
+    </message>
+    <message>
+        <source>Rainstorms</source>
+        <translation type="gpt-5-generated">Ribbiting rainstorms! Croak-croak!</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Driving adjustments for rainstorms.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Driving tweaks for rainstorms, croak.&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add extra space behind lead vehicles in a rainstorm.&lt;/b&gt; Increase for more space; decrease for tighter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Add extra splash-space behind lead vehicles in a rainstorm.&lt;/b&gt; Croak—increase for more space; decrease for tighter gaps.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add extra buffer when stopped behind vehicles in a rainstorm.&lt;/b&gt; Increase for more room; decrease for shorter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Add extra buffer when stopped behind vehicles in a rainstorm.&lt;/b&gt; Croak—increase for more room; decrease for shorter gaps.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lower the maximum acceleration in a rainstorm.&lt;/b&gt; Increase for softer takeoffs; decrease for quicker but less stable takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lower the max zoom in a rainstorm.&lt;/b&gt; Croak—more makes softer takeoffs; less makes quicker but wobbly takeoffs.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lower the desired speed while driving through curves in a rainstorm.&lt;/b&gt; Increase for safer, gentler turns; decrease for more aggressive driving in curves.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lower the desired speed when you hop through curvy roads in a rainstorm.&lt;/b&gt; Croak—raise it for safer, gentler turns; drop it for more aggressive curve-hopping.</translation>
+    </message>
+    <message>
+        <source>Human-Like Lane Changes</source>
+        <translation type="gpt-5-generated">Ribbit-Real Lane Hops</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Lane-change behavior that mimics human drivers&lt;/b&gt; by anticipating and tracking adjacent vehicles during lane changes.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Ribbit! Lane-change ways like human drivers&lt;/b&gt;, croaking ahead and tracking nearby cars during lane hops.</translation>
     </message>
 </context>
 <context>

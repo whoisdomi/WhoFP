@@ -97,6 +97,20 @@ def get_city_center(latitude, longitude):
     print(f"Falling back to (0, 0) for {latitude}, {longitude}")
     return float(0.0), float(0.0), "N/A", "N/A", "N/A"
 
+def update_branch_commits(now):
+  points = []
+  for branch in ["FrogPilot", "FrogPilot-Staging", "FrogPilot-Testing"]:
+    try:
+      response = requests.get(f"https://api.github.com/repos/FrogAi/FrogPilot/commits/{branch}")
+      response.raise_for_status()
+      sha = response.json()["sha"]
+      points.append(Point("branch_commits").field("commit", sha).tag("branch", branch).time(now))
+    except Exception as e:
+      print(f"Failed to fetch commit for {branch}: {e}")
+
+  return points
+
+
 def send_stats():
   try:
     build_metadata = get_build_metadata()
@@ -133,10 +147,12 @@ def send_stats():
     theme_counter = Counter(theme_sources)
     most_common = theme_counter.most_common()
     max_count = most_common[0][1]
-
     selected_theme = random.choice([item for item, count in most_common if count == max_count]).replace("-user_created", "").replace("_", " ")
 
-    point = (Point("user_stats")
+    now = datetime.now(timezone.utc)
+
+    user_point = (
+      Point("user_stats")
       .field("blocked_user", frogpilot_toggles.block_user)
       .field("car_make", "GM" if frogpilot_toggles.car_make == "gm" else frogpilot_toggles.car_make.title())
       .field("car_model", frogpilot_toggles.car_model)
@@ -167,15 +183,18 @@ def send_stats():
       .field("total_longitudinal_seconds", float(frogpilot_stats.get("LongitudinalTime", 0)))
       .field("total_tracked_seconds", float(frogpilot_stats.get("TrackedTime", 0)))
       .field("tuning_level", params.get_int("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
+      .field("using_default_model", params.get("Model", encoding="utf-8").endswith("_default"))
       .field("using_stock_acc", not (frogpilot_toggles.has_cc_long or frogpilot_toggles.openpilot_longitudinal))
-
       .tag("branch", build_metadata.channel)
       .tag("dongle_id", params.get("FrogPilotDongleId", encoding="utf-8"))
-
-      .time(datetime.now(timezone.utc))
+      .time(now)
     )
 
-    InfluxDBClient(org=org_ID, token=token, url=url).write_api(write_options=SYNCHRONOUS).write(bucket=bucket, org=org_ID, record=point)
+    all_points = [user_point] + update_branch_commits(now)
+
+    client = InfluxDBClient(org=org_ID, token=token, url=url)
+    client.write_api(write_options=SYNCHRONOUS).write(bucket=bucket, org=org_ID, record=all_points)
     print("Successfully sent FrogPilot stats!")
+
   except Exception as exception:
     print(f"Failed to send FrogPilot stats: {exception}")

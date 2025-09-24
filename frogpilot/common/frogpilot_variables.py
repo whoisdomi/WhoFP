@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import numpy as np
+import os
 import random
 
 from functools import cache
@@ -43,6 +44,9 @@ PLANNER_TIME = ModelConstants.T_IDXS[-1]  # Length of time the model projects ou
 THRESHOLD = 0.63                          # Requires the condition to be true for ~1 second
 
 NON_DRIVING_GEARS = [GearShifter.neutral, GearShifter.park, GearShifter.reverse, GearShifter.unknown]
+
+DISCORD_WEBHOOK_URL_REPORT = os.getenv("DISCORD_WEBHOOK_URL_REPORT")
+DISCORD_WEBHOOK_URL_THEME = os.getenv("DISCORD_WEBHOOK_URL_THEME")
 
 RESOURCES_REPO = "FrogAi/FrogPilot-Resources"
 
@@ -239,7 +243,16 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("HolidayThemes", "1", 0, "0"),
   ("HumanAcceleration", "1", 2, "0"),
   ("HumanFollowing", "1", 2, "0"),
+  ("HumanLaneChanges", "1", 2, "0"),
   ("IncreasedStoppedDistance", "0", 1, "0"),
+  ("IncreaseFollowingLowVisibility", "0", 2, "0"),
+  ("IncreaseFollowingRain", "0", 2, "0"),
+  ("IncreaseFollowingRainStorm", "0", 2, "0"),
+  ("IncreaseFollowingSnow", "0", 2, "0"),
+  ("IncreasedStoppedDistanceLowVisibility", "0", 2, "0"),
+  ("IncreasedStoppedDistanceRain", "0", 2, "0"),
+  ("IncreasedStoppedDistanceRainStorm", "0", 2, "0"),
+  ("IncreasedStoppedDistanceSnow", "0", 2, "0"),
   ("IncreaseThermalLimits", "0", 2, "0"),
   ("IsLdwEnabled", "0", 0, "0"),
   ("IsMetric", "0", 0, "0"),
@@ -316,6 +329,14 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("RandomEvents", "0", 1, "0"),
   ("RandomThemes", "0", 1, "0"),
   ("RecordFront", "0", 0, "0"),
+  ("ReduceAccelerationLowVisibility", "0", 2, "0"),
+  ("ReduceAccelerationRain", "0", 2, "0"),
+  ("ReduceAccelerationRainStorm", "0", 2, "0"),
+  ("ReduceAccelerationSnow", "0", 2, "0"),
+  ("ReduceLateralAccelerationLowVisibility", "0", 2, "0"),
+  ("ReduceLateralAccelerationRain", "0", 2, "0"),
+  ("ReduceLateralAccelerationRainStorm", "0", 2, "0"),
+  ("ReduceLateralAccelerationSnow", "0", 2, "0"),
   ("RefuseVolume", "101", 2, "101"),
   ("RelaxedFollow", "1.75", 2, "1.75"),
   ("RelaxedJerkAcceleration", "100", 3, "100"),
@@ -430,6 +451,7 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("VoltSNG", "0", 2, "0"),
   ("WarningImmediateVolume", "101", 2, "101"),
   ("WarningSoftVolume", "101", 2, "101"),
+  ("WeatherPresets", "0", 2, "0"),
   ("WheelIcon", "frog", 0, "stock"),
   ("WheelSpeed", "0", 2, "0")
 ]
@@ -526,6 +548,10 @@ class FrogPilotVariables:
       safety_config.safetyModel = car.CarParams.SafetyModel.noOutput
       CP.safetyConfigs = [safety_config]
 
+    is_torque_car = CP.lateralTuning.which() == "torque"
+    if not is_torque_car:
+      CarInterfaceBase.configure_torque_tune(MOCK.MOCK, CP.lateralTuning)
+
     fpmsg_bytes = params.get("FrogPilotCarParams" if started else "FrogPilotCarParamsPersistent", block=started)
     if fpmsg_bytes:
       with custom.FrogPilotCarParams.from_bytes(fpmsg_bytes) as fpcp_reader:
@@ -534,16 +560,12 @@ class FrogPilotVariables:
       CarInterface, _, _ = interfaces[MOCK.MOCK]
       FPCP = CarInterface.get_frogpilot_params(MOCK.MOCK, gen_empty_fingerprint(), [], CP, toggle)
 
-    is_torque_car = FPCP.lateralTuning.which() == "torque"
-    if not is_torque_car:
-      CarInterfaceBase.configure_torque_tune(MOCK.MOCK, FPCP.lateralTuning)
-
     toggle.always_on_lateral_set = bool(CP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
     toggle.car_make = CP.carName
     toggle.car_model = CP.carFingerprint
     toggle.disable_openpilot_long = params.get_bool("DisableOpenpilotLongitudinal") if tuning_level >= level["DisableOpenpilotLongitudinal"] else default.get_bool("DisableOpenpilotLongitudinal")
-    friction = FPCP.lateralTuning.torque.friction
-    has_auto_tune = toggle.car_make in {"hyundai", "toyota"} and FPCP.lateralTuning.which() == "torque"
+    friction = CP.lateralTuning.torque.friction
+    has_auto_tune = toggle.car_make in {"hyundai", "toyota"} and CP.lateralTuning.which() == "torque"
     has_bsm = CP.enableBsm
     toggle.has_cc_long = toggle.car_make == "gm" and bool(CP.flags & GMFlags.CC_LONG.value)
     has_nnff = nnff_supported(toggle.car_model)
@@ -553,14 +575,14 @@ class FrogPilotVariables:
     has_sng = CP.autoResumeSng
     toggle.has_zss = toggle.car_make == "toyota" and bool(FPCP.fpFlags & ToyotaFrogPilotFlags.ZSS.value)
     is_angle_car = CP.steerControlType == car.CarParams.SteerControlType.angle
-    latAccelFactor = FPCP.lateralTuning.torque.latAccelFactor
+    latAccelFactor = CP.lateralTuning.torque.latAccelFactor
     longitudinalActuatorDelay = CP.longitudinalActuatorDelay
     toggle.openpilot_longitudinal = CP.openpilotLongitudinalControl and not toggle.disable_openpilot_long
     pcm_cruise = CP.pcmCruise
     startAccel = CP.startAccel
     stopAccel = CP.stopAccel
     steerActuatorDelay = CP.steerActuatorDelay
-    steerKp = FPCP.lateralTuning.torque.kp
+    steerKp = CP.lateralTuning.torque.kp
     steerRatio = CP.steerRatio
     toggle.stoppingDecelRate = CP.stoppingDecelRate
     taco_hacks_allowed = CP.safetyConfigs[0].safetyModel == SafetyModel.hyundaiCanfd
@@ -603,6 +625,7 @@ class FrogPilotVariables:
 
     advanced_longitudinal_tuning = params.get_bool("AdvancedLongitudinalTune") if tuning_level >= level["AdvancedLongitudinalTune"] else default.get_bool("AdvancedLongitudinalTune")
     toggle.longitudinalActuatorDelay = np.clip(params.get_float("LongitudinalActuatorDelay"), 0, 1) if advanced_longitudinal_tuning and tuning_level >= level["LongitudinalActuatorDelay"] else longitudinalActuatorDelay
+    toggle.max_desired_acceleration = np.clip(params.get_float("MaxDesiredAcceleration"), 0.1, 4.0) if advanced_longitudinal_tuning and tuning_level >= level["MaxDesiredAcceleration"] else default.get_float("MaxDesiredAcceleration")
     toggle.startAccel = np.clip(params.get_float("StartAccel"), 0, 4) if advanced_longitudinal_tuning and tuning_level >= level["StartAccel"] else startAccel
     toggle.stopAccel = np.clip(params.get_float("StopAccel"), -4, 0) if advanced_longitudinal_tuning and tuning_level >= level["StopAccel"] else stopAccel
     toggle.stoppingDecelRate = np.clip(params.get_float("StoppingDecelRate"), 0.001, 1) if advanced_longitudinal_tuning and tuning_level >= level["StoppingDecelRate"] else toggle.stoppingDecelRate
@@ -812,8 +835,8 @@ class FrogPilotVariables:
     toggle.deceleration_profile = params.get_int("DecelerationProfile") if longitudinal_tuning and tuning_level >= level["DecelerationProfile"] else default.get_int("DecelerationProfile")
     toggle.human_acceleration = longitudinal_tuning and (params.get_bool("HumanAcceleration") if tuning_level >= level["HumanAcceleration"] else default.get_bool("HumanAcceleration"))
     toggle.human_following = longitudinal_tuning and (params.get_bool("HumanFollowing") if tuning_level >= level["HumanFollowing"] else default.get_bool("HumanFollowing"))
+    toggle.human_lane_changes = longitudinal_tuning and has_radar and (params.get_bool("HumanLaneChanges") if tuning_level >= level["HumanLaneChanges"] else default.get_bool("HumanLaneChanges"))
     toggle.lead_detection_probability = np.clip(params.get_int("LeadDetectionThreshold") / 100, 0.25, 0.50) if longitudinal_tuning and tuning_level >= level["LeadDetectionThreshold"] else default.get_int("LeadDetectionThreshold") / 100
-    toggle.max_desired_acceleration = np.clip(params.get_float("MaxDesiredAcceleration"), 0.1, 4.0) if longitudinal_tuning and tuning_level >= level["MaxDesiredAcceleration"] else default.get_float("MaxDesiredAcceleration")
     toggle.taco_tune = longitudinal_tuning and (params.get_bool("TacoTune") if tuning_level >= level["TacoTune"] else default.get_bool("TacoTune"))
 
     toggle.available_models = (params.get("AvailableModels", encoding="utf-8") or "") + f",{DEFAULT_MODEL}"
@@ -888,6 +911,23 @@ class FrogPilotVariables:
     toggle.map_deceleration = map_gears and (params.get_bool("MapDeceleration") if tuning_level >= level["MapDeceleration"] else default.get_bool("MapDeceleration"))
     toggle.reverse_cruise_increase = quality_of_life_longitudinal and toggle.car_make == "toyota" and pcm_cruise and (params.get_bool("ReverseCruise") if tuning_level >= level["ReverseCruise"] else default.get_bool("ReverseCruise"))
     toggle.set_speed_offset = params.get_int("SetSpeedOffset") * (1 if toggle.is_metric else CV.MPH_TO_KPH) if quality_of_life_longitudinal and not pcm_cruise and tuning_level >= level["SetSpeedOffset"] else default.get_int("SetSpeedOffset") * CV.MPH_TO_KPH
+    toggle.weather_presets = quality_of_life_longitudinal and (params.get_bool("WeatherPresets") if tuning_level >= level["WeatherPresets"] else default.get_bool("WeatherPresets"))
+    toggle.increase_following_distance_low_visibility = params.get_float("IncreaseFollowingLowVisibility") if toggle.weather_presets and tuning_level >= level["IncreaseFollowingLowVisibility"] else default.get_float("IncreaseFollowingLowVisibility")
+    toggle.increase_following_distance_rain = params.get_float("IncreaseFollowingRain") if toggle.weather_presets and tuning_level >= level["IncreaseFollowingRain"] else default.get_float("IncreaseFollowingRain")
+    toggle.increase_following_distance_rain_storm = params.get_float("IncreaseFollowingRainStorm") if toggle.weather_presets and tuning_level >= level["IncreaseFollowingRainStorm"] else default.get_float("IncreaseFollowingRainStorm")
+    toggle.increase_following_distance_snow = params.get_float("IncreaseFollowingSnow") if toggle.weather_presets and tuning_level >= level["IncreaseFollowingSnow"] else default.get_float("IncreaseFollowingSnow")
+    toggle.increase_stopped_distance_low_visibility = params.get_int("IncreasedStoppedDistanceLowVisibility") * distance_conversion if toggle.weather_presets and tuning_level >= level["IncreasedStoppedDistanceLowVisibility"] else default.get_int("IncreasedStoppedDistanceLowVisibility") * CV.FOOT_TO_METER
+    toggle.increase_stopped_distance_rain = params.get_int("IncreasedStoppedDistanceRain") * distance_conversion if toggle.weather_presets and tuning_level >= level["IncreasedStoppedDistanceRain"] else default.get_int("IncreasedStoppedDistanceRain") * CV.FOOT_TO_METER
+    toggle.increase_stopped_distance_rain_storm = params.get_int("IncreasedStoppedDistanceRainStorm") * distance_conversion if toggle.weather_presets and tuning_level >= level["IncreasedStoppedDistanceRainStorm"] else default.get_int("IncreasedStoppedDistanceRainStorm") * CV.FOOT_TO_METER
+    toggle.increase_stopped_distance_snow = params.get_int("IncreasedStoppedDistanceSnow") * distance_conversion if toggle.weather_presets and tuning_level >= level["IncreasedStoppedDistanceSnow"] else default.get_int("IncreasedStoppedDistanceSnow") * CV.FOOT_TO_METER
+    toggle.reduce_acceleration_low_visibility = (params.get_int("ReduceAccelerationLowVisibility") if toggle.weather_presets and tuning_level >= level["ReduceAccelerationLowVisibility"] else default.get_int("ReduceAccelerationLowVisibility")) / 100
+    toggle.reduce_acceleration_rain = (params.get_int("ReduceAccelerationRain") if toggle.weather_presets and tuning_level >= level["ReduceAccelerationRain"] else default.get_int("ReduceAccelerationRain")) / 100
+    toggle.reduce_acceleration_rain_storm = (params.get_int("ReduceAccelerationRainStorm") if toggle.weather_presets and tuning_level >= level["ReduceAccelerationRainStorm"] else default.get_int("ReduceAccelerationRainStorm")) / 100
+    toggle.reduce_acceleration_snow = (params.get_int("ReduceAccelerationSnow") if toggle.weather_presets and tuning_level >= level["ReduceAccelerationSnow"] else default.get_int("ReduceAccelerationSnow")) / 100
+    toggle.reduce_lateral_acceleration_low_visibility = (params.get_int("ReduceLateralAccelerationLowVisibility") if toggle.weather_presets and tuning_level >= level["ReduceLateralAccelerationLowVisibility"] else default.get_int("ReduceLateralAccelerationLowVisibility")) / 100
+    toggle.reduce_lateral_acceleration_rain = (params.get_int("ReduceLateralAccelerationRain") if toggle.weather_presets and tuning_level >= level["ReduceLateralAccelerationRain"] else default.get_int("ReduceLateralAccelerationRain")) / 100
+    toggle.reduce_lateral_acceleration_rain_storm = (params.get_int("ReduceLateralAccelerationRainStorm") if toggle.weather_presets and tuning_level >= level["ReduceLateralAccelerationRainStorm"] else default.get_int("ReduceLateralAccelerationRainStorm")) / 100
+    toggle.reduce_lateral_acceleration_snow = (params.get_int("ReduceLateralAccelerationSnow") if toggle.weather_presets and tuning_level >= level["ReduceLateralAccelerationSnow"] else default.get_int("ReduceLateralAccelerationSnow")) / 100
 
     quality_of_life_visuals = params.get_bool("QOLVisuals") if tuning_level >= level["QOLVisuals"] else default.get_bool("QOLVisuals")
     toggle.camera_view = params.get_int("CameraView") if quality_of_life_visuals and tuning_level >= level["CameraView"] else default.get_int("CameraView")

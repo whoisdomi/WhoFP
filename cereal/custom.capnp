@@ -106,11 +106,6 @@ struct FrogPilotCarParams @0xf35cc4560bbf6ec2 {
   openpilotLongitudinalControlDisabled @4 :Bool;
   safetyConfigs @5 :List(SafetyConfig);
 
-  lateralTuning :union {
-    pid @6 :Car.CarParams.LateralPIDTuning;
-    torque @7 :Car.CarParams.LateralTorqueTuning;
-  }
-
   struct SafetyConfig {
     safetyParam @0 :UInt16;
   }
@@ -221,6 +216,8 @@ struct FrogPilotPlan @0xa1680744031fdb2d {
   trackingLead @32 :Bool;
   unconfirmedSlcSpeedLimit @33 :Float32;
   vCruise @34 :Float32;
+  weatherDaytime @35 :Bool;
+  weatherId @36 :Int16;
 }
 
 struct FrogPilotRadarState @0xcb9fd56c7057593a {

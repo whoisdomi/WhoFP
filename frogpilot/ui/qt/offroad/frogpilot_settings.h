@@ -59,9 +59,11 @@ public:
 signals:
   void closeSubPanel();
   void closeSubSubPanel();
+  void closeSubSubSubPanel();
   void openPanel();
   void openSubPanel();
   void openSubSubPanel();
+  void openSubSubSubPanel();
   void updateMetric(bool metric, bool bootRun=false);
 
 private:
