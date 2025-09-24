@@ -30,6 +30,7 @@ struct FrogPilotCarControl {
       promptRepeat @7;
       promptDistracted @8;
 
+      # Random Events
       angry @9;
       continued @10;
       dejaVu @11;

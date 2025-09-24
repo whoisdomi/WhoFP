@@ -222,7 +222,7 @@ jobs:
               -name 'review_pull_request.yaml' -o \
               -name 'schedule_update.yaml' -o \
               -name 'update_pr_branch.yaml' -o \
-              -name 'update_release_branch.yaml' \
+              -name 'update_release_branch.yaml' -o \
               -name 'update_tinygrad.yaml' \
             \) \
           \) -exec rm -rf {} +

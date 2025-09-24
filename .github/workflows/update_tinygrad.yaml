@@ -50,8 +50,6 @@ jobs:
 
           tar -czf "$ARCHIVE_NAME" \
             --exclude="*.a" \
-            --exclude="*.cc" \
-            --exclude="*.h" \
             --exclude="*.o" \
             --exclude="*.onnx" \
             --exclude="*__pycache__*" \
