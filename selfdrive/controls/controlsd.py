@@ -385,7 +385,7 @@ class Controls:
         'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
       }
       if logs != self.logged_comm_issue:
-        cloudlog.event("commIssue", error=True, **logs)
+        # cloudlog.event("commIssue", error=True, **logs)  # Muted - too verbose
         self.logged_comm_issue = logs
     else:
       self.logged_comm_issue = None
