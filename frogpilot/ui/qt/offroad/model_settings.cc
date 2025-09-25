@@ -474,7 +474,7 @@ void FrogPilotModelPanel::updateState(const UIState &s, const FrogPilotUIState &
       } else {
         translatedProgress = progress; // fallback
       }
-      downloadModelBtn->setValue(translatedProgress);
+      downloadModelButton->setValue(translatedProgress);
     }
 
     if (progress == "All models downloaded!" || progress == "Downloaded!" && !allModelsDownloading || downloadFailed) {
