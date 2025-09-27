@@ -91,6 +91,7 @@ openpilot vs **FrogPilot**
 #### Device & Hardware
 | Feature | openpilot | **FrogPilot** |
 |---------|:---------:|:---------:|
+| Advanced Volume Controller | ❌ | ✅ |
 | Automatic Version Backups | ❌ | ✅ |
 | C3 Support | ❌ | ✅ |
 | comma Pedal Support | ❌ | ✅ |
