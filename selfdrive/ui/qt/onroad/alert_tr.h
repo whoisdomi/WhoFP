@@ -21,6 +21,8 @@ inline std::vector<AlertTranslation> alertTranslations = {
   //manualy edited
   {"Calibration in Progress: %1%", "Drive Above %1 km/h", QT_TRANSLATE_NOOP("Alerts", "Calibration in Progress: %1%"), QT_TRANSLATE_NOOP("Alerts", "Drive Above %1 km/h")},
   {"Recalibration in Progress: %1%", "Drive Above %1 km/h", QT_TRANSLATE_NOOP("Alerts", "Recalibration in Progress: %1%"), QT_TRANSLATE_NOOP("Alerts", "Drive Above %1 km/h")},
+  {"Calibration in Progress: %1%", "Drive Above %1 mph", QT_TRANSLATE_NOOP("Alerts", "Calibration in Progress: %1%"), QT_TRANSLATE_NOOP("Alerts", "Drive Above %1 mph")},
+  {"Recalibration in Progress: %1%", "Drive Above %1 mph", QT_TRANSLATE_NOOP("Alerts", "Recalibration in Progress: %1%"), QT_TRANSLATE_NOOP("Alerts", "Drive Above %1 mph")},
 
    //special alerts
    {"openpilot Unavailable", "", QT_TRANSLATE_NOOP("Alerts", "openpilot Unavailable"), QT_TRANSLATE_NOOP("Alerts", "")},
