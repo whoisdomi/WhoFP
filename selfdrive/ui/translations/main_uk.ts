@@ -103,8 +103,8 @@
         <translation>Введіть пароль</translation>
     </message>
     <message>
-        <source>for "%1"</source>
-        <translation>для "%1"</translation>
+        <source>for &quot;%1&quot;</source>
+        <translation>для &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -163,7 +163,7 @@
     </message>
     <message>
         <source>Low Memory</source>
-        <translation>Недостатньо пам'яті</translation>
+        <translation>Недостатньо пам&apos;яті</translation>
     </message>
     <message>
         <source>%1% used</source>
@@ -190,8 +190,8 @@
         <translation>Зупинка авто в %1</translation>
     </message>
     <message>
-        <source>Press the gas pedal or 'Resume' button to override</source>
-        <translation>Натисніть газ або 'Res', щоб скасувати</translation>
+        <source>Press the gas pedal or &apos;Resume&apos; button to override</source>
+        <translation>Натисніть газ або &apos;Res&apos;, щоб скасувати</translation>
     </message>
     <message>
         <source>No lane available</source>
@@ -303,7 +303,7 @@
     </message>
     <message>
         <source>Press Resume to Exit Standstill</source>
-        <translation>Натисніть 'Продовжити', щоб рушити</translation>
+        <translation>Натисніть &apos;Продовжити&apos;, щоб рушити</translation>
     </message>
     <message>
         <source>Steer Left to Start Lane Change Once Safe</source>
@@ -475,7 +475,7 @@
     </message>
     <message>
         <source>Low Memory: Reboot Your Device</source>
-        <translation>Недостатньо пам'яті: перезавантажте пристрій</translation>
+        <translation>Недостатньо пам&apos;яті: перезавантажте пристрій</translation>
     </message>
     <message>
         <source>Cruise Fault: Restart the Car</source>
@@ -511,7 +511,7 @@
     </message>
     <message>
         <source>CAN Error: Check Connections</source>
-        <translation>Помилка CAN: перевірте з'єднання</translation>
+        <translation>Помилка CAN: перевірте з&apos;єднання</translation>
     </message>
     <message>
         <source>CAN Bus Disconnected</source>
@@ -523,7 +523,7 @@
     </message>
     <message>
         <source>CAN Bus Disconnected: Check Connections</source>
-        <translation>CAN-шину відключено: перевірте з'єднання</translation>
+        <translation>CAN-шину відключено: перевірте з&apos;єднання</translation>
     </message>
     <message>
         <source>LKAS Fault: Restart the Car</source>
@@ -595,11 +595,11 @@
         <translation>Їдьте для калібрування</translation>
     </message>
     <message>
-        <source>Don't use the 'Development' branch!</source>
+        <source>Don&apos;t use the &apos;Development&apos; branch!</source>
         <translation>Не використовуйте гілку «Розробка»!</translation>
     </message>
     <message>
-        <source>Forcing you into 'Dashcam Mode' for your safety</source>
+        <source>Forcing you into &apos;Dashcam Mode&apos; for your safety</source>
         <translation>Примусове переведення в «режим відеореєстратора» для вашої безпеки</translation>
     </message>
     <message>
@@ -619,7 +619,7 @@
         <translation>openpilot завис</translation>
     </message>
     <message>
-        <source>Please post the 'Error Log' in the FrogPilot Discord!</source>
+        <source>Please post the &apos;Error Log&apos; in the FrogPilot Discord!</source>
         <translation>Будь ласка, опублікуйте «Журнал помилок» у FrogPilot Discord!</translation>
     </message>
     <message>
@@ -663,8 +663,8 @@
         <translation>(⁄ ⁄•⁄ω⁄•⁄ ⁄)</translation>
     </message>
     <message>
-        <source>I ain't giving you no tree-fiddy</source>
-        <translation>Я не дам тобі ніяких трьохсот п'ятдесяти</translation>
+        <source>I ain&apos;t giving you no tree-fiddy</source>
+        <translation>Я не дам тобі ніяких трьохсот п&apos;ятдесяти</translation>
     </message>
     <message>
         <source>You damn Loch Ness Monsta!</source>
@@ -691,11 +691,11 @@
         <translation>IE Has Stopped Responding...</translation>
     </message>
     <message>
-        <source>I'm sorry Dave</source>
+        <source>I&apos;m sorry Dave</source>
         <translation>Вибач, Дейве</translation>
     </message>
     <message>
-        <source>I'm afraid I can't do that...</source>
+        <source>I&apos;m afraid I can&apos;t do that...</source>
         <translation>Боюся, що не можу цього зробити...</translation>
     </message>
     <message>
@@ -723,7 +723,7 @@
         <translation>👺</translation>
     </message>
     <message>
-        <source>You've got mail! 📧</source>
+        <source>You&apos;ve got mail! 📧</source>
         <translation>Вам пошта! 📧</translation>
     </message>
     <message>
@@ -749,6 +749,10 @@
     <message>
         <source>openpilot will disengage</source>
         <translation>openpilot деактивується</translation>
+    </message>
+    <message>
+        <source>Drive Above %1 mph</source>
+        <translation>Їдьте швидше %1 мнг</translation>
     </message>
 </context>
 <context>
@@ -1195,20 +1199,8 @@
 <context>
     <name>FrogPilotDataPanel</name>
     <message>
-        <source>Delete Driving Footage and Data</source>
-        <translation type="vanished">Видалити відеозаписи та дані про водіння</translation>
-    </message>
-    <message>
         <source>DELETE</source>
         <translation>ВИДАЛ.</translation>
-    </message>
-    <message>
-        <source>Deletes all stored driving footage and data from your device. Ideal for maintaining privacy or for simply freeing up space.</source>
-        <translation type="vanished">Видаляє всі збережені відеозаписи та дані з вашого пристрою. Ідеально підходить для збереження конфіденційності або просто для звільнення місця.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all of your driving footage and data?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі ваші відеозаписи та дані про водіння?</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -1227,20 +1219,8 @@
         <translation>Видалити журнали помилок</translation>
     </message>
     <message>
-        <source>Deletes all stored error logs from your device. Ideal for freeing up space.</source>
-        <translation type="vanished">Видаляє всі збережені журнали помилок з вашого пристрою. Ідеально підходить для звільнення місця.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all of the error logs?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі журнали помилок?</translation>
-    </message>
-    <message>
         <source>Screen Recordings</source>
         <translation>Записи екрану</translation>
-    </message>
-    <message>
-        <source>Manage your screen recordings.</source>
-        <translation type="vanished">Керуйте своїми записами екрана.</translation>
     </message>
     <message>
         <source>DELETE ALL</source>
@@ -1251,36 +1231,12 @@
         <translation>ПЕРЕЙМЕНУВАТИ</translation>
     </message>
     <message>
-        <source>Select a recording to delete</source>
-        <translation type="vanished">Виберіть запис, який потрібно видалити</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete this recording?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити цей запис?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all screen recordings?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі записи екрана?</translation>
-    </message>
-    <message>
         <source>Delete All</source>
         <translation>Видалити все</translation>
     </message>
     <message>
-        <source>Select a recording to rename</source>
-        <translation type="vanished">Виберіть запис, який потрібно перейменувати</translation>
-    </message>
-    <message>
         <source>Enter a new name</source>
-        <translation>Введіть нове ім'я</translation>
-    </message>
-    <message>
-        <source>Rename Recording</source>
-        <translation type="vanished">Перейменувати запис</translation>
-    </message>
-    <message>
-        <source>A recording with this name already exists. Please choose a different name.</source>
-        <translation type="vanished">Запис з такою назвою вже існує. Будь ласка, виберіть іншу назву.</translation>
+        <translation>Введіть нове ім&apos;я</translation>
     </message>
     <message>
         <source>Renaming...</source>
@@ -1295,28 +1251,12 @@
         <translation>Бєкапи FrogPilot</translation>
     </message>
     <message>
-        <source>Manage your FrogPilot backups.</source>
-        <translation type="vanished">Керуйте резервними копіями FrogPilot.</translation>
-    </message>
-    <message>
         <source>BACKUP</source>
         <translation>БЕКАП</translation>
     </message>
     <message>
         <source>RESTORE</source>
         <translation>ВІДНОВ.</translation>
-    </message>
-    <message>
-        <source>Name your backup</source>
-        <translation type="vanished">Назвіть резервну копію</translation>
-    </message>
-    <message>
-        <source>A backup with this name already exists. Please choose a different name.</source>
-        <translation type="vanished">Резервна копія з такою назвою вже існує. Виберіть іншу назву.</translation>
-    </message>
-    <message>
-        <source>Do you want to compress this backup? This will take a few minutes, but the final result will be smaller and run in the background.</source>
-        <translation type="vanished">Стиснути цю резервну копію? Це займе кілька хвилин, але кінцевий результат буде меншим і працюватиме у фоновому режимі.</translation>
     </message>
     <message>
         <source>Backing up...</source>
@@ -1329,26 +1269,6 @@
     <message>
         <source>Backup created!</source>
         <translation>Резервна копія створена!</translation>
-    </message>
-    <message>
-        <source>Select a backup to delete</source>
-        <translation type="vanished">Виберіть резервну копію для видалення</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete this backup?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити цю резервну копію?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all FrogPilot backups?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі резервні копії FrogPilot?</translation>
-    </message>
-    <message>
-        <source>Select a restore point</source>
-        <translation type="vanished">Виберіть точку відновлення</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore this version of FrogPilot?</source>
-        <translation type="vanished">Ви впевнені, що хочете відновити цю версію FrogPilot?</translation>
     </message>
     <message>
         <source>Restore</source>
@@ -1373,38 +1293,6 @@
     <message>
         <source>Toggle Backups</source>
         <translation>Бєкапи налаштувань</translation>
-    </message>
-    <message>
-        <source>Manage your toggle backups.</source>
-        <translation type="vanished">Керуйте своїми резервними копіями.</translation>
-    </message>
-    <message>
-        <source>Name your toggle backup</source>
-        <translation type="vanished">Назвіть свою резервну копію налаштувань</translation>
-    </message>
-    <message>
-        <source>A toggle backup with this name already exists. Please choose a different name.</source>
-        <translation type="vanished">Резервна копія налаштувань з такою назвою вже існує. Виберіть іншу назву.</translation>
-    </message>
-    <message>
-        <source>Select a toggle backup to delete</source>
-        <translation type="vanished">Виберіть резервну копію налаштувань, щоб видалити</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete this toggle backup?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити цю резервну копію налаштувань?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all toggle backups?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі резервні копії налаштувань?</translation>
-    </message>
-    <message>
-        <source>Select a toggle restore point</source>
-        <translation type="vanished">Виберіть точку відновлення налаштувань</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore this toggle backup?</source>
-        <translation type="vanished">Ви впевнені, що хочете відновити цю резервну копію налаштувань?</translation>
     </message>
     <message>
         <source>Delete Driving Data</source>
@@ -1502,124 +1390,36 @@
         <translation>Налаштування пристрою</translation>
     </message>
     <message>
-        <source>Settings that control device behavior.</source>
-        <translation type="vanished">Налаштування, що контролюють поведінку пристрою.</translation>
-    </message>
-    <message>
-        <source>Battery Shutdown Threshold</source>
-        <translation type="vanished">Напруга аккуму до відключення</translation>
-    </message>
-    <message>
-        <source>Automatically shut down the device when the vehicle's battery voltage reaches the set threshold preventing excessive battery drain to protect the battery.</source>
-        <translation type="vanished">Автоматично вимикає пристрій, коли напруга акумулятора автомобіля досягає встановленого порогу, запобігаючи надмірному розрядженню акумулятора для його захисту.</translation>
-    </message>
-    <message>
         <source>Device Shutdown Timer</source>
         <translation>Таймер вимкнення пристрою</translation>
-    </message>
-    <message>
-        <source>How long the device stays on for after you go offroad.</source>
-        <translation type="vanished">Як довго пристрій залишається увімкненим при зупинці.</translation>
-    </message>
-    <message>
-        <source>Disable Data Logging</source>
-        <translation type="vanished">Вимкнути логування даних</translation>
     </message>
     <message>
         <source>WARNING: This will prevent your drives from being recorded and all data will be unobtainable!</source>
         <translation>УВАГА: Це попередить запису ваших поїздок, і всі дані стануть недоступними!</translation>
     </message>
     <message>
-        <source>Disable all data logging to improve privacy.</source>
-        <translation type="vanished">Вимкніть всі функції реєстрації даних, щоб підвищити рівень конфіденційності.</translation>
-    </message>
-    <message>
-        <source>Disable Data Uploads</source>
-        <translation type="vanished">Вимкнути завантаження даних</translation>
-    </message>
-    <message>
-        <source>WARNING: This will prevent your drives from appearing on &lt;b&gt;comma connect&lt;/b&gt; which may impact debugging and support!</source>
-        <translation type="vanished">УВАГА: Це завадить вашим поїздкам з'являтися на &lt;b&gt;comma connect&lt;/b&gt;, що може вплинути на зневадження та підтримку!</translation>
-    </message>
-    <message>
-        <source>Prevent the device from sending any data to &lt;b&gt;comma&lt;/b&gt;'s servers.</source>
-        <translation type="vanished">Запобігайте надсиланню пристроєм будь-яких даних на сервери &lt;b&gt;comma&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>High Bitrate Recording</source>
-        <translation type="vanished">Запис з високою швидкістю передачі даних</translation>
-    </message>
-    <message>
-        <source>Record driving footage at double the standard bitrate for improved video quality in driving logs.</source>
-        <translation type="vanished">Записувати відео з подвійною стандартною швидкістю передачі даних для поліпшення якості відео в журналах водіння.</translation>
-    </message>
-    <message>
-        <source>Increase Thermal Safety Limit</source>
-        <translation type="vanished">Підвищення межі теплової безпеки</translation>
-    </message>
-    <message>
-        <source>WARNING: This can damage your device by exceeding safe temperature limits!</source>
-        <translation type="vanished">УВАГА: Це може пошкодити ваш пристрій через перевищення безпечних температурних обмежень!</translation>
-    </message>
-    <message>
-        <source>Allow the device to run hotter than comma recommended limit.</source>
-        <translation type="vanished">Дозвольте пристрою працювати при температурі, що перевищує рекомендовану межу.</translation>
-    </message>
-    <message>
-        <source>Use Konik's Server Instead of comma's</source>
-        <translation type="vanished">Використовуйте сервер Konik замість comma</translation>
-    </message>
-    <message>
-        <source>Upload your driving data to &lt;b&gt;connect.konik.ai&lt;/b&gt; instead of &lt;b&gt;connect.comma.ai&lt;/b&gt;.</source>
-        <translation type="vanished">Завантажте свої дані про водіння на &lt;b&gt;connect.konik.ai&lt;/b&gt; замість &lt;b&gt;connect.comma.ai&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Screen Settings</source>
         <translation>Налаштування екрану</translation>
-    </message>
-    <message>
-        <source>Settings that control screen behavior.</source>
-        <translation type="vanished">Налаштування, що контролюють поведінку екрану.</translation>
     </message>
     <message>
         <source>Screen Brightness (Offroad)</source>
         <translation>Яскравість екрану (зупинка)</translation>
     </message>
     <message>
-        <source>The screen brightness when not driving.</source>
-        <translation type="vanished">Яскравість екрану під час зупинки.</translation>
-    </message>
-    <message>
         <source>Screen Brightness (Onroad)</source>
         <translation>Яскравість екрану (на дорозі)</translation>
-    </message>
-    <message>
-        <source>The screen brightness while driving.</source>
-        <translation type="vanished">Яскравість екрану під час руху.</translation>
     </message>
     <message>
         <source>Screen Recorder</source>
         <translation>Запис екрану</translation>
     </message>
     <message>
-        <source>Enable a button in the driving screen to record the screen.</source>
-        <translation type="vanished">Вмикає кнопку на екрані водіння, щоб записати екран.</translation>
-    </message>
-    <message>
         <source>Screen Timeout (Offroad)</source>
         <translation>Таймер екрану (зупинка)</translation>
     </message>
     <message>
-        <source>How long it takes for the screen to turn off when not driving.</source>
-        <translation type="vanished">Часу до вимкнення екрану, коли ви не їдете.</translation>
-    </message>
-    <message>
         <source>Screen Timeout (Onroad)</source>
         <translation>Таймер екрану (на дорозі)</translation>
-    </message>
-    <message>
-        <source>How long it takes for the screen to turn off while driving.</source>
-        <translation type="vanished">Скільки часу потрібно, щоб екран вимкнувся під час руху.</translation>
     </message>
     <message>
         <source>5 mins</source>
@@ -1636,10 +1436,6 @@
     <message>
         <source> hours</source>
         <translation> годин</translation>
-    </message>
-    <message>
-        <source>Only Disable While Onroad</source>
-        <translation type="vanished">Вимк. тільки в русі</translation>
     </message>
     <message>
         <source> volts</source>
@@ -1726,7 +1522,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Upload driving data to "connect.konik.ai" instead of "connect.comma.ai".&lt;/b&gt;</source>
+        <source>&lt;b&gt;Upload driving data to &quot;connect.konik.ai&quot; instead of &quot;connect.comma.ai&quot;.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1773,20 +1569,12 @@
         <translation>Розш. тюнінг кермування</translation>
     </message>
     <message>
-        <source>Advanced settings for fine-tuning openpilot's lateral controls.</source>
-        <translation type="vanished">Розширені налаштування для точного регулювання поперечного керування openpilot.</translation>
-    </message>
-    <message>
         <source>Actuator Delay (Default: %1)</source>
         <translation>Затр. прив. (замов.: %1)</translation>
     </message>
     <message>
         <source>Actuator Delay</source>
         <translation>Затримка приводу</translation>
-    </message>
-    <message>
-        <source>How long the steering wheel takes to respond to commands. Higher values account for slower steering; lower values for quicker response.</source>
-        <translation type="vanished">Час, за який кермо реагує на команди. Більші значення відповідають повільнішому керуванню, менші значення — швидшій реакції.</translation>
     </message>
     <message>
         <source>Friction (Default: %1)</source>
@@ -1797,10 +1585,6 @@
         <translation>Тертя</translation>
     </message>
     <message>
-        <source>Adjust steering resistance. Higher values feel more stable but heavier; lower values feel lighter but more sensitive.</source>
-        <translation type="vanished">Регулювання опору керма. Більш високі значення забезпечують більшу стабільність, але і більшу важкість; більш низькі значення забезпечують легкість, але і більшу чутливість.</translation>
-    </message>
-    <message>
         <source>Kp Factor (Default: %1)</source>
         <translation>Коефіцієнт Kp (замовч.: %1)</translation>
     </message>
@@ -1809,20 +1593,8 @@
         <translation>Коефіцієнт Kp</translation>
     </message>
     <message>
-        <source>How aggressively openpilot corrects steering. Higher values respond faster but may feel jerky; lower values are smoother but slower.</source>
-        <translation type="vanished">Наскільки агресивно OpenPilot коригує керування. Вищі значення реагують швидше, але можуть відчуватися ривками; нижчі значення є більш плавними, але повільнішими.</translation>
-    </message>
-    <message>
         <source>Lateral Accel (Default: %1)</source>
         <translation>Попер. приск. (замовч.: %1)</translation>
-    </message>
-    <message>
-        <source>Lateral Accel</source>
-        <translation type="vanished">Бічне прискорення</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot makes lateral adjustments. Higher values allow sharper turns; lower values provide smoother steering.</source>
-        <translation type="vanished">Як швидко openpilot здійснює бічні коригування. Більші значення забезпечують більш різкі повороти, менші значення — більш плавне керування.</translation>
     </message>
     <message>
         <source>Steer Ratio (Default: %1)</source>
@@ -1833,152 +1605,56 @@
         <translation>Коефіцієнт кермування</translation>
     </message>
     <message>
-        <source>How much the steering wheel turns in response to commands. Higher values feel more stable; lower values feel quicker.</source>
-        <translation type="vanished">Наскільки кермо повертається у відповідь на команди. Більш високі значення забезпечують більшу стабільність, а нижчі — більшу швидкість.</translation>
-    </message>
-    <message>
-        <source>Force Auto Tune On</source>
-        <translation type="vanished">Примусово ввімкнути автоматичне налаштування</translation>
-    </message>
-    <message>
-        <source>Force-enable comma’s auto lateral tuning.</source>
-        <translation type="vanished">Примусово увімкнути автоматичне бічне налаштування comma.</translation>
-    </message>
-    <message>
-        <source>Force Auto Tune Off</source>
-        <translation type="vanished">Примусове вимкнення автоматичного налаштування</translation>
-    </message>
-    <message>
-        <source>Force-disable comma’s auto lateral tuning.</source>
-        <translation type="vanished">Примусово вимкнути автоматичне поперечне налаштування comma.</translation>
-    </message>
-    <message>
-        <source>Always on Lateral</source>
-        <translation type="vanished">Постійне Кермування</translation>
-    </message>
-    <message>
-        <source>openpilot's steering control stays active even when the brake or gas pedals are pressed.&lt;br&gt;&lt;br&gt;Deactivation only occurs with the &lt;b&gt;Cruise Control&lt;/b&gt; button.</source>
-        <translation type="vanished">Система кермування openpilot залишається активною навіть при натисканні педалі гальма або газу. &lt;br&gt;&lt;br&gt;Вимкнення відбувається тільки за допомогою кнопки &lt;b&gt;Cruise Control&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Enable With Cruise Control</source>
         <translation>Увімкнути з круїз-контролем</translation>
-    </message>
-    <message>
-        <source>Allow &lt;b&gt;Always on Lateral&lt;/b&gt; to be active whenever &lt;b&gt;Cruise Control&lt;/b&gt; is active, bypassing the need to enable openpilot first.</source>
-        <translation type="vanished">Дозвольте &lt;b&gt;Постійному кермуванню&lt;/b&gt; бути активним, коли &lt;b&gt;Cruise Control&lt;/b&gt; активний, обходячи необхідність спочатку вмикати openpilot.</translation>
-    </message>
-    <message>
-        <source>Enable With LKAS Button</source>
-        <translation type="vanished">Вмикати з LKAS кнопкою</translation>
-    </message>
-    <message>
-        <source>Allow &lt;b&gt;Always on Lateral&lt;/b&gt; to be active whenever &lt;b&gt;LKAS&lt;/b&gt; is active, bypassing the need to enable openpilot first.</source>
-        <translation type="vanished">Дозвольте &lt;b&gt;Постійному кермуванню&lt;/b&gt; бути активним, коли &lt;b&gt;LKAS&lt;/b&gt; активний, обходячи необхідність спочатку вмикати openpilot.</translation>
-    </message>
-    <message>
-        <source>Pause on Brake Below</source>
-        <translation type="vanished">Пауза при гальмуванні до</translation>
-    </message>
-    <message>
-        <source>Temporarily pause &lt;b&gt;Always on Lateral&lt;/b&gt; below the set speed when braking.</source>
-        <translation type="vanished">Тимчасово призупиніти &lt;b&gt;Постійне кермування&lt;/b&gt; нижче встановленої швидкості під час гальмування.</translation>
     </message>
     <message>
         <source>Lane Changes</source>
         <translation>Зміна смуги руху</translation>
     </message>
     <message>
-        <source>Customize how openpilot performs lane changes.</source>
-        <translation type="vanished">Налаштуйте спосіб зміни смуги руху в openpilot.</translation>
-    </message>
-    <message>
         <source>Automatic Lane Changes</source>
         <translation>Автоматична зміна смуги руху</translation>
-    </message>
-    <message>
-        <source>Change lanes automatically when the turn signal is on. No steering input needed!</source>
-        <translation type="vanished">Автоматично змінюйте смуги руху, коли увімкнено поворотник. Не потрібно чіпати кермо!</translation>
     </message>
     <message>
         <source>Lane Change Delay</source>
         <translation>Затримка зміни смуги руху</translation>
     </message>
     <message>
-        <source>Delay automatic lane changes by the set amount of time.</source>
-        <translation type="vanished">Затримка автоматичної зміни смуги руху на заданий проміжок часу.</translation>
-    </message>
-    <message>
         <source>Minimum Lane Change Speed</source>
         <translation>Мінімальна швидк. зміни смуги</translation>
-    </message>
-    <message>
-        <source>Minimum speed required for openpilot to perform a lane change.</source>
-        <translation type="vanished">Мінімальна швидкість, необхідна для того, щоб openpilot виконав зміну смуги руху.</translation>
     </message>
     <message>
         <source>Minimum Lane Width</source>
         <translation>Мінімальна ширина смуги руху</translation>
     </message>
     <message>
-        <source>openpilot won't initiate a lane change into a lane narrower than this width.</source>
-        <translation type="vanished">openpilot не ініціюватиме зміну смуги руху на смугу, ширина якої менша за цю.</translation>
-    </message>
-    <message>
         <source>One Lane Change Per Signal</source>
         <translation>Одна зміна смуги руху на один сигнал</translation>
-    </message>
-    <message>
-        <source>Limit lane changes to one per turn signal activation.</source>
-        <translation type="vanished">Обмежити зміну смуг руху до однієї на кожну активацію поворотника.</translation>
     </message>
     <message>
         <source>Lateral Tuning</source>
         <translation>Підлаштування кермування</translation>
     </message>
     <message>
-        <source>Settings for fine-tuning openpilot's lateral controls.</source>
-        <translation type="vanished">Налаштування для точного регулювання елементів кермування openpilot.</translation>
-    </message>
-    <message>
         <source>Force Turn Desires Below Lane Change Speed</source>
         <translation>Примусово повертати при шв. нижче шв. зміни смуги</translation>
-    </message>
-    <message>
-        <source>Force turn desires below the minimum lane change speed to improve turning accuracy.</source>
-        <translation type="vanished">Примусовий намір повороту при швидкості нижче мінімальної швидкості зміни смуги руху для підвищення точності поворотів.</translation>
     </message>
     <message>
         <source>Neural Network Feedforward (NNFF)</source>
         <translation>Нейронна мережа прямого поширення (NNFF)</translation>
     </message>
     <message>
-        <source>Use &lt;b&gt;Twilsonco’s&lt;/b&gt; &lt;b&gt;Neural Network FeedForward&lt;/b&gt; model for smoother, model-based steering trained on your vehicle's data.</source>
-        <translation type="vanished">Використовуйте модель &lt;b&gt;Twilsonco&lt;/b&gt; &lt;b&gt;Neural Network FeedForward&lt;/b&gt; для більш плавного, заснованого на моделі керування, навченого на даних вашого автомобіля.</translation>
-    </message>
-    <message>
         <source>Smooth Curve Handling</source>
         <translation>Плавне керування поворотами</translation>
-    </message>
-    <message>
-        <source>Use &lt;b&gt;Twilsonco’s&lt;/b&gt; torque-based adjustments to smooth out steering during curves.</source>
-        <translation type="vanished">Використовуйте регулювання на основі крутного моменту від &lt;b&gt;Twilsonco&lt;/b&gt;, щоб згладити керування під час поворотів.</translation>
     </message>
     <message>
         <source>Quality of Life</source>
         <translation>Якість життя</translation>
     </message>
     <message>
-        <source>Miscellaneous features to improve the steering experience.</source>
-        <translation type="vanished">Різні функції для поліпшення якості кермування.</translation>
-    </message>
-    <message>
         <source>Pause Steering Below</source>
         <translation>Пауза кермування нижче</translation>
-    </message>
-    <message>
-        <source>Temporarily pause steering control below the set speed.</source>
-        <translation type="vanished">Тимчасово призупинити керування рульовим управлінням нижче встановленої швидкості.</translation>
     </message>
     <message>
         <source>Instant</source>
@@ -1995,26 +1671,6 @@
     <message>
         <source>Turn Signal Only</source>
         <translation>При поворотн</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Actuator Delay&lt;/b&gt;?</source>
-        <translation type="vanished">Ви впевнені, що хочете повністю скинути налаштування &lt;b&gt;Затримка приводу&lt;/b&gt;?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Friction&lt;/b&gt;?</source>
-        <translation type="vanished">Ви впевнені, що хочете повністю скинути налаштування &lt;b&gt;Тертя&lt;/b&gt;?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Kp Factor&lt;/b&gt;?</source>
-        <translation type="vanished">Ви впевнені, що хочете повністю скинути свій &lt;b&gt;Фактор Kp&lt;/b&gt;?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Lateral Accel&lt;/b&gt;?</source>
-        <translation type="vanished">Ви впевнені, що хочете повністю скинути налаштування &lt;b&gt;Поперечне прискорення&lt;/b&gt;?</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Steer Ratio&lt;/b&gt;?</source>
-        <translation type="vanished">Ви впевнені, що хочете повністю скинути налаштування &lt;b&gt;Коефіцієнт кермування&lt;/b&gt;?</translation>
     </message>
     <message>
         <source>Off</source>
@@ -2049,7 +1705,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The time between openpilot's steering command and the vehicle's response.&lt;/b&gt; Increase if the vehicle reacts late; decrease if it feels jumpy. Auto-learned by default.</source>
+        <source>&lt;b&gt;The time between openpilot&apos;s steering command and the vehicle&apos;s response.&lt;/b&gt; Increase if the vehicle reacts late; decrease if it feels jumpy. Auto-learned by default.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2081,7 +1737,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Force-enable openpilot's live auto-tuning for "Friction" and "Lateral Acceleration".&lt;/b&gt;</source>
+        <source>&lt;b&gt;Force-enable openpilot&apos;s live auto-tuning for &quot;Friction&quot; and &quot;Lateral Acceleration&quot;.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2089,7 +1745,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Force-disable openpilot's live auto-tuning for "Friction" and "Lateral Acceleration" and use the set value instead.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Force-disable openpilot&apos;s live auto-tuning for &quot;Friction&quot; and &quot;Lateral Acceleration&quot; and use the set value instead.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2105,11 +1761,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;openpilot's steering remains active even when the accelerator or brake pedals are pressed.&lt;/b&gt;</source>
+        <source>&lt;b&gt;openpilot&apos;s steering remains active even when the accelerator or brake pedals are pressed.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable "Always On Lateral" whenever "Cruise Control" is on, even when openpilot is not engaged.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Enable &quot;Always On Lateral&quot; whenever &quot;Cruise Control&quot; is on, even when openpilot is not engaged.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2117,7 +1773,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable "Always On Lateral" whenever "LKAS" is on, even when openpilot is not engaged.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Enable &quot;Always On Lateral&quot; whenever &quot;LKAS&quot; is on, even when openpilot is not engaged.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2125,7 +1781,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Pause "Always On Lateral" below the set speed while the brake pedal is pressed.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Pause &quot;Always On Lateral&quot; below the set speed while the brake pedal is pressed.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2161,11 +1817,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Twilsonco's "Neural Network FeedForward" model controller for smoother, model-based steering trained on your vehicle's data.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Twilsonco&apos;s &quot;Neural Network FeedForward&quot; model controller for smoother, model-based steering trained on your vehicle&apos;s data.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Twilsonco's torque-based adjustments to smoothen out steering in curves.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Twilsonco&apos;s torque-based adjustments to smoothen out steering in curves.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2204,20 +1860,12 @@
         <translation>Розш. поздовжній тюнінг</translation>
     </message>
     <message>
-        <source>Advanced settings for customizing how openpilot handles acceleration and braking.</source>
-        <translation type="vanished">Розширені підлаштування для налаштування того, як openpilot обробляє прискорення та гальмування.</translation>
-    </message>
-    <message>
         <source>Actuator Delay (Default: %1)</source>
         <translation>Затр. приводу (замовч: %1)</translation>
     </message>
     <message>
         <source>Actuator Delay</source>
         <translation>Затримка приводу</translation>
-    </message>
-    <message>
-        <source>Delay before throttle or brake takes effect. Higher values smooth slow actuators but can feel laggy; lower values react quicker but may overshoot.</source>
-        <translation type="vanished">Затримка перед спрацьовуванням газу або гальм. Більші значення згладжують роботу повільних приводів, але можуть спричиняти затримку; менші значення реагують швидше, але можуть спричиняти перевищення.</translation>
     </message>
     <message>
         <source>Start Acceleration (Default: %1)</source>
@@ -2228,20 +1876,12 @@
         <translation>Початк. прискорення</translation>
     </message>
     <message>
-        <source>Extra acceleration applied when pulling away from a stop. Increase for snappier launches at the cost of smoothness; decrease for gentler starts.</source>
-        <translation type="vanished">Додаткове прискорення, що застосовується при рушанні з місця. Збільште для більш різкого старту за рахунок плавності; зменште для більш плавного старту.</translation>
-    </message>
-    <message>
         <source>Start Speed (Default: %1)</source>
         <translation>Початкова шв. (замовч.: %1)</translation>
     </message>
     <message>
         <source>Start Speed</source>
         <translation>Початкова швидкість</translation>
-    </message>
-    <message>
-        <source>Speed where openpilot begins to exit the stopped state. Higher values avoid creeping but may feel sluggish; lower values move sooner but risk creeping.</source>
-        <translation type="vanished">Швидкість, при якій OpenPilot починає виходити зі стану зупинки. Більш високі значення запобігають повзанню, але можуть спричиняти відчуття млявості; більш низькі значення забезпечують швидший старт, але створюють ризик повзання.</translation>
     </message>
     <message>
         <source>Stop Acceleration (Default: %1)</source>
@@ -2252,20 +1892,12 @@
         <translation>Прискорення зупинки</translation>
     </message>
     <message>
-        <source>Brake force applied to hold the vehicle still. Larger values prevent creeping on hills but might jerk to a stop. Smaller values can feel smoother but may allow rolling.</source>
-        <translation type="vanished">Гальмівна сила, що застосовується для утримання автомобіля в нерухомому стані. Більші значення запобігають ковзанню на схилах, але можуть спричинити різке гальмування. Менші значення забезпечують більш плавний рух, але можуть спричинити повзання.</translation>
-    </message>
-    <message>
         <source>Stopping Rate (Default: %1)</source>
         <translation>Коеф. зупинки (замовч.: %1)</translation>
     </message>
     <message>
         <source>Stopping Rate</source>
         <translation>Коефіціент зупинки</translation>
-    </message>
-    <message>
-        <source>How quickly braking ramps up when stopping. Faster rates shorten stopping distance but can be harsh; slower rates are smoother but need more room.</source>
-        <translation type="vanished">Як швидко авто гальмує під час зупинки. Більший коефіціент скорочуює гальмівний шлях, але авто може бути різким; менший коефіціент є більш плавними, але гальмівний шлях збільшується.</translation>
     </message>
     <message>
         <source>Stop Speed (Default: %1)</source>
@@ -2276,604 +1908,148 @@
         <translation>Швидкість зупинки</translation>
     </message>
     <message>
-        <source>Speed where openpilot beings to enter the stopped state. Higher values brake earlier for smoother stops but might stop too soon; lower values wait longer and can overshoot.</source>
-        <translation type="vanished">Швидкість, при якій OpenPilot переходить у стан зупинки. Більші значення гальмують раніше для більш плавної зупинки, але можуть зупинитися занадто рано; менші значення чекають довше і можуть проїхати занадто далеко.</translation>
-    </message>
-    <message>
         <source>Conditional Experimental Mode</source>
         <translation>Умовний експ. режим</translation>
-    </message>
-    <message>
-        <source>Automatically switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when set conditions are met.</source>
-        <translation type="vanished">Автоматично переходити в &lt;b&gt;експериментальний режим&lt;/b&gt;, коли виконуються задані умови.</translation>
     </message>
     <message>
         <source>Below</source>
         <translation>До</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when driving below this speed.</source>
-        <translation type="vanished">Перейдіть в &lt;b&gt;експериментальний режим&lt;/b&gt;, якщо швидкість руху нижча за зазначену.</translation>
-    </message>
-    <message>
         <source>Curve Detected Ahead</source>
         <translation>Виявлено поворот попереду</translation>
-    </message>
-    <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when a curve is detected ahead. Useful for letting the model choose the appropriate speed for the curve.</source>
-        <translation type="vanished">Перейдіть в &lt;b&gt;експериментальний режим&lt;/b&gt;, коли попереду виявлено поворот. Корисно для того, щоб модель могла вибрати відповідну швидкість для повороту.</translation>
     </message>
     <message>
         <source>Lead Detected Ahead</source>
         <translation>Виявлено авто попереду</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when a slower or stopped vehicle is detected ahead. Can improve braking smoothness and reliability on some vehicles.</source>
-        <translation type="vanished">Перейдіть в &lt;b&gt;експериментальний режим&lt;/b&gt;, коли попереду виявлено повільніший або зупинений транспортний засіб. Може покращити плавність та надійність гальмування на деяких транспортних засобах.</translation>
-    </message>
-    <message>
-        <source>Navigation Data</source>
-        <translation type="vanished">Навігаційні дані</translation>
-    </message>
-    <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when approaching intersections or turns on the active route while using &lt;b&gt;Navigate on openpilot (NOO)&lt;/b&gt;. Useful for letting the model choose the appropriate speed for upcoming navigation maneuvers.</source>
-        <translation type="vanished">Перейдіть в &lt;b&gt;експериментальний режим&lt;/b&gt; при наближенні до перехресть або поворотів на активному маршруті під час використання &lt;b&gt;навігації на openpilot (NOO)&lt;/b&gt;. Це корисно, щоб модель могла вибрати відповідну швидкість для майбутніх маневрів навігації.</translation>
-    </message>
-    <message>
-        <source>openpilot Wants to Stop In</source>
-        <translation type="vanished">openpilot хоче зупинитися</translation>
-    </message>
-    <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when openpilot wants to stop within the set amount of time. This is typically triggered by the driving model "detecting" a red light or stop sign.</source>
-        <translation type="vanished">Перейдіть в &lt;b&gt;експериментальний режим&lt;/b&gt;, коли openpilot хоче зупинитися протягом заданого часу. Зазвичай це відбувається, коли модель водіння «виявляє» червоне світло або знак зупинки.</translation>
-    </message>
-    <message>
         <source>Turn Signal Below</source>
         <translation>Поворотник нижче</translation>
-    </message>
-    <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when using a turn signal below the set speed. Useful for letting the model choose the appropriate speed for upcoming left or right turns.</source>
-        <translation type="vanished">Перейдіть в &lt;b&gt;експериментальний режим&lt;/b&gt;, коли використовуєте поворотник нижче встановленої швидкості. Це корисно, щоб модель могла вибрати відповідну швидкість для майбутніх поворотів ліворуч або праворуч.</translation>
     </message>
     <message>
         <source>Status Widget</source>
         <translation>Віджет статусу</translation>
     </message>
     <message>
-        <source>Show the &lt;b&gt;Conditional Experimental Mode&lt;/b&gt; status on the driving screen.</source>
-        <translation type="vanished">Показати стан &lt;b&gt;Умовний експериментальний режим&lt;/b&gt; на екрані водіння.</translation>
-    </message>
-    <message>
-        <source>Curve Speed Control</source>
-        <translation type="vanished">Контроль швидкості у вигинах</translation>
-    </message>
-    <message>
-        <source>Automatically slow down for upcoming curves using downloaded maps or the driving model.</source>
-        <translation type="vanished">Автоматично зменшуйте швидкість перед вигинами дороги, використовуючи завантажені карти або модель водіння.</translation>
-    </message>
-    <message>
-        <source>Curve Detection Method</source>
-        <translation type="vanished">Метод виявлення вигинів</translation>
-    </message>
-    <message>
-        <source>How curves are detected. &lt;b&gt;Map-Based&lt;/b&gt; uses downloaded map data to identify curves and determine the appropriate speed in which to handle them at, while &lt;b&gt;Vision&lt;/b&gt; relies solely on the driving model.</source>
-        <translation type="vanished">Як виявляються вигини дороги. &lt;b&gt;По Мапі&lt;/b&gt; використовує завантажені дані мапи для виявлення вигинів і визначення відповідної швидкості, з якою їх можна проїхати, тоді як &lt;b&gt;Бачення&lt;/b&gt; покладається виключно на модель водіння.</translation>
-    </message>
-    <message>
-        <source>Curve Detection Failsafe</source>
-        <translation type="vanished">Резерв виявлення вигинів</translation>
-    </message>
-    <message>
-        <source>Only trigger &lt;b&gt;Curve Speed Control&lt;/b&gt; if a curve is detected with the model while using the &lt;b&gt;Map-Based&lt;/b&gt; method. Useful to help prevent false positives.</source>
-        <translation type="vanished">Запускайте &lt;b&gt;Контроль швидкості вигинів&lt;/b&gt; тільки в тому випадку, якщо під час використання методу &lt;b&gt;По Мапі&lt;/b&gt; за допомогою моделі виявлено вигин дороги. Це корисно для запобігання помилковим спрацьовуванням.</translation>
-    </message>
-    <message>
-        <source>Curve Detection Sensitivity</source>
-        <translation type="vanished">Чутливість виявлення вигинів</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is when detecting curves. Higher values trigger earlier responses at the risk of triggering too often, while lower values increase confidence at the risk of triggering too infrequently.</source>
-        <translation type="vanished">Чутливість openpilot при виявленні вигинів дороги. Більш високі значення викликають більш швидку реакцію, але з ризиком занадто частого спрацьовування, тоді як більш низькі значення підвищують надійність, але з ризиком занадто рідкого спрацьовування.</translation>
-    </message>
-    <message>
-        <source>Curve Speed Aggressiveness</source>
-        <translation type="vanished">Агресивність шв. у вигинах</translation>
-    </message>
-    <message>
-        <source>How aggressive openpilot is when navigating through curves. Higher values result in faster turns but may reduce comfort or stability, while lower values result in slower, smoother turns at the risk of being overly cautious.</source>
-        <translation type="vanished">Наскільки агресивно OpenPilot реагує під час проходження вигинів шляху. Більш високі значення забезпечують швидші повороти, але можуть знизити комфорт або стабільність, тоді як більш низькі значення забезпечують повільніші, плавніші повороти, але з ризиком надмірної обережності.</translation>
-    </message>
-    <message>
-        <source>Show &lt;b&gt;Curve Speed Control&lt;/b&gt;'s desired speed on the driving screen.</source>
-        <translation type="vanished">Показати бажану швидкість &lt;b&gt;Контроль швидкості вигинів&lt;/b&gt; на екрані водіння.</translation>
-    </message>
-    <message>
-        <source>Customize Driving Personalities</source>
-        <translation type="vanished">Налаштування стилів водіння</translation>
-    </message>
-    <message>
-        <source>Customize the personality profiles to your driving style.</source>
-        <translation type="vanished">Налаштуйте профілі водіння відповідно до вашого стилю.</translation>
-    </message>
-    <message>
-        <source>Traffic Personality</source>
-        <translation type="vanished">Трафік</translation>
-    </message>
-    <message>
-        <source>Customize the &lt;b&gt;Traffic&lt;/b&gt; personality profile. Tailored for navigating through traffic.</source>
-        <translation type="vanished">Налаштуйте профіль особистості &lt;b&gt;Трафік&lt;/b&gt;. Спеціально розроблений для навігації в умовах інтенсивного дорожнього руху.</translation>
-    </message>
-    <message>
         <source>Following Distance</source>
         <translation>Відстань між автомобілями</translation>
-    </message>
-    <message>
-        <source>The minimum following distance while in &lt;b&gt;Traffic Mode&lt;/b&gt;. openpilot will dynamically adjust between this value and the value in the &lt;b&gt;Aggressive&lt;/b&gt; profile based on your current speed.</source>
-        <translation type="vanished">Мінімальна дистанція до автомобіля попереду в режимі &lt;b&gt;Трафік&lt;/b&gt;. openpilot динамічно регулює цю величину та величину в профілі &lt;b&gt;Агресивний&lt;/b&gt; на основі вашої поточної швидкості.</translation>
-    </message>
-    <message>
-        <source>Acceleration Sensitivity</source>
-        <translation type="vanished">Чутливість до прискорення</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in acceleration while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін прискорення в режимі &lt;b&gt;Трафік&lt;/b&gt;. Більш високі значення забезпечують більш плавне і поступове прискорення, тоді як більш низькі значення забезпечують більш швидкі і чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Deceleration Sensitivity</source>
-        <translation type="vanished">Чутливість до уповільнення</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in deceleration while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін уповільнення в режимі &lt;b&gt;Трафік&lt;/b&gt;. Більш високі значення забезпечують більш плавне, поступове уповільнення, тоді як більш низькі значення забезпечують більш швидкі, чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Safety Distance Sensitivity</source>
-        <translation type="vanished">Чутливість безпечної дист.</translation>
-    </message>
-    <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="vanished">Наскільки обережно openpilot поводиться поблизу інших транспортних засобів або перешкод у режимі &lt;b&gt;Трафік&lt;/b&gt;. Більш високі значення збільшують дистанцію між автомобілями та надають пріоритет безпеці, що призводить до більш обережного водіння, тоді як нижчі значення дозволяють їхати ближче, але можуть скоротити час реакції.</translation>
-    </message>
-    <message>
-        <source>Speed Decrease Response</source>
-        <translation type="vanished">Реакція на зниження шв.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot decreases speed while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot зменшує швидкість у режимі &lt;b&gt;Трафік&lt;/b&gt;. Більші значення забезпечують більш плавні та поступові зміни швидкості під час гальмування, тоді як менші значення дозволяють швидші та більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Speed Increase Response</source>
-        <translation type="vanished">Реакція на збільшення шв.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot increases speed while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot збільшує швидкість у режимі &lt;b&gt;Трафік&lt;/b&gt;. Більш високі значення забезпечують більш плавні та поступові зміни швидкості під час прискорення, тоді як більш низькі значення дозволяють здійснювати більш швидкі та чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Reset Settings</source>
-        <translation type="vanished">Скинути налаштування</translation>
-    </message>
-    <message>
-        <source>Reset &lt;b&gt;Traffic Mode&lt;/b&gt; settings to default values.</source>
-        <translation type="vanished">Скинути налаштування режиму &lt;b&gt;Трафік&lt;/b&gt; до значень за замовчуванням.</translation>
-    </message>
-    <message>
-        <source>Aggressive Personality</source>
-        <translation type="vanished">Агресивний режим</translation>
-    </message>
-    <message>
-        <source>Customize the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Designed for a more assertive driving style.</source>
-        <translation type="vanished">Налаштуйте профіль особистості &lt;b&gt;Агресивний&lt;/b&gt;. Призначений для більш впевненого стилю водіння.</translation>
-    </message>
-    <message>
-        <source>How many seconds openpilot will follow behind lead vehicles while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
-        <translation type="vanished">Скільки секунд openpilot буде слідувати за транспортними засобами попереду при використанні профілю &lt;b&gt;Агресивний&lt;/b&gt;.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,25 секунди.</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in acceleration while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін прискорення при використанні профілю &lt;b&gt;Агресивний&lt;/b&gt;. Більш високі значення забезпечують більш плавне, поступове прискорення, тоді як більш низькі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in deceleration while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін у сповільненні під час використання профілю &lt;b&gt;Агресивний&lt;/b&gt;. Вищі значення забезпечують більш плавне, поступове сповільнення, тоді як нижчі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="vanished">Наскільки обережно openpilot поводиться поблизу інших транспортних засобів або перешкод під час використання профілю &lt;b&gt;Агресивний&lt;/b&gt;. Більш високі значення збільшують дистанцію між транспортними засобами та надають пріоритет безпеці, що призводить до більш обережного водіння, тоді як нижчі значення дозволяють їхати ближче, але можуть скоротити час реакції.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot decreases speed while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot зменшує швидкість при використанні профілю &lt;b&gt;Агресивний&lt;/b&gt;. Більш високі значення забезпечують більш плавні, поступові зміни швидкості при гальмуванні, тоді як більш низькі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot increases speed while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot збільшує швидкість при використанні профілю &lt;b&gt;Агресивний&lt;/b&gt;. Більш високі значення забезпечують більш плавні, поступові зміни швидкості при прискоренні, тоді як більш низькі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Reset the &lt;b&gt;Aggressive&lt;/b&gt; personality profile settings to default values.</source>
-        <translation type="vanished">Скинути налаштування профілю &lt;b&gt;Агресивний&lt;/b&gt; до значень за замовчуванням.</translation>
-    </message>
-    <message>
-        <source>Standard Personality</source>
-        <translation type="vanished">Стандартний режим</translation>
-    </message>
-    <message>
-        <source>Customize the &lt;b&gt;Standard&lt;/b&gt; personality profile. Designed for a balanced driving style.</source>
-        <translation type="vanished">Налаштуйте профіль &lt;b&gt;Стандартний&lt;/b&gt;. Призначений для збалансованого стилю водіння.</translation>
-    </message>
-    <message>
-        <source>How many seconds openpilot will follow behind lead vehicles while using the &lt;b&gt;Standard&lt;/b&gt; personality profile.&lt;br&gt;&lt;br&gt;Default: 1.45 seconds.</source>
-        <translation type="vanished">Скільки секунд openpilot буде слідувати за транспортними засобами попереду при використанні профілю &lt;b&gt;Стандартний&lt;/b&gt;.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,45 секунди.</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in acceleration while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін прискорення під час використання профілю &lt;b&gt;Стандартний&lt;/b&gt;. Більш високі значення забезпечують більш плавне, поступове прискорення, тоді як більш низькі значення забезпечують більш швидкі, чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in deceleration while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін уповільнення під час використання профілю &lt;b&gt;Стандартний&lt;/b&gt;. Більш високі значення забезпечують більш плавне, поступове уповільнення, тоді як більш низькі значення забезпечують більш швидкі, чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="vanished">Наскільки обережно openpilot поводиться поблизу інших транспортних засобів або перешкод під час використання профілю &lt;b&gt;Стандартний&lt;/b&gt;. Більш високі значення збільшують дистанцію між транспортними засобами та надають пріоритет безпеці, що призводить до більш обережного водіння, тоді як нижчі значення дозволяють їхати ближче, але можуть скоротити час реакції.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot decreases speed while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot зменшує швидкість під час використання профілю &lt;b&gt;Стандартний&lt;/b&gt;. Вищі значення забезпечують більш плавні, поступові зміни швидкості під час уповільнення, тоді як нижчі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot increases speed while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot збільшує швидкість при використанні профілю &lt;b&gt;Стандартний&lt;/b&gt;. Більш високі значення забезпечують більш плавні, поступові зміни швидкості при прискоренні, тоді як більш низькі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Reset the &lt;b&gt;Standard&lt;/b&gt; personality profile settings to default values.</source>
-        <translation type="vanished">Скинути налаштування профілю &lt;b&gt;Стандартний&lt;/b&gt; до значень за замовчуванням.</translation>
-    </message>
-    <message>
-        <source>Relaxed Personality</source>
-        <translation type="vanished">Розслаблений режим</translation>
-    </message>
-    <message>
-        <source>Customize the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Designed for a more laid-back driving style.</source>
-        <translation type="vanished">Налаштуйте профіль &lt;b&gt;Розслаблений&lt;/b&gt;. Призначений для більш спокійного стилю водіння.</translation>
-    </message>
-    <message>
-        <source>How many seconds openpilot will follow behind lead vehicles while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile.&lt;br&gt;&lt;br&gt;Default: 1.75 seconds.</source>
-        <translation type="vanished">Скільки секунд openpilot буде слідувати за провідними транспортними засобами при використанні профілю &lt;b&gt;Розслаблений&lt;/b&gt;.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,75 секунди.</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in acceleration while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін прискорення під час використання профілю &lt;b&gt;Розслаблений&lt;/b&gt;. Більш високі значення забезпечують більш плавне, поступове прискорення, тоді як більш низькі значення забезпечують більш швидкі, чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to changes in deceleration while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Чутливість openpilot до змін у сповільненні під час використання профілю &lt;b&gt;Relaxed&lt;/b&gt;. Вищі значення забезпечують більш плавне, поступове сповільнення, тоді як нижчі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="vanished">Наскільки обережно openpilot поводиться поблизу інших транспортних засобів або перешкод під час використання профілю &lt;b&gt;Розслаблений&lt;/b&gt;. Більш високі значення збільшують дистанцію між транспортними засобами та надають пріоритет безпеці, що призводить до більш обережного водіння, тоді як нижчі значення дозволяють їхати ближче, але можуть зменшити час реакції.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot decreases speed while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot зменшує швидкість при використанні профілю &lt;b&gt;Розслаблений&lt;/b&gt;. Більш високі значення забезпечують більш плавні, поступові зміни швидкості при уповільненні, тоді як більш низькі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>How quickly openpilot increases speed while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="vanished">Як швидко openpilot збільшує швидкість при використанні профілю &lt;b&gt;Розслаблений&lt;/b&gt;. Більш високі значення забезпечують більш плавні, поступові зміни швидкості при прискоренні, тоді як більш низькі значення дозволяють швидші, більш чутливі зміни, які можуть здаватися різкими.</translation>
-    </message>
-    <message>
-        <source>Reset the &lt;b&gt;Relaxed&lt;/b&gt; personality profile settings to default values.</source>
-        <translation type="vanished">Скинути налаштування профілю &lt;b&gt;Розслаблений&lt;/b&gt; до значень за замовчуванням.</translation>
     </message>
     <message>
         <source>Longitudinal Tuning</source>
         <translation>Тюнінг поздовжн. керування</translation>
     </message>
     <message>
-        <source>Settings that control how openpilot manages speed and acceleration.</source>
-        <translation type="vanished">Налаштування, що контролюють управління швидкістю та прискоренням в openpilot.</translation>
-    </message>
-    <message>
         <source>Acceleration Profile</source>
         <translation>Проф. приск.</translation>
-    </message>
-    <message>
-        <source>Enable either a sporty or eco-friendly acceleration profile. &lt;b&gt;Sport+&lt;/b&gt; aims to make openpilot accelerate as fast as possible!</source>
-        <translation type="vanished">Увімкніть спортивний або екологічний профіль прискорення. &lt;b&gt;Спорт+&lt;/b&gt; має на меті зробити так, щоб openpilot прискорювався якомога швидше!</translation>
     </message>
     <message>
         <source>Deceleration Profile</source>
         <translation>Профіль вповільн.</translation>
     </message>
     <message>
-        <source>Enable either a sporty or eco-friendly deceleration profile.</source>
-        <translation type="vanished">Увімкніть спортивний або екологічний профіль уповільнення.</translation>
-    </message>
-    <message>
         <source>Human-Like Acceleration</source>
         <translation>Людьське приск.</translation>
     </message>
     <message>
-        <source>Use the lead vehicle's acceleration rate when at a takeoff and ramp off the acceleration rate when approaching the maximum set speed for a more "human-like" driving experience.</source>
-        <translation type="vanished">Використовуйте швидкість прискорення головного автомобіля під час старту та зменшуйте швидкість прискорення під час наближення до максимальної встановленої швидкості, щоб отримати більш «людське» відчуття від водіння.</translation>
-    </message>
-    <message>
-        <source>Human-Like Approach Behind Leads</source>
-        <translation type="vanished">Зближення з лідером як людина</translation>
-    </message>
-    <message>
-        <source>Dynamically adjust the desired following distance when approaching slower or stopped vehicles for a more "human-like" driving experience.</source>
-        <translation type="vanished">Динамічно регулюйте бажану дистанцію до автомобіля, що рухається повільніше або зупинився, для більш «людського» досвіду водіння.</translation>
-    </message>
-    <message>
-        <source>Lead Detection Confidence</source>
-        <translation type="vanished">Впевненість у виявл. лідера</translation>
-    </message>
-    <message>
-        <source>How sensitive openpilot is to detecting vehicles ahead. A lower value can help detect vehicles sooner and from farther away, but increases the chance openpilot mistakes other objects for vehicles.</source>
-        <translation type="vanished">Чутливість openpilot до виявлення транспортних засобів попереду. Менше значення дозволяє виявляти транспортні засоби раніше і з більшої відстані, але збільшує ймовірність того, що openpilot помилково сприйме інші об'єкти за транспортні засоби.</translation>
-    </message>
-    <message>
-        <source>Maximum Acceleration Rate</source>
-        <translation type="vanished">Макс швидк. прискорення</translation>
-    </message>
-    <message>
-        <source>Set a cap on how fast openpilot can accelerate.</source>
-        <translation type="vanished">Встановіть обмеження на швидкість прискорення openpilot.</translation>
-    </message>
-    <message>
-        <source>"Taco Bell Run" Turn Speed Hack</source>
+        <source>&quot;Taco Bell Run&quot; Turn Speed Hack</source>
         <translation>«Taco Bell Run» — хак поворотів</translation>
-    </message>
-    <message>
-        <source>The turn speed hack from comma’s 2022 "Taco Bell Run" drive. Designed to slow down when taking left/right turns for smoother turns.</source>
-        <translation type="vanished">Хак швидкості повороту з поїздки «Taco Bell Run» від comma 2022 року. Призначений для уповільнення при поворотах вліво/вправо для більш плавного проходження поворотів.</translation>
     </message>
     <message>
         <source>Quality of Life</source>
         <translation>Якість життя</translation>
     </message>
     <message>
-        <source>Miscellaneous features to improve the acceleration and braking experience.</source>
-        <translation type="vanished">Різні функції для поліпшення прискорення та гальмування.</translation>
-    </message>
-    <message>
         <source>Cruise Interval</source>
         <translation>Інтервал круїзу</translation>
     </message>
     <message>
-        <source>The interval used when changing the cruise control speed.</source>
-        <translation type="vanished">Інтервал, що використовується при зміні швидкості круїз-контролю.</translation>
-    </message>
-    <message>
-        <source>Cruise Interval (Long Press)</source>
-        <translation type="vanished">Інтервал круїзу (довге натискання)</translation>
-    </message>
-    <message>
-        <source>The interval used when changing the cruise control speed while holding down the button for 0.5+ seconds.</source>
-        <translation type="vanished">Інтервал, що використовується при зміні швидкості круїз-контролю при утриманні кнопки натиснутою протягом 0,5+ секунди.</translation>
-    </message>
-    <message>
-        <source>Force Keep openpilot in the Standstill State</source>
-        <translation type="vanished">Утр. openpilot у стані зупинки</translation>
-    </message>
-    <message>
-        <source>Keep openpilot in the standstill state until either the gas pedal or &lt;b&gt;resume&lt;/b&gt; button is pressed.</source>
-        <translation type="vanished">Тримати openpilot у стані зупинки, доки не буде натиснуто педаль газу або кнопка &lt;b&gt;продовжити&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>Force Stop for "Detected" Stop Lights/Signs</source>
-        <translation type="vanished">Прим. зупинка на світлоф./знаках</translation>
-    </message>
-    <message>
-        <source>Force a stop whenever openpilot &lt;b&gt;detects&lt;/b&gt; a potential red light/stop sign to prevent it from running the red light/stop sign.</source>
-        <translation type="vanished">Примусово зупиняє автомобіль, коли openpilot &lt;b&gt;виявляє&lt;/b&gt; потенційний червоний світлофор/знак зупинки, щоб запобігти проїзду на червоне світло/знак зупинки.</translation>
-    </message>
-    <message>
-        <source>Increase Stopped Distance</source>
-        <translation type="vanished">Збільш. відстані зупинки</translation>
-    </message>
-    <message>
-        <source>Increase the distance openpilot stops behind vehicles.</source>
-        <translation type="vanished">Збільшити відстань, на якій OpenPilot зупиняється за транспортними засобами.</translation>
-    </message>
-    <message>
-        <source>Set Speed Offset</source>
-        <translation type="vanished">Встановити зміщення швидкості</translation>
-    </message>
-    <message>
-        <source>How much higher or lower the set speed should be compared to your current set speed. For example, if you prefer to drive 5 mph above the speed limit, this setting will automatically add that difference when you adjust your set speed.</source>
-        <translation type="vanished">На скільки вище або нижче повинна бути задана швидкість порівняно з вашою поточною заданою швидкістю. Наприклад, якщо ви віддаєте перевагу їзді на 5 миль/год вище за обмеження швидкості, це налаштування автоматично додасть цю різницю, коли ви регулюєте задану швидкість.</translation>
-    </message>
-    <message>
         <source>Map Accel/Decel to Gears</source>
-        <translation>Прив'язати прискорення/сповільнення до передач</translation>
-    </message>
-    <message>
-        <source>Map the acceleration and deceleration profiles to your car's &lt;b&gt;Eco&lt;/b&gt; or &lt;b&gt;Sport&lt;/b&gt; gear modes.</source>
-        <translation type="vanished">Відобразіть профілі прискорення та уповільнення у режимах передач &lt;b&gt;Eco&lt;/b&gt; або &lt;b&gt;Sport&lt;/b&gt; вашого автомобіля.</translation>
+        <translation>Прив&apos;язати прискорення/сповільнення до передач</translation>
     </message>
     <message>
         <source>Reverse Cruise Increase</source>
         <translation>Змінити довге натискання</translation>
     </message>
     <message>
-        <source>Reverse the &lt;b&gt;long press&lt;/b&gt; cruise increase feature to increase the max speed by 5 instead of 1 on short presses.</source>
-        <translation type="vanished">Змініть функцію збільшення швидкості круїзу при &lt;b&gt;тривалому натисканні&lt;/b&gt; на збільшення максимальної швидкості на 5 замість 1 при короткому натисканні.</translation>
-    </message>
-    <message>
         <source>Speed Limit Controller</source>
         <translation>Контролер лімітів швидк.</translation>
-    </message>
-    <message>
-        <source>Limit openpilot's maximum driving speed based on data from downloaded maps, &lt;b&gt;Mapbox&lt;/b&gt;, &lt;b&gt;Navigate on openpilot&lt;/b&gt;, or the dashboard (supported vehicles: &lt;b&gt;Ford&lt;/b&gt;, &lt;b&gt;Genesis&lt;/b&gt;, &lt;b&gt;Hyundai&lt;/b&gt;, &lt;b&gt;Kia&lt;/b&gt;, &lt;b&gt;Lexus&lt;/b&gt;, &lt;b&gt;Toyota&lt;/b&gt;).</source>
-        <translation type="vanished">Обмежте максимальну швидкість руху openpilot на основі даних із завантажених карт, &lt;b&gt;Mapbox&lt;/b&gt;, &lt;b&gt;Navigate on openpilot&lt;/b&gt; або приладової панелі (підтримувані автомобілі: &lt;b&gt;Ford&lt;/b&gt;, &lt;b&gt;Genesis&lt;/b&gt;, &lt;b&gt;Hyundai&lt;/b&gt;, &lt;b&gt;Kia&lt;/b&gt;, &lt;b&gt;Lexus&lt;/b&gt;, &lt;b&gt;Toyota&lt;/b&gt;).</translation>
     </message>
     <message>
         <source>Fallback Speed</source>
         <translation>Резерв. дж. лімітів</translation>
     </message>
     <message>
-        <source>The speed limit source when no speed limit data is available.</source>
-        <translation type="vanished">Резервне джерело обмежень швидкості, коли дані про обмеження швидкості недоступні.</translation>
-    </message>
-    <message>
         <source>Override Speed</source>
         <translation>Ручна швидк.</translation>
-    </message>
-    <message>
-        <source>The speed openpilot uses after manually exceeding the posted speed limit.&lt;br&gt;&lt;br&gt;&lt;b&gt;- Set With Gas Pedal&lt;/b&gt;: Uses the speed obtained while pressing the gas&lt;br&gt;&lt;b&gt;- Max Set Speed&lt;/b&gt;: Uses the cruise control set speed&lt;br&gt;&lt;br&gt;Overrides clear upon disengagement.</source>
-        <translation type="vanished">Швидкість, яку openpilot використовує після ручного перевизначення встановленого обмеження швидкості.&lt;br&gt;&lt;br&gt;&lt;b&gt;- Встановити за допомогою педалі газу&lt;/b&gt;: використовує швидкість, досягнуту під час натискання на педаль газу&lt;br&gt;&lt;b&gt;- Максимальна встановлена швидкість&lt;/b&gt;: використовує швидкість, встановлену круїз-контролем&lt;br&gt;&lt;br&gt;Перевизначення скасовується після деактивації круізу.</translation>
-    </message>
-    <message>
-        <source>Miscellaneous features to improve the &lt;b&gt;Speed Limit Controller&lt;/b&gt; experience.</source>
-        <translation type="vanished">Різні функції для поліпшення роботи &lt;b&gt;Контролера обмеження швидкості&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Confirm New Speed Limits</source>
         <translation>Підтверд. новий ліміт шв.</translation>
     </message>
     <message>
-        <source>Require confirmation before applying new speed limits. To accept, use the flashing widget on the driving screen or press the &lt;b&gt;Cruise Increase&lt;/b&gt; button. To deny, press the &lt;b&gt;Cruise Decrease&lt;/b&gt; button or simply ignore the prompt for 30 seconds.</source>
-        <translation type="vanished">Чи вимагається підтвердження перед застосуванням нових обмежень швидкості. Щоб прийняти, використовуйте миготливий віджет на екрані водіння або натисніть кнопку &lt;b&gt;Збільшити швидкість круїзу (+)&lt;/b&gt;. Щоб відхилити, натисніть кнопку &lt;b&gt;Зменшити швидкість круїзу (-)&lt;/b&gt; або просто проігноруйте запит протягом 30 секунд.</translation>
-    </message>
-    <message>
-        <source>Force MPH Readings from Dashboard</source>
-        <translation type="vanished">Примусове зчитування МНГ з приладової панелі</translation>
-    </message>
-    <message>
-        <source>Force dashboard speed limit readings to be in mph.</source>
-        <translation type="vanished">Примусово встановлювати показники обмеження швидкості на приладовій панелі в милях на годину.</translation>
-    </message>
-    <message>
         <source>Higher Limit Lookahead Time</source>
         <translation>Завчасний вищий ліміт</translation>
-    </message>
-    <message>
-        <source>How far ahead openpilot anticipates upcoming higher speed limits from the downloaded map data.</source>
-        <translation type="vanished">Наскільки заздалегідь OpenPilot передбачає підвищення швидкісних обмежень на основі завантажених даних карти.</translation>
     </message>
     <message>
         <source>Lower Limit Lookahead Time</source>
         <translation>Завчасний нижчий ліміт</translation>
     </message>
     <message>
-        <source>How far ahead openpilot anticipates upcoming lower speed limits from the downloaded map data.</source>
-        <translation type="vanished">Наскільки заздалегідь OpenPilot передбачає майбутні зниження обмежень швидкості на основі завантажених даних карти.</translation>
-    </message>
-    <message>
         <source>Match Speed Limit on Engage</source>
         <translation>Відповідність обмеженню швидкості при активації</translation>
-    </message>
-    <message>
-        <source>Automatically set cruise control speed to match the current speed limit when first enabling openpilot.</source>
-        <translation type="vanished">Автоматично встановлюйте швидкість круїз-контролю відповідно до поточного обмеження швидкості при першому ввімкненні openpilot.</translation>
     </message>
     <message>
         <source>Use Mapbox as Fallback</source>
         <translation>Вик. Mapbox як резерв</translation>
     </message>
     <message>
-        <source>Use &lt;b&gt;Mapbox&lt;/b&gt; speed limit data when no other sources are available.</source>
-        <translation type="vanished">Використовуйте дані про обмеження швидкості з &lt;b&gt;Mapbox&lt;/b&gt;, якщо інші джерела недоступні.</translation>
-    </message>
-    <message>
         <source>Speed Limit Source Priority</source>
         <translation>Пріоритет джерела обмеження швидкості</translation>
-    </message>
-    <message>
-        <source>Define the priority order for speed limit sources (&lt;b&gt;Dashboard&lt;/b&gt;, &lt;b&gt;Map Data&lt;/b&gt;, &lt;b&gt;Navigation&lt;/b&gt;). Higher-priority sources override lower ones when multiple limits are detected.</source>
-        <translation type="vanished">Визначте порядок пріоритетності джерел обмежень швидкості (&lt;b&gt;Панель інструментів&lt;/b&gt;, &lt;b&gt;Дані карти&lt;/b&gt;, &lt;b&gt;Навігація&lt;/b&gt;). Джерела з вищим пріоритетом мають перевагу над джерелами з нижчим пріоритетом, коли виявлено кілька обмежень.</translation>
     </message>
     <message>
         <source>Speed Limit Offsets</source>
         <translation>Зазори обмеження швидкості</translation>
     </message>
     <message>
-        <source>Offsets relative to the posted speed limit for a more "human-like" driving experience.</source>
-        <translation type="vanished">Відхилення від встановленого обмеження швидкості для більш «людського» досвіду водіння.</translation>
-    </message>
-    <message>
         <source>Speed Offset (0–24 mph)</source>
         <translation>Зсув швидкості (0–24 мл/г)</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 0 and 24 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 0 до 24 миль/год.</translation>
     </message>
     <message>
         <source>Speed Offset (25–34 mph)</source>
         <translation>Зсув швидкості (25–34 мл/г)</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 25 and 34 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 25 до 34 миль/год.</translation>
-    </message>
-    <message>
         <source>Speed Offset (35–44 mph)</source>
         <translation>Зсув швидкості (35–44 мл/г)</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 35 and 44 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 35 до 44 миль/год.</translation>
     </message>
     <message>
         <source>Speed Offset (45–54 mph)</source>
         <translation>Зсув швидкості (45–54 мл/г)</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 45 and 54 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 45 до 54 миль/год.</translation>
-    </message>
-    <message>
         <source>Speed Offset (55–64 mph)</source>
         <translation>Зсув швидкості (55–64 мл/г)</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 55 and 64 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 55 до 64 миль/год.</translation>
     </message>
     <message>
         <source>Speed Offset (65–74 mph)</source>
         <translation>Зсув швидкості (65–74 мл/г)</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 65 and 74 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 65 до 74 миль/год.</translation>
-    </message>
-    <message>
         <source>Speed Offset (75–99 mph)</source>
         <translation>Зсув швидкості (75–99 мл/г)</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 75 and 99 mph.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 75 до 99 миль/год.</translation>
     </message>
     <message>
         <source>Visual Settings</source>
         <translation>Налаштування візуалізації</translation>
     </message>
     <message>
-        <source>Visual features to improve the &lt;b&gt;Speed Limit Controller&lt;/b&gt; experience.</source>
-        <translation type="vanished">Візуальні функції для поліпшення роботи &lt;b&gt;контролера обмеження швидкості&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Show Speed Limit Offset</source>
         <translation>Показати поправку від обмеження швидкості</translation>
     </message>
     <message>
-        <source>Display the speed limit offset separately on the driving screen.</source>
-        <translation type="vanished">Відображення поправкул обмеження швидкості окремо на екрані водія.</translation>
-    </message>
-    <message>
         <source>Show Speed Limit Sources</source>
         <translation>Показати джерела обмеження швидкості</translation>
-    </message>
-    <message>
-        <source>Display the speed limit sources on the driving screen.</source>
-        <translation type="vanished">Відображення джерел обмеження швидкості на екрані водія.</translation>
     </message>
     <message>
         <source> seconds</source>
@@ -2890,10 +2066,6 @@
     <message>
         <source>With Lead</source>
         <translation>З лідер.</translation>
-    </message>
-    <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when driving below this speed with a lead.</source>
-        <translation type="vanished">Переходити в &lt;b&gt;експериментальний режим&lt;/b&gt;, коли ви їдете за авто з цією швидкістю.</translation>
     </message>
     <message>
         <source>Slower Lead</source>
@@ -2918,22 +2090,6 @@
     <message>
         <source> second</source>
         <translation> секунд</translation>
-    </message>
-    <message>
-        <source>Only For Detected Lanes</source>
-        <translation type="vanished">На смугах</translation>
-    </message>
-    <message>
-        <source>Map Based</source>
-        <translation type="vanished">По мапах</translation>
-    </message>
-    <message>
-        <source>Vision</source>
-        <translation type="vanished">Бачення</translation>
-    </message>
-    <message>
-        <source>The &lt;b&gt;Map Based&lt;/b&gt; option is only available when some &lt;b&gt;Map Data&lt;/b&gt; has been downloaded!</source>
-        <translation type="vanished">Опція &lt;b&gt;На основі мапи&lt;/b&gt; доступна тільки після завантаження &lt;b&gt;даних карти&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>RESET</source>
@@ -3100,39 +2256,11 @@
         <translation>Зсув швидкості (120–140 км/г)</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 0 and 29 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 0 до 29 км/год.</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 30 and 49 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 30 до 49 км/год.</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 50 and 59 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 50 до 59 км/год.</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 60 and 79 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 60 до 79 км/год.</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 80 and 99 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 80 до 99 км/год.</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 100 and 119 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 100 до 119 км/год.</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 120 and 140 km/h.</source>
-        <translation type="vanished">Поправка цільової швидкості застосовується для встановлених обмежень від 120 до 140 км/год.</translation>
-    </message>
-    <message>
         <source>&lt;b&gt;Advanced acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The time between openpilot's throttle or brake command and the vehicle's response.&lt;/b&gt; Increase if the vehicle feels slow to react; decrease if it feels too eager or overshoots.</source>
+        <source>&lt;b&gt;The time between openpilot&apos;s throttle or brake command and the vehicle&apos;s response.&lt;/b&gt; Increase if the vehicle feels slow to react; decrease if it feels too eager or overshoots.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3156,19 +2284,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Automatically switch to "Experimental Mode" when set conditions are met.&lt;/b&gt; Allows the model to handle challenging situations with smarter decision making.</source>
+        <source>&lt;b&gt;Automatically switch to &quot;Experimental Mode&quot; when set conditions are met.&lt;/b&gt; Allows the model to handle challenging situations with smarter decision making.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when driving below this speed without a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when driving below this speed without a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when a curve is detected&lt;/b&gt; to allow the model to set an appropriate speed for the curve.</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when a curve is detected&lt;/b&gt; to allow the model to set an appropriate speed for the curve.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when a slower or stopped vehicle is detected.&lt;/b&gt; Can make braking smoother and more reliable on some vehicles.</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when a slower or stopped vehicle is detected.&lt;/b&gt; Can make braking smoother and more reliable on some vehicles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3176,7 +2304,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when approaching intersections or turns on the active route&lt;/b&gt; while using "Navigate on openpilot" (NOO) to allow the model to set an appropriate speed for upcoming maneuvers.</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when approaching intersections or turns on the active route&lt;/b&gt; while using &quot;Navigate on openpilot&quot; (NOO) to allow the model to set an appropriate speed for upcoming maneuvers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3184,15 +2312,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when openpilot predicts a stop within the set time.&lt;/b&gt; This is usually triggered when the model "sees" a red light or stop sign ahead.&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In "Experimental Mode", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason.&lt;/i&gt;</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when openpilot predicts a stop within the set time.&lt;/b&gt; This is usually triggered when the model &quot;sees&quot; a red light or stop sign ahead.&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In &quot;Experimental Mode&quot;, openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there&apos;s no clear reason.&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when using a turn signal below the set speed&lt;/b&gt; to allow the model to choose an appropriate speed for smoother left and right turns.</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when using a turn signal below the set speed&lt;/b&gt; to allow the model to choose an appropriate speed for smoother left and right turns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Show which condition triggered "Experimental Mode"&lt;/b&gt; on the driving screen.</source>
+        <source>&lt;b&gt;Show which condition triggered &quot;Experimental Mode&quot;&lt;/b&gt; on the driving screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3224,11 +2352,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Reset collected user data for "Curve Speed Controller".&lt;/b&gt;</source>
+        <source>&lt;b&gt;Reset collected user data for &quot;Curve Speed Controller&quot;.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Show the "Curve Speed Controller" target speed on the driving screen.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Show the &quot;Curve Speed Controller&quot; target speed on the driving screen.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3236,7 +2364,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Customize the "Driving Personalities"&lt;/b&gt; to better match your driving style.</source>
+        <source>&lt;b&gt;Customize the &quot;Driving Personalities&quot;&lt;/b&gt; to better match your driving style.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3244,11 +2372,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Customize the "Traffic Mode" personality profile.&lt;/b&gt; Designed for stop-and-go driving.</source>
+        <source>&lt;b&gt;Customize the &quot;Traffic Mode&quot; personality profile.&lt;/b&gt; Designed for stop-and-go driving.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The minimum following distance to the lead vehicle in "Traffic Mode".&lt;/b&gt; openpilot blends between this value and the "Aggressive" profile as speed increases. Increase for more space; decrease for tighter gaps.</source>
+        <source>&lt;b&gt;The minimum following distance to the lead vehicle in &quot;Traffic Mode&quot;.&lt;/b&gt; openpilot blends between this value and the &quot;Aggressive&quot; profile as speed increases. Increase for more space; decrease for tighter gaps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3256,7 +2384,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot accelerates in "Traffic Mode".&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <source>&lt;b&gt;How smoothly openpilot accelerates in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3264,7 +2392,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot brakes in "Traffic Mode".&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <source>&lt;b&gt;How smoothly openpilot brakes in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3272,7 +2400,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead in "Traffic Mode".&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3280,7 +2408,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot slows down in "Traffic Mode".&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <source>&lt;b&gt;How smoothly openpilot slows down in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3288,7 +2416,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot speeds up in "Traffic Mode".&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <source>&lt;b&gt;How smoothly openpilot speeds up in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3296,7 +2424,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Reset "Traffic Mode" settings to defaults.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Reset &quot;Traffic Mode&quot; settings to defaults.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3304,67 +2432,67 @@
         <translation type="unfinished">Агресивний</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Customize the "Aggressive" personality profile.&lt;/b&gt; Designed for assertive driving with tighter gaps.</source>
+        <source>&lt;b&gt;Customize the &quot;Aggressive&quot; personality profile.&lt;/b&gt; Designed for assertive driving with tighter gaps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the "Aggressive" profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
+        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot accelerates with the "Aggressive" profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot brakes with the "Aggressive" profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the "Aggressive" profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot slows down with the "Aggressive" profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot speeds up with the "Aggressive" profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <source>&lt;b&gt;How smoothly openpilot speeds up with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Reset the "Aggressive" profile to defaults.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Reset the &quot;Aggressive&quot; profile to defaults.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Customize the "Standard" personality profile.&lt;/b&gt; Designed for balanced driving with moderate gaps.</source>
+        <source>&lt;b&gt;Customize the &quot;Standard&quot; personality profile.&lt;/b&gt; Designed for balanced driving with moderate gaps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the "Standard" profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.45 seconds.</source>
+        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Standard&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.45 seconds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot accelerates with the "Standard" profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot brakes with the "Standard" profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the "Standard" profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot slows down with the "Standard" profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot speeds up with the "Standard" profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <source>&lt;b&gt;How smoothly openpilot speeds up with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Reset the "Standard" profile to defaults.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Reset the &quot;Standard&quot; profile to defaults.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3372,35 +2500,35 @@
         <translation type="unfinished">Розслаблений</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Customize the "Relaxed" personality profile.&lt;/b&gt; Designed for smoother, more comfortable driving with larger gaps.</source>
+        <source>&lt;b&gt;Customize the &quot;Relaxed&quot; personality profile.&lt;/b&gt; Designed for smoother, more comfortable driving with larger gaps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the "Relaxed" profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.75 seconds.</source>
+        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.75 seconds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot accelerates with the "Relaxed" profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot brakes with the "Relaxed" profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the "Relaxed" profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot slows down with the "Relaxed" profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How smoothly openpilot speeds up with the "Relaxed" profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <source>&lt;b&gt;How smoothly openpilot speeds up with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Reset the "Relaxed" profile to defaults.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Reset the &quot;Relaxed&quot; profile to defaults.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3408,11 +2536,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How quickly openpilot speeds up.&lt;/b&gt; "Eco" is gentle and efficient, "Sport" is firmer and more responsive, and "Sport+" accelerates at the maximum rate allowed.</source>
+        <source>&lt;b&gt;How quickly openpilot speeds up.&lt;/b&gt; &quot;Eco&quot; is gentle and efficient, &quot;Sport&quot; is firmer and more responsive, and &quot;Sport+&quot; accelerates at the maximum rate allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;How firmly openpilot slows down.&lt;/b&gt; "Eco" favors coasting, "Sport" applies stronger braking.</source>
+        <source>&lt;b&gt;How firmly openpilot slows down.&lt;/b&gt; &quot;Eco&quot; favors coasting, &quot;Sport&quot; applies stronger braking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3444,7 +2572,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The turn-speed hack from comma's 2022 "Taco Bell Run".&lt;/b&gt; Designed to slow down for left and right turns.</source>
+        <source>&lt;b&gt;The turn-speed hack from comma&apos;s 2022 &quot;Taco Bell Run&quot;.&lt;/b&gt; Designed to slow down for left and right turns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3464,11 +2592,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Force Stop at "Detected" Stop Lights/Signs</source>
+        <source>Force Stop at &quot;Detected&quot; Stop Lights/Signs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Force openpilot to stop whenever the driving model "detects" a red light or stop sign.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In "Experimental Mode", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason.&lt;/i&gt;</source>
+        <source>&lt;b&gt;Force openpilot to stop whenever the driving model &quot;detects&quot; a red light or stop sign.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In &quot;Experimental Mode&quot;, openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there&apos;s no clear reason.&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3480,7 +2608,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Map the Acceleration or Deceleration profiles to the vehicle's "Eco" and "Sport" gear modes.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Map the Acceleration or Deceleration profiles to the vehicle&apos;s &quot;Eco&quot; and &quot;Sport&quot; gear modes.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3532,19 +2660,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Limit openpilot's maximum driving speed to the current speed limit&lt;/b&gt; obtained from downloaded maps, Mapbox, Navigate on openpilot, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota).</source>
+        <source>&lt;b&gt;Limit openpilot&apos;s maximum driving speed to the current speed limit&lt;/b&gt; obtained from downloaded maps, Mapbox, Navigate on openpilot, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The speed used by "Speed Limit Controller" when no speed limit is found.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;- &lt;b&gt;Experimental Mode&lt;/b&gt;: Estimate the limit using the driving model&lt;br&gt;- &lt;b&gt;Previous Limit&lt;/b&gt;: Keep using the last confirmed limit</source>
+        <source>&lt;b&gt;The speed used by &quot;Speed Limit Controller&quot; when no speed limit is found.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;- &lt;b&gt;Experimental Mode&lt;/b&gt;: Estimate the limit using the driving model&lt;br&gt;- &lt;b&gt;Previous Limit&lt;/b&gt;: Keep using the last confirmed limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The speed used by "Speed Limit Controller" after you manually drive faster than the posted limit.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set with Gas Pedal&lt;/b&gt;: Use the highest speed reached while pressing the gas&lt;br&gt;- &lt;b&gt;Max Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;&lt;br&gt;Overrides clear when openpilot disengages.</source>
+        <source>&lt;b&gt;The speed used by &quot;Speed Limit Controller&quot; after you manually drive faster than the posted limit.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set with Gas Pedal&lt;/b&gt;: Use the highest speed reached while pressing the gas&lt;br&gt;- &lt;b&gt;Max Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;&lt;br&gt;Overrides clear when openpilot disengages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Miscellaneous "Speed Limit Controller" changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
+        <source>&lt;b&gt;Miscellaneous &quot;Speed Limit Controller&quot; changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3612,7 +2740,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Visual "Speed Limit Controller" changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
+        <source>&lt;b&gt;Visual &quot;Speed Limit Controller&quot; changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3624,7 +2752,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Switch to "Experimental Mode" when driving below this speed with a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
+        <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when driving below this speed with a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3662,18 +2790,6 @@
         <translation>Авто оновлення карт</translation>
     </message>
     <message>
-        <source>The frequency at which maps sync with the latest OpenStreetMap (OSM) changes. Weekly updates occur every Sunday, and monthly updates occur on the 1st.</source>
-        <translation type="vanished">Частота синхронізації карт з останніми змінами OpenStreetMap (OSM). Щотижневі оновлення відбуваються щонеділі, а щомісячні оновлення — 1 числа кожного місяця.</translation>
-    </message>
-    <message>
-        <source>Data Sources</source>
-        <translation type="vanished">Джерела даних</translation>
-    </message>
-    <message>
-        <source>Select map data sources to use with "Curve Speed Control" and "Speed Limit Controller".</source>
-        <translation type="vanished">Виберіть джерела даних мапи, які будуть використовуватися з функціями «Контроль швидкості в вигинах» та «Контролер лімітів швидкості».</translation>
-    </message>
-    <message>
         <source>COUNTRIES</source>
         <translation>КРАЇНИ</translation>
     </message>
@@ -3690,36 +2806,8 @@
         <translation>ЗАВАНТАЖ</translation>
     </message>
     <message>
-        <source>Download the selected maps to use with "Curve Speed Control" and "Speed Limit Controller".</source>
-        <translation type="vanished">Завантажте вибрані карти для використання з функціями «Контроль швидкості у вигинах» та «Контролер лімітів швидкості».</translation>
-    </message>
-    <message>
         <source>CANCEL</source>
         <translation>СКАСУВАТИ</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to cancel the download?</source>
-        <translation type="vanished">Ви впевнені, що хочете скасувати завантаження?</translation>
-    </message>
-    <message>
-        <source>Download Completion ETA</source>
-        <translation type="vanished">ОЧП кінця завантаження</translation>
-    </message>
-    <message>
-        <source>Download Progress</source>
-        <translation type="vanished">Прогрес завантаження</translation>
-    </message>
-    <message>
-        <source>Download Time Elapsed</source>
-        <translation type="vanished">Час завантаження</translation>
-    </message>
-    <message>
-        <source>Maps Last Updated</source>
-        <translation type="vanished">Останнє оновлення мап</translation>
-    </message>
-    <message>
-        <source>Maps Size</source>
-        <translation type="vanished">Розмір мап</translation>
     </message>
     <message>
         <source>Remove Maps</source>
@@ -3730,28 +2818,8 @@
         <translation>ПРИБРАТИ</translation>
     </message>
     <message>
-        <source>Remove downloaded maps to clear up storage space.</source>
-        <translation type="vanished">Видаліть завантажені карти, щоб звільнити місце на диску.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all of your downloaded maps?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі завантажені мапи?</translation>
-    </message>
-    <message>
-        <source>Reset Map Downloader</source>
-        <translation type="vanished">Скинути завантажувач мап</translation>
-    </message>
-    <message>
         <source>RESET</source>
         <translation>СКИНУТИ</translation>
-    </message>
-    <message>
-        <source>Reset the map downloader. Use if you're running into issues with downloading maps.</source>
-        <translation type="vanished">Скиньте налаштування програми для завантаження карт. Використовуйте цю функцію, якщо у вас виникли проблеми із завантаженням карт.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to reset the map downloader? This will force a reboot once completed.</source>
-        <translation type="vanished">Ви впевнені, що хочете скинути завантажувач карт? Після завершення відбудеться примусове перезавантаження.</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -3822,10 +2890,6 @@
         <translation>Не в мережі...</translation>
     </message>
     <message>
-        <source>CANCELLED</source>
-        <translation type="vanished">СКАСОВАНО</translation>
-    </message>
-    <message>
         <source>Calculating...</source>
         <translation>Розрахунок...</translation>
     </message>
@@ -3834,19 +2898,15 @@
         <translation>Запаркуйтесь</translation>
     </message>
     <message>
-        <source>Cancelling...</source>
-        <translation type="vanished">Відміна...</translation>
-    </message>
-    <message>
         <source>0 MB</source>
         <translation>0 МБ</translation>
     </message>
     <message>
-        <source>&lt;b&gt;How often maps update&lt;/b&gt; from "OpenStreetMap (OSM)" with the latest speed limit information. Weekly updates run every Sunday; monthly updates run on the 1st.</source>
+        <source>&lt;b&gt;How often maps update&lt;/b&gt; from &quot;OpenStreetMap (OSM)&quot; with the latest speed limit information. Weekly updates run every Sunday; monthly updates run on the 1st.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Manually update your selected map sources&lt;/b&gt; so "Speed Limit Controller" has the latest speed limit information.</source>
+        <source>&lt;b&gt;Manually update your selected map sources&lt;/b&gt; so &quot;Speed Limit Controller&quot; has the latest speed limit information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3862,7 +2922,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the countries or U.S. states to use with "Speed Limit Controller".&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the countries or U.S. states to use with &quot;Speed Limit Controller&quot;.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3909,56 +2969,28 @@
         <translation>Автоматично завантажувати нові моделі</translation>
     </message>
     <message>
-        <source>Automatically download new driving models as they become available.</source>
-        <translation type="vanished">Автоматично завантажуйте нові моделі керування, коли вони стають доступними.</translation>
-    </message>
-    <message>
         <source>Delete Driving Models</source>
         <translation>Видалити моделі керування</translation>
-    </message>
-    <message>
-        <source>Delete driving models from the device.</source>
-        <translation type="vanished">Видалити моделі керування з пристрою.</translation>
     </message>
     <message>
         <source>Download Driving Models</source>
         <translation>Вантаж моделі керув.</translation>
     </message>
     <message>
-        <source>Download driving models to the device.</source>
-        <translation type="vanished">Завантажте моделі керування на пристрій.</translation>
-    </message>
-    <message>
         <source>Model Randomizer</source>
         <translation>Випадкова модель</translation>
-    </message>
-    <message>
-        <source>Driving models are chosen at random each drive and feedback prompts are used to find the model that best suits your needs.</source>
-        <translation type="vanished">Моделі керування вибираються випадково під час кожного заїзду, а підказки зворотного зв'язку використовуються для пошуку моделі, яка найкраще відповідає вашим потребам.</translation>
     </message>
     <message>
         <source>Manage Model Blacklist</source>
         <translation>Чорний список моделей</translation>
     </message>
     <message>
-        <source>Add or remove models from the &lt;b&gt;Model Randomizer&lt;/b&gt;'s blacklist list.</source>
-        <translation type="vanished">Додавати або видаляти моделі з чорного списку &lt;b&gt;Випадкових моделей&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Manage Model Ratings</source>
         <translation>Рейтинг моделей</translation>
     </message>
     <message>
-        <source>Reset or view the saved ratings for the driving models.</source>
-        <translation type="vanished">Скинути або переглянути збережені оцінки для моделей керування.</translation>
-    </message>
-    <message>
         <source>Select Driving Model</source>
         <translation>Виберіть модель керування</translation>
-    </message>
-    <message>
-        <source>Select the active driving model.</source>
-        <translation type="vanished">Виберіть активну модель керування.</translation>
     </message>
     <message>
         <source>DELETE</source>
@@ -3973,7 +3005,7 @@
         <translation>Виберіть модель керування, яку потрібно видалити</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" model?</source>
+        <source>Are you sure you want to delete the &quot;%1&quot; model?</source>
         <translation>Ви впевнені, що хочете видалити модель «%1»?</translation>
     </message>
     <message>
@@ -4013,15 +3045,7 @@
         <translation>ПРИБ. ВСІ</translation>
     </message>
     <message>
-        <source>There are no more models to blacklist! The only available model is "%1"!</source>
-        <translation type="vanished">Більше немає моделей для чорного списку! Єдина доступна модель — «%1»!</translation>
-    </message>
-    <message>
-        <source>Select a model to add to the blacklist</source>
-        <translation type="vanished">Виберіть модель, яку потрібно додати до чорного списку</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to add the "%1" model to the blacklist?</source>
+        <source>Are you sure you want to add the &quot;%1&quot; model to the blacklist?</source>
         <translation>Ви впевнені, що хочете додати модель «%1» до чорного списку?</translation>
     </message>
     <message>
@@ -4029,20 +3053,12 @@
         <translation>Додати</translation>
     </message>
     <message>
-        <source>Select a model to remove from the blacklist</source>
-        <translation type="vanished">Виберіть модель,щоб видалити з чорного списку</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove the "%1" model from the blacklist?</source>
+        <source>Are you sure you want to remove the &quot;%1&quot; model from the blacklist?</source>
         <translation>Ви впевнені, що хочете видалити модель «%1» із чорного списку?</translation>
     </message>
     <message>
         <source>Remove</source>
         <translation>Видалити</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove all of your blacklisted models?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити всі моделі зі свого чорного списку?</translation>
     </message>
     <message>
         <source>RESET</source>
@@ -4053,20 +3069,8 @@
         <translation>ПЕРЕГЛЯНУТИ</translation>
     </message>
     <message>
-        <source>Are you sure you want to reset all of your model drives and scores?</source>
-        <translation type="vanished">Ви впевнені, що хочете скинути всі ваші моделі керування і оцінки?</translation>
-    </message>
-    <message>
         <source>SELECT</source>
         <translation>ВИБРАТИ</translation>
-    </message>
-    <message>
-        <source>Select a model - 🗺️ = Navigation | 📡 = Radar | 👀 = VOACC</source>
-        <translation type="vanished">Виберіть модель - 🗺️ = Навіг. | 📡 = Радар | 👀 = БАЧЕН.</translation>
-    </message>
-    <message>
-        <source>The "Model Randomizer" only works with downloaded models. Do you want to download all the driving models?</source>
-        <translation type="vanished">«Випадкова модель» працює тільки з завантаженими моделями. Чи хочете ви завантажити всі моделі водіння?</translation>
     </message>
     <message>
         <source>Offline...</source>
@@ -4077,8 +3081,8 @@
         <translation>Завантаження...</translation>
     </message>
     <message>
-        <source>Downloading "%1"...</source>
-        <translation>Завантаження "%1"...</translation>
+        <source>Downloading &quot;%1&quot;...</source>
+        <translation>Завантаження &quot;%1&quot;...</translation>
     </message>
     <message>
         <source>Downloading... %1</source>
@@ -4125,11 +3129,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Add or remove driving models from the "Model Randomizer" blacklist.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Add or remove driving models from the &quot;Model Randomizer&quot; blacklist.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;View or reset saved model ratings&lt;/b&gt; used by the "Model Randomizer".</source>
+        <source>&lt;b&gt;View or reset saved model ratings&lt;/b&gt; used by the &quot;Model Randomizer&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4141,7 +3145,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Update the "Model Manager"&lt;/b&gt; to support the latest models.</source>
+        <source>&lt;b&gt;Update the &quot;Model Manager&quot;&lt;/b&gt; to support the latest models.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4157,7 +3161,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>There are no more driving models to blacklist. The only available model is "%1"!</source>
+        <source>There are no more driving models to blacklist. The only available model is &quot;%1&quot;!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4193,7 +3197,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The "Model Randomizer" works only with downloaded models. Download all models now?</source>
+        <source>The &quot;Model Randomizer&quot; works only with downloaded models. Download all models now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4275,10 +3279,6 @@
 <context>
     <name>FrogPilotNavigationPanel</name>
     <message>
-        <source>Manage your %1.</source>
-        <translation type="vanished">Керуйте своїми %1.</translation>
-    </message>
-    <message>
         <source>ADD</source>
         <translation>ДОДАТ</translation>
     </message>
@@ -4289,10 +3289,6 @@
     <message>
         <source>Inputted key is invalid or too short!</source>
         <translation>Введений ключ недійсний або занадто короткий!</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove your %1?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити %1?</translation>
     </message>
     <message>
         <source>REMOVE</source>
@@ -4307,60 +3303,20 @@
         <translation>Не в мережі...</translation>
     </message>
     <message>
-        <source>MapBox</source>
-        <translation type="vanished">MapBox</translation>
-    </message>
-    <message>
         <source>Amap</source>
         <translation>Amap</translation>
-    </message>
-    <message>
-        <source>Google</source>
-        <translation type="vanished">Google</translation>
     </message>
     <message>
         <source>Destination Search Provider</source>
         <translation>Постачальник пошуку</translation>
     </message>
     <message>
-        <source>The search provider used for destination queries in "Navigate on Openpilot". Options include "MapBox" (recommended), "Amap", and "Google Maps".</source>
-        <translation type="vanished">Пошукова система, яка використовується для запитів про місце призначення в «Навігація на Openpilot». Доступні варіанти: «MapBox» (рекомендовано), «Amap» та «Google Maps».</translation>
-    </message>
-    <message>
         <source>Amap Key #1</source>
         <translation>Ключ Amap № 1</translation>
     </message>
     <message>
-        <source>Manage your Amap key.</source>
-        <translation type="vanished">Керуйте своїм ключем Amap.</translation>
-    </message>
-    <message>
-        <source>Enter your Amap key</source>
-        <translation type="vanished">Введіть свій ключ Amap</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove your Amap key?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити свій ключ Amap?</translation>
-    </message>
-    <message>
         <source>Amap Key #2</source>
         <translation>Ключ Amap № 2</translation>
-    </message>
-    <message>
-        <source>Google Maps Key</source>
-        <translation type="vanished">Ключ Google Maps</translation>
-    </message>
-    <message>
-        <source>Manage your Google Maps key.</source>
-        <translation type="vanished">Керуйте своїм ключем Google Maps.</translation>
-    </message>
-    <message>
-        <source>Enter your Google Maps key</source>
-        <translation type="vanished">Введіть свій ключ Google Maps</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove your Google Maps key?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити свій ключ Google Maps?</translation>
     </message>
     <message>
         <source>Public Mapbox Key</source>
@@ -4371,16 +3327,8 @@
         <translation>Секретний ключ Mapbox</translation>
     </message>
     <message>
-        <source>MapBox Setup Instructions</source>
-        <translation type="vanished">Інструкції з налаштування MapBox</translation>
-    </message>
-    <message>
         <source>VIEW</source>
         <translation>ПОКАЗ</translation>
-    </message>
-    <message>
-        <source>View the instructions to set up "MapBox" for "Primeless Navigation".</source>
-        <translation type="vanished">Перегляньте інструкції щодо налаштування «MapBox» для «Primeless Navigation».</translation>
     </message>
     <message>
         <source>CANCEL</source>
@@ -4395,28 +3343,8 @@
         <translation>Заповнювач обмеження швидкості</translation>
     </message>
     <message>
-        <source>Automatically collect missing or incorrect speed limits from your dashboard (if supported), &lt;b&gt;Mapbox&lt;/b&gt;, and &lt;b&gt;Navigate-on-openpilot&lt;/b&gt; while driving.&lt;br&gt;&lt;br&gt;When the car is turned off and connected to Wi-Fi, your speed limit data is automatically processed into a compiled file formatted for the tool located at &lt;b&gt;SpeedLimitFiller.frogpilot.download&lt;/b&gt;.&lt;br&gt;&lt;br&gt;You can grab the processed file from &lt;b&gt;The Pond&lt;/b&gt; via the &lt;b&gt;Download Speed Limits&lt;/b&gt; menu.&lt;br&gt;&lt;br&gt;Want a more thorough walkthrough? Check out the &lt;b&gt;#speed-limit-filler&lt;/b&gt; channel in the &lt;b&gt;FrogPilot Discord&lt;/b&gt;!</source>
-        <translation type="vanished">Автоматично збирайте відсутні або неправильні обмеження швидкості з вашої приладової панелі (якщо це підтримується), &lt;b&gt;Mapbox&lt;/b&gt; та &lt;b&gt;Navigate-on-openpilot&lt;/b&gt; під час руху. &lt;br&gt;&lt;br&gt;Коли автомобіль вимкнений і підключений до Wi-Fi, ваші дані про обмеження швидкості автоматично обробляються в скомпільований файл, відформатований для інструменту, розташованого за адресою &lt;b&gt;SpeedLimitFiller.frogpilot.download&lt;/b&gt;. &lt;br&gt;&lt;br&gt;Ви можете завантажити оброблений файл з &lt;b&gt;The Pond&lt;/b&gt; через меню &lt;b&gt;Завантажити обмеження швидкості&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Хочете отримати більш детальну інструкцію? Перегляньте канал &lt;b&gt;#speed-limit-filler&lt;/b&gt; у &lt;b&gt;FrogPilot Discord&lt;/b&gt;!</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to cancel the speed limit update process?</source>
-        <translation type="vanished">Ви впевнені, що хочете скасувати процес оновлення обмежень швидкості?</translation>
-    </message>
-    <message>
         <source>Cancelled...</source>
         <translation>Скасовано...</translation>
-    </message>
-    <message>
-        <source>You have reached the request limit.
-
-It will reset in %1 hours and %2 minutes.</source>
-        <translation type="vanished">Ви досягли ліміту запитів.
-
-Він буде скинутий через %1 годин і %2 хвилин.</translation>
-    </message>
-    <message>
-        <source>This process will take awhile, so it's advised to start when you're done driving with a stable Wi-Fi connection. Do you wish to proceed?</source>
-        <translation type="vanished">Цей процес займе деякий час, тому рекомендується розпочати його, коли ви закінчите їзду і будете мати стабільне Wi-Fi-з'єднання. Чи бажаєте ви продовжити?</translation>
     </message>
     <message>
         <source>Completed!</source>
@@ -4427,7 +3355,7 @@ It will reset in %1 hours and %2 minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The search provider used for destination queries&lt;/b&gt; in "Navigate on Openpilot". Options include Mapbox (recommended) and Amap.</source>
+        <source>&lt;b&gt;The search provider used for destination queries&lt;/b&gt; in &quot;Navigate on Openpilot&quot;. Options include Mapbox (recommended) and Amap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4435,11 +3363,11 @@ It will reset in %1 hours and %2 minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Instructions on how to set up Mapbox&lt;/b&gt; for "Primeless Navigation".</source>
+        <source>&lt;b&gt;Instructions on how to set up Mapbox&lt;/b&gt; for &quot;Primeless Navigation&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Automatically collect missing or incorrect speed limits while you drive&lt;/b&gt; using speeds limits sourced from your dashboard (if supported), Mapbox, and "Navigate on openpilot".&lt;br&gt;&lt;br&gt;When you're parked and connected to Wi-Fi, FrogPilot will automatically processes this data into a file to be used with the tool located at "SpeedLimitFiller.frogpilot.download".&lt;br&gt;&lt;br&gt;You can download this file from "The Pond" in the "Download Speed Limits" menu.&lt;br&gt;&lt;br&gt;Need a step-by-step guide? Visit &lt;b&gt;#speed-limit-filler&lt;/b&gt; in the FrogPilot Discord!</source>
+        <source>&lt;b&gt;Automatically collect missing or incorrect speed limits while you drive&lt;/b&gt; using speeds limits sourced from your dashboard (if supported), Mapbox, and &quot;Navigate on openpilot&quot;.&lt;br&gt;&lt;br&gt;When you&apos;re parked and connected to Wi-Fi, FrogPilot will automatically processes this data into a file to be used with the tool located at &quot;SpeedLimitFiller.frogpilot.download&quot;.&lt;br&gt;&lt;br&gt;You can download this file from &quot;The Pond&quot; in the &quot;Download Speed Limits&quot; menu.&lt;br&gt;&lt;br&gt;Need a step-by-step guide? Visit &lt;b&gt;#speed-limit-filler&lt;/b&gt; in the FrogPilot Discord!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4447,17 +3375,17 @@ It will reset in %1 hours and %2 minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You've hit today's request limit.
+        <source>You&apos;ve hit today&apos;s request limit.
 
 It will reset in %1 hours and %2 minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>This process takes a while. It's recommended to start when you're done driving and connected to stable Wi-Fi. Continue?</source>
+        <source>This process takes a while. It&apos;s recommended to start when you&apos;re done driving and connected to stable Wi-Fi. Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Manage your "%1".&lt;/b&gt;</source>
+        <source>&lt;b&gt;Manage your &quot;%1&quot;.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4531,48 +3459,16 @@ It will reset in %1 hours and %2 minutes.</source>
         <translation>Сповіщення та звуки</translation>
     </message>
     <message>
-        <source>FrogPilot settings for alert volumes and custom notifications to stay informed about important driving events.</source>
-        <translation type="vanished">Налаштування FrogPilot для гучності сповіщень та індивідуальних повідомлень, щоб бути в курсі важливих подій під час руху.</translation>
-    </message>
-    <message>
         <source>Driving Controls</source>
         <translation>Налашт. водіння</translation>
-    </message>
-    <message>
-        <source>FrogPilot settings for acceleration, braking, and steering.</source>
-        <translation type="vanished">Налаштування FrogPilot для прискорення, гальмування та керування.</translation>
     </message>
     <message>
         <source>Navigation</source>
         <translation>Навігація</translation>
     </message>
     <message>
-        <source>Download map data for &lt;b&gt;Curve Speed Control&lt;/b&gt;, &lt;b&gt;Speed Limit Controller&lt;/b&gt;, and set up &lt;b&gt;Navigate on openpilot (NOO)&lt;/b&gt;.</source>
-        <translation type="vanished">Завантажте картографічні дані для &lt;b&gt;Контролер швидкості у вигинах&lt;/b&gt;, &lt;b&gt;Контролер швидкісних лімітів&lt;/b&gt; та налаштуйте &lt;b&gt;Навігація на openpilot (NOO)&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>System Management</source>
-        <translation type="vanished">Управління системою</translation>
-    </message>
-    <message>
-        <source>Data storage management, debugging tools, device settings, screen behavior settings, system backups, and utilities to maintain, optimize, and troubleshoot FrogPilot.</source>
-        <translation type="vanished">Управління зберіганням даних, інструменти налагодження, налаштування пристрою, налаштування поведінки екрану, резервне копіювання системи та утиліти для обслуговування, оптимізації та усунення несправностей FrogPilot.</translation>
-    </message>
-    <message>
         <source>Theme and Appearance</source>
         <translation>Тема та вигляд</translation>
-    </message>
-    <message>
-        <source>FrogPilot settings for the current theme, driving-screen, and the overall user interface.</source>
-        <translation type="vanished">Налаштування FrogPilot для поточної теми, екрану керування та загального інтерфейсу користувача.</translation>
-    </message>
-    <message>
-        <source>Vehicle Controls</source>
-        <translation type="vanished">Керування Т/З</translation>
-    </message>
-    <message>
-        <source>Options unique to supported manufacturers and vehicle fingerprint management.</source>
-        <translation type="vanished">Опції, унікальні для підтримуваних виробників, та управління відбитками пальців у транспортних засобах.</translation>
     </message>
     <message>
         <source>Minimal</source>
@@ -4595,24 +3491,6 @@ It will reset in %1 hours and %2 minutes.</source>
         <translation>Рівень налашт.</translation>
     </message>
     <message>
-        <source>The visibility and complexity of tuning settings. Lower levels simplify the interface by hiding advanced options, while higher levels unlock detailed customization.
-
-Minimal - Ideal for those who prefer simplicity or ease of use
-Standard - Recommended for most users for a balanced experience
-Advanced - Unlocks fine-tuning controls for more experienced users
-Developer - Unlocks highly customizable settings for seasoned enthusiasts</source>
-        <translation type="vanished">Видимість і складність налаштувань. Нижчі рівні спрощують інтерфейс, приховуючи розширені параметри, а вищі рівні відкривають детальні можливості налаштування.
-
-Мінімальний — ідеальний для тих, хто віддає перевагу простоті та зручності використання.
-Стандартний — рекомендується для більшості користувачів, щоб забезпечити збалансований досвід.
-Розширений — відкриває можливості точного налаштування для більш досвідчених користувачів.
-Розробник — відкриває можливості глибокого налаштування для досвідчених ентузіастів.</translation>
-    </message>
-    <message>
-        <source>WARNING: This unlocks some potentially dangerous settings that can DRASTICALLY alter your driving experience!</source>
-        <translation type="vanished">УВАГА: Це розблоковує деякі потенційно небезпечні налаштування, які можуть КАТАСТРОФІЧНО змінити ваші відчуття від водіння!</translation>
-    </message>
-    <message>
         <source>&lt;b&gt;Adjust alert volumes and enable custom notifications.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4621,7 +3499,7 @@ Developer - Unlocks highly customizable settings for seasoned enthusiasts</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Download map data for the "Speed Limit Controller" and configure "Navigate on openpilot" (NOO).&lt;/b&gt;</source>
+        <source>&lt;b&gt;Download map data for the &quot;Speed Limit Controller&quot; and configure &quot;Navigate on openpilot&quot; (NOO).&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4658,123 +3536,59 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle&apos;s name to open or close its description at any time!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>FrogPilotSoundsPanel</name>
     <message>
-        <source>Alert Volume Control</source>
-        <translation type="vanished">Гучність сигналів</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for each alert in openpilot.</source>
-        <translation type="vanished">Налаштуйте гучність для кожного сповіщення в openpilot.</translation>
-    </message>
-    <message>
         <source>Disengage Volume</source>
         <translation>Гучність деактивації</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;Adaptive Cruise Disabled&lt;/b&gt;&lt;br&gt;&lt;b&gt;Brake Pedal Pressed&lt;/b&gt;&lt;br&gt;&lt;b&gt;Parking Brake Engaged&lt;/b&gt;&lt;br&gt;&lt;b&gt;Speed too Low&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність таких сповіщень:&lt;br&gt;&lt;br&gt;&lt;b&gt;Адаптивний круїз-контроль вимкнено&lt;/b&gt;&lt;br&gt;&lt;b&gt;Натиснуто педаль гальма&lt;/b&gt;&lt;br&gt;&lt;b&gt;Увімкнено ручне гальмо&lt;/b&gt;&lt;br&gt;&lt;b&gt;Занадто низька швидкість&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Engage Volume</source>
         <translation>Гучність активації</translation>
     </message>
     <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;NNFF Torque Controller loaded&lt;/b&gt;&lt;br&gt;&lt;b&gt;openpilot engaged&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність для таких сповіщень:&lt;br&gt;&lt;br&gt;&lt;b&gt;NNFF Torque Controller завантажено&lt;/b&gt;&lt;br&gt;&lt;b&gt;openpilot активовано&lt;/b&gt;</translation>
-    </message>
-    <message>
         <source>Prompt Volume</source>
         <translation>Гучність підказок</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;Car Detected in Blindspot&lt;/b&gt;&lt;br&gt;&lt;b&gt;Steer Unavailable Below "X"&lt;/b&gt;&lt;br&gt;&lt;b&gt;Speed too Low&lt;/b&gt;&lt;br&gt;&lt;b&gt;Take Control, Turn Exceeds Steering Limit&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність таких сповіщень:&lt;br&gt;&lt;br&gt;&lt;b&gt;Автомобіль виявлено в сліпій зоні&lt;/b&gt;&lt;br&gt;&lt;b&gt;Керування недоступне нижче «X»&lt;/b&gt;&lt;br&gt;&lt;b&gt;Швидкість занадто низька&lt;/b&gt;&lt;br&gt;&lt;b&gt;Візміть керування, поворот перевищує межу кермування&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Prompt Distracted Volume</source>
         <translation>Гучність відволікання</translation>
     </message>
     <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;Pay Attention, Driver Distracted&lt;/b&gt;&lt;br&gt;&lt;b&gt;Touch Steering Wheel, Driver Unresponsive&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність таких сповіщень:&lt;br&gt;&lt;br&gt;&lt;b&gt;Зверніть увагу, водій відволікся&lt;/b&gt;&lt;br&gt;&lt;b&gt;Доторкніться до керма, водій не реагує&lt;/b&gt;</translation>
-    </message>
-    <message>
         <source>Refuse Volume</source>
         <translation>Гучність відмови</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;openpilot Unavailable&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність для таких сповіщень:&lt;br&gt;&lt;br&gt;&lt;b&gt;openpilot недоступний&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Warning Soft Volume</source>
         <translation>Гучність мʼяких попередж.</translation>
     </message>
     <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;BRAKE!, Risk of Collision&lt;/b&gt;&lt;br&gt;&lt;b&gt;TAKE CONTROL IMMEDIATELY&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність таких попереджень:&lt;br&gt;&lt;br&gt;&lt;b&gt;ГАЛЬМУЙТЕ!, Ризик зіткнення&lt;/b&gt;&lt;br&gt;&lt;b&gt;НЕГАЙНО ВІЗЬМІТЬ КЕРУВАННЯ&lt;/b&gt;</translation>
-    </message>
-    <message>
         <source>Warning Immediate Volume</source>
         <translation>Гучність негайн. сповіщ.</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;DISENGAGE IMMEDIATELY, Driver Distracted&lt;/b&gt;&lt;br&gt;&lt;b&gt;DISENGAGE IMMEDIATELY, Driver Unresponsive&lt;/b&gt;</source>
-        <translation type="vanished">Налаштуйте гучність для таких сповіщень:&lt;br&gt;&lt;br&gt;&lt;b&gt;НЕГАЙНА ДЕАКТИВАЦІЯ, водій відволікся&lt;/b&gt;&lt;br&gt;&lt;b&gt;НЕГАЙНА ДЕАКТИВАЦІЯ, водій не реагує&lt;/b&gt;</translation>
     </message>
     <message>
         <source>FrogPilot Alerts</source>
         <translation>Сповіщення FrogPilot</translation>
     </message>
     <message>
-        <source>FrogPilot alerts for various events in openpilot.</source>
-        <translation type="vanished">FrogPilot сповіщає про різні події в openpilot.</translation>
-    </message>
-    <message>
-        <source>Goat Scream Steering Saturated Alert</source>
-        <translation type="vanished">Козиний крик насичення кермування</translation>
-    </message>
-    <message>
-        <source>The infamous "Goat Scream" that has brought both joy and anger to FrogPilot users all around the world!</source>
-        <translation type="vanished">Славнозвісний «Крик кози», який приніс радість і гнів користувачам FrogPilot по всьому світу!</translation>
-    </message>
-    <message>
         <source>Green Light Alert</source>
         <translation>Сигнал зеленого світла</translation>
-    </message>
-    <message>
-        <source>Get an alert when the traffic light changes from red to green.</source>
-        <translation type="vanished">Отримуйте сповіщення, коли світлофор змінюється з червоного на зелений.</translation>
     </message>
     <message>
         <source>Lead Departing Alert</source>
         <translation>Сигнал про відправлення</translation>
     </message>
     <message>
-        <source>Get an alert when the lead vehicle begins to depart from a standstill.</source>
-        <translation type="vanished">Отримуйте сповіщення, коли транспортний засіб попереду починає рухатися з місця.</translation>
-    </message>
-    <message>
-        <source>Loud "Car Detected in Blindspot" Alert</source>
+        <source>Loud &quot;Car Detected in Blindspot&quot; Alert</source>
         <translation>Гучне «Т/З виявлено в сліпій зоні»</translation>
-    </message>
-    <message>
-        <source>A louder alert for when a vehicle is detected in the blindspot when attempting to change lanes.</source>
-        <translation type="vanished">Більш гучний сигнал, що сповіщає про виявлення автомобіля в сліпій зоні під час спроби змінити смугу руху.</translation>
     </message>
     <message>
         <source>Speed Limit Changed Alert</source>
         <translation>Сигнал про зміну ліміта швидк.</translation>
-    </message>
-    <message>
-        <source>Get an alert when the speed limit changes.</source>
-        <translation type="vanished">Отримуйте сповіщення про зміну обмеження швидкості.</translation>
     </message>
     <message>
         <source>Muted</source>
@@ -4797,31 +3611,31 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for alerts when openpilot disengages.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Cruise Fault: Restart the Car", "Parking Brake Engaged", "Pedal Pressed".</source>
+        <source>&lt;b&gt;Set the volume for alerts when openpilot disengages.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Cruise Fault: Restart the Car&quot;, &quot;Parking Brake Engaged&quot;, &quot;Pedal Pressed&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for the chime when openpilot engages&lt;/b&gt;, such as after pressing the "RESUME" or "SET" steering wheel buttons.</source>
+        <source>&lt;b&gt;Set the volume for the chime when openpilot engages&lt;/b&gt;, such as after pressing the &quot;RESUME&quot; or &quot;SET&quot; steering wheel buttons.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for prompts that need attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Car Detected in Blindspot", "Steering Temporarily Unavailable", "Turn Exceeds Steering Limit".</source>
+        <source>&lt;b&gt;Set the volume for prompts that need attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Car Detected in Blindspot&quot;, &quot;Steering Temporarily Unavailable&quot;, &quot;Turn Exceeds Steering Limit&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for prompts when openpilot detects driver distraction or unresponsiveness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Pay Attention", "Touch Steering Wheel".</source>
+        <source>&lt;b&gt;Set the volume for prompts when openpilot detects driver distraction or unresponsiveness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Pay Attention&quot;, &quot;Touch Steering Wheel&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for alerts when openpilot refuses to engage.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Brake Hold Active", "Door Open", "Seatbelt Unlatched".</source>
+        <source>&lt;b&gt;Set the volume for alerts when openpilot refuses to engage.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Brake Hold Active&quot;, &quot;Door Open&quot;, &quot;Seatbelt Unlatched&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for softer warnings about potential risks.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "BRAKE! Risk of Collision", "Steering Temporarily Unavailable".</source>
+        <source>&lt;b&gt;Set the volume for softer warnings about potential risks.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;BRAKE! Risk of Collision&quot;, &quot;Steering Temporarily Unavailable&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Set the volume for the loudest warnings that require urgent attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "DISENGAGE IMMEDIATELY — Driver Distracted", "DISENGAGE IMMEDIATELY — Driver Unresponsive".</source>
+        <source>&lt;b&gt;Set the volume for the loudest warnings that require urgent attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;DISENGAGE IMMEDIATELY — Driver Distracted&quot;, &quot;DISENGAGE IMMEDIATELY — Driver Unresponsive&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4833,7 +3647,7 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Play the infamous "Goat Scream" when the steering controller reaches its limit.&lt;/b&gt; Based on the "Turn Exceeds Steering Limit" event.</source>
+        <source>&lt;b&gt;Play the infamous &quot;Goat Scream&quot; when the steering controller reaches its limit.&lt;/b&gt; Based on the &quot;Turn Exceeds Steering Limit&quot; event.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4845,7 +3659,7 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Play a louder alert if a vehicle is in the blind spot when attempting to change lanes.&lt;/b&gt; Based on the "Car Detected in Blindspot" event.</source>
+        <source>&lt;b&gt;Play a louder alert if a vehicle is in the blind spot when attempting to change lanes.&lt;/b&gt; Based on the &quot;Car Detected in Blindspot&quot; event.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4856,68 +3670,24 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
 <context>
     <name>FrogPilotThemesPanel</name>
     <message>
-        <source>Custom Theme</source>
-        <translation type="vanished">Індивідуальна тема</translation>
-    </message>
-    <message>
-        <source>The overall appearance of openpilot.</source>
-        <translation type="vanished">Загальний вигляд openpilot.</translation>
-    </message>
-    <message>
         <source>Color Scheme</source>
         <translation>Колірна гамма</translation>
-    </message>
-    <message>
-        <source>openpilot's color scheme.
-
-Want to submit your own color scheme? Share it in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="vanished">Колірна схема openpilot.
-
-Хочете подати свою власну колірну схему? Поділіться нею в каналі «custom-themes» на FrogPilot Discord!</translation>
     </message>
     <message>
         <source>Icon Pack</source>
         <translation>Набір іконок</translation>
     </message>
     <message>
-        <source>openpilot's icon pack.
-
-Want to submit your own icons? Share them in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="vanished">Набір іконок openpilot.
-
-Хочете надіслати свої власні іконки? Поділіться ними в каналі «custom-themes» на FrogPilot Discord!</translation>
-    </message>
-    <message>
         <source>Sound Pack</source>
         <translation>Звуковий пакет</translation>
-    </message>
-    <message>
-        <source>openpilot's sound effects.
-
-Want to submit your own sounds? Share them in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="vanished">Звукові ефекти openpilot.
-
-Хочете поділитися своїми звуками? Діліться ними в каналі «custom-themes» на FrogPilot Discord!</translation>
     </message>
     <message>
         <source>Steering Wheel</source>
         <translation>Кермо</translation>
     </message>
     <message>
-        <source>The steering wheel icon in the top right of the driving screen.</source>
-        <translation type="vanished">Значок керма у верхньому правому куті екрана водіння.</translation>
-    </message>
-    <message>
         <source>Turn Signal</source>
         <translation>Поворотник</translation>
-    </message>
-    <message>
-        <source>Themed turn signal animations.
-
-Want to submit your own animations? Share them in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="vanished">Тематичні анімації поворотників.
-
-Хочете надіслати свої власні анімації? Поділіться ними в каналі «custom-themes» на FrogPilot Discord!</translation>
     </message>
     <message>
         <source>Download Status</source>
@@ -4928,40 +3698,20 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Святкові теми</translation>
     </message>
     <message>
-        <source>Holiday-based visual themes for openpilot. Minor holidays last one day; major holidays (Christmas, Easter, Halloween, etc.) continue all week.</source>
-        <translation type="vanished">Святкові візуальні теми для openpilot. Невеликі свята тривають один день, а великі свята (Різдво, Великдень, Хелловін тощо) — цілий тиждень.</translation>
-    </message>
-    <message>
         <source>Rainbow Path</source>
         <translation>Веселковий Шлях</translation>
-    </message>
-    <message>
-        <source>The path on the driving screen turns into a Mario Kart inspired "Rainbow Path".</source>
-        <translation type="vanished">Шлях на екрані водія перетворюється на «Райдужний шлях», натхненний Mario Kart.</translation>
     </message>
     <message>
         <source>Random Events</source>
         <translation>Випадкові події</translation>
     </message>
     <message>
-        <source>Random cosmetic events that trigger after certain driving conditions. These events are purely for fun and don't affect driving controls!</source>
-        <translation type="vanished">Випадкові косметичні події, що спрацьовують після певних умов водіння. Ці події призначені виключно для розваги і не впливають на управління автомобілем!</translation>
-    </message>
-    <message>
         <source>Random Themes</source>
         <translation>Випадкові теми</translation>
     </message>
     <message>
-        <source>Cycles through your downloaded themes randomly on each boot, giving every theme in your collection a chance to shine!</source>
-        <translation type="vanished">При кожному запуску випадковим чином перемикає завантажені теми, даючи кожній темі у вашій колекції шанс проявити себе!</translation>
-    </message>
-    <message>
         <source>Startup Alert</source>
         <translation>Текст старту</translation>
-    </message>
-    <message>
-        <source>The text of the "Startup Alert" message that appears at the beginning of a drive.</source>
-        <translation type="vanished">Текст повідомлення «Сповіщення про старт», яке з'являється на початку поїздки.</translation>
     </message>
     <message>
         <source>DELETE</source>
@@ -4980,10 +3730,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Виберіть колірну схему для видалення</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" color scheme?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити колірну схему «%1»?</translation>
-    </message>
-    <message>
         <source>Delete</source>
         <translation>Видалити</translation>
     </message>
@@ -5000,10 +3746,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Виберіть пакет іконок відстані, який потрібно видалити</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" distance icon pack?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити набір іконок «%1»?</translation>
-    </message>
-    <message>
         <source>Select a distance icon pack to download</source>
         <translation>Виберіть пакет іконок відстані для завантаження</translation>
     </message>
@@ -5014,10 +3756,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     <message>
         <source>Select an icon pack to delete</source>
         <translation>Виберіть пакет іконок для видалення</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete the "%1" icon pack?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити пакет іконок «%1»?</translation>
     </message>
     <message>
         <source>Select an icon pack to download</source>
@@ -5032,10 +3770,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Виберіть анімацію сигналу, яку потрібно видалити</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" signal animation?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити анімацію сигналу «%1»?</translation>
-    </message>
-    <message>
         <source>Select a signal animation to download</source>
         <translation>Виберіть анімацію сигналу для завантаження</translation>
     </message>
@@ -5048,10 +3782,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Виберіть пакет звуків для видалення</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" sound pack?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити звуковий пакет «%1»?</translation>
-    </message>
-    <message>
         <source>Select a sound pack to download</source>
         <translation>Виберіть пакет звуків для завантаження</translation>
     </message>
@@ -5062,10 +3792,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     <message>
         <source>Select a steering wheel to delete</source>
         <translation>Виберіть кермо, яке потрібно видалити</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete the "%1" steering wheel?</source>
-        <translation type="vanished">Ви впевнені, що хочете видалити кермо «%1»?</translation>
     </message>
     <message>
         <source>Select a steering wheel to download</source>
@@ -5108,7 +3834,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Ви впевнені, що хочете повністю скинути своє повідомлення про запуск?</translation>
     </message>
     <message>
-        <source>"Random Themes" only works with downloaded themes, so make sure you download the themes you want it to use!</source>
+        <source>&quot;Random Themes&quot; only works with downloaded themes, so make sure you download the themes you want it to use!</source>
         <translation>«Випадкові теми» працюють тільки з завантаженими темами, тому переконайтеся, що ви завантажили теми, які хочете використовувати!</translation>
     </message>
     <message>
@@ -5152,11 +3878,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The overall look and feel of openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;The overall look and feel of openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The color scheme used throughout openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;The color scheme used throughout openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5164,23 +3890,23 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished">Кнопка відстані</translation>
     </message>
     <message>
-        <source>&lt;b&gt;The distance button icons shown on the driving screen.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;The distance button icons shown on the driving screen.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The icon style used across openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;The icon style used across openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The sound pack used by openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;The sound pack used by openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The steering-wheel icon&lt;/b&gt; shown at the top-right of the driving screen. Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;The steering-wheel icon&lt;/b&gt; shown at the top-right of the driving screen. Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Themed turn-signal animations.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <source>&lt;b&gt;Themed turn-signal animations.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5188,11 +3914,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Color the driving path like a Mario Kart–style "Rainbow Road".&lt;/b&gt;</source>
+        <source>&lt;b&gt;Color the driving path like a Mario Kart–style &quot;Rainbow Road&quot;.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Occasional on-screen effects triggered by driving conditions.&lt;/b&gt; These are purely a visual and don't impact how openpilot drives!</source>
+        <source>&lt;b&gt;Occasional on-screen effects triggered by driving conditions.&lt;/b&gt; These are purely a visual and don&apos;t impact how openpilot drives!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5200,31 +3926,31 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Customize the "Startup Alert" message&lt;/b&gt; shown at the start of each drive.</source>
+        <source>&lt;b&gt;Customize the &quot;Startup Alert&quot; message&lt;/b&gt; shown at the start of each drive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete the "%1" color scheme?</source>
+        <source>Delete the &quot;%1&quot; color scheme?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete the "%1" distance icon pack?</source>
+        <source>Delete the &quot;%1&quot; distance icon pack?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete the "%1" icon pack?</source>
+        <source>Delete the &quot;%1&quot; icon pack?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete the "%1" signal animation?</source>
+        <source>Delete the &quot;%1&quot; signal animation?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete the "%1" sound pack?</source>
+        <source>Delete the &quot;%1&quot; sound pack?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete the "%1" steering wheel?</source>
+        <source>Delete the &quot;%1&quot; steering wheel?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5235,24 +3961,12 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Режим зневадження</translation>
     </message>
     <message>
-        <source>Debug FrogPilot during the next drive by utilizing all of FrogPilot's developer metrics for either bug reporting, or self-debugging.</source>
-        <translation type="vanished">Зневаджуйте FrogPilot під час наступної поїздки, використовуючи всі показники розробника FrogPilot для повідомлення про помилки або самостійного зневадження.</translation>
-    </message>
-    <message>
         <source>Flash Panda</source>
         <translation>Шити Panda</translation>
     </message>
     <message>
         <source>FLASH</source>
         <translation>ШИТИ</translation>
-    </message>
-    <message>
-        <source>Flash the Panda's firmware. Use if you're running into issues with the Panda.</source>
-        <translation type="vanished">Прошийте прошивку Panda. Використовуйте, якщо у вас виникли проблеми з Panda.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to flash the Panda?</source>
-        <translation type="vanished">Ви впевнені, що хочете прошити Panda?</translation>
     </message>
     <message>
         <source>Flash</source>
@@ -5269,14 +3983,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     <message>
         <source>Rebooting...</source>
         <translation>Перезавантаження...</translation>
-    </message>
-    <message>
-        <source>Force Started State</source>
-        <translation type="vanished">Примусовий статус</translation>
-    </message>
-    <message>
-        <source>Force openpilot either offroad or onroad.</source>
-        <translation type="vanished">Примусово перемкніть OpenPilot у режим зупинки або у русі.</translation>
     </message>
     <message>
         <source>OFFROAD</source>
@@ -5299,51 +4005,19 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>ПОВІДОМИТИ</translation>
     </message>
     <message>
-        <source>Let FrogsGoMoo know about an issue you're facing!</source>
-        <translation type="vanished">Повідомте FrogsGoMoo про проблему, з якою ви зіткнулися!</translation>
-    </message>
-    <message>
-        <source>Ensure your device has an internet connection before sending a report!</source>
-        <translation type="vanished">Перед відправкою звіту переконайтеся, що ваш пристрій підключений до Інтернету!</translation>
-    </message>
-    <message>
-        <source>I saw an alert that said "openpilot crashed"</source>
+        <source>I saw an alert that said &quot;openpilot crashed&quot;</source>
         <translation>Я побачив сповіщення «openpilot crashed» (openpilot завис).</translation>
-    </message>
-    <message>
-        <source>An alert confused me and I didn’t know what it meant</source>
-        <translation type="vanished">Попередження збило мене з пантелику, і я не зрозумів, що воно означає.</translation>
     </message>
     <message>
         <source>Braking is too sudden or uncomfortable</source>
         <translation>Гальмування занадто різке або некомфортне</translation>
     </message>
     <message>
-        <source>I’m not sure if this is normal or a bug:</source>
-        <translation type="vanished">Я не впевнений, чи це нормально, чи це помилка:</translation>
-    </message>
-    <message>
-        <source>Lane changes don’t work properly or feel unsafe</source>
-        <translation type="vanished">Зміна смуги руху не працює належним чином або викликає відчуття небезпеки</translation>
-    </message>
-    <message>
-        <source>My screen froze or got stuck on loading</source>
-        <translation type="vanished">Мій екран завис або застряг під час завантаження</translation>
-    </message>
-    <message>
-        <source>My steering wheel buttons aren’t working</source>
-        <translation type="vanished">Кнопки на кермі не працюють</translation>
-    </message>
-    <message>
-        <source>openpilot disengages when I don't expect it</source>
+        <source>openpilot disengages when I don&apos;t expect it</source>
         <translation>openpilot деактивувався, коли я цього не очікую</translation>
     </message>
     <message>
-        <source>openpilot doesn’t resume after I stop</source>
-        <translation type="vanished">openpilot не відновлює роботу після зупинки</translation>
-    </message>
-    <message>
-        <source>openpilot doesn't react to stopped vehicles ahead</source>
+        <source>openpilot doesn&apos;t react to stopped vehicles ahead</source>
         <translation>openpilot не реагує на зупинені транспортні засоби попереду</translation>
     </message>
     <message>
@@ -5355,27 +4029,15 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Керування відчувається нерівним або неприродним</translation>
     </message>
     <message>
-        <source>The car doesn’t follow curves well</source>
-        <translation type="vanished">Автомобіль погано проходить вигини дороги</translation>
-    </message>
-    <message>
-        <source>The car isn’t staying centered in its lane</source>
-        <translation type="vanished">Автомобіль не тримається центру своєї смуги руху</translation>
-    </message>
-    <message>
-        <source>The speed or display info looks wrong</source>
-        <translation type="vanished">Швидкість або інформація на дисплеї виглядає неправильно</translation>
-    </message>
-    <message>
         <source>Something else (please describe)</source>
         <translation>Щось інше (будь ласка, опишіть)</translation>
     </message>
     <message>
-        <source>What's going on?</source>
+        <source>What&apos;s going on?</source>
         <translation>Що відбувається?</translation>
     </message>
     <message>
-        <source>Please describe what's happening</source>
+        <source>Please describe what&apos;s happening</source>
         <translation>Опишіть, що відбувається</translation>
     </message>
     <message>
@@ -5383,12 +4045,8 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Надіслати звіт</translation>
     </message>
     <message>
-        <source>What's your Discord username?</source>
-        <translation>Яке ваше ім'я користувача в Discord?</translation>
-    </message>
-    <message>
-        <source>Your report has been submitted. Thanks for letting us know!</source>
-        <translation type="vanished">Ваш звіт було надіслано. Дякуємо, що повідомили нас!</translation>
+        <source>What&apos;s your Discord username?</source>
+        <translation>Яке ваше ім&apos;я користувача в Discord?</translation>
     </message>
     <message>
         <source>Reset Toggles to Default</source>
@@ -5397,10 +4055,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     <message>
         <source>RESET</source>
         <translation>СКИНУТИ</translation>
-    </message>
-    <message>
-        <source>Reset all toggles to their default values.</source>
-        <translation type="vanished">Скинути всі налаштування до їхніх значень за замовчуванням.</translation>
     </message>
     <message>
         <source>Are you sure you want to reset all toggles to their default values?</source>
@@ -5419,19 +4073,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Скинути!</translation>
     </message>
     <message>
-        <source>Reset Toggles to Match Stock openpilot</source>
-        <translation type="vanished">Скинути налашт. до стд. значень openpilot</translation>
-    </message>
-    <message>
-        <source>Reset all toggles to match stock openpilot.</source>
-        <translation type="vanished">Скинути всі налаштування до стандартних значень openpilot.</translation>
-    </message>
-    <message>
         <source>Are you sure you want to reset all toggles to match stock openpilot?</source>
         <translation>Ви впевнені, що хочете скинути всі налаштування, щоб вони відповідали стандартним налаштуванням openpilot?</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Use FrogPilot's developer metrics on your next drive&lt;/b&gt; to diagnose issues and improve bug reports.</source>
+        <source>&lt;b&gt;Use FrogPilot&apos;s developer metrics on your next drive&lt;/b&gt; to diagnose issues and improve bug reports.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5463,11 +4109,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>An alert was unclear and I didn't know what it meant</source>
+        <source>An alert was unclear and I didn&apos;t know what it meant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>I'm not sure if this is normal or a bug:</source>
+        <source>I&apos;m not sure if this is normal or a bug:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5475,19 +4121,19 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>My steering wheel buttons aren't working</source>
+        <source>My steering wheel buttons aren&apos;t working</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>openpilot doesn't resume from a stop</source>
+        <source>openpilot doesn&apos;t resume from a stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The car doesn't follow curves well</source>
+        <source>The car doesn&apos;t follow curves well</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The car isn't staying centered in its lane</source>
+        <source>The car isn&apos;t staying centered in its lane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5510,40 +4156,16 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
 <context>
     <name>FrogPilotVehiclesPanel</name>
     <message>
-        <source>Select Make</source>
-        <translation type="vanished">Виробник</translation>
-    </message>
-    <message>
         <source>SELECT</source>
         <translation>ВИБІР</translation>
-    </message>
-    <message>
-        <source>Select a Make</source>
-        <translation type="vanished">Віберіть виробника</translation>
-    </message>
-    <message>
-        <source>Select Model</source>
-        <translation type="vanished">Виберіть модель</translation>
-    </message>
-    <message>
-        <source>Select a Model</source>
-        <translation type="vanished">Виберіть модель</translation>
     </message>
     <message>
         <source>Disable Automatic Fingerprint Detection</source>
         <translation>Вимкнути автоматичне виявлення відбитка</translation>
     </message>
     <message>
-        <source>Forces the selected fingerprint and prevents it from ever changing.</source>
-        <translation type="vanished">Примусово встановлює вибраний відбиток і запобігає його зміні.</translation>
-    </message>
-    <message>
         <source>Disable openpilot Longitudinal Control</source>
         <translation>Вимкнути поздовжнє керування OpenPilot</translation>
-    </message>
-    <message>
-        <source>Disables openpilot longitudinal control and uses the car's stock ACC instead.</source>
-        <translation type="vanished">Вимикає поздовжнє керування openpilot і замість цього використовує стандартну систему ACC автомобіля.</translation>
     </message>
     <message>
         <source>Are you sure you want to completely disable openpilot longitudinal control?</source>
@@ -5554,100 +4176,40 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Налаштування General Motors</translation>
     </message>
     <message>
-        <source>Settings specific to &lt;b&gt;General Motors&lt;/b&gt; vehicles.</source>
-        <translation type="vanished">Налаштування, характерні для автомобілів &lt;b&gt;General Motors&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>FrogsGoMoo's Experimental Tune</source>
+        <source>FrogsGoMoo&apos;s Experimental Tune</source>
         <translation>Експериментальні налаштування FrogsGoMoo</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;FrogsGoMoo's&lt;/b&gt; experimental &lt;b&gt;General Motors&lt;/b&gt; tune that aims to smoothen out stopping and takeoff control based on nothing but guesswork. Use at your own risk!</source>
-        <translation type="vanished">Експериментальна настройка &lt;b&gt;FrogsGoMoo&lt;/b&gt; для &lt;b&gt;General Motors&lt;/b&gt;, яка має на меті згладити контроль зупинки та старту, базуючись виключно на припущеннях. Використовуйте на свій ризик!</translation>
     </message>
     <message>
         <source>Smooth Pedal Response on Hills</source>
         <translation>Плавна реакція педалі на схилах</translation>
     </message>
     <message>
-        <source>Smoothen the acceleration and braking when driving uphill or downhill.</source>
-        <translation type="vanished">Згладжуйте прискорення та гальмування під час руху вгору або вниз по схилу.</translation>
-    </message>
-    <message>
-        <source>Stop and Go Hack</source>
-        <translation type="vanished">Старт-Стоп Хак</translation>
-    </message>
-    <message>
-        <source>Force stop and go on the &lt;b&gt;2017 Chevy Volt&lt;/b&gt;.</source>
-        <translation type="vanished">Примусове зупинення та продовження руху на &lt;b&gt;Chevy Volt 2017 року&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Hyundai/Kia/Genesis Settings</source>
         <translation>Налаштування Hyundai/Kia/Genesis</translation>
     </message>
     <message>
-        <source>Settings specific to &lt;b&gt;Hyundai&lt;/b&gt;, &lt;b&gt;Kia&lt;/b&gt;, and &lt;b&gt;Genesis&lt;/b&gt; vehicles.</source>
-        <translation type="vanished">Налаштування, характерні для автомобілів &lt;b&gt;Hyundai&lt;/b&gt;, &lt;b&gt;Kia&lt;/b&gt; та &lt;b&gt;Genesis&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>comma's New Longitudinal API</source>
+        <source>comma&apos;s New Longitudinal API</source>
         <translation>Новий поздовжній API від comma</translation>
     </message>
     <message>
-        <source>comma's new longitudinal control system that has shown great improvement with acceleration and braking, but has issues on some &lt;b&gt;Hyundai&lt;/b&gt;/&lt;b&gt;Kia&lt;/b&gt;/&lt;b&gt;Genesis&lt;/b&gt; vehicles.</source>
-        <translation type="vanished">Нова система поздовжнього контролю Comma, яка продемонструвала значне поліпшення при прискоренні та гальмуванні, але має проблеми на деяких автомобілях &lt;b&gt;Hyundai&lt;/b&gt;/&lt;b&gt;Kia&lt;/b&gt;/&lt;b&gt;Genesis&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>"Taco Bell Run" Torque Hack</source>
+        <source>&quot;Taco Bell Run&quot; Torque Hack</source>
         <translation>«Taco Bell Run» Хак керма</translation>
-    </message>
-    <message>
-        <source>The torque hack from comma’s 2022 "Taco Bell Run" drive. Designed to improve turning at low speeds by increasing the allowed steering torque.</source>
-        <translation type="vanished">Хак крутного моменту від Comma з поїздки «Taco Bell Run» 2022 року. Призначений для поліпшення поворотів на низьких швидкостях за рахунок збільшення допустимого крутного моменту рульового управління.</translation>
     </message>
     <message>
         <source>Toyota/Lexus Settings</source>
         <translation>Налаштування Toyota/Lexus</translation>
     </message>
     <message>
-        <source>Settings specific to &lt;b&gt;Toyota&lt;/b&gt; and &lt;b&gt;Lexus&lt;/b&gt; vehicles.</source>
-        <translation type="vanished">Налаштування, характерні для автомобілів &lt;b&gt;Toyota&lt;/b&gt; та &lt;b&gt;Lexus&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Automatically Lock/Unlock Doors</source>
         <translation>Автоматичне блокування/розблокування дверей</translation>
     </message>
     <message>
-        <source>Automatically lock the doors when shifting into drive and unlock them when shifting into park.</source>
-        <translation type="vanished">Автоматично блокуйте двері при перемиканні на режим руху та розблоковуйте їх при перемиканні на режим паркування.</translation>
-    </message>
-    <message>
-        <source>Cluster Speed Offset</source>
-        <translation type="vanished">Зсув швидкості з кластера</translation>
-    </message>
-    <message>
-        <source>The cluster speed offset used by openpilot to match the speed displayed on the dash.</source>
-        <translation type="vanished">Зсув швидкості кластера, який використовується openpilot для узгодження швидкості, що відображається на приладовій панелі.</translation>
-    </message>
-    <message>
-        <source>FrogsGoMoo's Personal Tweaks</source>
+        <source>FrogsGoMoo&apos;s Personal Tweaks</source>
         <translation>Особисті налаштування FrogsGoMoo</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;FrogsGoMoo's&lt;/b&gt; personal tweaks for quicker acceleration and smoother braking.</source>
-        <translation type="vanished">Особисті налаштування &lt;b&gt;FrogsGoMoo&lt;/b&gt; для швидшого прискорення та плавнішого гальмування.</translation>
     </message>
     <message>
         <source>Lock Doors On Ignition Off After</source>
         <translation>Замикання дверей після вимкнення запалювання</translation>
-    </message>
-    <message>
-        <source>Automatically lock the doors after the car's ignition has been turned off and no one is detected in either of the front seats.</source>
-        <translation type="vanished">Автоматично блокуйте двері після вимкнення запалювання автомобіля, якщо ніхто не виявлений на передніх сидіннях.</translation>
-    </message>
-    <message>
-        <source>Force stop and go on &lt;b&gt;Toyota&lt;/b&gt;/&lt;b&gt;Lexus&lt;/b&gt; vehicles without stock stop and go functionality.</source>
-        <translation type="vanished">Примусове зупинення та рушання на автомобілях &lt;b&gt;Toyota&lt;/b&gt;/&lt;b&gt;Lexus&lt;/b&gt; без стандартної функції зупинення та рушання.</translation>
     </message>
     <message>
         <source>MANAGE</source>
@@ -5690,7 +4252,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Disable openpilot longitudinal&lt;/b&gt; and use the car's stock ACC instead.</source>
+        <source>&lt;b&gt;Disable openpilot longitudinal&lt;/b&gt; and use the car&apos;s stock ACC instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5718,11 +4280,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;comma's new gas and brake control system&lt;/b&gt; that improves acceleration and braking but may cause issues on some Genesis/Hyundai/Kia vehicles.</source>
+        <source>&lt;b&gt;comma&apos;s new gas and brake control system&lt;/b&gt; that improves acceleration and braking but may cause issues on some Genesis/Hyundai/Kia vehicles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;The steering torque hack from comma's 2022 "Taco Bell Run".&lt;/b&gt; Designed to increase steering torque at low speeds for left and right turns.</source>
+        <source>&lt;b&gt;The steering torque hack from comma&apos;s 2022 &quot;Taco Bell Run&quot;.&lt;/b&gt; Designed to increase steering torque at low speeds for left and right turns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5774,7 +4336,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Does openpilot use the vehicle's blind spot data?&lt;/b&gt;</source>
+        <source>&lt;b&gt;Does openpilot use the vehicle&apos;s blind spot data?&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5782,7 +4344,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Does your vehicle support the "comma pedal"?&lt;/b&gt;</source>
+        <source>&lt;b&gt;Does your vehicle support the &quot;comma pedal&quot;?&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5790,7 +4352,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Can openpilot control the vehicle's acceleration and braking?&lt;/b&gt;</source>
+        <source>&lt;b&gt;Can openpilot control the vehicle&apos;s acceleration and braking?&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5798,7 +4360,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Does openpilot use the vehicle's radar data&lt;/b&gt; alongside the device's camera for tracking lead vehicles?</source>
+        <source>&lt;b&gt;Does openpilot use the vehicle&apos;s radar data&lt;/b&gt; alongside the device&apos;s camera for tracking lead vehicles?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5806,7 +4368,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Does your vehicle support "SDSUs"?&lt;/b&gt;</source>
+        <source>&lt;b&gt;Does your vehicle support &quot;SDSUs&quot;?&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5841,448 +4403,220 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Розш. параметри інтерфейсу</translation>
     </message>
     <message>
-        <source>Advanced settings for fine-tuning openpilot's driving screen.</source>
-        <translation type="vanished">Розширені налаштування для точного налаштування екрану водіння openpilot.</translation>
-    </message>
-    <message>
         <source>Hide Current Speed</source>
         <translation>Приховати поточну швидкість</translation>
-    </message>
-    <message>
-        <source>Hide the current speed from the driving screen.</source>
-        <translation type="vanished">Приховати поточну швидкість з екрану водіння.</translation>
     </message>
     <message>
         <source>Hide Lead Marker</source>
         <translation>Приховати маркер лідера</translation>
     </message>
     <message>
-        <source>Hide the marker for lead vehicles from the driving screen.</source>
-        <translation type="vanished">Приховати маркер з екрану водіння.для транспортного засобу попереду.</translation>
-    </message>
-    <message>
         <source>Hide Map Settings Button</source>
         <translation>Приховати кнопку налаштувань мап</translation>
-    </message>
-    <message>
-        <source>Hide the map settings button from the driving screen.</source>
-        <translation type="vanished">Приховати кнопку налаштувань карти з екрану водіння.</translation>
     </message>
     <message>
         <source>Hide Max Speed</source>
         <translation>Приховати максимальну швидкість</translation>
     </message>
     <message>
-        <source>Hide the max speed from the driving screen.</source>
-        <translation type="vanished">Приховати максимальну швидкість з екрану водіння.</translation>
-    </message>
-    <message>
         <source>Hide Non-Critical Alerts</source>
         <translation>Приховати некритичні сповіщення</translation>
-    </message>
-    <message>
-        <source>Hide non-critical alerts from the driving screen.</source>
-        <translation type="vanished">Приховати некритичні сповіщення з екрану водія.</translation>
     </message>
     <message>
         <source>Hide Speed Limits</source>
         <translation>Приховати обмеження швидкості</translation>
     </message>
     <message>
-        <source>Hide the speed limits from the driving screen.</source>
-        <translation type="vanished">Приховати обмеження швидкості з екрану водіння.</translation>
-    </message>
-    <message>
         <source>Use Wheel Speed</source>
         <translation>Використовувати швидкість коліс</translation>
-    </message>
-    <message>
-        <source>Use the vehicle's wheel speed instead of the cluster speed. This is purely a visual change and doesn't impact how openpilot drives.</source>
-        <translation type="vanished">Використовуйте швидкість колес автомобіля замість швидкості на приборці. Це суто візуальна зміна, яка не впливає на роботу openpilot.</translation>
     </message>
     <message>
         <source>Developer UI</source>
         <translation>Інтерфейс розробника</translation>
     </message>
     <message>
-        <source>Detailed information about openpilot's internal operations.</source>
-        <translation type="vanished">Детальна інформація про внутрішні операції openpilot.</translation>
-    </message>
-    <message>
         <source>Adjacent Path Metrics</source>
         <translation>Показники суміжних шляхів</translation>
-    </message>
-    <message>
-        <source>Metrics displayed on top of the adjacent lanes measuring their current width.</source>
-        <translation type="vanished">Показники, що відображаються над сусідніми смугами руху, вимірюють їхню поточну ширину.</translation>
     </message>
     <message>
         <source>Developer Metrics</source>
         <translation>Показники розробника</translation>
     </message>
     <message>
-        <source>Performance data, sensor readings, and system metrics for debugging and optimizing openpilot.</source>
-        <translation type="vanished">Дані про продуктивність, показання датчиків та системні метрики для налагодження та оптимізації openpilot.</translation>
-    </message>
-    <message>
         <source>Border Metrics</source>
         <translation>Показники на бордюрі</translation>
-    </message>
-    <message>
-        <source>Metrics displayed around the border of the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Blind Spot&lt;/b&gt;: Turn the border red when a vehicle is detected in a blind spot&lt;br&gt;&lt;b&gt;Steering Torque&lt;/b&gt;: Highlight the border green to red in accordance to the amount of steering torque being used&lt;br&gt;&lt;b&gt;Turn Signal&lt;/b&gt;: Flash the border yellow when a turn signal is active</source>
-        <translation type="vanished">Показники, що відображаються навколо краю екрана водія. &lt;br&gt;&lt;br&gt;&lt;b&gt;Сліпа зона&lt;/b&gt;: Край стає червоним, коли в сліпій зоні виявлено транспортний засіб. &lt;br&gt;&lt;b&gt;Крутний момент керма&lt;/b&gt;: Край підсвічується зеленим або червоним кольором відповідно до величини крутного моменту керма. &lt;br&gt;&lt;b&gt;Поворотник&lt;/b&gt;: Край блимає жовтим кольором, коли поворотник увімкнено.</translation>
     </message>
     <message>
         <source>Lead Info</source>
         <translation>Інфа лідера</translation>
     </message>
     <message>
-        <source>Metrics displayed under vehicle markers listing their distance and current speed.</source>
-        <translation type="vanished">Показники, що відображаються під маркерами транспортних засобів попереду, із зазначенням їх відстані та поточної швидкості.</translation>
-    </message>
-    <message>
         <source>FPS Display</source>
         <translation>Кадр\c відображення</translation>
-    </message>
-    <message>
-        <source>Display the &lt;b&gt;Frames Per Second (FPS)&lt;/b&gt; at the bottom of the driving screen.</source>
-        <translation type="vanished">Відображення &lt;b&gt;кадрів в секунду (FPS)&lt;/b&gt; внизу екрану водіння.</translation>
     </message>
     <message>
         <source>Numerical Temperature Gauge</source>
         <translation>Цифровий термометр</translation>
     </message>
     <message>
-        <source>Use numerical temperature readings instead of status labels in the sidebar.</source>
-        <translation type="vanished">Використовуйте числові показники температури замість міток стану в бічній панелі.</translation>
-    </message>
-    <message>
         <source>Sidebar Metrics</source>
         <translation>Сбоку</translation>
-    </message>
-    <message>
-        <source>Display system information (&lt;b&gt;CPU&lt;/b&gt;, &lt;b&gt;GPU&lt;/b&gt;, &lt;b&gt;RAM usage&lt;/b&gt;, &lt;b&gt;IP address&lt;/b&gt;, &lt;b&gt;device storage&lt;/b&gt;) in the sidebar.</source>
-        <translation type="vanished">Відображення системної інформації (&lt;b&gt;CPU&lt;/b&gt;, &lt;b&gt;GPU&lt;/b&gt;, &lt;b&gt;використання RAM&lt;/b&gt;, &lt;b&gt;IP-адреса&lt;/b&gt;, &lt;b&gt;пам'ять пристрою&lt;/b&gt;) на бічній панелі.</translation>
     </message>
     <message>
         <source>Use International System of Units</source>
         <translation>Використовуйте СІ</translation>
     </message>
     <message>
-        <source>Display measurements using the &lt;b&gt;International System of Units (SI)&lt;/b&gt; standard.</source>
-        <translation type="vanished">Відображайте вимірювання, використовуючи стандарт &lt;b&gt;Міжнародної системи одиниць (СІ)&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Developer Sidebar</source>
         <translation>Бічна панель розробника</translation>
-    </message>
-    <message>
-        <source>Display debugging info and metrics in a dedicated sidebar on the right side of the screen.</source>
-        <translation type="vanished">Відображення інформації зневадження та метрик у спеціальній бічній панелі праворуч екрана.</translation>
     </message>
     <message>
         <source>Metric #1</source>
         <translation>Показник № 1</translation>
     </message>
     <message>
-        <source>Metric to display in the first metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в першому рядку «Бічної панелі розробника».</translation>
-    </message>
-    <message>
         <source>Metric #2</source>
         <translation>Показник № 2</translation>
-    </message>
-    <message>
-        <source>Metric to display in the second metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в другому показнику в «Бічній панелі розробника».</translation>
     </message>
     <message>
         <source>Metric #3</source>
         <translation>Показник № 3</translation>
     </message>
     <message>
-        <source>Metric to display in the third metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в третьому рядку «Бічної панелі розробника».</translation>
-    </message>
-    <message>
         <source>Metric #4</source>
         <translation>Показник № 4</translation>
-    </message>
-    <message>
-        <source>Metric to display in the fourth metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в четвертому рядку «Бічної панелі розробника».</translation>
     </message>
     <message>
         <source>Metric #5</source>
         <translation>Показник № 5</translation>
     </message>
     <message>
-        <source>Metric to display in the fifth metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в п'ятому рядку «Бічної панелі розробника».</translation>
-    </message>
-    <message>
         <source>Metric #6</source>
         <translation>Показник № 6</translation>
-    </message>
-    <message>
-        <source>Metric to display in the sixth metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в шостому рядку «Бічної панелі розробника».</translation>
     </message>
     <message>
         <source>Metric #7</source>
         <translation>Показник № 7</translation>
     </message>
     <message>
-        <source>Metric to display in the seventh metric in the "Developer Sidebar".</source>
-        <translation type="vanished">Показник, який відображається в сьомому рядку «Бічної панелі розробника».</translation>
-    </message>
-    <message>
         <source>Developer Widgets</source>
         <translation>Віджети для розробників</translation>
-    </message>
-    <message>
-        <source>Overlays displaying debugging visuals, internal states, and model predictions on the driving screen.</source>
-        <translation type="vanished">Накладення, що відображають візуальні елементи налагодження, внутрішні стани та прогнози моделі на екрані водія.</translation>
     </message>
     <message>
         <source>Adjacent Leads Tracking</source>
         <translation>Відстеження сусідніх лідерів</translation>
     </message>
     <message>
-        <source>Adjacent leads detected by the car's radar to the left and right of the current driving path.</source>
-        <translation type="vanished">Сусідні автомобілі, виявлені радаром автомобіля зліва та справа від поточної траєкторії руху.</translation>
-    </message>
-    <message>
         <source>Model Stopping Point</source>
         <translation>Місце зупинки моделі</translation>
-    </message>
-    <message>
-        <source>Display an image on the screen where openpilot is wanting to stop.</source>
-        <translation type="vanished">Відобразити зображення на екрані, де openpilot хоче зупинитися.</translation>
     </message>
     <message>
         <source>Radar Tracks</source>
         <translation>Радарні траєкторії</translation>
     </message>
     <message>
-        <source>Display all of the radar points produced by the car's radar.</source>
-        <translation type="vanished">Відобразити всі точки, зафіксовані радаром автомобіля.</translation>
-    </message>
-    <message>
         <source>Driving Screen Widgets</source>
         <translation>Віджети екрану водіння</translation>
-    </message>
-    <message>
-        <source>Custom FrogPilot widgets for the driving screen.</source>
-        <translation type="vanished">Спеціальні віджети FrogPilot для екрану водія.</translation>
     </message>
     <message>
         <source>Acceleration Path</source>
         <translation>Шлях прискорення</translation>
     </message>
     <message>
-        <source>Colorize the driving path based on openpilot's current desired acceleration and deceleration rate.</source>
-        <translation type="vanished">Пофарбуйте траєкторію руху відповідно до поточної бажаної швидкості прискорення та уповільнення openpilot.</translation>
-    </message>
-    <message>
         <source>Adjacent Lanes</source>
         <translation>Сусідні смуги руху</translation>
-    </message>
-    <message>
-        <source>Driving paths for the left and right adjacent lanes.</source>
-        <translation type="vanished">Малювати смуги для лівої та правої сусідніх смуг руху.</translation>
     </message>
     <message>
         <source>Blind Spot Path</source>
         <translation>Шлях сліпої зони</translation>
     </message>
     <message>
-        <source>Display a red driving path for detected vehicles in the corresponding lane's blind spot.</source>
-        <translation type="vanished">Відображення червоної траєкторії руху виявлених транспортних засобів у сліпій зоні відповідної смуги руху.</translation>
-    </message>
-    <message>
         <source>Compass</source>
         <translation>Компас</translation>
-    </message>
-    <message>
-        <source>A compass to show the current driving direction.</source>
-        <translation type="vanished">Компас, що показує поточний напрямок руху.</translation>
     </message>
     <message>
         <source>Driving Personality Button</source>
         <translation>Кнопка «Режиму керування»</translation>
     </message>
     <message>
-        <source>Display the current driving personality on the screen. Tap to switch personalities, or long press for 0.5 seconds to change the current state of &lt;b&gt;Experimental Mode&lt;/b&gt;, or 2.5 seconds for &lt;b&gt;Traffic Mode&lt;/b&gt;.</source>
-        <translation type="vanished">Відображення поточного режиму керування на екрані. Натисніть, щоб переключитися між особистостями, або натисніть і утримуйте протягом 0,5 секунди, щоб змінити поточний стан &lt;b&gt;Експериментального режиму&lt;/b&gt;, або 2,5 секунди для &lt;b&gt;Режиму руху&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Gas / Brake Pedal Indicators</source>
         <translation>Індикатори педалі газу / гальма</translation>
-    </message>
-    <message>
-        <source>Pedals to indicate when either of the pedals are currently being used.&lt;br&gt;&lt;br&gt;&lt;b&gt;Dynamic&lt;/b&gt;: The pedals change in opacity in accordance to how much openpilot is accelerating or decelerating&lt;br&gt;&lt;b&gt;Static&lt;/b&gt;: The pedals are displayed with full opacity when active, and dimmed when not in use</source>
-        <translation type="vanished">Педалі, що вказують, коли будь-яка з педалей використовується в даний момент. &lt;br&gt;&lt;br&gt;&lt;b&gt;Динамічний&lt;/b&gt;: Педалі змінюють прозорість відповідно до того, наскільки openpilot прискорюється або сповільнюється. &lt;br&gt;&lt;b&gt;Статичний&lt;/b&gt;: Педалі відображаються з повною прозорістю, коли вони активні, і затемнюються, коли не використовуються.</translation>
     </message>
     <message>
         <source>Rotating Steering Wheel</source>
         <translation>Поворотне кермо</translation>
     </message>
     <message>
-        <source>Rotate the steering wheel alongside the vehicle's physical steering wheel.</source>
-        <translation type="vanished">Повертайте кермо разом із фізичним кермом автомобіля.</translation>
-    </message>
-    <message>
         <source>Model UI</source>
         <translation>Інтерфейс моделі</translation>
-    </message>
-    <message>
-        <source>Model visualizations on the driving screen for the driving path, lane lines, path edges, and road edges.</source>
-        <translation type="vanished">Візуалізація моделей на екрані водія для траєкторії руху, ліній смуг руху, країв траєкторії та країв дороги.</translation>
     </message>
     <message>
         <source>Dynamic Path Width</source>
         <translation>Динамічна ширина шляху</translation>
     </message>
     <message>
-        <source>Adjust the width of the driving path based on the current engagement state.&lt;br&gt;&lt;br&gt;&lt;b&gt;Fully engaged&lt;/b&gt;: 100%&lt;br&gt;&lt;b&gt;Always On Lateral&lt;/b&gt;: 75%&lt;br&gt;&lt;b&gt;Fully disengaged&lt;/b&gt;: 50%</source>
-        <translation type="vanished">Налаштуйте ширину траєкторії руху відповідно до поточного стану активації. &lt;br&gt;&lt;br&gt;&lt;b&gt;Повна активація&lt;/b&gt;: 100% &lt;br&gt;&lt;b&gt;Постійне кермування&lt;/b&gt;: 75% &lt;br&gt;&lt;b&gt;Повна деактивація&lt;/b&gt;: 50%</translation>
-    </message>
-    <message>
         <source>Lane Lines Width</source>
         <translation>Ширина смуг руху</translation>
-    </message>
-    <message>
-        <source>The thickness of the lane lines on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 4 inches.</source>
-        <translation type="vanished">Товщина ліній смуг руху на екрані водія. &lt;br&gt;&lt;br&gt;&lt;b&gt;За замовчуванням відповідає стандарту ширини ліній смуг руху &lt;b&gt;MUTCD&lt;/b&gt; в 4 дюйми.</translation>
     </message>
     <message>
         <source>Path Edges Width</source>
         <translation>Ширина країв шляху</translation>
     </message>
     <message>
-        <source>The width of the edges of the driving path that represent different driving modes and statuses.&lt;br&gt;&lt;br&gt;Default is &lt;b&gt;20%&lt;/b&gt; of the total path width.&lt;br&gt;&lt;br&gt;Color Guide:&lt;br&gt;&lt;br&gt;- &lt;b&gt;Blue&lt;/b&gt;: Navigation&lt;br&gt;- &lt;b&gt;Light Blue&lt;/b&gt;: Always On Lateral&lt;br&gt;- &lt;b&gt;Green&lt;/b&gt;: Default&lt;br&gt;- &lt;b&gt;Orange&lt;/b&gt;: Experimental Mode&lt;br&gt;- &lt;b&gt;Red&lt;/b&gt;: Traffic Mode&lt;br&gt;- &lt;b&gt;Yellow&lt;/b&gt;: Conditional Experimental Mode overridden</source>
-        <translation type="vanished">Ширина країв траєкторії руху, що відображають різні режими та стани руху. &lt;br&gt;&lt;br&gt;За замовчуванням становить &lt;b&gt;20%&lt;/b&gt; від загальної ширини траєкторії. &lt;br&gt;&lt;br&gt;Колірна гама: &lt;br&gt;&lt;br&gt; - &lt;b&gt;Синій&lt;/b&gt;: Навігація&lt;br&gt;- &lt;b&gt;Світло-синій&lt;/b&gt;: Завжди увімкнене кермування&lt;br&gt;- &lt;b&gt;Зелений&lt;/b&gt;: За замовчуванням&lt;br&gt;- &lt;b&gt;Помаранчевий&lt;/b&gt;: Експериментальний режим&lt;br&gt;- &lt;b&gt;Червоний&lt;/b&gt;: Режим трафік&lt;br&gt;- &lt;b&gt;Жовтий&lt;/b&gt;: Умовний експериментальний режим замінено</translation>
-    </message>
-    <message>
         <source>Path Width</source>
         <translation>Ширина шляху</translation>
-    </message>
-    <message>
-        <source>The width of the driving path on the driving screen.&lt;br&gt;&lt;br&gt;Default &lt;b&gt;(6.1 feet)&lt;/b&gt; matches the width of a &lt;b&gt;2019 Lexus ES 350&lt;/b&gt;.</source>
-        <translation type="vanished">Ширина смуги руху на екрані водія. &lt;br&gt;&lt;br&gt;За замовчуванням &lt;b&gt;(6,1 фута)&lt;/b&gt; відповідає ширині автомобіля &lt;b&gt;Lexus ES 350 2019 року&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Road Edges Width</source>
         <translation>Ширина країв дороги</translation>
     </message>
     <message>
-        <source>The thickness of the road edges on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches half of the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 4 inches.</source>
-        <translation type="vanished">Товщина країв дороги на екрані водія. &lt;br&gt;&lt;br&gt;&lt;b&gt;За замовчуванням відповідає половині стандарту ширини смуги руху &lt;b&gt;MUTCD&lt;/b&gt; в 4 дюйми.</translation>
-    </message>
-    <message>
-        <source>"Unlimited" Road UI</source>
+        <source>&quot;Unlimited&quot; Road UI</source>
         <translation>«Необмежений» інтерфейс дороги</translation>
-    </message>
-    <message>
-        <source>Extend the display of the driving path, lane lines, and road edges as far as the model can see.</source>
-        <translation type="vanished">Розширити відображення траєкторії руху, ліній смуг руху та країв дороги настільки, наскільки бачить модель.</translation>
     </message>
     <message>
         <source>Navigation Widgets</source>
         <translation>Навігаційні віджети</translation>
     </message>
     <message>
-        <source>Map style tweaks, speed limits, and other navigation related widgets.</source>
-        <translation type="vanished">Налаштування стилю карти, обмеження швидкості та інші віджети, пов'язані з навігацією.</translation>
-    </message>
-    <message>
         <source>Larger Map Display</source>
         <translation>Збільшити відображення карти</translation>
-    </message>
-    <message>
-        <source>Increase the size of the map for easier navigation readings.</source>
-        <translation type="vanished">Збільште розмір карти для зручнішого читання навігації.</translation>
     </message>
     <message>
         <source>Map Style</source>
         <translation>Стиль карти</translation>
     </message>
     <message>
-        <source>The map style used for &lt;b&gt;Navigate on openpilot (NOO)&lt;/b&gt;:&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock&lt;/b&gt;: Default comma.ai style&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;: Standard street-focused view&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;: Emphasizes outdoor and terrain features&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;: Minimalist, bright theme&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;: Minimalist, dark theme&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;: Optimized for daytime navigation&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;: Optimized for nighttime navigation&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;: Satellite imagery only&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;: Hybrid satellite imagery with street labels&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;: Dark theme emphasizing traffic conditions&lt;br&gt;&lt;b&gt;mike854's (Satellite hybrid)&lt;/b&gt;: Customized hybrid satellite view</source>
-        <translation type="vanished">Стиль карти, що використовується для &lt;b&gt;Навігації на openpilot (NOO)&lt;/b&gt;:&lt;br&gt;&lt;br&gt;&lt;b&gt;Стандартний&lt;/b&gt;: Стиль comma.ai за замовчуванням&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;: Стандартний вигляд з акцентом на вулицях&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;: Підкреслює особливості місцевості та рельєфу&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;: Мінімалістична, світла тема&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;: Мінімалістична, темна тема&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;: Оптимізовано для навігації вдень&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;: Оптимізовано для навігації вночі&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;: Тільки супутникові знімки&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;: Гібридні супутникові знімки з позначками вулиць&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;: Темна тема, що підкреслює дорожні умови&lt;br&gt;&lt;b&gt;mike854's (Satellite hybrid)&lt;/b&gt;: Налаштований гібридний супутниковий вигляд</translation>
-    </message>
-    <message>
         <source>Road Name</source>
         <translation>Назва дороги</translation>
-    </message>
-    <message>
-        <source>Display the road name at the bottom of the driving screen using data from &lt;b&gt;OpenStreetMap&lt;/b&gt;.</source>
-        <translation type="vanished">Відображення назви дороги внизу екрана водіння за допомогою даних з &lt;b&gt;OpenStreetMap&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Show Speed Limits</source>
         <translation>Показати обмеження швидкості</translation>
     </message>
     <message>
-        <source>Display speed limits in the top left corner of the driving screen. Uses data from your car's dashboard (if supported) and data from &lt;b&gt;OpenStreetMaps&lt;/b&gt;.</source>
-        <translation type="vanished">Відображення обмежень швидкості у верхньому лівому куті екрана водіння. Використовує дані з приладової панелі вашого автомобіля (якщо підтримується) та дані з &lt;b&gt;OpenStreetMaps&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Show Speed Limits from Mapbox</source>
         <translation>Показати обмеження швидкості від Mapbox</translation>
-    </message>
-    <message>
-        <source>Use &lt;b&gt;Mapbox&lt;/b&gt; speed limit data when no other sources are available.</source>
-        <translation type="vanished">Використовуйте дані про обмеження швидкості &lt;b&gt;Mapbox&lt;/b&gt;, якщо інші джерела недоступні.</translation>
     </message>
     <message>
         <source>Use Vienna-Style Speed Signs</source>
         <translation>Використовуйте знаки швидкості у віденському стилі</translation>
     </message>
     <message>
-        <source>Force &lt;b&gt;Vienna-style (EU)&lt;/b&gt; speed limit signs instead of &lt;b&gt;MUTCD (US)&lt;/b&gt;.</source>
-        <translation type="vanished">Застосовувати знаки обмеження швидкості &lt;b&gt;віденського типу (ЄС)&lt;/b&gt; замість &lt;b&gt;MUTCD (США)&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Quality of Life</source>
         <translation>Якість життя</translation>
-    </message>
-    <message>
-        <source>Visual features to improve your overall openpilot experience.</source>
-        <translation type="vanished">Візуальні функції для поліпшення загального враження від openpilot.</translation>
     </message>
     <message>
         <source>Camera View</source>
         <translation>Вид з камери</translation>
     </message>
     <message>
-        <source>The active camera view display. This is purely a visual change and doesn't impact how openpilot drives!</source>
-        <translation type="vanished">Активний дисплей камери. Це суто візуальна зміна, яка не впливає на роботу OpenPilot!</translation>
-    </message>
-    <message>
         <source>Show Driver Camera When In Reverse</source>
         <translation>Показати камеру водія під час руху заднім ходом</translation>
     </message>
     <message>
-        <source>Display the driver camera feed when the vehicle is in reverse.</source>
-        <translation type="vanished">Відображення зображення з камери водія, коли автомобіль рухається заднім ходом.</translation>
-    </message>
-    <message>
-        <source>Standby Mode</source>
-        <translation type="vanished">Режим очікування</translation>
-    </message>
-    <message>
-        <source>Turn the screen off when driving and automatically wake it up if engagement state changes or important alerts occur.</source>
-        <translation type="vanished">Вимикайте екран під час руху та автоматично вмикайте його, якщо змінюється стан взаємодії або з'являються важливі сповіщення.</translation>
-    </message>
-    <message>
         <source>Stopped Timer</source>
         <translation>Таймер зупинки</translation>
-    </message>
-    <message>
-        <source>Replace the current speed with a timer when stopped to indicate how long the vehicle has been stopped for.</source>
-        <translation type="vanished">Замінити поточну швидкість таймером під час зупинки, щоб вказати, як довго транспортний засіб перебував у зупиненому стані.</translation>
     </message>
     <message>
         <source>Blind Spot</source>
@@ -6429,10 +4763,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Штатний openpilot</translation>
     </message>
     <message>
-        <source>FrogsGoMoo's Personalized Style</source>
-        <translation type="vanished">Персоналізований стиль FrogsGoMoo</translation>
-    </message>
-    <message>
         <source>Mapbox Streets</source>
         <translation>Mapbox Вулиці</translation>
     </message>
@@ -6469,7 +4799,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Mapbox Нічний Трафік</translation>
     </message>
     <message>
-        <source>Mike's Personalized Style</source>
+        <source>Mike&apos;s Personalized Style</source>
         <translation>Індивідуальний стиль Майка</translation>
     </message>
     <message>
@@ -6517,18 +4847,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation> сантиметрів</translation>
     </message>
     <message>
-        <source>The thickness of the lane lines on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 10 centimeters.</source>
-        <translation type="vanished">Товщина ліній смуг руху на екрані водія. &lt;br&gt;&lt;br&gt;&lt;b&gt;За замовчуванням відповідає стандарту ширини ліній смуг руху &lt;b&gt;MUTCD&lt;/b&gt; в 10 сантиметрів.</translation>
-    </message>
-    <message>
-        <source>The width of the driving path on the driving screen.&lt;br&gt;&lt;br&gt;Default &lt;b&gt;(1.9 meters)&lt;/b&gt; matches the width of a &lt;b&gt;2019 Lexus ES 350&lt;/b&gt;.</source>
-        <translation type="vanished">Ширина смуги руху на екрані водія. &lt;br&gt;&lt;br&gt;За замовчуванням &lt;b&gt;(1,9 метра)&lt;/b&gt; відповідає ширині автомобіля &lt;b&gt;Lexus ES 350 2019 року&lt;/b&gt;.</translation>
-    </message>
-    <message>
-        <source>The thickness of the road edges on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches half of the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 10 centimeters.</source>
-        <translation type="vanished">Товщина країв дороги на екрані водія. &lt;br&gt;&lt;br&gt;&lt;b&gt;За замовчуванням відповідає половині стандарту ширини смуги руху &lt;b&gt;MUTCD&lt;/b&gt; в 10 сантиметрів.</translation>
-    </message>
-    <message>
         <source>&lt;b&gt;Advanced visual changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6557,11 +4875,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Use the vehicle's wheel speed&lt;/b&gt; instead of the cluster speed. This is purely a visual change and doesn't impact how openpilot drives!</source>
+        <source>&lt;b&gt;Use the vehicle&apos;s wheel speed&lt;/b&gt; instead of the cluster speed. This is purely a visual change and doesn&apos;t impact how openpilot drives!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Detailed information about openpilot's internal operations.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Detailed information about openpilot&apos;s internal operations.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6577,7 +4895,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Show each tracked vehicle's distance and speed&lt;/b&gt; below its marker.</source>
+        <source>&lt;b&gt;Show each tracked vehicle&apos;s distance and speed&lt;/b&gt; below its marker.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6593,7 +4911,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Display measurements using the "International System of Units" (SI)&lt;/b&gt; standard.</source>
+        <source>&lt;b&gt;Display measurements using the &quot;International System of Units&quot; (SI)&lt;/b&gt; standard.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6601,31 +4919,31 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the first "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the first &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the second "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the second &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the third "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the third &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the fourth "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the fourth &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the fifth "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the fifth &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the sixth "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the sixth &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the metric shown in the seventh "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Select the metric shown in the seventh &quot;Developer Sidebar&quot; widget.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6633,7 +4951,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Display adjacent leads detected by the car's radar&lt;/b&gt; to the left and right of the current driving path.</source>
+        <source>&lt;b&gt;Display adjacent leads detected by the car&apos;s radar&lt;/b&gt; to the left and right of the current driving path.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6641,7 +4959,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Display all radar points&lt;/b&gt; produced by the car's radar.</source>
+        <source>&lt;b&gt;Display all radar points&lt;/b&gt; produced by the car&apos;s radar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6657,7 +4975,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Show a red path when a vehicle is in that lane's blind spot.&lt;/b&gt;</source>
+        <source>&lt;b&gt;Show a red path when a vehicle is in that lane&apos;s blind spot.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6713,15 +5031,15 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the map style&lt;/b&gt; for "Navigate on openpilot" (NOO):&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock openpilot&lt;/b&gt;: Default comma.ai style&lt;br&gt;&lt;b&gt;FrogPilot&lt;/b&gt;: Official FrogPilot map style&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;: Standard street-focused view&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;: Emphasizes outdoor and terrain features&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;: Minimalist, bright theme&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;: Minimalist, dark theme&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;: Optimized for daytime navigation&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;: Optimized for nighttime navigation&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;: Satellite imagery only&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;: Hybrid satellite imagery with street labels&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;: Dark theme emphasizing traffic conditions&lt;br&gt;&lt;b&gt;Mike's Personalized Style&lt;/b&gt;: Customized hybrid satellite view</source>
+        <source>&lt;b&gt;Select the map style&lt;/b&gt; for &quot;Navigate on openpilot&quot; (NOO):&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock openpilot&lt;/b&gt;: Default comma.ai style&lt;br&gt;&lt;b&gt;FrogPilot&lt;/b&gt;: Official FrogPilot map style&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;: Standard street-focused view&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;: Emphasizes outdoor and terrain features&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;: Minimalist, bright theme&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;: Minimalist, dark theme&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;: Optimized for daytime navigation&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;: Optimized for nighttime navigation&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;: Satellite imagery only&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;: Hybrid satellite imagery with street labels&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;: Dark theme emphasizing traffic conditions&lt;br&gt;&lt;b&gt;Mike&apos;s Personalized Style&lt;/b&gt;: Customized hybrid satellite view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Display the road name at the bottom of the driving screen&lt;/b&gt; using data from "OpenStreetMap (OSM)".</source>
+        <source>&lt;b&gt;Display the road name at the bottom of the driving screen&lt;/b&gt; using data from &quot;OpenStreetMap (OSM)&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Show speed limits&lt;/b&gt; in the top-left corner of the driving screen. Uses data from the car's dashboard (if supported) and "OpenStreetMap (OSM)".</source>
+        <source>&lt;b&gt;Show speed limits&lt;/b&gt; in the top-left corner of the driving screen. Uses data from the car&apos;s dashboard (if supported) and &quot;OpenStreetMap (OSM)&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6737,7 +5055,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;b&gt;Select the active camera view.&lt;/b&gt; This is purely a visual change and doesn't impact how openpilot drives!</source>
+        <source>&lt;b&gt;Select the active camera view.&lt;/b&gt; This is purely a visual change and doesn&apos;t impact how openpilot drives!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6754,7 +5072,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     </message>
     <message>
         <source>FrogPilot</source>
-        <translation type="unfinished">ЖабоПілот</translation>
+        <translation>ЖабоПілот</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the lane-line thickness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default matches the MUTCD lane-line width standard of 10 centimeters.</source>
@@ -6776,43 +5094,19 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Кнопка відстані</translation>
     </message>
     <message>
-        <source>The action for a short press of the &lt;b&gt;Distance&lt;/b&gt; button.</source>
-        <translation type="vanished">Дія при короткому натисканні кнопки &lt;b&gt;Відстань&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Distance Button (Long Press)</source>
         <translation>Кнопка відстані (довге натискання)</translation>
-    </message>
-    <message>
-        <source>The action for a 0.5+ second press of the &lt;b&gt;Distance&lt;/b&gt; button.</source>
-        <translation type="vanished">Дія при натисканні кнопки &lt;b&gt;Відстань&lt;/b&gt; протягом 0,5+ секунди.</translation>
     </message>
     <message>
         <source>Distance Button (Very Long Press)</source>
         <translation>Кнопка відстані (дуже довге натискання)</translation>
     </message>
     <message>
-        <source>The action for a 2.5+ second press of the &lt;b&gt;Distance&lt;/b&gt; button.</source>
-        <translation type="vanished">Дія при натисканні кнопки &lt;b&gt;Відстань&lt;/b&gt; протягом 2,5+ секунд.</translation>
-    </message>
-    <message>
         <source>LKAS Button</source>
         <translation>Кнопка LKAS</translation>
     </message>
     <message>
-        <source>The action for pressing the &lt;b&gt;LKAS&lt;/b&gt; button.</source>
-        <translation type="vanished">Дія для натискання кнопки &lt;b&gt;LKAS&lt;/b&gt; (утримання полоси).</translation>
-    </message>
-    <message>
-        <source>Nothing</source>
-        <translation type="vanished">Нічого</translation>
-    </message>
-    <message>
-        <source>Pause Lateral</source>
-        <translation type="vanished">Пауза кермування</translation>
-    </message>
-    <message>
-        <source>Change "Personality Profile"</source>
+        <source>Change &quot;Personality Profile&quot;</source>
         <translation>Зміна режиму керування</translation>
     </message>
     <message>
@@ -6820,15 +5114,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Змусити openpilot повзти</translation>
     </message>
     <message>
-        <source>Pause Longitudinal</source>
-        <translation type="vanished">Пауза поздовжнього</translation>
-    </message>
-    <message>
-        <source>Toggle "Experimental Mode" On/Off</source>
+        <source>Toggle &quot;Experimental Mode&quot; On/Off</source>
         <translation>Переключити «Експериментальний режим»</translation>
     </message>
     <message>
-        <source>Toggle "Traffic Mode" On/Off</source>
+        <source>Toggle &quot;Traffic Mode&quot; On/Off</source>
         <translation>Переключити «Режим трафіку»</translation>
     </message>
     <message>
@@ -6840,32 +5130,32 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Виберіть функцію, яку потрібно призначити цій кнопці</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Action performed when the "Distance" button is pressed.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>&lt;b&gt;Action performed when the &quot;Distance&quot; button is pressed.&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Дія, що виконується при натисканні кнопки «Відстань».&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Action performed when the "Distance" button is pressed for more than 0.5 seconds.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>&lt;b&gt;Action performed when the &quot;Distance&quot; button is pressed for more than 0.5 seconds.&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Дія, що виконується при натисканні кнопки «Відстань» протягом більше ніж 0,5 секунди.&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Action performed when the "Distance" button is pressed for more than 2.5 seconds.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>&lt;b&gt;Action performed when the &quot;Distance&quot; button is pressed for more than 2.5 seconds.&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Дія, що виконується при натисканні кнопки «Відстань» протягом більше 2,5 секунд.&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Action performed when the "LKAS" button is pressed.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>&lt;b&gt;Action performed when the &quot;LKAS&quot; button is pressed.&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Дія, що виконується при натисканні кнопки «LKAS» (утримання смуги).&lt;/b&gt;</translation>
     </message>
     <message>
         <source>No Action</source>
-        <translation type="unfinished"></translation>
+        <translation>Без дії</translation>
     </message>
     <message>
         <source>Pause Steering</source>
-        <translation type="unfinished"></translation>
+        <translation>Пауза кермування</translation>
     </message>
     <message>
         <source>Pause Acceleration/Braking</source>
-        <translation type="unfinished"></translation>
+        <translation>Пауза Прискорення/Гальмування</translation>
     </message>
 </context>
 <context>
@@ -6936,57 +5226,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     </message>
 </context>
 <context>
-    <name>ModelReview</name>
-    <message>
-        <source>How would you rate that drive?</source>
-        <translation type="vanished">Як би ви оцінили цю поїздку?</translation>
-    </message>
-    <message>
-        <source>Blacklist this model</source>
-        <translation type="vanished">Додати цю модель до чорного списку</translation>
-    </message>
-    <message>
-        <source>The model used during that drive was:</source>
-        <translation type="vanished">Модель, яка використовувалася під час цієї поїздки, була такою:</translation>
-    </message>
-    <message>
-        <source>Current Model Score: 0</source>
-        <translation type="vanished">Поточний бал моделі: 0</translation>
-    </message>
-    <message>
-        <source>Current Model Rank: 0</source>
-        <translation type="vanished">Поточний рейтинг моделі: 0</translation>
-    </message>
-    <message>
-        <source>Total Model Drives: 0</source>
-        <translation type="vanished">Поїздок моделі: 0</translation>
-    </message>
-    <message>
-        <source>Total Overall Model Drives: 0</source>
-        <translation type="vanished">Загальна кількість поїздок моделі: 0</translation>
-    </message>
-    <message>
-        <source>Total Model Drives: %1</source>
-        <translation type="vanished">Поїздок моделі: %1</translation>
-    </message>
-    <message>
-        <source>Current Model Rank: %1</source>
-        <translation type="vanished">Поточний рейтинг моделі: %1</translation>
-    </message>
-    <message>
-        <source>Current Model Score: %1</source>
-        <translation type="vanished">Поточний бал моделі: %1</translation>
-    </message>
-    <message>
-        <source>Total Overall Drives: %1</source>
-        <translation type="vanished">Загалом поїздок: %1</translation>
-    </message>
-    <message>
-        <source>Model successfully blacklisted!</source>
-        <translation type="vanished">Модель успішно внесена до чорного списку!</translation>
-    </message>
-</context>
-<context>
     <name>MultiOptionDialog</name>
     <message>
         <source>Select</source>
@@ -7008,8 +5247,8 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Введіть пароль</translation>
     </message>
     <message>
-        <source>for "%1"</source>
-        <translation>до "%1"</translation>
+        <source>for &quot;%1&quot;</source>
+        <translation>до &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Wrong password</source>
@@ -7023,11 +5262,11 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Температура пристрою занадто висока. Система охолоджується перед запуском. Поточна температура внутрішніх компонентів: %1</translation>
     </message>
     <message>
-        <source>Immediately connect to the internet to check for updates. If you do not connect to the internet, openpilot won't engage in %1</source>
+        <source>Immediately connect to the internet to check for updates. If you do not connect to the internet, openpilot won&apos;t engage in %1</source>
         <translation>Негайно підключіться до Інтернету, щоб перевірити наявність оновлень. Якщо ви не підключитеся до Інтернету, openpilot не активується %1.</translation>
     </message>
     <message>
-        <source>Connect to internet to check for updates. openpilot won't automatically start until it connects to internet to check for updates.</source>
+        <source>Connect to internet to check for updates. openpilot won&apos;t automatically start until it connects to internet to check for updates.</source>
         <translation>Підключіться до Інтернету, щоб перевірити наявність оновлень. openpilot не запуститься автоматично, поки не підключиться до Інтернету для перевірки наявності оновлень.</translation>
     </message>
     <message>
@@ -7037,12 +5276,12 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
 %1</translation>
     </message>
     <message>
-        <source>Taking camera snapshots. System won't start until finished.</source>
+        <source>Taking camera snapshots. System won&apos;t start until finished.</source>
         <translation>Роблю знімок з камери. Система не запуститься, поки процес не буде завершено.</translation>
     </message>
     <message>
-        <source>An update to your device's operating system is downloading in the background. You will be prompted to update when it's ready to install.</source>
-        <translation>Оновлення операційної системи вашого пристрою завантажується у фоновому режимі. Коли воно буде готове до встановлення, з'явиться запит на оновлення.</translation>
+        <source>An update to your device&apos;s operating system is downloading in the background. You will be prompted to update when it&apos;s ready to install.</source>
+        <translation>Оновлення операційної системи вашого пристрою завантажується у фоновому режимі. Коли воно буде готове до встановлення, з&apos;явиться запит на оновлення.</translation>
     </message>
     <message>
         <source>Device failed to register. It will not connect to or upload to comma.ai servers, and receives no support from comma.ai. If this is an official device, visit https://comma.ai/support.</source>
@@ -7062,10 +5301,10 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     </message>
     <message>
         <source>openpilot was unable to identify your car. Check integrity of cables and ensure all connections are secure, particularly that the comma power is fully inserted in the OBD-II port of the vehicle. Need help? Join discord.comma.ai.</source>
-        <translation>openpilot не зміг ідентифікувати ваш автомобіль. Перевірте цілісність кабелів і переконайтеся, що всі з'єднання надійні, особливо що зарядний пристрій comma повністю вставлений в порт OBD-II автомобіля. Потрібна допомога? Приєднуйтесь до discord.comma.ai.</translation>
+        <translation>openpilot не зміг ідентифікувати ваш автомобіль. Перевірте цілісність кабелів і переконайтеся, що всі з&apos;єднання надійні, особливо що зарядний пристрій comma повністю вставлений в порт OBD-II автомобіля. Потрібна допомога? Приєднуйтесь до discord.comma.ai.</translation>
     </message>
     <message>
-        <source>openpilot detected a change in the device's mounting position. Ensure the device is fully seated in the mount and the mount is firmly secured to the windshield.</source>
+        <source>openpilot detected a change in the device&apos;s mounting position. Ensure the device is fully seated in the mount and the mount is firmly secured to the windshield.</source>
         <translation>openpilot виявив зміну положення кріплення пристрою. Переконайтеся, що пристрій повністю вставлений у кріплення, а кріплення надійно зафіксоване на лобовому склі.</translation>
     </message>
 </context>
@@ -7091,7 +5330,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>openpilot завис 💩</translation>
     </message>
     <message>
-        <source>Please post the "Error Log" in the FrogPilot Discord!</source>
+        <source>Please post the &quot;Error Log&quot; in the FrogPilot Discord!</source>
         <translation>Будь ласка, відправте «Журнал помилок» у FrogPilot Discord!</translation>
     </message>
     <message>
@@ -7130,7 +5369,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>Перейдіть на сайт https://%1 на своєму телефоні</translation>
     </message>
     <message>
-        <source>Click "add new device" and scan the QR code on the right</source>
+        <source>Click &quot;add new device&quot; and scan the QR code on the right</source>
         <translation>Натисніть «додати новий пристрій» і відскануйте QR-код праворуч</translation>
     </message>
     <message>
@@ -7365,27 +5604,27 @@ This may take up to a minute.</source>
         <translation>ЖабоПілот</translation>
     </message>
     <message>
-        <source>Welcome to FrogPilot! Since you're new to openpilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <source>Welcome to FrogPilot! Since you&apos;re new to openpilot, the &quot;Minimal&quot; toggle preset has been applied, but you can change this at any time via the &quot;Tuning Level&quot; button!</source>
         <translation>Ласкаво просимо до FrogPilot! Оскільки ви новачок в openpilot, було застосовано попереднє налаштування «Мінімальне», але ви можете змінити його в будь-який час за допомогою кнопки «Рівень налаштування»!</translation>
     </message>
     <message>
-        <source>Welcome to FrogPilot! Since you're new to FrogPilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <source>Welcome to FrogPilot! Since you&apos;re new to FrogPilot, the &quot;Minimal&quot; toggle preset has been applied, but you can change this at any time via the &quot;Tuning Level&quot; button!</source>
         <translation>Ласкаво просимо до FrogPilot! Оскільки ви новачок у FrogPilot, було застосовано попереднє налаштування «Мінімальне», але ви можете змінити його в будь-який час за допомогою кнопки «Рівень налаштування»!</translation>
     </message>
     <message>
-        <source>Since you're fairly new to FrogPilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <source>Since you&apos;re fairly new to FrogPilot, the &quot;Minimal&quot; toggle preset has been applied, but you can change this at any time via the &quot;Tuning Level&quot; button!</source>
         <translation>Оскільки ви ще не дуже добре знайомі з FrogPilot, було застосовано попереднє налаштування «Мінімальне», але ви можете змінити його в будь-який час за допомогою кнопки «Рівень налаштування»!</translation>
     </message>
     <message>
-        <source>Since you're experienced with openpilot, the "Standard" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <source>Since you&apos;re experienced with openpilot, the &quot;Standard&quot; toggle preset has been applied, but you can change this at any time via the &quot;Tuning Level&quot; button!</source>
         <translation>Оскільки ви маєте досвід роботи з openpilot, було застосовано попереднє налаштування «Стандарт», але ви можете змінити його в будь-який час за допомогою кнопки «Рівень налаштування»!</translation>
     </message>
     <message>
-        <source>Since you're experienced with FrogPilot, the "Standard" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <source>Since you&apos;re experienced with FrogPilot, the &quot;Standard&quot; toggle preset has been applied, but you can change this at any time via the &quot;Tuning Level&quot; button!</source>
         <translation>Оскільки ви маєте досвід роботи з FrogPilot, було застосовано стандартне попереднє налаштування «Standard», але ви можете змінити його в будь-який час за допомогою кнопки «Tuning Level»!</translation>
     </message>
     <message>
-        <source>Since you're very experienced with FrogPilot, the "Advanced" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <source>Since you&apos;re very experienced with FrogPilot, the &quot;Advanced&quot; toggle preset has been applied, but you can change this at any time via the &quot;Tuning Level&quot; button!</source>
         <translation>Оскільки ви маєте великий досвід роботи з FrogPilot, було застосовано попереднє налаштування «Advanced», але ви можете змінити його в будь-який час за допомогою кнопки «Tuning Level»!</translation>
     </message>
 </context>
@@ -7625,7 +5864,7 @@ This may take up to a minute.</source>
         <translation>Автоматично оновлювати FrogPilot</translation>
     </message>
     <message>
-        <source>FrogPilot will automatically update itself and it's assets when you're offroad and have an active internet connection.</source>
+        <source>FrogPilot will automatically update itself and it&apos;s assets when you&apos;re offroad and have an active internet connection.</source>
         <translation>FrogPilot автоматично оновлюватиме себе та свої ресурси, коли ви не в дорозі та маєте активне підключення до Інтернету.</translation>
     </message>
     <message>
@@ -7677,14 +5916,6 @@ This may take up to a minute.</source>
         <translation>Видалити</translation>
     </message>
     <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="vanished">Ви хочете видалити глибоко збережені ресурси FrogPilot? Це включає ваші налаштування для швидкої переінсталяції.</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="vanished">Ви впевнені? Це 100% безповоротне рішення, і якщо ви переінсталюєте FrogPilot, ви втратите всі попередні налаштування!</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation>Журнал помилок</translation>
     </message>
@@ -7734,11 +5965,11 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
-        <translation type="unfinished"></translation>
+        <translation>Ви хочете виконати повне скидання до заводських налаштувань? Усі збережені дані та налаштування будуть остаточно видалені!</translation>
     </message>
     <message>
         <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Це повне скидання налаштувань до заводських і його неможливо скасувати. Ви абсолютно впевнені, що хочете продовжити?</translation>
     </message>
 </context>
 <context>
@@ -7749,7 +5980,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username other than your own. A comma employee will NEVER ask you to add their GitHub username.</source>
-        <translation>Попередження: це надає SSH доступ до всіх відкритих ключів у ваших налаштуваннях GitHub. Ніколи не вводьте ім'я користувача GitHub, яке не належить вам. Співробітник компанії comma НІКОЛИ не попросить вас додати його ім'я користувача GitHub.</translation>
+        <translation>Попередження: це надає SSH доступ до всіх відкритих ключів у ваших налаштуваннях GitHub. Ніколи не вводьте ім&apos;я користувача GitHub, яке не належить вам. Співробітник компанії comma НІКОЛИ не попросить вас додати його ім&apos;я користувача GitHub.</translation>
     </message>
     <message>
         <source>ADD</source>
@@ -7757,7 +5988,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enter your GitHub username</source>
-        <translation>Введіть своє ім'я користувача GitHub</translation>
+        <translation>Введіть своє ім&apos;я користувача GitHub</translation>
     </message>
     <message>
         <source>LOADING</source>
@@ -7768,7 +5999,7 @@ This may take up to a minute.</source>
         <translation>ВИДАЛИТИ</translation>
     </message>
     <message>
-        <source>Username '%1' has no keys on GitHub</source>
+        <source>Username &apos;%1&apos; has no keys on GitHub</source>
         <translation>Користувач «%1» не має ключів на GitHub</translation>
     </message>
     <message>
@@ -7776,8 +6007,8 @@ This may take up to a minute.</source>
         <translation>Час очікування запиту закінчився</translation>
     </message>
     <message>
-        <source>Username '%1' doesn't exist on GitHub</source>
-        <translation>Ім'я користувача «%1» не існує на GitHub</translation>
+        <source>Username &apos;%1&apos; doesn&apos;t exist on GitHub</source>
+        <translation>Ім&apos;я користувача «%1» не існує на GitHub</translation>
     </message>
 </context>
 <context>
@@ -7826,7 +6057,7 @@ This may take up to a minute.</source>
         <translation>УВАГА: система поздовжнього контролю openpilot для цього автомобіля перебуває в стадії альфа-тестування і вимкне функцію автоматичного екстреного гальмування (AEB).</translation>
     </message>
     <message>
-        <source>On this car, openpilot defaults to the car's built-in ACC instead of openpilot's longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
+        <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
         <translation>У цьому автомобілі openpilot за замовчуванням використовує вбудовану систему ACC замість поздовжнього керування openpilot. Увімкніть цю опцію, щоб перейти на поздовжнє керування openpilot. Рекомендується увімкнути експериментальний режим під час увімкнення альфа-версії поздовжнього керування openpilot.</translation>
     </message>
     <message>
@@ -7847,7 +6078,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h).</source>
-        <translation>Отримуйте сповіщення про необхідність повернутись у смугу руху, коли ваш автомобіль з'їжджає за межі виявленої смуги руху без увімкненого поворотника під час руху зі швидкістю понад 31 миль/год (50 км/год).</translation>
+        <translation>Отримуйте сповіщення про необхідність повернутись у смугу руху, коли ваш автомобіль з&apos;їжджає за межі виявленої смуги руху без увімкненого поворотника під час руху зі швидкістю понад 31 миль/год (50 км/год).</translation>
     </message>
     <message>
         <source>Record and Upload Driver Camera</source>
@@ -7902,7 +6133,7 @@ This may take up to a minute.</source>
         <translation>Рекомендується стандартний режим. В агресивному режимі openpilot буде слідувати за автомобілями, що їдуть попереду, ближче і буде більш агресивно використовувати газ і гальма. У спокійному режимі openpilot буде триматися далі від автомобілів, що їдуть попереду. На автомобілях, що підтримують цю функцію, ви можете перемикатися між цими режимами за допомогою кнопки відстані на кермі.</translation>
     </message>
     <message>
-        <source>openpilot defaults to driving in &lt;b&gt;chill mode&lt;/b&gt;. Experimental mode enables &lt;b&gt;alpha-level features&lt;/b&gt; that aren't ready for chill mode. Experimental features are listed below:</source>
+        <source>openpilot defaults to driving in &lt;b&gt;chill mode&lt;/b&gt;. Experimental mode enables &lt;b&gt;alpha-level features&lt;/b&gt; that aren&apos;t ready for chill mode. Experimental features are listed below:</source>
         <translation>openpilot за замовчуванням працює в &lt;b&gt;Спокійному режимі&lt;/b&gt;. Експериментальний режим увімкне &lt;b&gt;функції альфа-рівня&lt;/b&gt;, які не готові для режиму спокійний. Експериментальні функції перелічені нижче:</translation>
     </message>
     <message>
@@ -7922,12 +6153,12 @@ This may take up to a minute.</source>
         <translation>Візуалізація руху перейде на ширококутну камеру, спрямовану на дорогу, при низьких швидкостях, щоб краще показувати деякі повороти. Логотип експериментального режиму також буде відображатися у верхньому правому куті.</translation>
     </message>
     <message>
-        <source>Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control.</source>
+        <source>Experimental mode is currently unavailable on this car since the car&apos;s stock ACC is used for longitudinal control.</source>
         <translation>Експериментальний режим наразі недоступний для цього автомобіля, оскільки для поздовжнього контролю використовується стандартна система ACC.</translation>
     </message>
     <message>
         <source>openpilot longitudinal control may come in a future update.</source>
-        <translation>Поздовжнє керування openpilot може з'явитися в майбутньому оновленні.</translation>
+        <translation>Поздовжнє керування openpilot може з&apos;явитися в майбутньому оновленні.</translation>
     </message>
     <message>
         <source>Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode.</source>
@@ -7996,7 +6227,7 @@ This may take up to a minute.</source>
         <translation>Завантаження вимкнено</translation>
     </message>
     <message>
-        <source>Toggle off the "Turn Off Data Uploads" toggle to re-enable uploads.</source>
+        <source>Toggle off the &quot;Turn Off Data Uploads&quot; toggle to re-enable uploads.</source>
         <translation>Вимкніть перемикач «Вимкнути завантаження даних», щоб знову увімкнути завантаження.</translation>
     </message>
 </context>
@@ -8008,14 +6239,14 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>CONNECTING...</source>
-        <translation>З'ЄДНАННЯ...</translation>
+        <translation>З&apos;ЄДНАННЯ...</translation>
     </message>
     <message>
         <source>FORGET</source>
         <translation>ЗАБУТИ</translation>
     </message>
     <message>
-        <source>Forget Wi-Fi Network "%1"?</source>
+        <source>Forget Wi-Fi Network &quot;%1&quot;?</source>
         <translation>Забути мережу Wi-Fi «%1»?</translation>
     </message>
     <message>
