@@ -2297,199 +2297,199 @@
     </message>
     <message>
         <source>&lt;b&gt;Advanced acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Розширені зміни в управлінні прискоренням і гальмуванням&lt;/b&gt; для точного налаштування роботи openpilot.</translation>
     </message>
     <message>
         <source>&lt;b&gt;The time between openpilot&apos;s throttle or brake command and the vehicle&apos;s response.&lt;/b&gt; Increase if the vehicle feels slow to react; decrease if it feels too eager or overshoots.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Час між командою openpilot на прискорення або гальмування та реакцією автомобіля. Збільшуйте, якщо автомобіль реагує повільно; зменшуйте, якщо він реагує занадто швидко або перевищує необхідну швидкість.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Extra acceleration applied when starting from a stop.&lt;/b&gt; Increase for quicker takeoffs; decrease for smoother, gentler starts.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додаткове прискорення, що застосовується при старті з місця. Збільште для більш швидкого старту; зменште для більш плавного та м&apos;якого старту.</translation>
     </message>
     <message>
         <source>&lt;b&gt;The speed at which openpilot exits the stopped state.&lt;/b&gt; Increase to reduce creeping; decrease to move sooner after stopping.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Швидкість, з якою openpilot виходить із стану зупинки.&lt;/b&gt; Збільште, щоб зменшити повзання; зменште, щоб швидше рухатися після зупинки.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Brake force applied to hold the vehicle at a standstill.&lt;/b&gt; Increase to prevent rolling on hills; decrease for smoother, softer stops.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Гальмівна сила, що застосовується для утримання автомобіля в нерухомому стані.&lt;/b&gt; Збільшуйте її, щоб запобігти коченню на схилах; зменшуйте для більш плавного та м&apos;якого гальмування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How quickly braking ramps up when stopping.&lt;/b&gt; Increase for shorter, firmer stops; decrease for smoother, longer stops.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як швидко гальмування посилюється під час зупинки.&lt;/b&gt; Збільшуйте для коротших, більш різких зупинок; зменшуйте для плавніших, довших зупинок.</translation>
     </message>
     <message>
         <source>&lt;b&gt;The speed at which openpilot considers the vehicle stopped.&lt;/b&gt; Increase to brake earlier and stop smoothly; decrease to wait longer but risk overshooting.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Швидкість, при якій openpilot вважає, що транспортний засіб зупинився.&lt;/b&gt; Збільште, щоб гальмувати раніше і зупинятися плавно; зменште, щоб чекати довше, але ризикуючи проїхати зупинку.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Automatically switch to &quot;Experimental Mode&quot; when set conditions are met.&lt;/b&gt; Allows the model to handle challenging situations with smarter decision making.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Автоматично переходити в «Експериментальний режим» при виконанні заданих умов.&lt;/b&gt; Дозволяє моделі вирішувати складні ситуації за допомогою більш розумних рішень.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when driving below this speed without a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим», коли їдете з швидкістю нижче цієї без лідера&lt;/b&gt;, щоб допомогти openpilot більш плавно справлятися з ситуаціями на низькій швидкості.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when a curve is detected&lt;/b&gt; to allow the model to set an appropriate speed for the curve.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим» при виявленні вигина шляху&lt;/b&gt;, щоб модель могла встановити відповідну швидкість для вигину.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when a slower or stopped vehicle is detected.&lt;/b&gt; Can make braking smoother and more reliable on some vehicles.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим», коли попереду виявлено повільніший або зупинений транспортний засіб.&lt;/b&gt; Може зробити гальмування більш плавним і надійним на деяких транспортних засобах.</translation>
     </message>
     <message>
         <source>Navigation-Based</source>
-        <translation type="unfinished"></translation>
+        <translation>Навігаційний</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when approaching intersections or turns on the active route&lt;/b&gt; while using &quot;Navigate on openpilot&quot; (NOO) to allow the model to set an appropriate speed for upcoming maneuvers.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим» при наближенні до перехресть або поворотів на активному маршруті&lt;/b&gt; під час використання «Навігації на openpilot» (NOO), щоб модель могла встановити відповідну швидкість для майбутніх маневрів.</translation>
     </message>
     <message>
         <source>Predicted Stop In</source>
-        <translation type="unfinished"></translation>
+        <translation>Прогнозована зупинка в</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when openpilot predicts a stop within the set time.&lt;/b&gt; This is usually triggered when the model &quot;sees&quot; a red light or stop sign ahead.&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In &quot;Experimental Mode&quot;, openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there&apos;s no clear reason.&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим», коли openpilot прогнозує зупинку протягом заданого часу. &lt;/b&gt; Зазвичай це відбувається, коли модель «бачить» попереду червоне світло або знак зупинки. &lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Застереження&lt;/b&gt;: openpilot не розпізнає світлофори або знаки зупинки. У «експериментальному режимі» openpilot приймає рішення про рух на основі даних з камери, що означає, що він може зупинитися навіть без очевидної причини.&lt;/i&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when using a turn signal below the set speed&lt;/b&gt; to allow the model to choose an appropriate speed for smoother left and right turns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим», коли використовуєте поворотник нижче встановленої швидкості&lt;/b&gt;, щоб модель могла вибрати відповідну швидкість для більш плавного повороту вліво та вправо.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Show which condition triggered &quot;Experimental Mode&quot;&lt;/b&gt; on the driving screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Показати, яка умова викликала «Експериментальний режим»&lt;/b&gt; на екрані керування.</translation>
     </message>
     <message>
         <source>Curve Speed Controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Регулятор швидкості вигинів</translation>
     </message>
     <message>
         <source>&lt;b&gt;Automatically slow down for upcoming curves&lt;/b&gt; using data learned from your driving style, adapting to curves as you would.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Автоматичне уповільнення перед вигинами&lt;/b&gt; на основі даних, отриманих з вашого стилю водіння, адаптуючись до поворотів так, як ви це робите.</translation>
     </message>
     <message>
         <source>Calibrated Lateral Acceleration</source>
-        <translation type="unfinished"></translation>
+        <translation>Каліброване поперечне прискорення</translation>
     </message>
     <message>
         <source>&lt;b&gt;The learned lateral acceleration from collected driving data.&lt;/b&gt; This sets how fast openpilot will take curves. Higher values allow faster cornering; lower values slow the vehicle for gentler turns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Вивчене поперечне прискорення на основі зібраних даних про рух автомобіля.&lt;/b&gt; Це визначає швидкість, з якою openpilot буде проїжджати повороти. Більші значення дозволяють швидше проїжджати повороти; менші значення сповільнюють автомобіль для більш плавного проходження поворотів.</translation>
     </message>
     <message>
         <source>Calibration Progress</source>
-        <translation type="unfinished"></translation>
+        <translation>Хід калібрування</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much curve data has been collected.&lt;/b&gt; This is a progress meter; it is normal for the value to stay low and rarely reach 100%.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки даних про вигини було зібрано.&lt;/b&gt; Це індикатор прогресу; нормально, якщо значення залишається низьким і рідко досягає 100%.</translation>
     </message>
     <message>
         <source>Reset Curve Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути дані вигинів</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reset collected user data for &quot;Curve Speed Controller&quot;.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скинути зібрані дані користувача для «Регулятора швидкості вигинів.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Show the &quot;Curve Speed Controller&quot; target speed on the driving screen.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Показати цільову швидкість «Регулятора швидкості вигинів на екрані керування.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Driving Personalities</source>
-        <translation type="unfinished"></translation>
+        <translation>Режими керування</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the &quot;Driving Personalities&quot;&lt;/b&gt; to better match your driving style.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте «Режими керування&lt;/b&gt; відповідно до вашого стилю водіння.</translation>
     </message>
     <message>
         <source>Traffic Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим Трафік</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the &quot;Traffic Mode&quot; personality profile.&lt;/b&gt; Designed for stop-and-go driving.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте профіль особистості «Режим Трафік».&lt;/b&gt; Призначений для руху в режимі «стоп-старт».</translation>
     </message>
     <message>
         <source>&lt;b&gt;The minimum following distance to the lead vehicle in &quot;Traffic Mode&quot;.&lt;/b&gt; openpilot blends between this value and the &quot;Aggressive&quot; profile as speed increases. Increase for more space; decrease for tighter gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Мінімальна відстань до автомобіля, що рухається попереду, в режимі «Трафік».&lt;/b&gt; openpilot плавно переходить від цього значення до профілю «Агресивний» у міру збільшення швидкості. Збільшуйте для більшого простору; зменшуйте для менших проміжків.</translation>
     </message>
     <message>
         <source>Acceleration Smoothness</source>
-        <translation type="unfinished"></translation>
+        <translation>Плавність прискорення</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot accelerates in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється в «Режимі трафік».&lt;/b&gt; Збільште для більш плавного старту; зменште для більш швидкого, але різкого старту.</translation>
     </message>
     <message>
         <source>Braking Smoothness</source>
-        <translation type="unfinished"></translation>
+        <translation>Плавність гальмування</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot brakes in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно гальмує OpenPilot у «режимі трафік».&lt;/b&gt; Збільште для більш плавного гальмування; зменште для швидшого, але різкішого гальмування.</translation>
     </message>
     <message>
         <source>Safety Gap Bias</source>
-        <translation type="unfinished"></translation>
+        <translation>Запас безпечної дистанції</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки додаткового простору openpilot зберігає від транспортного засобу, що рухається попереду, в «режимі трафік».&lt;/b&gt; Збільшуйте для більших проміжків і більш обережного слідування; зменшуйте для менших проміжків і більш близького слідування.</translation>
     </message>
     <message>
         <source>Slowdown Response</source>
-        <translation type="unfinished"></translation>
+        <translation>Реакція на уповільнення</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot slows down in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot уповільнює рух у «Режимі трафік».&lt;/b&gt; Збільште значення для більш поступового уповільнення; зменште значення для швидшого, але різкішого уповільнення.</translation>
     </message>
     <message>
         <source>Speed-Up Response</source>
-        <translation type="unfinished"></translation>
+        <translation>Реакція на прискорення</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot speeds up in &quot;Traffic Mode&quot;.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється в «Режимі трафік».&lt;/b&gt; Збільште для більш поступового прискорення; зменште для більш швидкого, але більш різкого прискорення.</translation>
     </message>
     <message>
         <source>Reset to Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути до замовчань</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reset &quot;Traffic Mode&quot; settings to defaults.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скинути налаштування «Режим трафік» до заводських налаштувань.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Aggressive</source>
-        <translation type="unfinished">Агресивний</translation>
+        <translation>Агресивний</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the &quot;Aggressive&quot; personality profile.&lt;/b&gt; Designed for assertive driving with tighter gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте режим «Агресивний».&lt;/b&gt; Призначений для впевненого водіння з меншими інтервалами між автомобілями.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки секунд openpilot слідує за авто попереду при використанні профілю «Агресивний».&lt;/b&gt; Збільшуйте для більшого відстані; зменшуйте для меншої відстані.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,25 секунди.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється з профілем «Агресивний».&lt;/b&gt; Збільште для більш плавного старту; зменште для швидшого, але більш різкого старту.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно гальмує openpilot з профілем «Агресивний».&lt;/b&gt; Збільште для більш плавного гальмування; зменште для швидшого, але різкішого гальмування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки додаткового простору openpilot зберігає від транспортного засобу, що рухається попереду, з профілем «Агресивний».&lt;/b&gt; Збільшуйте для більших відстаней і більш обережного слідування; зменшуйте для менших відстаней і більш близького слідування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
