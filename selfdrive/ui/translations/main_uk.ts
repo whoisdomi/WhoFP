@@ -3492,35 +3492,35 @@ It will reset in %1 hours and %2 minutes.</source>
     </message>
     <message>
         <source>&lt;b&gt;Adjust alert volumes and enable custom notifications.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте гучність сповіщень та увімкніть персоналізовані сповіщення.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Fine-tune custom FrogPilot acceleration, braking, and steering controls.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Точне налаштування користувацьких елементів керування прискоренням, гальмуванням та рульовим керуванням FrogPilot.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Download map data for the &quot;Speed Limit Controller&quot; and configure &quot;Navigate on openpilot&quot; (NOO).&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Завантажте картографічні дані для «Контролера обмеження швидкості» та налаштуйте «Навігацію на openpilot» (NOO).&lt;/b&gt;</translation>
     </message>
     <message>
         <source>System Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Налаштування системи</translation>
     </message>
     <message>
         <source>&lt;b&gt;Manage backups, device settings, screen options, storage, and tools to keep FrogPilot running smoothly.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Керуйте резервними копіями, налаштуваннями пристрою, параметрами екрана, сховищем та інструментами, щоб забезпечити безперебійну роботу FrogPilot.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the look of the driving screen and interface, including themes!&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте зовнішній вигляд екрану водіння та інтерфейсу, включаючи теми!&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Vehicle Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Налаштування авто</translation>
     </message>
     <message>
         <source>&lt;b&gt;Configure car-specific options and steering wheel button mappings.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте параметри для конкретного автомобіля та призначення кнопок на кермі.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Choose your tuning level. Lower levels keep it simple; higher levels unlock more toggles for finer control.
@@ -3529,15 +3529,20 @@ Minimal - Ideal for those who prefer simplicity or ease of use
 Standard - Recommended for most users for a balanced experience
 Advanced - Fine-tuning for experienced users
 Developer - Highly customizable settings for seasoned enthusiasts</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть рівень налаштування. Нижчі рівні забезпечують простоту, вищі рівні відкривають більше перемикачів для більш точного контролю.
+
+Мінімальний — ідеальний для тих, хто віддає перевагу простоті та зручності використання.
+Стандартний — рекомендується для більшості користувачів для збалансованого досвіду.
+Розширений — точне налаштування для досвідчених користувачів.
+Розробник — налаштування з високим рівнем налаштування для досвідчених ентузіастів.</translation>
     </message>
     <message>
         <source>WARNING: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do!</source>
-        <translation type="unfinished"></translation>
+        <translation>УВАГА: Ці налаштування є ризикованими і можуть кардинально змінити керування автомобілем з openpilot. Змінюйте їх лише в тому випадку, якщо ви повністю розумієте, як вони працюють!</translation>
     </message>
     <message>
         <source>All toggle descriptions are currently expanded. You can tap a toggle&apos;s name to open or close its description at any time!</source>
-        <translation type="unfinished"></translation>
+        <translation>Всі описи налаштувань наразі розгорнуті. Ви можете натиснути на назву перемикача, щоб відкрити або закрити його опис у будь-який момент!</translation>
     </message>
 </context>
 <context>
