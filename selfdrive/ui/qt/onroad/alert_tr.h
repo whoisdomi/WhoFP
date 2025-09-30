@@ -26,8 +26,18 @@ inline std::vector<AlertTranslation> alertTranslations = {
 
    //special alerts
    {"openpilot Unavailable", "", QT_TRANSLATE_NOOP("Alerts", "openpilot Unavailable"), QT_TRANSLATE_NOOP("Alerts", "")},
-   {"STAKE CONTROL IMMEDIATELY", "", QT_TRANSLATE_NOOP("Alerts", "TAKE CONTROL IMMEDIATELY"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"TAKE CONTROL IMMEDIATELY", "", QT_TRANSLATE_NOOP("Alerts", "TAKE CONTROL IMMEDIATELY"), QT_TRANSLATE_NOOP("Alerts", "")},
    {"openpilot will disengage", "", QT_TRANSLATE_NOOP("Alerts", "openpilot will disengage"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Posenet Speed Invalid", "", QT_TRANSLATE_NOOP("Alerts", "Posenet Speed Invalid"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Process Not Running", "", QT_TRANSLATE_NOOP("Alerts", "Process Not Running"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Communication Issue Between Processes", "", QT_TRANSLATE_NOOP("Alerts", "Communication Issue Between Processes"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Camera Malfunction, %1", "", QT_TRANSLATE_NOOP("Alerts", "Camera Malfunction, %1"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Calibration Invalid", "Remount Device (Pitch: %1°, Yaw: %2°)", QT_TRANSLATE_NOOP("Alerts", "Calibration Invalid"), QT_TRANSLATE_NOOP("Alerts", "Remount Device (Pitch: %1°, Yaw: %2°)")},
+   {"Enable Cruise Control to Engage", "", QT_TRANSLATE_NOOP("Alerts", "Enable Cruise Control to Engage"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Enable Main Switch to Engage", "", QT_TRANSLATE_NOOP("Alerts", "Enable Main Switch to Engage"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Enable Adaptive Cruise to Engage", "", QT_TRANSLATE_NOOP("Alerts", "Enable Adaptive Cruise to Engage"), QT_TRANSLATE_NOOP("Alerts", "")},
+   {"Speed Error: %1 m/s", "", QT_TRANSLATE_NOOP("Alerts", "Speed Error: %1 m/s"), QT_TRANSLATE_NOOP("Alerts", "")},
+
 
   {"Out of Storage", "%1% full", QT_TRANSLATE_NOOP("Alerts", "Out of Storage"), QT_TRANSLATE_NOOP("Alerts", "%1% full")},
   {"Camera Malfunction", "", QT_TRANSLATE_NOOP("Alerts", "Camera Malfunction"), QT_TRANSLATE_NOOP("Alerts", "")},
@@ -36,7 +46,7 @@ inline std::vector<AlertTranslation> alertTranslations = {
   {"Low Memory", "%1% used", QT_TRANSLATE_NOOP("Alerts", "Low Memory"), QT_TRANSLATE_NOOP("Alerts", "%1% used")},
   {"High CPU Usage", "%1% used", QT_TRANSLATE_NOOP("Alerts", "High CPU Usage"), QT_TRANSLATE_NOOP("Alerts", "%1% used")},
   {"Driving Model Lagging", "%1% frames dropped", QT_TRANSLATE_NOOP("Alerts", "Driving Model Lagging"), QT_TRANSLATE_NOOP("Alerts", "%1% frames dropped")},
-  {"Joystick Mode", "", QT_TRANSLATE_NOOP("Alerts", "Joystick Mode"), QT_TRANSLATE_NOOP("Alerts", "")},
+  {"Joystick Mode", "Gas: %1%, Steer: %2%", QT_TRANSLATE_NOOP("Alerts", "Joystick Mode"), QT_TRANSLATE_NOOP("Alerts", "Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%")},
   {"Forcing the car to stop in %1", "Press the gas pedal or 'Resume' button to override", QT_TRANSLATE_NOOP("Alerts", "Forcing the car to stop in %1"), QT_TRANSLATE_NOOP("Alerts", "Press the gas pedal or 'Resume' button to override")},
   {"No lane available", "Detected lane width is only %1", QT_TRANSLATE_NOOP("Alerts", "No lane available"), QT_TRANSLATE_NOOP("Alerts", "Detected lane width is only %1")},
   {"NNFF Torque Controller not available", "Donate logs to Twilsonco to get your car supported!", QT_TRANSLATE_NOOP("Alerts", "NNFF Torque Controller not available"), QT_TRANSLATE_NOOP("Alerts", "Donate logs to Twilsonco to get your car supported!")},
