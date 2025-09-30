@@ -2943,63 +2943,63 @@
     </message>
     <message>
         <source>&lt;b&gt;How often maps update&lt;/b&gt; from &quot;OpenStreetMap (OSM)&quot; with the latest speed limit information. Weekly updates run every Sunday; monthly updates run on the 1st.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як часто оновлюються карти&lt;/b&gt; з «OpenStreetMap (OSM)» з останньою інформацією про обмеження швидкості. Щотижневі оновлення відбуваються щонеділі, щомісячні оновлення — 1 числа кожного місяця.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Manually update your selected map sources&lt;/b&gt; so &quot;Speed Limit Controller&quot; has the latest speed limit information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Вручну оновлюйте вибрані джерела карт&lt;/b&gt;, щоб «Контролер обмежень швидкості» мав найновішу інформацію про обмеження швидкості.</translation>
     </message>
     <message>
         <source>Cancel the download?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скасувати завантаження?</translation>
     </message>
     <message>
         <source>Last Updated</source>
-        <translation type="unfinished"></translation>
+        <translation>Останнє оновлення</translation>
     </message>
     <message>
         <source>Map Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Джерела мап</translation>
     </message>
     <message>
         <source>&lt;b&gt;Select the countries or U.S. states to use with &quot;Speed Limit Controller&quot;.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Виберіть країни або штати США, які будуть використовуватися з «Контролером швидкісного обмеження».&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Progress</source>
-        <translation type="unfinished"></translation>
+        <translation>Прогрес</translation>
     </message>
     <message>
         <source>Time Elapsed</source>
-        <translation type="unfinished"></translation>
+        <translation>Пройшло</translation>
     </message>
     <message>
         <source>Time Remaining</source>
-        <translation type="unfinished"></translation>
+        <translation>Залишилось</translation>
     </message>
     <message>
         <source>&lt;b&gt;Delete downloaded map data&lt;/b&gt; to free up storage space.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Видаліть завантажені дані карти&lt;/b&gt;, щоб звільнити місце у сховищі.</translation>
     </message>
     <message>
         <source>Delete all downloaded maps?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити всі завантажені мапи?</translation>
     </message>
     <message>
         <source>Reset Downloader</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути завантажувач</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reset the map downloader.&lt;/b&gt; Use this if downloads are stuck or failing.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скинути налаштування програми завантаження карт.&lt;/b&gt; Використовуйте цю опцію, якщо завантаження застрягло або не вдається.</translation>
     </message>
     <message>
         <source>Reset the map downloader? Your device will reboot afterward.</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути завантажувач мап? Після цього пристрій перезавантажиться.</translation>
     </message>
     <message>
         <source>Storage Used</source>
-        <translation type="unfinished"></translation>
+        <translation>Використано сховища</translation>
     </message>
 </context>
 <context>
@@ -5182,11 +5182,11 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
     </message>
     <message>
         <source>&lt;b&gt;Action performed when the &quot;Distance&quot; button is pressed for more than 0.5 seconds.&lt;/b&gt;</source>
-        <translation>&lt;b&gt;Дія, що виконується при натисканні кнопки «Відстань» протягом більше ніж 0,5 секунди.&lt;/b&gt;</translation>
+        <translation>&lt;b&gt;Дія при натисканні кнопки «Відстань» протягом більше 0,5 секунди.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Action performed when the &quot;Distance&quot; button is pressed for more than 2.5 seconds.&lt;/b&gt;</source>
-        <translation>&lt;b&gt;Дія, що виконується при натисканні кнопки «Відстань» протягом більше 2,5 секунд.&lt;/b&gt;</translation>
+        <translation>&lt;b&gt;Дія при натисканні кнопки «Відстань» протягом більше 2,5 секунд.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Action performed when the &quot;LKAS&quot; button is pressed.&lt;/b&gt;</source>
