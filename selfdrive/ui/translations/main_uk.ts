@@ -127,7 +127,7 @@
     </message>
     <message>
         <source>Human-tested, frog-approved 🐸</source>
-        <translation>Випробувано на людях, схвалено жабами 🐸</translation>
+        <translation>Випробувано людиною, схвалено жабами 🐸</translation>
     </message>
     <message>
         <source>Be ready to take over at any time</source>
@@ -791,8 +791,8 @@
         <translation>Похибка швидкості: %1 м/с</translation>
     </message>
     <message>
-        <source>Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%</source>
-        <translation>Газ: {round(gb * 100.)}%, Кермув.: {round(steer * 100.)}%</translation>
+        <source>Gas: %1%, Steer: %2%</source>
+        <translation>Газ: %1%, Кермо: %2%</translation>
     </message>
 </context>
 <context>
