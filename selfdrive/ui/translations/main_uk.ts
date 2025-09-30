@@ -3213,67 +3213,67 @@
     <name>FrogPilotModelReview</name>
     <message>
         <source>Drive Rating Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Вибір рейтингу поїздки</translation>
     </message>
     <message>
         <source>How would you rate that drive?</source>
-        <translation type="unfinished">Як би ви оцінили цю поїздку?</translation>
+        <translation>Як би ви оцінили цю поїздку?</translation>
     </message>
     <message>
         <source>Blacklist this model to remove it from rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Додати цю модель до чорного списку, щоб видалити її з ротації</translation>
     </message>
     <message>
         <source>Blacklist Model</source>
-        <translation type="unfinished"></translation>
+        <translation>Модель у ЧС</translation>
     </message>
     <message>
         <source>Model used during that drive:</source>
-        <translation type="unfinished"></translation>
+        <translation>Модель протягом цієї поїздки:</translation>
     </message>
     <message>
         <source>Model Rank</source>
-        <translation type="unfinished"></translation>
+        <translation>Ранг моделі</translation>
     </message>
     <message>
         <source>Model Rating</source>
-        <translation type="unfinished"></translation>
+        <translation>Рейтинг моделі</translation>
     </message>
     <message>
         <source>Model Drives</source>
-        <translation type="unfinished"></translation>
+        <translation>Поїздок моделі</translation>
     </message>
     <message>
         <source>Total Drives</source>
-        <translation type="unfinished"></translation>
+        <translation>Всього поїздок</translation>
     </message>
     <message>
         <source>Model successfully blacklisted!</source>
-        <translation type="unfinished">Модель успішно внесена до чорного списку!</translation>
+        <translation>Модель успішно внесена до чорного списку!</translation>
     </message>
     <message>
         <source>#%1</source>
-        <translation type="unfinished"></translation>
+        <translation>№%1</translation>
     </message>
     <message>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
     <message>
         <source>Drive</source>
-        <translation type="unfinished"></translation>
+        <translation>Поїздка</translation>
     </message>
     <message>
         <source>Drives</source>
-        <translation type="unfinished">Поїздок</translation>
+        <translation>Поїздок</translation>
     </message>
     <message>
         <source>%1 Total %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Загалом %2</translation>
     </message>
 </context>
 <context>
@@ -3352,45 +3352,47 @@
     </message>
     <message>
         <source>Mapbox</source>
-        <translation type="unfinished"></translation>
+        <translation>Mapbox</translation>
     </message>
     <message>
         <source>&lt;b&gt;The search provider used for destination queries&lt;/b&gt; in &quot;Navigate on Openpilot&quot;. Options include Mapbox (recommended) and Amap.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Пошукова система, яка використовується для запитів про місце призначення&lt;/b&gt; у «Навігація на Openpilot». Доступні варіанти: Mapbox (рекомендовано) та Amap.</translation>
     </message>
     <message>
         <source>Mapbox Setup Instructions</source>
-        <translation type="unfinished"></translation>
+        <translation>Інструкції з налаштування Mapbox</translation>
     </message>
     <message>
         <source>&lt;b&gt;Instructions on how to set up Mapbox&lt;/b&gt; for &quot;Primeless Navigation&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Інструкції щодо налаштування Mapbox&lt;/b&gt; для «Навігації без Prime підписки від comma».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Automatically collect missing or incorrect speed limits while you drive&lt;/b&gt; using speeds limits sourced from your dashboard (if supported), Mapbox, and &quot;Navigate on openpilot&quot;.&lt;br&gt;&lt;br&gt;When you&apos;re parked and connected to Wi-Fi, FrogPilot will automatically processes this data into a file to be used with the tool located at &quot;SpeedLimitFiller.frogpilot.download&quot;.&lt;br&gt;&lt;br&gt;You can download this file from &quot;The Pond&quot; in the &quot;Download Speed Limits&quot; menu.&lt;br&gt;&lt;br&gt;Need a step-by-step guide? Visit &lt;b&gt;#speed-limit-filler&lt;/b&gt; in the FrogPilot Discord!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Автоматично збирайте відсутні або неправильні обмеження швидкості під час руху&lt;/b&gt; за допомогою обмежень швидкості, отриманих з вашої приладової панелі (якщо це підтримується), Mapbox та «Navigate on openpilot».&lt;br&gt;&lt;br&gt;Коли ви припаркувалися і підключилися до Wi-Fi, FrogPilot автоматично обробляє ці дані у файл, який можна використовувати за допомогою інструменту, розташованого за адресою «SpeedLimitFiller.frogpilot.download». &lt;br&gt;&lt;br&gt;Ви можете завантажити цей файл з «The Pond» у меню «Завантажити обмеження швидкості».&lt;br&gt;&lt;br&gt;Потрібна покрокова інструкція? Відвідайте &lt;b&gt;#speed-limit-filler&lt;/b&gt; у FrogPilot Discord!</translation>
     </message>
     <message>
         <source>Cancel the speed-limit update?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скасувати оновлення обмежень швидкості?</translation>
     </message>
     <message>
         <source>You&apos;ve hit today&apos;s request limit.
 
 It will reset in %1 hours and %2 minutes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ви досягли сьогоднішнього ліміту запитів.
+
+Він буде скинутий через %1 годин і %2 хвилин.</translation>
     </message>
     <message>
         <source>This process takes a while. It&apos;s recommended to start when you&apos;re done driving and connected to stable Wi-Fi. Continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Цей процес займає деякий час. Рекомендую робити після завершення поїздки та підключення до стабільного Wi-Fi. Продовжити?</translation>
     </message>
     <message>
         <source>&lt;b&gt;Manage your &quot;%1&quot;.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Змінюйте свій «%1».&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Remove your %1?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити ваш %1?</translation>
     </message>
 </context>
 <context>
