@@ -75,7 +75,7 @@ MAPD_PATH = Path("/data/media/0/osm/mapd")
 MAPS_PATH = Path("/data/media/0/osm/offline")
 NNFF_MODELS_PATH = Path(BASEDIR) / "frogpilot/assets/nnff_models"
 
-DEFAULT_MODEL = "firehose"
+DEFAULT_MODEL = "bd2"
 DEFAULT_MODEL_NAME = "Firehose (Default) 👀📡"
 DEFAULT_MODEL_VERSION = "v11"
 

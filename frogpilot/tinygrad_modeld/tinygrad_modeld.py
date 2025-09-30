@@ -94,10 +94,18 @@ class ModelState:
       cloudlog.warning(f"ModelVersion parameter not available: {e}")
 
     model_dir = MODELS_PATH
-    VISION_PKL_PATH = model_dir / f"{model_id}_driving_vision_tinygrad.pkl"
-    POLICY_PKL_PATH = model_dir / f"{model_id}_driving_policy_tinygrad.pkl"
-    VISION_METADATA_PATH = model_dir / f"{model_id}_driving_vision_metadata.pkl"
-    POLICY_METADATA_PATH = model_dir / f"{model_id}_driving_policy_metadata.pkl"
+    # For the default "bd2" model, use built-in files from the models directory
+    if model_id == "bd2":
+        models_dir = Path(__file__).parent / "models"
+        VISION_PKL_PATH = models_dir / "driving_vision_tinygrad.pkl"
+        POLICY_PKL_PATH = models_dir / "driving_policy_tinygrad.pkl"
+        VISION_METADATA_PATH = models_dir / "driving_vision_metadata.pkl"
+        POLICY_METADATA_PATH = models_dir / "driving_policy_metadata.pkl"
+    else:
+        VISION_PKL_PATH = model_dir / f"{model_id}_driving_vision_tinygrad.pkl"
+        POLICY_PKL_PATH = model_dir / f"{model_id}_driving_policy_tinygrad.pkl"
+        VISION_METADATA_PATH = model_dir / f"{model_id}_driving_vision_metadata.pkl"
+        POLICY_METADATA_PATH = model_dir / f"{model_id}_driving_policy_metadata.pkl"
 
     # If ModelVersion is not set or not available, try to determine it from available model data
     if not model_version:
