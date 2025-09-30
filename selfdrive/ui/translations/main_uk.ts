@@ -13,7 +13,7 @@
     </message>
     <message>
         <source>Reboot and Update</source>
-        <translation>Перегрузи і онови</translation>
+        <translation>Перезав. і онови</translation>
     </message>
 </context>
 <context>
@@ -3538,7 +3538,7 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
     </message>
     <message>
         <source>WARNING: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do!</source>
-        <translation>УВАГА: Ці налаштування є ризикованими і можуть кардинально змінити керування автомобілем з openpilot. Змінюйте їх лише в тому випадку, якщо ви повністю розумієте, як вони працюють!</translation>
+        <translation>УВАГА: Ці налаштування ризиковані і можуть кардинально змінити досвід з openpilot. Змінюйте лише коли розумієте, як вони працюють!</translation>
     </message>
     <message>
         <source>All toggle descriptions are currently expanded. You can tap a toggle&apos;s name to open or close its description at any time!</source>
@@ -3880,83 +3880,83 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
     </message>
     <message>
         <source>Custom Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Користувацькі теми</translation>
     </message>
     <message>
         <source>&lt;b&gt;The overall look and feel of openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Загальний вигляд і відчуття openpilot.&lt;/b&gt; Використовуйте «Theme Maker» в «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>&lt;b&gt;The color scheme used throughout openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Колірна гама, яка використовується в openpilot.&lt;/b&gt; Використовуйте «Theme Maker» в «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>Distance Button</source>
-        <translation type="unfinished">Кнопка відстані</translation>
+        <translation>Кнопка відстані</translation>
     </message>
     <message>
         <source>&lt;b&gt;The distance button icons shown on the driving screen.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Піктограми кнопок відстані, що відображаються на екрані водіння. Використовуйте «Theme Maker» у «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>&lt;b&gt;The icon style used across openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Стиль іконок, що використовується в openpilot.&lt;/b&gt; Використовуйте «Theme Maker» в «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>&lt;b&gt;The sound pack used by openpilot.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Звуковий пакет, який використовує openpilot.&lt;/b&gt; Використовуйте «Theme Maker» у «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>&lt;b&gt;The steering-wheel icon&lt;/b&gt; shown at the top-right of the driving screen. Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Значок керма&lt;/b&gt; відображається у верхньому правому куті екрана водіння. Використовуйте «Theme Maker» у «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Themed turn-signal animations.&lt;/b&gt; Use the &quot;Theme Maker&quot; in &quot;The Pond&quot; to create and share your own themes!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Тематичні анімації поворотників.&lt;/b&gt; Використовуйте «Theme Maker» в «The Pond», щоб створювати та ділитися власними темами!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Themes based on U.S. holidays.&lt;/b&gt; Minor holidays last one day; major holidays (Christmas, Easter, Halloween) run for a full week.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Теми, засновані на американських святах.&lt;/b&gt; Невеликі свята тривають один день; великі свята (Різдво, Великдень, Хелловін) тривають цілий тиждень.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Color the driving path like a Mario Kart–style &quot;Rainbow Road&quot;.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Пофарбуйте трасу для їзди у стилі «Rainbow Road» з Mario Kart.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Occasional on-screen effects triggered by driving conditions.&lt;/b&gt; These are purely a visual and don&apos;t impact how openpilot drives!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Епізодичні ефекти на екрані, що викликані умовами руху. &lt;/b&gt; Вони є суто візуальними і не впливають на роботу openpilot!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Pick a random theme between each drive&lt;/b&gt; from the themes you have downloaded. Great for variety without changing settings while driving.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Виберіть випадкову тему між кожним проїздом&lt;/b&gt; із завантажених тем. Чудово підходить для різноманітності без зміни налаштувань під час руху.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the &quot;Startup Alert&quot; message&lt;/b&gt; shown at the start of each drive.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте повідомлення «Повідомлення про запуск», яке відображається на початку кожного запуску.</translation>
     </message>
     <message>
         <source>Delete the &quot;%1&quot; color scheme?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити колірну схему «%1»?</translation>
     </message>
     <message>
         <source>Delete the &quot;%1&quot; distance icon pack?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити набір іконок відстані «%1»?</translation>
     </message>
     <message>
         <source>Delete the &quot;%1&quot; icon pack?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити набір іконок «%1»?</translation>
     </message>
     <message>
         <source>Delete the &quot;%1&quot; signal animation?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити анімації поворотників «%1»?</translation>
     </message>
     <message>
         <source>Delete the &quot;%1&quot; sound pack?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити звуковий пакет «%1»?</translation>
     </message>
     <message>
         <source>Delete the &quot;%1&quot; steering wheel?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити кермо «%1»?</translation>
     </message>
 </context>
 <context>
