@@ -3609,67 +3609,67 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
     </message>
     <message>
         <source>Alert Volume Controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Регулятор гучності сповіщень</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set how loud each type of openpilot alert is&lt;/b&gt; to keep routine prompts from becoming distracting.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність кожного типу сповіщень OpenPilot&lt;/b&gt;, щоб рутинні підказки не відволікали увагу.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for alerts when openpilot disengages.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Cruise Fault: Restart the Car&quot;, &quot;Parking Brake Engaged&quot;, &quot;Pedal Pressed&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність сповіщень, коли openpilot деактивується.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Приклади: «Помилка круїз-контролю: перезапустіть автомобіль», «Задіяний гальмо стоянки», «Натиснута педаль».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for the chime when openpilot engages&lt;/b&gt;, such as after pressing the &quot;RESUME&quot; or &quot;SET&quot; steering wheel buttons.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність звукового сигналу при активації openpilot&lt;/b&gt;, наприклад, після натискання кнопок «RESUME» або «SET» на кермі.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for prompts that need attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Car Detected in Blindspot&quot;, &quot;Steering Temporarily Unavailable&quot;, &quot;Turn Exceeds Steering Limit&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність для повідомлень, які вимагають уваги.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Приклади: «Автомобіль виявлено в сліпій зоні», «Керування тимчасово недоступне», «Поворот перевищує межу керованості».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for prompts when openpilot detects driver distraction or unresponsiveness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Pay Attention&quot;, &quot;Touch Steering Wheel&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність підказок, коли openpilot виявляє відволікання уваги водія або його нереагування. &lt;/b&gt;&lt;br&gt;&lt;br&gt;Приклади: «Зверніть увагу», «Доторкніться до керма».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for alerts when openpilot refuses to engage.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;Brake Hold Active&quot;, &quot;Door Open&quot;, &quot;Seatbelt Unlatched&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність сповіщень, коли openpilot відмовляється вмикатися.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Приклади: «Гальмо увімкнено», «Двері відчинені», «Ремінь безпеки не застебнуто».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for softer warnings about potential risks.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;BRAKE! Risk of Collision&quot;, &quot;Steering Temporarily Unavailable&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність для більш тихих попереджень про потенційні ризики.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Приклади: «ГАЛЬМУЙТЕ! Ризик зіткнення», «Керування тимчасово недоступне».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Set the volume for the loudest warnings that require urgent attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: &quot;DISENGAGE IMMEDIATELY — Driver Distracted&quot;, &quot;DISENGAGE IMMEDIATELY — Driver Unresponsive&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Встановіть гучність для найгучніших попереджень, які вимагають негайної уваги.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Приклади: «НЕГАЙНА ДЕАКТИВАЦІЯ — Водій відволікся», «НЕГАЙНА ДЕАКТИВАЦІЯ — Водій не реагує».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Optional FrogPilot alerts&lt;/b&gt; that highlight driving events in a more noticeable way.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додаткові сповіщення FrogPilot&lt;/b&gt;, які більш помітно підкреслюють події під час руху.</translation>
     </message>
     <message>
         <source>Goat Scream</source>
-        <translation type="unfinished"></translation>
+        <translation>Козлячий крик</translation>
     </message>
     <message>
         <source>&lt;b&gt;Play the infamous &quot;Goat Scream&quot; when the steering controller reaches its limit.&lt;/b&gt; Based on the &quot;Turn Exceeds Steering Limit&quot; event.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відтворюйте сумнозвісний «крик кози», коли кермовий контролер досягає своєї межі.&lt;/b&gt; На основі події «Поворот перевищує межу кермування».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Play an alert when the model predicts a red light has turned green.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights. This alert is based on end-to-end model predictions from camera input and may trigger even when the light has not changed.&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відтворювати попередження, коли модель прогнозує, що червоне світло змінилося на зелене.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Застереження&lt;/b&gt;: openpilot не визначає світлофори безпосередньо. Це попередження базується на прогнозах моделі на основі даних з камери і може спрацьовувати навіть тоді, коли світло не змінилося.&lt;/i&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Play an alert when the lead vehicle departs from a stop.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відтворювати звуковий сигнал, коли транспортний засіб попереду від&apos;їжджає.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Play a louder alert if a vehicle is in the blind spot when attempting to change lanes.&lt;/b&gt; Based on the &quot;Car Detected in Blindspot&quot; event.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відтворювати гучніше попередження, якщо під час спроби змінити смугу руху в сліпій зоні знаходиться транспортний засіб.&lt;/b&gt; На основі події «Виявлено автомобіль у сліпій зоні».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Play an alert when the posted speed limit changes.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відтворювати попередження, коли змінюється встановлене обмеження швидкості.&lt;/b&gt;</translation>
     </message>
 </context>
 <context>
