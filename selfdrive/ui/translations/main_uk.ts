@@ -680,7 +680,7 @@
     </message>
     <message>
         <source>♬♪ Deja vu! ᕕ(⌐■_■)ᕗ ♪♬</source>
-        <translation>♬♪ Deja vu! ᕕ(⌐■_■)ᕗ ♪♬</translation>
+        <translation>♬♪ Дежавю! ᕕ(⌐■_■)ᕗ ♪♬</translation>
     </message>
     <message>
         <source>🏎️</source>
@@ -753,6 +753,46 @@
     <message>
         <source>Drive Above %1 mph</source>
         <translation>Їдьте швидше %1 мнг</translation>
+    </message>
+    <message>
+        <source>Posenet Speed Invalid</source>
+        <translation>Швидкість Posenet недійсна</translation>
+    </message>
+    <message>
+        <source>Process Not Running</source>
+        <translation>Процес не виконується</translation>
+    </message>
+    <message>
+        <source>Communication Issue Between Processes</source>
+        <translation>Проблема комунікації між процесами</translation>
+    </message>
+    <message>
+        <source>Camera Malfunction, %1</source>
+        <translation>Несправність камери, %1</translation>
+    </message>
+    <message>
+        <source>Remount Device (Pitch: %1°, Yaw: %2°)</source>
+        <translation>Перевстановити пристрій (нахил: %1°, відхилення: %2°)</translation>
+    </message>
+    <message>
+        <source>Enable Cruise Control to Engage</source>
+        <translation>Увімкни круїз-контроль для активації</translation>
+    </message>
+    <message>
+        <source>Enable Main Switch to Engage</source>
+        <translation>Увімкнути вимикач Main для активації</translation>
+    </message>
+    <message>
+        <source>Enable Adaptive Cruise to Engage</source>
+        <translation>Увімкни адаптивний круїз для активації</translation>
+    </message>
+    <message>
+        <source>Speed Error: %1 m/s</source>
+        <translation>Похибка швидкості: %1 м/с</translation>
+    </message>
+    <message>
+        <source>Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%</source>
+        <translation>Газ: {round(gb * 100.)}%, Кермув.: {round(steer * 100.)}%</translation>
     </message>
 </context>
 <context>
@@ -2701,7 +2741,7 @@
     </message>
     <message>
         <source>&lt;b&gt;Use Mapbox speed-limit data when no other source is available.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;b&gt;Використовуйте дані Mapbox про обмеження швидкості, якщо немає інших джерел інформації.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;The source order for speed limits&lt;/b&gt; when more than one is available.</source>
@@ -3114,99 +3154,99 @@
     </message>
     <message>
         <source>&lt;b&gt;Automatically download new driving models&lt;/b&gt; as they become available.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Автоматично завантажуйте нові моделі керування&lt;/b&gt; по мірі їх появи.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Delete downloaded driving models&lt;/b&gt; to free up storage space.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Видаліть завантажені моделі керування&lt;/b&gt;, щоб звільнити місце у сховищі.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Manually download driving models&lt;/b&gt; to the device.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Вручну завантажте моделі керування&lt;/b&gt; на пристрій.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Select a random driving model each drive&lt;/b&gt; and use feedback prompts at the end of the drive to help find the model that best suits you!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Вибирайте випадкову модель керування для кожної поїздки&lt;/b&gt; і використовуйте підказки, що з&apos;являються в кінці поїздки, щоб знайти модель, яка найкраще підходить саме вам!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Add or remove driving models from the &quot;Model Randomizer&quot; blacklist.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додавання або видалення моделей керування з чорного списку «Випадкової моделі».&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;View or reset saved model ratings&lt;/b&gt; used by the &quot;Model Randomizer&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Переглянути або скинути збережені оцінки моделей&lt;/b&gt;, які використовуються у «Випадкова модель».</translation>
     </message>
     <message>
         <source>&lt;b&gt;Choose which driving model openpilot uses.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Виберіть модель керування, яку використовує openpilot.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Update Model Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновити менеджер моделей</translation>
     </message>
     <message>
         <source>&lt;b&gt;Update the &quot;Model Manager&quot;&lt;/b&gt; to support the latest models.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Оновіть «Менеджер моделей»&lt;/b&gt;, щоб підтримувати найновіші моделі.</translation>
     </message>
     <message>
         <source>Tinygrad is out of date and must be updated before you can download new models. Update now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Tinygrad застарів і його необхідно оновити, перш ніж ви зможете завантажувати нові моделі. Оновити зараз?</translation>
     </message>
     <message>
         <source>Updating Tinygrad will delete all existing Tinygrad-based models which will need to be re-downloaded. Proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновлення Tinygrad призведе до видалення всіх існуючих моделей на базі Tinygrad, які потрібно буде завантажити заново. Продовжувати?</translation>
     </message>
     <message>
         <source>Updating...</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновлення...</translation>
     </message>
     <message>
         <source>There are no more driving models to blacklist. The only available model is &quot;%1&quot;!</source>
-        <translation type="unfinished"></translation>
+        <translation>Більше немає моделей керування, які можна внести до чорного списку. Єдина доступна модель — «%1»!</translation>
     </message>
     <message>
         <source>Select a driving model to add to the blacklist</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть модель керування, яку потрібно додати до чорного списку</translation>
     </message>
     <message>
         <source>Select a driving model to remove from the blacklist</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть модель керування, яку потрібно видалити з чорного списку</translation>
     </message>
     <message>
         <source>Are you sure you want to remove all of your blacklisted driving models?</source>
-        <translation type="unfinished"></translation>
+        <translation>Ви впевнені, що хочете видалити всі свої моделі у чорному списку?</translation>
     </message>
     <message>
         <source>Reset all model drives and ratings? This clears your drive history and collected feedback!</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути всі поїздки моделей та рейтинги? Це очистить історію поїздок і зібрані відгуки!</translation>
     </message>
     <message>
         <source>Select a Model — 🗺️ = Navigation | 📡 = Radar | 👀 = VOACC</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть модель — 🗺️ = Навіг. | 📡 = Радар | 👀 = Бачення</translation>
     </message>
     <message>
         <source>UPDATE</source>
-        <translation type="unfinished">ОНОВЛ.</translation>
+        <translation>ОНОВЛ.</translation>
     </message>
     <message>
         <source>Cancelling...</source>
-        <translation type="unfinished">Відміна...</translation>
+        <translation>Відміна...</translation>
     </message>
     <message>
         <source>Updating Tinygrad will delete existing Tinygrad-based driving models and need to be re-downloaded. Proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновлення Tinygrad призведе до видалення існуючих моделей керування на базі Tinygrad, які необхідно буде завантажити заново. Продовжувати?</translation>
     </message>
     <message>
         <source>The &quot;Model Randomizer&quot; works only with downloaded models. Download all models now?</source>
-        <translation type="unfinished"></translation>
+        <translation>«Випадкова модель» працює тільки з завантаженими моделями. Завантажити всі моделі зараз?</translation>
     </message>
     <message>
         <source>Update available!</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновлення доступне!</translation>
     </message>
     <message>
         <source>Up to date!</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновлено!</translation>
     </message>
 </context>
 <context>

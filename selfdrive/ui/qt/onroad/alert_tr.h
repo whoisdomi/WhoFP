@@ -46,7 +46,7 @@ inline std::vector<AlertTranslation> alertTranslations = {
   {"Low Memory", "%1% used", QT_TRANSLATE_NOOP("Alerts", "Low Memory"), QT_TRANSLATE_NOOP("Alerts", "%1% used")},
   {"High CPU Usage", "%1% used", QT_TRANSLATE_NOOP("Alerts", "High CPU Usage"), QT_TRANSLATE_NOOP("Alerts", "%1% used")},
   {"Driving Model Lagging", "%1% frames dropped", QT_TRANSLATE_NOOP("Alerts", "Driving Model Lagging"), QT_TRANSLATE_NOOP("Alerts", "%1% frames dropped")},
-  {"Joystick Mode", "Gas: %1%, Steer: %2%", QT_TRANSLATE_NOOP("Alerts", "Joystick Mode"), QT_TRANSLATE_NOOP("Alerts", "Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%")},
+  {"Joystick Mode", "Gas: %1%, Steer: %2%", QT_TRANSLATE_NOOP("Alerts", "Joystick Mode"), QT_TRANSLATE_NOOP("Alerts", "Gas: %1%, Steer: %2%")},
   {"Forcing the car to stop in %1", "Press the gas pedal or 'Resume' button to override", QT_TRANSLATE_NOOP("Alerts", "Forcing the car to stop in %1"), QT_TRANSLATE_NOOP("Alerts", "Press the gas pedal or 'Resume' button to override")},
   {"No lane available", "Detected lane width is only %1", QT_TRANSLATE_NOOP("Alerts", "No lane available"), QT_TRANSLATE_NOOP("Alerts", "Detected lane width is only %1")},
   {"NNFF Torque Controller not available", "Donate logs to Twilsonco to get your car supported!", QT_TRANSLATE_NOOP("Alerts", "NNFF Torque Controller not available"), QT_TRANSLATE_NOOP("Alerts", "Donate logs to Twilsonco to get your car supported!")},
