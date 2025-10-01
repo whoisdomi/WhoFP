@@ -1499,107 +1499,107 @@
     </message>
     <message>
         <source> seconds</source>
-        <translation>.секунд</translation>
+        <translation> секунд</translation>
     </message>
     <message>
         <source>&lt;b&gt;Settings that control how the device runs, powers off, and manages driving data.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштування, що контролюють роботу пристрою, його вимкнення та управління даними про поїздки.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Keep the device on for the set amount of time after a drive&lt;/b&gt; before it shuts down automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Після поїздки залиште пристрій увімкненим на заданий проміжок часу&lt;/b&gt;, перш ніж він автоматично вимкнеться.</translation>
     </message>
     <message>
         <source>Disable Logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Вимкнути логування</translation>
     </message>
     <message>
         <source>&lt;b&gt;Prevent the device from saving driving data.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Запобігайте збереженню даних поїздок пристроєм.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Disable Uploads</source>
-        <translation type="unfinished"></translation>
+        <translation>Вимкнути вивантаження</translation>
     </message>
     <message>
         <source>WARNING: This will prevent your drives from being uploaded to &lt;b&gt;comma connect&lt;/b&gt; which will impact debugging and official support from comma!</source>
-        <translation type="unfinished"></translation>
+        <translation>УВАГА: Це завадить завантаженню ваших поїздок на &lt;b&gt;comma connect&lt;/b&gt;, що вплине на зневадження та офіційну підтримку від comma!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Prevent the device from uploading driving data.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Запобігайте завантаженню даних про поїздки з пристрою.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>High-Quality Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Високоякісний запис</translation>
     </message>
     <message>
         <source>&lt;b&gt;Save drive footage in higher video quality.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Зберігайте відеозаписи з камери в більш високій якості.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Low-Voltage Cutoff</source>
-        <translation type="unfinished"></translation>
+        <translation>Відключення при низькій напрузі</translation>
     </message>
     <message>
         <source>&lt;b&gt;While parked, if the battery voltage falls below the set level, the device shuts down&lt;/b&gt; to prevent excessive battery drain.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Під час стоянки, якщо напруга акумулятора падає нижче встановленого рівня, пристрій вимикається&lt;/b&gt;, щоб запобігти надмірному розрядженню акумулятора.</translation>
     </message>
     <message>
         <source>Raise Temperature Limits</source>
-        <translation type="unfinished"></translation>
+        <translation>Підвищити температурні обмеження</translation>
     </message>
     <message>
         <source>WARNING: Running at higher temperatures may damage your device!</source>
-        <translation type="unfinished"></translation>
+        <translation>УВАГА: Експлуатація при високих температурах може пошкодити пристрій!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Allow the device to run at higher temperatures&lt;/b&gt; before throttling or shutting down. Use only if you understand the risks!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Дозвольте пристрою працювати при більш високих температурах&lt;/b&gt; перед обмеженням потужності або вимкненням. Використовуйте тільки якщо ви розумієте ризики!</translation>
     </message>
     <message>
         <source>Use Konik Server</source>
-        <translation type="unfinished"></translation>
+        <translation>Використовуйте сервер Konik</translation>
     </message>
     <message>
         <source>&lt;b&gt;Upload driving data to &quot;connect.konik.ai&quot; instead of &quot;connect.comma.ai&quot;.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Завантажуйте поїздки на «connect.konik.ai», а не на «connect.comma.ai».&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Settings that control screen brightness, screen recording, and timeout duration.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштування, що контролюють яскравість екрану, запис екрану та тривалість підсвічування.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;The screen brightness while not driving.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Яскравість екрану під час руху автомобіля.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;The screen brightness while driving.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Яскравість екрану під час руху.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Add a button to the driving screen to record the display.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додайте кнопку на екран водіння, щоб записати відображення.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;How long the screen stays on after being tapped while not driving.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як довго екран залишається увімкненим після натискання, коли ви запарковані.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;How long the screen stays on after being tapped while driving.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як довго екран залишається увімкненим після натискання під час руху.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Standby Mode</source>
-        <translation type="unfinished">Режим очікування</translation>
+        <translation>Режим очікування</translation>
     </message>
     <message>
         <source>&lt;b&gt;Turn the screen off while driving and automatically wake it up for alerts or engagement state changes.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Вимкніть екран під час руху та автоматично вмикайте його для сповіщень або змін рівня активації.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Disable Onroad Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Вимкнути На дорозі</translation>
     </message>
 </context>
 <context>
