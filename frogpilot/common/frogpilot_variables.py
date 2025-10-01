@@ -23,7 +23,7 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.hardware.power_monitoring import VBATT_PAUSE_CHARGING
 from openpilot.system.version import get_build_metadata
-from panda import ALTERNATIVE_EXPERIENCE, Panda
+from panda import ALTERNATIVE_EXPERIENCE
 
 params = Params()
 params_cache = Params("/cache/params")
