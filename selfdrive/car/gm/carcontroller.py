@@ -1,7 +1,5 @@
 from typing import Tuple
 import time
-import math
-from openpilot.common.swaglog import cloudlog
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -66,20 +64,13 @@ class CarController(CarControllerBase):
     self.params = CarControllerParams(self.CP)
     self.params_ = Params()
 
-    self.mass = CP.mass
-    self.tireRadius = 0.075 * CP.wheelbase + 0.1453
-    self.frontalArea = 1.05 * CP.wheelbase + 0.0679
-    self.coeffDrag = 0.30
-    self.airDensity = 1.225
-
-
-
     self.packer_pt = CANPacker(DBC[self.CP.carFingerprint]['pt'])
     self.packer_obj = CANPacker(DBC[self.CP.carFingerprint]['radar'])
     self.packer_ch = CANPacker(DBC[self.CP.carFingerprint]['chassis'])
 
     # FrogPilot variables
     self.accel_g = 0.0
+
     self.pitch = FirstOrderFilter(0., 0.09 * 4, DT_CTRL * 4)  # runs at 25 Hz
     self.accel_g = 0.0
     self.regen_paddle_pressed = False
@@ -339,19 +330,17 @@ class CarController(CarControllerBase):
       if self.frame % 4 == 0:
         stopping = actuators.longControlState == LongCtrlState.stopping
 
+        # Pitch compensated acceleration;
+        # TODO: include future pitch (sm['modelDataV2'].orientation.y) to account for long actuator delay
+        if frogpilot_toggles.long_pitch and len(CC.orientationNED) > 1:
+          self.pitch.update(CC.orientationNED[1])
+          self.accel_g = ACCELERATION_DUE_TO_GRAVITY * apply_deadzone(self.pitch.x, PITCH_DEADZONE) # driving uphill is positive pitch
+          accel += self.accel_g
+          brake_accel = actuators.accel + self.accel_g * interp(CS.out.vEgo, BRAKE_PITCH_FACTOR_BP, BRAKE_PITCH_FACTOR_V)
+
         at_full_stop = CC.longActive and CS.out.standstill
         near_stop = CC.longActive and (CS.out.vEgo < self.params.NEAR_STOP_BRAKE_PHASE)
         interceptor_gas_cmd = 0
-        # --- Regen scaling for ACC-only cars ---
-        # For ACC-only cars, simulate maximum paddle hold regen
-        if not self.CP.enableGasInterceptor and self.CP.carFingerprint in CC_REGEN_PADDLE_CAR:
-          # use regen table gain to compute effective accel
-          _, press_regen_paddle = self.calc_pedal_command(actuators.accel, True, CS.out.vEgo)
-          # if simulated paddle pressed, treat as stronger regen
-          use_regen = press_regen_paddle
-        else:
-          use_regen = False
-        # --- End regen scaling insert ---
         if not CC.longActive:
           # ASCM sends max regen when not enabled
           self.apply_gas = self.params.INACTIVE_REGEN
@@ -360,38 +349,9 @@ class CarController(CarControllerBase):
           self.apply_gas = self.params.INACTIVE_REGEN
           self.apply_brake = int(min(-100 * frogpilot_toggles.stopAccel, self.params.MAX_BRAKE))
         else:
-          if len(CC.orientationNED) == 3 and CS.out.vEgo > self.CP.vEgoStopping:
-            accel_due_to_pitch = math.sin(CC.orientationNED[1]) * ACCELERATION_DUE_TO_GRAVITY
-          else:
-            accel_due_to_pitch = 0.0
-
-          if frogpilot_toggles.sport_plus:
-            gas_max = self.params.MAX_GAS_PLUS
-            accel_max = self.params.ACCEL_MAX_PLUS
-          else:
-            gas_max = self.params.MAX_GAS
-            accel_max = self.params.ACCEL_MAX
-          
-          accel = clip(actuators.accel + accel_due_to_pitch, self.params.ACCEL_MIN, accel_max)
-          torque = self.tireRadius * ((self.mass*accel) + (0.5*self.coeffDrag*self.frontalArea*self.airDensity*CS.out.vEgo**2))
-          
-          scaled_torque = torque + self.params.ZERO_GAS
-          # --- Regen torque scaling for ACC-only cars ---
-          # apply full paddle regen curve when simulated regen is active
-          if use_regen:
-            min_regen = self.params.GAS_LOOKUP_V[0]  # max regen from lookup
-          else:
-            min_regen = self.params.MAX_ACC_REGEN
-          apply_gas_torque = clip(scaled_torque, min_regen, gas_max)
-          # --- End regen torque scaling ---
-          apply_gas_torque = clip(scaled_torque, self.params.MAX_ACC_REGEN, gas_max)
-          BRAKE_SWITCH = int(round(interp(CS.out.vEgo, self.params.BRAKE_SWITCH_LOOKUP_BP, self.params.BRAKE_SWITCH_LOOKUP_V)))
-          brake_accel = min((scaled_torque - BRAKE_SWITCH)/(self.tireRadius*self.mass), 0)
-          self.apply_gas = int(round(apply_gas_torque))
+          # Normal operation
+          self.apply_gas = int(round(interp(accel, self.params.GAS_LOOKUP_BP, self.params.GAS_LOOKUP_V)))
           self.apply_brake = int(round(interp(brake_accel, self.params.BRAKE_LOOKUP_BP, self.params.BRAKE_LOOKUP_V)))
-          if self.apply_brake > 0:
-            self.apply_gas = self.params.INACTIVE_REGEN
-
           # Don't allow any gas above inactive regen while stopping
           # FIXME: brakes aren't applied immediately when enabling at a stop
           if stopping:
@@ -429,7 +389,7 @@ class CarController(CarControllerBase):
           if CC.cruiseControl.resume and CS.pcm_acc_status == AccState.STANDSTILL and frogpilot_toggles.volt_sng:
             acc_engaged = False
           else:
-            acc_engaged = CC.enabled and not (self.CP.carFingerprint == CAR.CHEVROLET_BOLT_EUV and self.CP.enableGasInterceptor)
+            acc_engaged = CC.enabled
 
           # GasRegenCmdActive needs to be 1 to avoid cruise faults. It describes the ACC state, not actuation
           can_sends.append(gmcan.create_gas_regen_command(self.packer_pt, CanBus.POWERTRAIN, self.apply_gas, idx, acc_engaged, at_full_stop))
@@ -462,15 +422,11 @@ class CarController(CarControllerBase):
       # TODO: integrate this with the code block below?
       if (
           (self.CP.flags & GMFlags.PEDAL_LONG.value)  # Always cancel stock CC when using pedal interceptor
-          or (self.CP.flags & GMFlags.CC_LONG.value)  # Match ACC behavior for non-ACC cars
+          or (self.CP.flags & GMFlags.CC_LONG.value and not CC.enabled)  # Cancel stock CC if OP is not active
       ) and CS.out.cruiseState.enabled:
         if (self.frame - self.last_button_frame) * DT_CTRL > 0.04:
           self.last_button_frame = self.frame
-          # Send cancel to appropriate bus based on car type (match stock longitudinal logic)
-          if self.CP.carFingerprint in SDGM_CAR:
-            can_sends.append(gmcan.create_buttons(self.packer_pt, CanBus.POWERTRAIN, (CS.buttons_counter + 1) % 4, CruiseButtons.CANCEL))
-          else:
-            can_sends.append(gmcan.create_buttons(self.packer_pt, CanBus.CAMERA, (CS.buttons_counter + 1) % 4, CruiseButtons.CANCEL))
+          can_sends.append(gmcan.create_buttons(self.packer_pt, CanBus.POWERTRAIN, (CS.buttons_counter + 1) % 4, CruiseButtons.CANCEL))
 
     else:
       # While car is braking, cancel button causes ECM to enter a soft disable state with a fault status.
