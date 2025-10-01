@@ -5,7 +5,7 @@ from openpilot.common.numpy_fast import mean
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car.interfaces import CarStateBase
-from openpilot.selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD, GMFlags, CC_ONLY_CAR, CAMERA_ACC_CAR, SDGM_CAR, CC_REGEN_PADDLE_CAR
+from openpilot.selfdrive.car.gm.values import DBC, AccState, CanBus, STEER_THRESHOLD, GMFlags, CC_ONLY_CAR, CAMERA_ACC_CAR, SDGM_CAR, CC_REGEN_PADDLE_CAR, CAR
 
 TransmissionType = car.CarParams.TransmissionType
 NetworkLocation = car.CarParams.NetworkLocation
@@ -53,9 +53,6 @@ class CarState(CarStateBase):
     self.moving_backward = (pt_cp.vl["EBCMWheelSpdRear"]["RLWheelDir"] == 2) or (pt_cp.vl["EBCMWheelSpdRear"]["RRWheelDir"] == 2)
 
     # Variables used for avoiding LKAS faults
-    self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["ASCMLKASteeringCmd"]["RollingCounter"]) > 0
-    if self.loopback_lka_steering_cmd_updated:
-      self.loopback_lka_steering_cmd_ts_nanos = loopback_cp.ts_nanos["ASCMLKASteeringCmd"]["RollingCounter"]
 
     # Track timestamps for OEM PRNDL2 and Regen Paddle messages (used to sync spoofing timing)
     self.prndl2_ts_nanos = pt_cp.ts_nanos["ECMPRDNL2"]["PRNDL2"]
@@ -63,6 +60,9 @@ class CarState(CarStateBase):
       self.regen_paddle_ts_nanos = pt_cp.ts_nanos["EBCMRegenPaddle"]["RegenPaddle"]
     else:
       self.regen_paddle_ts_nanos = 0
+    self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["ASCMLKASteeringCmd"]["RollingCounter"]) > 0
+    if self.loopback_lka_steering_cmd_updated:
+      self.loopback_lka_steering_cmd_ts_nanos = loopback_cp.ts_nanos["ASCMLKASteeringCmd"]["RollingCounter"]
     if self.CP.networkLocation == NetworkLocation.fwdCamera and not self.CP.flags & GMFlags.NO_CAMERA.value:
       self.pt_lka_steering_cmd_counter = pt_cp.vl["ASCMLKASteeringCmd"]["RollingCounter"]
       self.cam_lka_steering_cmd_counter = cam_cp.vl["ASCMLKASteeringCmd"]["RollingCounter"]
@@ -96,7 +96,7 @@ class CarState(CarStateBase):
     # Regen braking is braking
     if self.CP.transmissionType == TransmissionType.direct:
       ret.regenBraking = pt_cp.vl["EBCMRegenPaddle"]["RegenPaddle"] != 0
-      self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1 or (ret.regenBraking and GearShifter.manumatic)
+      self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1 or (ret.regenBraking and GearShifter.manumatic) or (self.CP.carFingerprint in [CAR.CHEVROLET_BOLT_EUV, CAR.CHEVROLET_BOLT_CC] and self.CP.enableGasInterceptor)
 
     if self.CP.enableGasInterceptor:
       ret.gas = (pt_cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS"] + pt_cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS2"]) / 2.
@@ -150,6 +150,9 @@ class CarState(CarStateBase):
 
     ret.cruiseState.enabled = pt_cp.vl["AcceleratorPedal2"]["CruiseState"] != AccState.OFF
     ret.cruiseState.standstill = pt_cp.vl["AcceleratorPedal2"]["CruiseState"] == AccState.STANDSTILL
+    if self.CP.carFingerprint == CAR.CHEVROLET_BOLT_EUV and self.CP.enableGasInterceptor:
+      ret.cruiseState.enabled = cam_cp.vl["ASCMActiveCruiseControlStatus"]["ACCCmdActive"] != 0
+      ret.cruiseState.standstill = cam_cp.vl["ASCMActiveCruiseControlStatus"]["ACCCruiseState"] == 4
     if self.CP.networkLocation == NetworkLocation.fwdCamera and not self.CP.flags & GMFlags.NO_CAMERA.value:
       if self.CP.carFingerprint not in CC_ONLY_CAR:
         ret.cruiseState.speed = cam_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
@@ -163,7 +166,11 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint in CC_ONLY_CAR:
       ret.accFaulted = False
       ret.cruiseState.speed = pt_cp.vl["ECMCruiseControl"]["CruiseSetSpeed"] * CV.KPH_TO_MS
-      ret.cruiseState.enabled = pt_cp.vl["ECMCruiseControl"]["CruiseActive"] != 0
+      # Try ASCM first for cars that might have it (like misfingerprinted Bolts), fall back to ECM
+      try:
+        ret.cruiseState.enabled = cam_cp.vl["ASCMActiveCruiseControlStatus"]["ACCCmdActive"] != 0
+      except:
+        ret.cruiseState.enabled = pt_cp.vl["ECMCruiseControl"]["CruiseActive"] != 0
 
     if self.CP.enableBsm:
       if self.CP.carFingerprint not in SDGM_CAR:
@@ -173,7 +180,7 @@ class CarState(CarStateBase):
         ret.leftBlindspot = cam_cp.vl["BCMBlindSpotMonitor"]["LeftBSM"] == 1
         ret.rightBlindspot = cam_cp.vl["BCMBlindSpotMonitor"]["RightBSM"] == 1
 
-
+    # FrogPilot CarState functions
     self.lkas_previously_enabled = self.lkas_enabled
     if self.CP.carFingerprint in SDGM_CAR:
       self.lkas_enabled = cam_cp.vl["ASCMSteeringButton"]["LKAButton"]
@@ -206,7 +213,7 @@ class CarState(CarStateBase):
         messages += [
           ("AEBCmd", 10),
         ]
-      if CP.carFingerprint not in CC_ONLY_CAR:
+        # Include ASCMActiveCruiseControlStatus for all non-SDGM fwdCamera cars
         messages += [
           ("ASCMActiveCruiseControlStatus", 25),
         ]
