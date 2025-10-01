@@ -1336,91 +1336,91 @@
     </message>
     <message>
         <source>Delete Driving Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити дані про поїздки</translation>
     </message>
     <message>
         <source>&lt;b&gt;Delete all stored driving footage and data&lt;/b&gt; to free up space and clear private information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Видаліть усі збережені відеозаписи та дані поїздок&lt;/b&gt;, щоб звільнити місце та очистити приватну інформацію.</translation>
     </message>
     <message>
         <source>Delete all driving data and footage?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити всі дані поїздок та відеозаписи?</translation>
     </message>
     <message>
         <source>&lt;b&gt;Delete collected error logs&lt;/b&gt; to free up space and clear old crash records.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Видаліть зібрані журнали помилок&lt;/b&gt;, щоб звільнити місце та очистити старі записи про збій.</translation>
     </message>
     <message>
         <source>Delete all error logs?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити всі журнали помилок?</translation>
     </message>
     <message>
         <source>&lt;b&gt;Delete or rename screen recordings.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Видалити або перейменувати записи екрану.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Choose a screen recording to delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть запис екрана, який потрібно видалити</translation>
     </message>
     <message>
         <source>Delete this screen recording?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити цей запис екрана?</translation>
     </message>
     <message>
         <source>Delete all screen recordings?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити всі записи екрана?</translation>
     </message>
     <message>
         <source>Choose a screen recording to rename</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть запис екрана, який потрібно перейменувати</translation>
     </message>
     <message>
         <source>Rename Screen Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Перейменувати запис екрану</translation>
     </message>
     <message>
         <source>Name already in use. Please choose a different name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Імʼя вже використовується. Виберіть інше імʼя.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Create, delete, or restore FrogPilot backups.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Створити, видалити чи відновити резервні копії FrogPilot.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enter a name for this backup</source>
-        <translation type="unfinished"></translation>
+        <translation>Введіть імʼя резервної копії</translation>
     </message>
     <message>
         <source>Compress this backup? This will save space and run in the background but take a bit longer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Стиснути цю резервну копію? Це збереже місце і буде працювати в фоновому режиму але займе трохи більше часу.</translation>
     </message>
     <message>
         <source>Choose a FrogPilot backup to delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть резервну копію FrogPilot для видалення</translation>
     </message>
     <message>
         <source>Delete this backup?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити цю резервну копію?</translation>
     </message>
     <message>
         <source>Delete all backups?</source>
-        <translation type="unfinished"></translation>
+        <translation>Видалити всі резерні копії?</translation>
     </message>
     <message>
         <source>Choose a backup to restore</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть резервну копію для відновлення</translation>
     </message>
     <message>
         <source>Restore this backup?</source>
-        <translation type="unfinished"></translation>
+        <translation>Відновити цю резервну копію?</translation>
     </message>
     <message>
         <source>&lt;b&gt;Create, delete, or restore toggle backups.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Створити, видалити чи відновити резервні копії налаштувань.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Choose a backup to delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть резервну копію для видалення</translation>
     </message>
 </context>
 <context>
@@ -1539,7 +1539,7 @@
     </message>
     <message>
         <source>Low-Voltage Cutoff</source>
-        <translation>Відключення при низькій напрузі</translation>
+        <translation>Відкл. при низькій напрузі</translation>
     </message>
     <message>
         <source>&lt;b&gt;While parked, if the battery voltage falls below the set level, the device shuts down&lt;/b&gt; to prevent excessive battery drain.</source>
