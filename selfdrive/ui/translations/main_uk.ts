@@ -2477,331 +2477,331 @@
     </message>
     <message>
         <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
-        <translation>&lt;b&gt;Скільки секунд openpilot слідує за авто попереду при використанні профілю «Агресивний».&lt;/b&gt; Збільшуйте для більшого відстані; зменшуйте для меншої відстані.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,25 секунди.</translation>
+        <translation>&lt;b&gt;Скільки секунд openpilot слідує за авто попереду при використанні режиму «Агресивний».&lt;/b&gt; Збільшуйте для більшого відстані; зменшуйте для меншої відстані.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,25 секунди.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
-        <translation>&lt;b&gt;Як плавно openpilot прискорюється з профілем «Агресивний».&lt;/b&gt; Збільште для більш плавного старту; зменште для швидшого, але більш різкого старту.</translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється у режимі «Агресивний».&lt;/b&gt; Збільште для більш плавного старту; зменште для швидшого, але більш різкого старту.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
-        <translation>&lt;b&gt;Як плавно гальмує openpilot з профілем «Агресивний».&lt;/b&gt; Збільште для більш плавного гальмування; зменште для швидшого, але різкішого гальмування.</translation>
+        <translation>&lt;b&gt;Як плавно гальмує openpilot у режимі «Агресивний».&lt;/b&gt; Збільште для більш плавного гальмування; зменште для швидшого, але різкішого гальмування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
-        <translation>&lt;b&gt;Скільки додаткового простору openpilot зберігає від транспортного засобу, що рухається попереду, з профілем «Агресивний».&lt;/b&gt; Збільшуйте для більших відстаней і більш обережного слідування; зменшуйте для менших відстаней і більш близького слідування.</translation>
+        <translation>&lt;b&gt;Скільки додаткового простору openpilot зберігає від транспортного засобу, що рухається попереду у режимі «Агресивний».&lt;/b&gt; Збільшуйте для більших відстаней і більш обережного слідування; зменшуйте для менших відстаней і більш близького слідування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot уповільнюється у режимі «Агресивний».&lt;/b&gt; Збільште для більш поступового уповільнення; зменште для швидшого, але різкішого уповільнення.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot speeds up with the &quot;Aggressive&quot; profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється у режимі «Агресивний».&lt;/b&gt; Збільште для більш поступового прискорення; зменште для більш швидкого, але більш різкого прискорення.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reset the &quot;Aggressive&quot; profile to defaults.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скинути налаштування режиму «Агресивний» до стандартних.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the &quot;Standard&quot; personality profile.&lt;/b&gt; Designed for balanced driving with moderate gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте «Стандартний» режим керування.&lt;/b&gt; Призначений для збалансованого керування з помірними проміжками.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Standard&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.45 seconds.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки секунд openpilot слідує за транспортними засобами попереду при використанні режиму «Стандартний».&lt;/b&gt; Збільшуйте для більшої відстані; зменшуйте для меншої відстані.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,45 секунди.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється з режимом «Стандартний».&lt;/b&gt; Збільште для більш плавного старту; зменште для більш швидкого, але різкого старту.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно гальмує openpilot у режимі «Стандартний».&lt;/b&gt; Збільште для більш плавного гальмування; зменште для швидшого, але різкішого гальмування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки додаткового простору openpilot зберігає від транспортного засобу попереду, з режиму «Стандартний».&lt;/b&gt; Збільшуйте для більших відстаней і більш обережного слідування; зменшуйте для менших відстаней і більш близького слідування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot уповільнюється у режимі «Стандартний».&lt;/b&gt; Збільште значення для більш поступового уповільнення; зменште для швидшого, але різкішого уповільнення.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot speeds up with the &quot;Standard&quot; profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється у режимі «Стандартний».&lt;/b&gt; Збільште для більш поступового прискорення; зменште для більш швидкого, але більш різкого прискорення.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reset the &quot;Standard&quot; profile to defaults.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скинути налаштування режиму «Стандартний» до заводських налаштувань.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Relaxed</source>
-        <translation type="unfinished">Розслаблений</translation>
+        <translation>Розслаблений</translation>
     </message>
     <message>
         <source>&lt;b&gt;Customize the &quot;Relaxed&quot; personality profile.&lt;/b&gt; Designed for smoother, more comfortable driving with larger gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Налаштуйте режим керування «Розслаблений».&lt;/b&gt; Призначений для більш плавного та комфортного керування з більшими проміжками.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.75 seconds.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки секунд openpilot слідує за попереду авто попереду при використанні режиму «Розслаблений».&lt;/b&gt; Збільшуйте для більшого відстані; зменшуйте для меншої відстані.&lt;br&gt;&lt;br&gt;За замовчуванням: 1,75 секунди.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot accelerates with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється у режимі «Розслаблений».&lt;/b&gt; Збільште для більш плавного старту; зменште для швидшого, але більш різкого старту.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot brakes with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно гальмує openpilot у режимі «Розслаблений».&lt;/b&gt; Збільште для більш плавного гальмування; зменште для швидшого, але різкішого гальмування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скільки додаткового простору openpilot зберігає від транспортного засобу попереду, у режимі «Розслаблений».&lt;/b&gt; Збільшуйте для більших проміжків і більш обережного слідування; зменшуйте для менших проміжків і більш близького слідування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot slows down with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot уповільнюється з у режимі «Розслаблений».&lt;/b&gt; Збільште значення для більш поступового уповільнення; зменште для швидшого, але різкішого уповільнення.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How smoothly openpilot speeds up with the &quot;Relaxed&quot; profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як плавно openpilot прискорюється у режимі «Розслаблений».&lt;/b&gt; Збільште для більш поступового прискорення; зменште для більш швидкого, але більш різкого прискорення.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reset the &quot;Relaxed&quot; profile to defaults.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Скинути режим «Розслаблений» до стандартних налаштувань.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Зміни в управлінні прискоренням і гальмуванням&lt;/b&gt; для точного налаштування роботи керування openpilot.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How quickly openpilot speeds up.&lt;/b&gt; &quot;Eco&quot; is gentle and efficient, &quot;Sport&quot; is firmer and more responsive, and &quot;Sport+&quot; accelerates at the maximum rate allowed.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Як швидко прискорюється openpilot.&lt;/b&gt; «Еко» — м&apos;який і ефективний, «Спорт» — більш жорсткий і чутливий, а «Спорт+» — прискорюється з максимально дозволеною швидкістю.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How firmly openpilot slows down.&lt;/b&gt; &quot;Eco&quot; favors coasting, &quot;Sport&quot; applies stronger braking.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Наскільки сильно openpilot уповільнює рух. &lt;/b&gt; «Еко» сприяє коченню, «Спорт» застосовує сильніше гальмування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Acceleration that mimics human behavior&lt;/b&gt; by easing the throttle at low speeds and adding extra power when taking off from a stop.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Прискорення, що імітує поведінку людини&lt;/b&gt;, шляхом послаблення дросельної заслінки на низьких швидкостях і додавання додаткової потужності при рушанні з місця.</translation>
     </message>
     <message>
         <source>Human-Like Following</source>
-        <translation type="unfinished"></translation>
+        <translation>Людиноподібне слідування</translation>
     </message>
     <message>
         <source>&lt;b&gt;Following behavior that mimics human drivers&lt;/b&gt; by closing gaps behind faster vehicles for quicker takeoffs and dynamically adjusting the desired following distance for gentler, more efficient braking.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Поведінка, що імітує поведінку водіїв-людей&lt;/b&gt;, шляхом скорочення відстані за швидшими транспортними засобами для швидшого старту та динамічного регулювання бажаної відстані для більш плавного та ефективного гальмування.</translation>
     </message>
     <message>
         <source>Lead Detection Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>Чутливість виявлення лідера</translation>
     </message>
     <message>
         <source>&lt;b&gt;How sensitive openpilot is to detecting vehicles.&lt;/b&gt; Higher sensitivity allows quicker detection at longer distances but may react to non-vehicle objects; lower sensitivity is more conservative and reduces false detections.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Чутливість openpilot до виявлення транспортних засобів.&lt;/b&gt; Вища чутливість дозволяє швидше виявляти об&apos;єкти на більшій відстані, але може реагувати на об&apos;єкти, що не є транспортними засобами; нижча чутливість є більш консервативною і зменшує кількість помилкових виявлень.</translation>
     </message>
     <message>
         <source>Maximum Acceleration</source>
-        <translation type="unfinished"></translation>
+        <translation>Максимальне прискорення</translation>
     </message>
     <message>
         <source>&lt;b&gt;Limit the strongest acceleration&lt;/b&gt; openpilot can command.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Обмежте найсильніше прискорення&lt;/b&gt;, яке може задавати openpilot.</translation>
     </message>
     <message>
         <source>&lt;b&gt;The turn-speed hack from comma&apos;s 2022 &quot;Taco Bell Run&quot;.&lt;/b&gt; Designed to slow down for left and right turns.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Хак для швидкості повороту з поїздки comma «Taco Bell Run» 2022 року.&lt;/b&gt; Призначений для уповільнення при поворотах вліво і вправо.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Miscellaneous acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Різні зміни в управлінні прискоренням і гальмуванням&lt;/b&gt; для точного налаштування роботи openpilot.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much the set speed increases or decreases&lt;/b&gt; for each + or – cruise control button press.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки збільшується або зменшується задана швидкість&lt;/b&gt; при кожному натисканні кнопки + або – круїз-контролю.</translation>
     </message>
     <message>
         <source>Cruise Interval (Hold)</source>
-        <translation type="unfinished"></translation>
+        <translation>Інтервал круїзу (утримання)</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much the set speed increases or decreases while holding the + or – cruise control buttons.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки збільшується або зменшується задана швидкість при утриманні кнопок + або – круїз-контролю.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Force Stop at &quot;Detected&quot; Stop Lights/Signs</source>
-        <translation type="unfinished"></translation>
+        <translation>Примус. зупин. на &quot;Виявлених&quot; світлоф./знаках</translation>
     </message>
     <message>
         <source>&lt;b&gt;Force openpilot to stop whenever the driving model &quot;detects&quot; a red light or stop sign.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In &quot;Experimental Mode&quot;, openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there&apos;s no clear reason.&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Змусьте openpilot зупинятися щоразу, коли модель водіння «виявляє» червоне світло або знак зупинки.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Застереження&lt;/b&gt;: openpilot не виявляє світлофори або знаки зупинки явно. У «експериментальному режимі» openpilot приймає рішення про водіння на основі даних з камери, що означає, що він може зупинятися навіть без очевидної причини.&lt;/i&gt;</translation>
     </message>
     <message>
         <source>Increase Stopped Distance by:</source>
-        <translation type="unfinished"></translation>
+        <translation>Збільшити гальмівний шлях на:</translation>
     </message>
     <message>
         <source>&lt;b&gt;Add extra space when stopped behind vehicles.&lt;/b&gt; Increase for more room; decrease for shorter gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додайте додатковий простір, коли зупиняєтеся за транспортними засобами.&lt;/b&gt; Збільшуйте для більшого простору; зменшуйте для менших проміжків.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Map the Acceleration or Deceleration profiles to the vehicle&apos;s &quot;Eco&quot; and &quot;Sport&quot; gear modes.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Прив&apos;яжіть профілі прискорення або уповільнення до режимів передач «Еко» та «Спорт» автомобіля.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Offset Set Speed by:</source>
-        <translation type="unfinished"></translation>
+        <translation>Зсув швидкості на:</translation>
     </message>
     <message>
         <source>&lt;b&gt;Increase the set speed by the chosen offset.&lt;/b&gt; For example, set +5 if you usually drive 5 over the limit.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Збільште задану швидкість на вибране відхилення.&lt;/b&gt; Наприклад, встановіть +5, якщо ви зазвичай перевищуєте обмеження на 5 км/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reverse the cruise control button behavior&lt;/b&gt; so a short press increases the set speed by 5 instead of 1.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Змініть поведінку кнопки круїз-контролю&lt;/b&gt; так, щоб коротке натискання збільшувало задану швидкість на 5 замість 1.</translation>
     </message>
     <message>
         <source>Snow</source>
-        <translation type="unfinished"></translation>
+        <translation>Сніг</translation>
     </message>
     <message>
         <source>&lt;b&gt;Driving adjustments for snowy conditions.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Регулювання керування в сніжних умовах.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Increase Following Distance by:</source>
-        <translation type="unfinished"></translation>
+        <translation>Збільште дистанцію на:</translation>
     </message>
     <message>
         <source>&lt;b&gt;Add extra space behind lead vehicles in snow.&lt;/b&gt; Increase for more space; decrease for tighter gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Збільшуйте відстань за автомобілями, що їдуть попереду, під час снігу.&lt;/b&gt; Збільшуйте відстань для більшого простору; зменшуйте відстань для меншого простору.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Add extra buffer when stopped behind vehicles in snow.&lt;/b&gt; Increase for more room; decrease for shorter gaps.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додайте додатковий запас безпеки, зупинившись за автомобілями на засніженій дорозі.&lt;/b&gt; Збільшуйте відстань для більшого простору; зменшуйте для менших проміжків.</translation>
     </message>
     <message>
         <source>Reduce Acceleration by:</source>
-        <translation type="unfinished"></translation>
+        <translation>Зменшити прискорення на:</translation>
     </message>
     <message>
         <source>&lt;b&gt;Lower the maximum acceleration in snow.&lt;/b&gt; Increase for softer takeoffs; decrease for quicker but less stable takeoffs.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Зменште максимальне прискорення на снігу.&lt;/b&gt; Збільште для більш м&apos;якого зрушання; зменште для швидшого, але менш стабільного зрушання.</translation>
     </message>
     <message>
         <source>Reduce Speed in Curves by:</source>
-        <translation type="unfinished"></translation>
+        <translation>Зменшуйте швидкість у вигинах на:</translation>
     </message>
     <message>
         <source>&lt;b&gt;Lower the desired speed while driving through curves in snow.&lt;/b&gt; Increase for safer, gentler turns; decrease for more aggressive driving in curves.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Зменште бажану швидкість під час руху по вигинах дороги на снігу.&lt;/b&gt; Збільште швидкість для більш безпечних і плавних вигинів; зменште швидкість для більш агресивного руху у вигинах.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Limit openpilot&apos;s maximum driving speed to the current speed limit&lt;/b&gt; obtained from downloaded maps, Mapbox, Navigate on openpilot, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota).</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Обмежте максимальну швидкість руху openpilot до поточного обмеження швидкості&lt;/b&gt;, отриманого з завантажених карт, Mapbox, Navigate на openpilot або приладової панелі для підтримуваних автомобілів (Ford, Genesis, Hyundai, Kia, Lexus, Toyota).</translation>
     </message>
     <message>
         <source>&lt;b&gt;The speed used by &quot;Speed Limit Controller&quot; when no speed limit is found.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;- &lt;b&gt;Experimental Mode&lt;/b&gt;: Estimate the limit using the driving model&lt;br&gt;- &lt;b&gt;Previous Limit&lt;/b&gt;: Keep using the last confirmed limit</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Швидкість, яка використовується «Контролером обмеження швидкості», коли обмеження швидкості не виявлено.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Встановити швидкість&lt;/b&gt;: Використовувати встановлену швидкість круїз-контролю&lt;br&gt;- &lt;b&gt;Експериментальний режим&lt;/b&gt;: Оцінити обмеження за допомогою моделі водіння&lt;br&gt;- &lt;b&gt;Попереднє обмеження&lt;/b&gt;: Продовжувати використовувати останнє підтверджене обмеження</translation>
     </message>
     <message>
         <source>&lt;b&gt;The speed used by &quot;Speed Limit Controller&quot; after you manually drive faster than the posted limit.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set with Gas Pedal&lt;/b&gt;: Use the highest speed reached while pressing the gas&lt;br&gt;- &lt;b&gt;Max Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;&lt;br&gt;Overrides clear when openpilot disengages.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Швидкість, яку використовує «Контролер обмеження швидкості» після того, як ви вручну перевищили встановлене обмеження. &lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Встановлюється за допомогою педалі газу&lt;/b&gt;: використовується найвища швидкість, досягнута під час натискання на педаль газу&lt;br&gt;- &lt;b&gt;Максимальна встановлена швидкість&lt;/b&gt;: використовується встановлена швидкість круїз-контролю&lt;br&gt;&lt;br&gt;Перезапис скасовується, коли OpenPilot деактивується.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Miscellaneous &quot;Speed Limit Controller&quot; changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Різні зміни в «Контролері обмеження швидкості»&lt;/b&gt; для точного налаштування керуваня openpilot.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Ask before changing to a new speed limit.&lt;/b&gt; To accept, tap the flashing on-screen widget or press the Cruise Increase button. To deny, press the Cruise Decrease button or ignore the prompt for 30 seconds.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Запитайте перед зміною на нову швидкість. &lt;/b&gt; Щоб прийняти, натисніть на миготливий віджет на екрані або натисніть кнопку «Збільшити швидкість». Щоб відмовити, натисніть кнопку «Зменшити швидкість» або проігноруйте запит протягом 30 секунд.</translation>
     </message>
     <message>
         <source>Force MPH from Dashboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Примус МНГ з приборки</translation>
     </message>
     <message>
         <source>&lt;b&gt;Always read dashboard speed limit signs in mph.&lt;/b&gt; Turn this on if the cluster shows mph but the limit is interpreted as km/h.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Завжди читайте знаки обмеження швидкості на приладовій панелі в милях на годину (мнг).&lt;/b&gt; Увімкніть цю опцію, якщо приладова панель показує mph, але обмеження інтерпретується як км/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How far ahead openpilot anticipates upcoming higher speed limits&lt;/b&gt; from downloaded map data.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Наскільки заздалегідь openpilot передбачає підвищення швидкісних обмежень&lt;/b&gt; на основі завантажених даних мапи.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How far ahead openpilot anticipates upcoming lower speed limits&lt;/b&gt; from downloaded map data.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Наскільки заздалегідь openpilot передбачає майбутні нижчі обмеження швидкості&lt;/b&gt; на основі завантажених даних мапи.</translation>
     </message>
     <message>
         <source>&lt;b&gt;When openpilot is first enabled, automatically set the max speed to the current posted limit.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;При першому ввімкненні openpilot автоматично встановлюйте максимальну швидкість відповідно до поточного обмеження.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Use Mapbox speed-limit data when no other source is available.&lt;/b&gt;</source>
-        <translation type="unfinished">&lt;b&gt;Використовуйте дані Mapbox про обмеження швидкості, якщо немає інших джерел інформації.&lt;/b&gt;</translation>
+        <translation>&lt;b&gt;Використовуйте дані Mapbox про обмеження швидкості, якщо немає інших джерел інформації.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;The source order for speed limits&lt;/b&gt; when more than one is available.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Порядок джерел для обмежень швидкості&lt;/b&gt;, коли доступно більше одного.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Add an offset to the posted speed limit&lt;/b&gt; to better match your driving style.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Додайте зсув від встановленого обмеження швидкості&lt;/b&gt;, щоб краще відповідати вашому стилю керування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 0 and 24 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; від 0 до 24 миль/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 25 and 34 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; від 25 до 34 миль/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 35 and 44 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; від 35 до 44 миль/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 45 and 54 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; від 45 до 54 миль/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 55 and 64 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; між 55 і 64 милями на годину.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 65 and 74 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; від 65 до 74 миль/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 75 and 99 mph.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;На скільки перевищувати встановлені обмеження швидкості&lt;/b&gt; від 75 до 99 миль/год.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Visual &quot;Speed Limit Controller&quot; changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Візуальні зміни «регулятора обмеження швидкості»&lt;/b&gt; для точного налаштування вигляду екрана керування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Show the current offset from the posted limit&lt;/b&gt; on the driving screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Показати поточне відхилення від встановленого ліміту&lt;/b&gt; на екрані керування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Display the speed-limit sources and their current values&lt;/b&gt; on the driving screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відображення джерел обмеження швидкості та їх поточних значень&lt;/b&gt; на екрані керування.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Switch to &quot;Experimental Mode&quot; when driving below this speed with a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Перейдіть в «Експериментальний режим», коли їдете більше цієї швидкості з лідером&lt;/b&gt;, щоб допомогти openpilot більш плавно справлятися з ситуаціями на низькій швидкості.</translation>
     </message>
     <message>
         <source>Not For Detected Lanes</source>
-        <translation type="unfinished"></translation>
+        <translation>Не для виявл. смуг</translation>
     </message>
     <message>
         <source>Are you sure you want to completely reset your curvature data?</source>
-        <translation type="unfinished"></translation>
+        <translation>Ви впевнені, що хочете повністю скинути дані про вигини?</translation>
     </message>
 </context>
 <context>
