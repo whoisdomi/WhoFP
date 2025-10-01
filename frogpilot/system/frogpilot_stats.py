@@ -97,14 +97,6 @@ def get_city_center(latitude, longitude):
     print(f"Falling back to (0, 0) for {latitude}, {longitude}")
     return float(0.0), float(0.0), "N/A", "N/A", "N/A"
 
-def is_up_to_date(build_metadata):
-  remote_commit = run_cmd(["git", "ls-remote", "origin", build_metadata.channel], f"Fetched remote commit", "Failed to fetch remote commit", report=False)
-
-  if remote_commit:
-    return build_metadata.openpilot.git_commit == remote_commit.strip().split()[0]
-
-  return True
-
 def send_stats():
   try:
     build_metadata = get_build_metadata()
@@ -149,6 +141,7 @@ def send_stats():
       .field("car_make", "GM" if frogpilot_toggles.car_make == "gm" else frogpilot_toggles.car_make.title())
       .field("car_model", frogpilot_toggles.car_model)
       .field("city", city)
+      .field("commit", build_metadata.openpilot.git_commit)
       .field("country", country)
       .field("current_months_kilometers", int(frogpilot_stats.get("CurrentMonthsKilometers", 0)))
       .field("device", HARDWARE.get_device_type())
@@ -174,7 +167,6 @@ def send_stats():
       .field("total_longitudinal_seconds", float(frogpilot_stats.get("LongitudinalTime", 0)))
       .field("total_tracked_seconds", float(frogpilot_stats.get("TrackedTime", 0)))
       .field("tuning_level", params.get_int("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
-      .field("up_to_date", is_up_to_date(build_metadata))
       .field("using_stock_acc", not (frogpilot_toggles.has_cc_long or frogpilot_toggles.openpilot_longitudinal))
 
       .tag("branch", build_metadata.channel)
