@@ -3248,6 +3248,10 @@
         <source>Up to date!</source>
         <translation>Оновлено!</translation>
     </message>
+    <message>
+        <source>Not parked</source>
+        <translation>Запаркуйтесь</translation>
+    </message>
 </context>
 <context>
     <name>FrogPilotModelReview</name>
