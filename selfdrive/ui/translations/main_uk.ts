@@ -1742,155 +1742,155 @@
     </message>
     <message>
         <source>&lt;b&gt;Advanced steering control changes to fine-tune how openpilot drives.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Розширені зміни в управлінні кермом для точного налаштування роботи OpenPilot.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;The time between openpilot&apos;s steering command and the vehicle&apos;s response.&lt;/b&gt; Increase if the vehicle reacts late; decrease if it feels jumpy. Auto-learned by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Час між командою кермування openpilot і реакцією автомобіля.&lt;/b&gt; Збільшуйте, якщо автомобіль реагує із запізненням; зменшуйте, якщо він відчувається нестабільним. За замовчуванням навчається автоматично.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Compensates for steering friction.&lt;/b&gt; Increase if the wheel sticks near center; decrease if it jitters. Auto-learned by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Компенсує тертя рульового управління.&lt;/b&gt; Збільшуйте, якщо кермо балансує поблизу центру; зменшуйте, якщо воно тремтить. За замовчуванням навчається автоматично.</translation>
     </message>
     <message>
         <source>&lt;b&gt;How strongly openpilot corrects lane position.&lt;/b&gt; Higher is tighter but twitchier; lower is smoother but slower. Auto-learned by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Наскільки сильно openpilot коригує положення на смузі руху.&lt;/b&gt; Вище значення означає більш жорстке, але і більш різке коригування; нижче значення означає більш плавне, але і більш повільне коригування. За замовчуванням використовується автоматичне навчання.</translation>
     </message>
     <message>
         <source>Lateral Acceleration (Default: %1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Бічне прискорення (замовч.: %1)</translation>
     </message>
     <message>
         <source>Lateral Acceleration</source>
-        <translation type="unfinished"></translation>
+        <translation>Бічне прискорення</translation>
     </message>
     <message>
         <source>&lt;b&gt;Maps steering torque to turning response.&lt;/b&gt; Increase for sharper turns; decrease for gentler steering. Auto-learned by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відповідає крутному моменту керма за реакцією на поворот.&lt;/b&gt; Збільшуйте для більш різких поворотів; зменшуйте для більш плавного керування. За замовчуванням навчається автоматично.</translation>
     </message>
     <message>
         <source>&lt;b&gt;The relationship between steering wheel rotation and road wheel angle.&lt;/b&gt; Increase if steering feels too quick or twitchy; decrease if it feels too slow or weak. Auto-learned by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Відношення між поворотом керма і кутом повороту колеса.&lt;/b&gt; Збільшуйте, якщо керування здається занадто швидким або нестабільним; зменшуйте, якщо воно здається занадто повільним або слабким. За замовчуванням навчається автоматично.</translation>
     </message>
     <message>
         <source>Force Auto-Tune On</source>
-        <translation type="unfinished"></translation>
+        <translation>Примусове авто-підлаштування ввімк.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Force-enable openpilot&apos;s live auto-tuning for &quot;Friction&quot; and &quot;Lateral Acceleration&quot;.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Примусово увімкніть функцію автоматичного підлаштування openpilot для «Тертя» та «Бічне прискорення».&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Force Auto-Tune Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Примусове авто-підлаштування вимк.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Force-disable openpilot&apos;s live auto-tuning for &quot;Friction&quot; and &quot;Lateral Acceleration&quot; and use the set value instead.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Примусово вимкніть автоматичне підлаштування openpilot для «Тертя» та «Бічне прискорення» і використовуйте замість цього встановлене значення.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Force Torque Controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Примусово Контролер моменту</translation>
     </message>
     <message>
         <source>&lt;b&gt;Use torque-based steering control instead of angle-based control for smoother lane keeping, especially in curves.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Використовуйте керування на основі крутного моменту замість керування на основі кута для більш плавного утримання смуги руху, особливо у вигинах дороги.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Always On Lateral</source>
-        <translation type="unfinished"></translation>
+        <translation>Постійне кермування</translation>
     </message>
     <message>
         <source>&lt;b&gt;openpilot&apos;s steering remains active even when the accelerator or brake pedals are pressed.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Система керування openpilot залишається активною навіть при натисканні педалі акселератора або гальма.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Enable &quot;Always On Lateral&quot; whenever &quot;Cruise Control&quot; is on, even when openpilot is not engaged.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Увімкніть «Постійне кермування», не залежно від того чи Круїз-контроль увімкнено, навіть якщо openpilot не активовано.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enable With LKAS</source>
-        <translation type="unfinished"></translation>
+        <translation>Увімкнути з LKAS</translation>
     </message>
     <message>
         <source>&lt;b&gt;Enable &quot;Always On Lateral&quot; whenever &quot;LKAS&quot; is on, even when openpilot is not engaged.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Увімкніть «Постійне кермування», коли «LKAS» увімкнено, навіть якщо openpilot не активовано.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Pause on Brake Press Below</source>
-        <translation type="unfinished"></translation>
+        <translation>Пауза при гальмі нижче</translation>
     </message>
     <message>
         <source>&lt;b&gt;Pause &quot;Always On Lateral&quot; below the set speed while the brake pedal is pressed.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Призупиніть «Постійне кермування» нижче встановленої швидкості, поки натиснута педаль гальма.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Allow openpilot to change lanes.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Дозволити openpilot змінювати смуги руху.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;When the turn signal is on, openpilot will automatically change lanes.&lt;/b&gt; No steering-wheel nudge required!</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Коли поворотник увімкнений, openpilot автоматично змінить смугу руху.&lt;/b&gt; Не потрібно торкатися керма!</translation>
     </message>
     <message>
         <source>&lt;b&gt;Delay between turn signal activation and the start of an automatic lane change.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Затримка між увімкненням поворотника та початком автоматичної зміни смуги руху.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Lowest speed at which openpilot will change lanes.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Найнижча швидкість, при якій openpilot змінить смугу руху.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Prevent automatic lane changes into lanes narrower than the set width.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Запобігайте автоматичній зміні смуги руху на смуги, ширина яких менша за задану.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Limit automatic lane changes to one per turn-signal activation.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Обмежте автоматичну зміну смуги руху до однієї на кожну активацію поворотника.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Miscellaneous steering control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Різні зміни в управлінні кермуванням&lt;/b&gt; для точного налаштування як openpilot керує.</translation>
     </message>
     <message>
         <source>&lt;b&gt;While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Коли рухаєтесь зі швидкістю нижче мінімальної швидкості зміни смуги руху з увімкненим поворотником, примушує OpenPilot вважати що ви збираєтесь повернути ліворуч/праворуч.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Twilsonco&apos;s &quot;Neural Network FeedForward&quot; model controller for smoother, model-based steering trained on your vehicle&apos;s data.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Контролер моделі «Neural Network FeedForward» від Twilsonco для більш плавного, кермування від моделі, навченій на даних вашого автомобіля.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Twilsonco&apos;s torque-based adjustments to smoothen out steering in curves.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Регулювання Twilsonco на основі крутного моменту для плавного кермування у вигинах шляху.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Steering control changes to fine-tune how openpilot drives.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Зміни в кермуванні для точного підлаштування роботи openpilot.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;Pause steering below the set speed.&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Призупиніть кермування нижче встановленої швидкості.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Reset &lt;b&gt;Actuator Delay&lt;/b&gt; to its default value?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути &lt;b&gt;Затримку приводу&lt;/b&gt; до значення за замовчуванням?</translation>
     </message>
     <message>
         <source>Reset &lt;b&gt;Friction&lt;/b&gt; to its default value?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути &lt;b&gt;Тертя&lt;/b&gt; до значення за замовчуванням?</translation>
     </message>
     <message>
         <source>Reset &lt;b&gt;Kp Factor&lt;/b&gt; to its default value?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути &lt;b&gt;коефіцієнт Kp&lt;/b&gt; до значення за замовчуванням?</translation>
     </message>
     <message>
         <source>Reset &lt;b&gt;Lateral Accel&lt;/b&gt; to its default value?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути &lt;b&gt;Бічне приск.&lt;/b&gt; до значення за замовчуванням?</translation>
     </message>
     <message>
         <source>Reset &lt;b&gt;Steer Ratio&lt;/b&gt; to its default value?</source>
-        <translation type="unfinished"></translation>
+        <translation>Скинути &lt;b&gt;Коеф. кермув.&lt;/b&gt; до значення за замовчуванням?</translation>
     </message>
 </context>
 <context>
