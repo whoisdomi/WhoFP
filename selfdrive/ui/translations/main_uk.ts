@@ -339,7 +339,7 @@
     </message>
     <message>
         <source>Camera Malfunction: Reboot Your Device</source>
-        <translation>Несправність камери: перезавантажте пристрій</translation>
+        <translation>Несправність камери: перезав. пристрій</translation>
     </message>
     <message>
         <source>Camera Frame Rate Low</source>
@@ -479,11 +479,11 @@
     </message>
     <message>
         <source>Cruise Fault: Restart the Car</source>
-        <translation>Несправність круїзу: перезапустіть авто</translation>
+        <translation>Несправність круїзу: перезав. авто</translation>
     </message>
     <message>
         <source>Cruise Fault: Restart the car to engage</source>
-        <translation>Несправність круїзу: перезапустіть авто, щоб активувати</translation>
+        <translation>Неспр. круїзу: перезав. авто, щоб активувати</translation>
     </message>
     <message>
         <source>Controls Mismatch</source>
