@@ -3584,7 +3584,7 @@ Developer - Highly customizable settings for seasoned enthusiasts</source>
     </message>
     <message>
         <source>WARNING: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do!</source>
-        <translation>УВАГА: Ці налаштування ризиковані і можуть кардинально змінити досвід з openpilot. Змінюйте лише коли розумієте, як вони працюють!</translation>
+        <translation>«УВАГА: Тут є небезпечні налаштування, які можуть зашкодити керуванню!»</translation>
     </message>
     <message>
         <source>All toggle descriptions are currently expanded. You can tap a toggle&apos;s name to open or close its description at any time!</source>
