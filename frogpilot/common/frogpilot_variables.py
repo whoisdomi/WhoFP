@@ -539,6 +539,9 @@ class FrogPilotVariables:
       CarInterface, _, _ = interfaces[MOCK.MOCK]
       FPCP = CarInterface.get_frogpilot_params(MOCK.MOCK, gen_empty_fingerprint(), [], CP, toggle)
 
+    if not FPCP.has_field("lateralTuning"):
+      CarInterfaceBase.configure_torque_tune(MOCK.MOCK, FPCP.init("lateralTuning"))
+
     is_torque_car = FPCP.lateralTuning.which() == "torque"
     if not is_torque_car:
       CarInterfaceBase.configure_torque_tune(MOCK.MOCK, FPCP.lateralTuning)
