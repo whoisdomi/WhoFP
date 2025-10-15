@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import numpy as np
+import os
 import random
 
 from functools import cache
@@ -43,6 +44,9 @@ PLANNER_TIME = ModelConstants.T_IDXS[-1]  # Length of time the model projects ou
 THRESHOLD = 0.63                          # Requires the condition to be true for ~1 second
 
 NON_DRIVING_GEARS = [GearShifter.neutral, GearShifter.park, GearShifter.reverse, GearShifter.unknown]
+
+DISCORD_WEBHOOK_URL_REPORT = os.getenv("DISCORD_WEBHOOK_URL_REPORT")
+DISCORD_WEBHOOK_URL_THEME = os.getenv("DISCORD_WEBHOOK_URL_THEME")
 
 RESOURCES_REPO = "FrogAi/FrogPilot-Resources"
 
@@ -282,8 +286,8 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("NavSettingLeftSide", "0", 0, "0"),
   ("NavSettingTime24h", "0", 0, "0"),
   ("NewLongAPI", "1", 3, "1"),
-  ("NNFF", "1", 2, "0"),
-  ("NNFFLite", "1", 2, "0"),
+  ("NNFF", "0", 2, "0"),
+  ("NNFFLite", "0", 2, "0"),
   ("NoLogging", "0", 2, "0"),
   ("NoUploads", "0", 2, "0"),
   ("NudgelessLaneChange", "1", 0, "0"),
@@ -603,6 +607,7 @@ class FrogPilotVariables:
 
     advanced_longitudinal_tuning = params.get_bool("AdvancedLongitudinalTune") if tuning_level >= level["AdvancedLongitudinalTune"] else default.get_bool("AdvancedLongitudinalTune")
     toggle.longitudinalActuatorDelay = np.clip(params.get_float("LongitudinalActuatorDelay"), 0, 1) if advanced_longitudinal_tuning and tuning_level >= level["LongitudinalActuatorDelay"] else longitudinalActuatorDelay
+    toggle.max_desired_acceleration = np.clip(params.get_float("MaxDesiredAcceleration"), 0.1, 4.0) if advanced_longitudinal_tuning and tuning_level >= level["MaxDesiredAcceleration"] else default.get_float("MaxDesiredAcceleration")
     toggle.startAccel = np.clip(params.get_float("StartAccel"), 0, 4) if advanced_longitudinal_tuning and tuning_level >= level["StartAccel"] else startAccel
     toggle.stopAccel = np.clip(params.get_float("StopAccel"), -4, 0) if advanced_longitudinal_tuning and tuning_level >= level["StopAccel"] else stopAccel
     toggle.stoppingDecelRate = np.clip(params.get_float("StoppingDecelRate"), 0.001, 1) if advanced_longitudinal_tuning and tuning_level >= level["StoppingDecelRate"] else toggle.stoppingDecelRate
@@ -813,7 +818,6 @@ class FrogPilotVariables:
     toggle.human_acceleration = longitudinal_tuning and (params.get_bool("HumanAcceleration") if tuning_level >= level["HumanAcceleration"] else default.get_bool("HumanAcceleration"))
     toggle.human_following = longitudinal_tuning and (params.get_bool("HumanFollowing") if tuning_level >= level["HumanFollowing"] else default.get_bool("HumanFollowing"))
     toggle.lead_detection_probability = np.clip(params.get_int("LeadDetectionThreshold") / 100, 0.25, 0.50) if longitudinal_tuning and tuning_level >= level["LeadDetectionThreshold"] else default.get_int("LeadDetectionThreshold") / 100
-    toggle.max_desired_acceleration = np.clip(params.get_float("MaxDesiredAcceleration"), 0.1, 4.0) if longitudinal_tuning and tuning_level >= level["MaxDesiredAcceleration"] else default.get_float("MaxDesiredAcceleration")
     toggle.taco_tune = longitudinal_tuning and (params.get_bool("TacoTune") if tuning_level >= level["TacoTune"] else default.get_bool("TacoTune"))
 
     toggle.available_models = (params.get("AvailableModels", encoding="utf-8") or "") + f",{DEFAULT_MODEL}"

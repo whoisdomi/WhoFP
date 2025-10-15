@@ -29,6 +29,7 @@ from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle, S
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
+from openpilot.frogpilot.tinygrad_modeld.tinygrad_modeld import LAT_SMOOTH_SECONDS
 
 from openpilot.system.hardware import HARDWARE
 
@@ -135,11 +136,11 @@ class Controls:
 
     self.LaC: LatControl
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
-      self.LaC = LatControlAngle(self.CP, self.CI)
+      self.LaC = LatControlAngle(self.CP, self.CI, DT_CTRL)
     elif self.FPCP.lateralTuning.which() == 'pid':
-      self.LaC = LatControlPID(self.CP, self.CI)
+      self.LaC = LatControlPID(self.CP, self.CI, DT_CTRL)
     elif self.FPCP.lateralTuning.which() == 'torque':
-      self.LaC = LatControlTorque(self.CP, self.FPCP, self.CI)
+      self.LaC = LatControlTorque(self.CP, self.FPCP, self.CI, DT_CTRL)
 
     self.initialized = False
     self.state = State.disabled
@@ -671,11 +672,12 @@ class Controls:
       # Reset desired curvature to current to avoid violating the limits on engage
       new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
       self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
+      lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
 
       actuators.curvature = self.desired_curvature
       steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                          self.steer_limited_by_safety, self.desired_curvature,
-                                                         curvature_limited,
+                                                         curvature_limited, lat_delay,
                                                          self.sm['liveLocationKalman'],
                                                          self.sm['modelV2'],
                                                          self.frogpilot_toggles)

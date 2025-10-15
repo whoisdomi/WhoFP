@@ -2,7 +2,6 @@
 # Twilsonco's Lateral Neural Network Feedforward
 from collections import deque
 from difflib import SequenceMatcher
-from typing import NamedTuple
 
 import json
 import math
@@ -30,8 +29,6 @@ from openpilot.frogpilot.common.frogpilot_variables import NNFF_MODELS_PATH, get
 # dict used to rename activation functions whose names aren't valid python identifiers
 ACTIVATION_FUNCTION_NAMES = {'σ': 'sigmoid'}
 
-LOW_SPEED_X = [0, 10, 20, 30]
-LOW_SPEED_Y = [15, 13, 10, 5]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
 LAT_PLAN_MIN_IDX = 5
@@ -42,7 +39,6 @@ class FluxModel:
       params = json.load(f)
 
     self.input_size = params["input_size"]
-    self.output_size = params["output_size"]
 
     self.input_mean = np.array(params["input_mean"], dtype=np.float32).T
     self.input_std = np.array(params["input_std"], dtype=np.float32).T
@@ -152,12 +148,6 @@ def sign(x):
 def similarity(s1: str, s2: str) -> float:
   return SequenceMatcher(None, s1, s2).ratio()
 
-class LatControlInputs(NamedTuple):
-  lateral_acceleration: float
-  roll_compensation: float
-  vego: float
-  aego: float
-
 class NeuralNetworkFeedforward:
   def __init__(self, CP, LatControlTorque):
     self.lat_control_torque = LatControlTorque
@@ -212,7 +202,7 @@ class NeuralNetworkFeedforward:
     self.nn_future_times = [time + self.lateral_delay for time in self.future_times]
     self.past_future_len = len(self.past_times) + len(self.nn_future_times)
 
-  def compute_nnff(self, CS, VM, actual_lateral_accel, desired_lateral_accel, gravity_adjusted_lateral_accel, lateral_accel_deadzone, llk, measurement, model_data, params, pid_log, roll_compensation, setpoint, frogpilot_toggles):
+  def compute_nnff(self, CS, VM, actual_lateral_accel, future_desired_lateral_accel, error, gravity_adjusted_future_lateral_accel, llk, measurement, model_data, params, pid_log, setpoint, frogpilot_toggles):
     if self.use_steering_angle:
       actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
       actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
@@ -227,7 +217,7 @@ class NeuralNetworkFeedforward:
       friction_upper_idx = next((idxs for idxs, value in enumerate(ModelConstants.T_IDXS) if value > lookahead), 16)
 
       predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
-      desired_lateral_jerk = (interp(self.lateral_delay, ModelConstants.T_IDXS, model_data.acceleration.y) - desired_lateral_accel) / self.lateral_delay
+      desired_lateral_jerk = (interp(self.lateral_delay, ModelConstants.T_IDXS, model_data.acceleration.y) - future_desired_lateral_accel) / self.lateral_delay
 
       lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk)
 
@@ -252,7 +242,7 @@ class NeuralNetworkFeedforward:
         roll = roll_pitch_adjust(roll, pitch)
 
       self.roll_deque.append(roll)
-      self.lateral_accel_desired_deque.append(desired_lateral_accel)
+      self.lateral_accel_desired_deque.append(future_desired_lateral_accel)
 
       # prepare past and future values
       # adjust future times to account for longitudinal acceleration
@@ -275,16 +265,15 @@ class NeuralNetworkFeedforward:
 
       pid_log.error = torque_from_setpoint - torque_from_measurement
 
-      error_blend = interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0])
+      error_blend = interp(abs(future_desired_lateral_accel), [1.0, 2.0], [0.0, 1.0])
       if error_blend > 0.0:  # blend in stronger error response when in high lat accel
         torque_from_error = self.lat_torque_nn_model.evaluate([CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0])
         if sign(pid_log.error) == sign(torque_from_error) and abs(pid_log.error) < abs(torque_from_error):
           pid_log.error = pid_log.error * (1.0 - error_blend) + torque_from_error * error_blend
 
       # compute feedforward (same as nn setpoint output)
-      error = setpoint - measurement
       friction_input = self.lat_accel_friction_factor * error + self.lat_jerk_friction_factor * lookahead_lateral_jerk
-      nn_input = [CS.vEgo, desired_lateral_accel, friction_input, roll] + past_lateral_accels_desired + future_lateral_accels + nnff_common
+      nn_input = [CS.vEgo, future_desired_lateral_accel, friction_input, roll] + past_lateral_accels_desired + future_lateral_accels + nnff_common
       ff = self.lat_torque_nn_model.evaluate(nn_input)
 
       # apply friction override for cars with low NN friction response
@@ -296,8 +285,8 @@ class NeuralNetworkFeedforward:
 
       pid_log.error = float(torque_from_setpoint - torque_from_measurement)
 
-      error = desired_lateral_accel - actual_lateral_accel
+      error = future_desired_lateral_accel - actual_lateral_accel
       friction_input = self.lat_accel_friction_factor * error + self.lat_jerk_friction_factor * lookahead_lateral_jerk
-      ff = self.torque_from_lateral_accel(gravity_adjusted_lateral_accel, self.lat_control_torque.torque_params)
+      ff = self.torque_from_lateral_accel(gravity_adjusted_future_lateral_accel, self.lat_control_torque.torque_params)
 
     return pid_log, ff
