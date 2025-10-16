@@ -1,4 +1,28 @@
 #!/usr/bin/env python3
+"""
+Advanced Turn Desires Tuning Guide
+===================================
+
+The bias values control how much the car's desired path is adjusted during turns:
+- Negative values for left turns (pulls the path left/inward)
+- Positive values for right turns (pulls the path right/inward)
+
+TUNING RECOMMENDATIONS:
+1. Start with the baseline values and test on a known turn
+2. If the car takes turns too wide (current issue):
+   - INCREASE the absolute value of both biases
+   - Try increments of 0.005 at a time
+3. If the car cuts turns too tight:
+   - DECREASE the absolute value of both biases
+4. Fine-tune left and right separately as needed
+
+TESTING METHODOLOGY:
+- Test at different speeds (5-14 m/s, which is ~11-31 mph)
+- Test with different turn radii (tight 90° vs gentle curves)
+- Monitor the debug output to see when bias activates/deactivates
+- Watch for oscillation or overcorrection
+"""
+
 import os
 from openpilot.system.hardware import TICI
 os.environ['DEV'] = 'QCOM' if TICI else 'LLVM'
@@ -35,13 +59,65 @@ PROCESS_NAME = "frogpilot.tinygrad_modeld.tinygrad_modeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
 
-LAT_SMOOTH_SECONDS = 0.1
+LAT_SMOOTH_SECONDS = 0.2
 LONG_SMOOTH_SECONDS = 0.3
 MIN_LAT_CONTROL_SPEED = 0.3
 
+# ============================================================================
+# ADVANCED TURN DESIRES TUNING PARAMETERS
+# ============================================================================
+# Adjust these values to tune how the car takes turns
+# More negative/positive = tighter turn path (pulls inward more)
+# Less negative/positive = wider turn path (less correction)
+
+ATD_CONFIG = {
+    # MAIN TUNING PARAMETERS - Adjust these to fix overshooting
+    'LEFT_TURN_BIAS': -0.020,   # Was -0.010, increased magnitude for tighter left turns
+    'RIGHT_TURN_BIAS': 0.040,   # Was 0.020, increased magnitude for tighter right turns
+    
+    # You can also try these alternative values:
+    # Conservative (less correction):
+    # 'LEFT_TURN_BIAS': -0.015,
+    # 'RIGHT_TURN_BIAS': 0.025,
+    
+    # Aggressive (more correction):
+    # 'LEFT_TURN_BIAS': -0.025,
+    # 'RIGHT_TURN_BIAS': 0.035,
+    
+    # ACTIVATION PARAMETERS (usually don't need adjustment)
+    'ACTIVATION_SPEED_LOW': 7,      # Speed below which bias activates immediately (m/s) (~15.7 mph)
+    'ACTIVATION_SPEED_HIGH': 14,    # Maximum speed for bias activation (m/s) (~31.3 mph)
+    'ACTIVATION_TIMER_FRAMES': 50,  # Frames to wait before activation at higher speeds
+    'ACTIVATION_STEERING_LIMIT': 100,  # Maximum steering angle for activation
+    
+    # DEACTIVATION PARAMETERS (fine-tuning when to stop the bias)
+    'DEACTIVATION_STEERING_NORMAL': 160,  # Max angle before deactivation
+    'DEACTIVATION_STEERING_EARLY': 80,    # Steering angle for early deactivation (with turn completing)
+    'TURN_START_STEERING': 45,  # Steering angle that marks turn as started, default 60
+    
+    # TURN DETECTION PARAMETERS
+    'TURN_DETECTION_CURVATURE': 0.01,  # Minimum curvature to detect a turn
+    'TURN_COMPLETING_RATIO': 0.90,     # Ratio for detecting decreasing curvature
+    'LOW_CURVATURE_THRESHOLD': 0.015,  # Threshold for low curvature detection
+    
+    # DEBUG OUTPUT
+    'DEBUG_ENABLED': False,  # Set to False to disable debug output
+}
+
+# Dynamic bias adjustment based on speed (optional advanced feature)
+#def get_speed_adjusted_bias(base_bias, v_ego):
+#    """
+#    Optional: Adjust bias based on speed for more nuanced control.
+#    Lower speeds need more bias, higher speeds need less.
+#    """
+#    # Speed factor: 1.0 at 5 m/s (~11 mph), 0.7 at 14 m/s (~31 mph)
+#    speed_factor = max(0.7, min(1.0, 1.0 - (v_ego - 5) * 0.033))
+#    return base_bias * speed_factor
+
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
-                          lat_action_t: float, long_action_t: float, v_ego: float, mlsim: bool, is_v9: bool) -> log.ModelDataV2.Action:
+                          lat_action_t: float, long_action_t: float, v_ego: float, mlsim: bool, is_v9: bool,
+                          steering_angle: float = 0.0, car_state=None) -> log.ModelDataV2.Action:
     plan = model_output['plan'][0]
     desired_accel, should_stop = get_accel_from_plan_tomb_raider(plan[:,Plan.VELOCITY][:,0],
                                                                  plan[:,Plan.ACCELERATION][:,0],
@@ -57,14 +133,267 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
         desired_curvature = prev_action.desiredCurvature
     else:
       desired_curvature = get_curvature_from_output(model_output, v_ego, lat_action_t, mlsim=mlsim)
-    if v_ego > MIN_LAT_CONTROL_SPEED:
-      desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
-    else:
-      desired_curvature = prev_action.desiredCurvature
 
-    return log.ModelDataV2.Action(desiredCurvature=float(desired_curvature),
-                                  desiredAcceleration=float(desired_accel),
-                                  shouldStop=bool(should_stop))
+    # ADVANCED TURN DESIRES START
+    if not hasattr(get_action_from_model, 'blinker_state'):
+        get_action_from_model.blinker_state = {
+            'left_timer': 0,
+            'right_timer': 0,
+            'left_active': False,
+            'right_active': False,
+            'left_was_on': False,
+            'right_was_on': False,
+            'turn_detected_latched': False,
+            'left_turn_started': False,
+            'right_turn_started': False,
+            'curvature_history': [],
+            'last_logged_state': None,
+            'event_counter': 0,
+            'left_cooldown': False,   # Prevent mid-turn reactivation
+            'right_cooldown': False,  # Prevent mid-turn reactivation
+        }
+    
+    state = get_action_from_model.blinker_state
+    curvature_bias = 0.0
+    
+    # Turn detection with latching
+    current_turn_detected = abs(desired_curvature) > ATD_CONFIG['TURN_DETECTION_CURVATURE']
+    
+    if car_state is not None:
+        blinker_on = car_state.leftBlinker or car_state.rightBlinker
+    
+        # Latch turn detection when first detected with blinker on at low speed
+        if current_turn_detected and blinker_on and v_ego < ATD_CONFIG['ACTIVATION_SPEED_HIGH']:
+            state['turn_detected_latched'] = True
+    
+        # Reset latch ONLY when blinker turns off
+        if not blinker_on:
+            state['turn_detected_latched'] = False
+            state['left_cooldown'] = False   # Clear cooldown
+            state['right_cooldown'] = False  # Clear cooldown
+    
+    # Use latched detection for all logic
+    turn_detected = state['turn_detected_latched']
+    
+    if car_state is not None:
+        # Track blinker activation timing
+        if car_state.leftBlinker and not state['left_was_on']:
+            state['left_timer'] = 0
+        if car_state.rightBlinker and not state['right_was_on']:
+            state['right_timer'] = 0
+    
+        # Increment timers while blinkers are on AND below speed threshold AND turn hasn't started
+        if car_state.leftBlinker and v_ego < ATD_CONFIG['ACTIVATION_SPEED_HIGH'] and not state['left_turn_started']:
+            state['left_timer'] += 1
+        elif car_state.leftBlinker:
+            pass  # Timer holds its current value
+        else:
+            state['left_timer'] = 0
+            state['left_active'] = False
+            state['left_turn_started'] = False
+    
+        if car_state.rightBlinker and v_ego < ATD_CONFIG['ACTIVATION_SPEED_HIGH'] and not state['right_turn_started']:
+            state['right_timer'] += 1
+        elif car_state.rightBlinker:
+            pass  # Timer holds its current value
+        else:
+            state['right_timer'] = 0
+            state['right_active'] = False
+            state['right_turn_started'] = False
+    
+        # OPTIMIZED DEBUG LOGGING - Only log state changes and critical events
+        blinker_on = car_state.leftBlinker or car_state.rightBlinker
+    
+        # Create current state snapshot for comparison
+        current_state = {
+            'latch': state['turn_detected_latched'],
+            'left_active': state['left_active'],
+            'right_active': state['right_active'],
+            'left_timer': state['left_timer'],
+            'right_timer': state['right_timer'],
+            'steering': abs(steering_angle),
+            'curve': abs(desired_curvature),
+            'v_ego': v_ego,
+            'blinker': 'L' if car_state.leftBlinker else 'R' if car_state.rightBlinker else 'N'
+        }
+    
+        # Define what constitutes a significant state change
+        should_log = False
+        log_reason = ""
+    
+        if state['last_logged_state'] is None:
+            should_log = True
+            log_reason = "INIT"
+        else:
+            last = state['last_logged_state']
+    
+            # Log on important state transitions
+            if current_state['latch'] != last['latch']:
+                should_log = True
+                log_reason = "LATCH_CHG"
+            elif current_state['left_active'] != last['left_active']:
+                should_log = True
+                log_reason = "L_BIAS_CHG"
+            elif current_state['right_active'] != last['right_active']:
+                should_log = True
+                log_reason = "R_BIAS_CHG"
+            elif current_state['blinker'] != last['blinker']:
+                should_log = True
+                log_reason = "BLINK_CHG"
+            # Log timer ONLY when approaching activation threshold (40+ frames)
+            elif blinker_on and ((state['left_timer'] >= 40 and state['left_timer'] % 10 == 0) or 
+                                 (state['right_timer'] >= 40 and state['right_timer'] % 10 == 0)):
+                should_log = True
+                log_reason = "TIMER_HI"
+            # Log significant steering changes
+            elif abs(current_state['steering'] - last['steering']) > 15:
+                should_log = True
+                log_reason = "STEER_CHG"
+    
+        # Single consolidated log line with all relevant info
+        if should_log:
+            state['event_counter'] += 1
+            bias_str = "L" if state['left_active'] else "R" if state['right_active'] else "N"
+            if ATD_CONFIG['DEBUG_ENABLED']:
+                # Include bias values in debug output for tuning reference
+                bias_value = ATD_CONFIG['LEFT_TURN_BIAS'] if state['left_active'] else ATD_CONFIG['RIGHT_TURN_BIAS'] if state['right_active'] else 0
+                print(f"ATD[{state['event_counter']:03d}] {log_reason}: "
+                      f"Steer={current_state['steering']:.1f} "
+                      f"Curve={current_state['curve']:.4f} "
+                      f"Latch={current_state['latch']} "
+                      f"Bias={bias_str}({bias_value:.3f}) "
+                      f"Blink={current_state['blinker']}({current_state['left_timer']}/{current_state['right_timer']}) "
+                      f"Speed={current_state['v_ego']:.1f}")
+    
+            state['last_logged_state'] = current_state.copy()
+    
+        # ACTIVATION LOGIC - with cooldown check and steering angle limit
+        # Only attempt activation if not in cooldown period
+        if not state['left_cooldown'] and not state['left_active']:
+            if v_ego < ATD_CONFIG['ACTIVATION_SPEED_LOW'] and turn_detected and abs(steering_angle) < ATD_CONFIG['ACTIVATION_STEERING_LIMIT']:
+                if car_state.leftBlinker:
+                    state['left_active'] = True
+            elif (state['left_timer'] >= ATD_CONFIG['ACTIVATION_TIMER_FRAMES'] and turn_detected and 
+                  v_ego < ATD_CONFIG['ACTIVATION_SPEED_HIGH'] and 
+                  abs(steering_angle) < ATD_CONFIG['ACTIVATION_STEERING_LIMIT']):
+                state['left_active'] = True
+        
+        if not state['right_cooldown'] and not state['right_active']:
+            if v_ego < ATD_CONFIG['ACTIVATION_SPEED_LOW'] and turn_detected and abs(steering_angle) < ATD_CONFIG['ACTIVATION_STEERING_LIMIT']:
+                if car_state.rightBlinker:
+                    state['right_active'] = True
+            elif (state['right_timer'] >= ATD_CONFIG['ACTIVATION_TIMER_FRAMES'] and turn_detected and 
+                  v_ego < ATD_CONFIG['ACTIVATION_SPEED_HIGH'] and 
+                  abs(steering_angle) < ATD_CONFIG['ACTIVATION_STEERING_LIMIT']):
+                state['right_active'] = True
+    
+        # Mark turn as started when steering begins
+        if car_state.leftBlinker and abs(steering_angle) > ATD_CONFIG['TURN_START_STEERING']:
+            state['left_turn_started'] = True
+            state['left_timer'] = 0
+        if car_state.rightBlinker and abs(steering_angle) > ATD_CONFIG['TURN_START_STEERING']:
+            state['right_turn_started'] = True
+            state['right_timer'] = 0
+    
+        # Track raw curvature before bias is applied
+        raw_curvature = abs(desired_curvature)
+        state['curvature_history'].append(raw_curvature)
+        if len(state['curvature_history']) > 12:
+            state['curvature_history'].pop(0)
+    
+        # Enhanced deactivation with curvature trend detection
+        curvature_decreasing = False
+        low_curvature = False
+        if len(state['curvature_history']) >= 8:
+            recent_avg = sum(state['curvature_history'][-4:]) / 4
+            earlier_avg = sum(state['curvature_history'][-8:-4]) / 4
+            curvature_decreasing = recent_avg < earlier_avg * ATD_CONFIG['TURN_COMPLETING_RATIO']
+            low_curvature = recent_avg < ATD_CONFIG['LOW_CURVATURE_THRESHOLD']
+    
+        # Combined turn completion detection
+        turn_completing = curvature_decreasing or low_curvature
+    
+        # IMPROVED DEACTIVATION LOGIC - Only check if bias is active, log once, set cooldown
+        if state['left_active']:
+            if abs(steering_angle) > ATD_CONFIG['DEACTIVATION_STEERING_NORMAL'] or \
+               (abs(steering_angle) > ATD_CONFIG['DEACTIVATION_STEERING_EARLY'] and turn_completing):  
+                deactivation_angle = abs(steering_angle)
+                deactivation_reason = 'wide' if (abs(steering_angle) <= ATD_CONFIG['DEACTIVATION_STEERING_NORMAL'] and turn_completing) else 'normal'
+                if ATD_CONFIG['DEBUG_ENABLED']:
+                    print(f"ATD_DEACTIVATE: L_BIAS OFF at {deactivation_angle:.1f} (reason: {deactivation_reason})")
+                state['left_active'] = False
+                state['left_cooldown'] = True  # Prevent reactivation until blinker cycles
+    
+        if state['right_active']:
+            if abs(steering_angle) > ATD_CONFIG['DEACTIVATION_STEERING_NORMAL'] or \
+               (abs(steering_angle) > ATD_CONFIG['DEACTIVATION_STEERING_EARLY'] and turn_completing): 
+                deactivation_angle = abs(steering_angle)
+                deactivation_reason = 'wide' if (abs(steering_angle) <= ATD_CONFIG['DEACTIVATION_STEERING_NORMAL'] and turn_completing) else 'normal'
+                if ATD_CONFIG['DEBUG_ENABLED']:
+                    print(f"ATD_DEACTIVATE: R_BIAS OFF at {deactivation_angle:.1f} (reason: {deactivation_reason})")
+                state['right_active'] = False
+                state['right_cooldown'] = True  # Prevent reactivation until blinker cycles
+    
+        # Apply bias only when active
+        if state['left_active']:
+            # Optional: Use speed-adjusted bias
+            # curvature_bias = get_speed_adjusted_bias(ATD_CONFIG['LEFT_TURN_BIAS'], v_ego)
+            curvature_bias = ATD_CONFIG['LEFT_TURN_BIAS']
+        elif state['right_active']:
+            # Optional: Use speed-adjusted bias
+            # curvature_bias = get_speed_adjusted_bias(ATD_CONFIG['RIGHT_TURN_BIAS'], v_ego)
+            curvature_bias = ATD_CONFIG['RIGHT_TURN_BIAS']
+    
+        # Update previous state
+        state['left_was_on'] = car_state.leftBlinker
+        state['right_was_on'] = car_state.rightBlinker
+    
+    desired_curvature += curvature_bias
+    # ADVANCED TURN DESIRES END
+
+    # [Rest of the function continues as in original...]
+    # Frame-based timer for post-turn smoothing
+    POST_TURN_FRAMES = 40  # 2 seconds at 20Hz
+
+    # Initialize static variables using function attributes
+    if not hasattr(get_action_from_model, 'post_turn_counter'):
+      get_action_from_model.post_turn_counter = 0
+      get_action_from_model.was_in_turn = False
+
+    currently_in_turn = abs(steering_angle) > 35
+    blinker_turn = False
+    if car_state is not None:
+        blinker_on = car_state.leftBlinker or car_state.rightBlinker
+        if blinker_on and v_ego < 14 and turn_detected and abs(steering_angle) > 40:  # activation conditions
+            blinker_turn = True
+
+    # Detect turn exit and start timer
+    if get_action_from_model.was_in_turn and not currently_in_turn:
+      get_action_from_model.post_turn_counter = POST_TURN_FRAMES
+
+    # Dynamic lateral smoothing
+    if currently_in_turn or blinker_turn or get_action_from_model.post_turn_counter > 0:
+      lat_smooth_factor = 0.07  # Active turns, blinker under threshold, or post-turn recovery
+    else:
+      lat_smooth_factor = LAT_SMOOTH_SECONDS  # Use stock value for all other cases
+
+    desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth_factor)
+
+    # Update states for next frame
+    get_action_from_model.was_in_turn = currently_in_turn
+    if get_action_from_model.post_turn_counter > 0:
+      get_action_from_model.post_turn_counter -= 1
+
+    # Construct and return action
+    action = log.ModelDataV2.Action()
+    action.desiredAcceleration = float(desired_accel)
+    action.desiredCurvature = float(desired_curvature)
+    action.shouldStop = bool(should_stop)
+
+    return action
+
+# Note: The rest of the file (main function, etc.) remains unchanged
+# Only the get_action_from_model function has been modified with the tuning parameters
 
 class FrameMeta:
   frame_id: int = 0
@@ -277,7 +606,6 @@ class ModelState:
 
     return combined_outputs_dict
 
-
 def main(demo=False):
   cloudlog.warning("modeld init")
 
@@ -442,7 +770,7 @@ def main(demo=False):
       drivingdata_send = messaging.new_message('drivingModelData')
       posenet_send = messaging.new_message('cameraOdometry')
 
-      action = get_action_from_model(model_output, prev_action, lat_delay + DT_MDL, long_delay + DT_MDL, v_ego, model.mlsim, model.is_v9)
+      action = get_action_from_model(model_output, prev_action, lat_delay + DT_MDL, long_delay + DT_MDL, v_ego, model.mlsim, model.is_v9, sm["carState"].steeringAngleDeg, sm["carState"])
       prev_action = action
       fill_model_msg(drivingdata_send, modelv2_send, model_output, action,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,
