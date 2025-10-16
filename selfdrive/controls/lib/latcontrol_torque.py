@@ -35,6 +35,10 @@ class LatControlTorque(LatControl):
     self.torque_params = FPCP.lateralTuning.torque
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
+    
+    # Store the base kp value
+    self.base_kp = self.torque_params.kp
+    
     self.pid = PIDController(self.torque_params.kp, self.torque_params.ki,
                              k_f=self.torque_params.kf, rate=1/self.dt)
     self.update_limits()
@@ -65,6 +69,9 @@ class LatControlTorque(LatControl):
       output_torque = 0.0
       pid_log.active = False
     else:
+      # Update kp based on current speed
+      current_kp = self.base_kp * 0.5 if CS.vEgo > 14 else self.base_kp
+      
       measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
       roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
       curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
@@ -85,7 +92,7 @@ class LatControlTorque(LatControl):
       low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y_NN if frogpilot_toggles.nnff else LOW_SPEED_Y) / max(CS.vEgo, MIN_SPEED)) ** 2
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       error = setpoint - measurement
-      error_lsf = error + low_speed_factor / self.torque_params.kp * error
+      error_lsf = error + low_speed_factor / current_kp * error
 
       if self.nnff_loaded and frogpilot_toggles.nnff or frogpilot_toggles.nnff_lite:
         pid_log, ff = self.nnff.compute_nnff(
