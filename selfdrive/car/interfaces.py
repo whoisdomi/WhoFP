@@ -154,6 +154,10 @@ class CarInterfaceBase(ABC):
     ret.rotationalInertia = scale_rot_inertia(ret.mass, ret.wheelbase)
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, ret.tireStiffnessFactor)
 
+    # FrogPilot variables
+    if ret.lateralTuning.which() == "pid" and (frogpilot_toggles.force_torque_controller or frogpilot_toggles.nnff or frogpilot_toggles.nnff_lite):
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+
     return ret
 
   @classmethod
@@ -215,14 +219,6 @@ class CarInterfaceBase(ABC):
 
         fp_ret.canUsePedal = not CP.autoResumeSng
         fp_ret.canUseSDSU = not CP.enableDsu and candidate not in UNSUPPORTED_DSU_CAR and candidate not in TSS2_CAR
-
-      if CP.steerControlType != car.CarParams.SteerControlType.angle:
-        if CP.lateralTuning.which() == "pid" and (frogpilot_toggles.force_torque_controller or frogpilot_toggles.nnff or frogpilot_toggles.nnff_lite):
-          CarInterfaceBase.configure_torque_tune(candidate, fp_ret.lateralTuning)
-        elif CP.lateralTuning.which() == "torque":
-          CarInterfaceBase.configure_torque_tune(candidate, fp_ret.lateralTuning)
-        else:
-          fp_ret.lateralTuning.init("pid")
 
       fp_ret.openpilotLongitudinalControlDisabled = frogpilot_toggles.disable_openpilot_long
 

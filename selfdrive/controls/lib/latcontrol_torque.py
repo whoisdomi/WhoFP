@@ -10,8 +10,6 @@ from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.selfdrive.controls.lib.pid import PIDController
 from openpilot.selfdrive.controls.lib.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 
-from openpilot.frogpilot.controls.lib.neural_network_feedforward import LOW_SPEED_Y_NN, NeuralNetworkFeedforward
-
 # At higher speeds (25+mph) we can assume:
 # Lateral acceleration achieved by a specific car correlates to
 # torque applied to the steering rack. It does not correlate to
@@ -30,9 +28,9 @@ LOW_SPEED_Y = [15, 13, 10, 5]
 
 
 class LatControlTorque(LatControl):
-  def __init__(self, CP, FPCP, CI, dt):
+  def __init__(self, CP, CI, dt):
     super().__init__(CP, CI, dt)
-    self.torque_params = FPCP.lateralTuning.torque
+    self.torque_params = CP.lateralTuning.torque
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
     self.pid = PIDController(self.torque_params.kp, self.torque_params.ki,
@@ -43,11 +41,6 @@ class LatControlTorque(LatControl):
     self.requested_lateral_accel_buffer = deque([0.] * self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES , maxlen=self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES)
     self.previous_measurement = 0.0
     self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * (MAX_LAT_JERK_UP - 0.5)), self.dt)
-
-    # FrogPilot variables
-    self.nnff = NeuralNetworkFeedforward(CP, self)
-
-    self.nnff_loaded = self.nnff.lat_torque_nn_model != None
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -82,38 +75,26 @@ class LatControlTorque(LatControl):
       measurement_rate = self.measurement_rate_filter.update((measurement - self.previous_measurement) / self.dt)
       self.previous_measurement = measurement
 
-      low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y_NN if frogpilot_toggles.nnff else LOW_SPEED_Y) / max(CS.vEgo, MIN_SPEED)) ** 2
+      low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y) / max(CS.vEgo, MIN_SPEED)) ** 2
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       error = setpoint - measurement
       error_lsf = error + low_speed_factor / self.torque_params.kp * error
 
-      if self.nnff_loaded and frogpilot_toggles.nnff or frogpilot_toggles.nnff_lite:
-        pid_log, ff = self.nnff.compute_nnff(
-          CS, VM, measurement, error, future_desired_lateral_accel, gravity_adjusted_future_lateral_accel,
-          llk, measurement, model_data, params, pid_log, setpoint, frogpilot_toggles
-        )
+      # do error correction in lateral acceleration space, convert at end to handle non-linear torque responses correctly
+      pid_log.error = float(error_lsf)
+      ff = gravity_adjusted_future_lateral_accel
+      # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
+      ff -= self.torque_params.latAccelOffset
+      # TODO jerk is weighted by lat_delay for legacy reasons, but should be made independent of it
+      ff += get_friction(error, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
-        freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-        output_torque = self.pid.update(pid_log.error,
+      freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
+      output_lataccel = self.pid.update(pid_log.error,
+                                       -measurement_rate,
                                         feedforward=ff,
                                         speed=CS.vEgo,
                                         freeze_integrator=freeze_integrator)
-      else:
-        # do error correction in lateral acceleration space, convert at end to handle non-linear torque responses correctly
-        pid_log.error = float(error_lsf)
-        ff = gravity_adjusted_future_lateral_accel
-        # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
-        ff -= self.torque_params.latAccelOffset
-        # TODO jerk is weighted by lat_delay for legacy reasons, but should be made independent of it
-        ff += get_friction(error, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-
-        freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-        output_lataccel = self.pid.update(pid_log.error,
-                                         -measurement_rate,
-                                          feedforward=ff,
-                                          speed=CS.vEgo,
-                                          freeze_integrator=freeze_integrator)
-        output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
+      output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
 
       pid_log.active = True
       pid_log.p = float(self.pid.p)

@@ -185,17 +185,11 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent) : 
 
   QSet<QString> rebootKeys = {"AlwaysOnLateral", "ForceTorqueController", "NNFF", "NNFFLite"};
   for (const QString &key : rebootKeys) {
-    QObject::connect(static_cast<ToggleControl*>(toggles[key]), &ToggleControl::toggleFlipped, [key, parent, this](bool state) {
+    QObject::connect(static_cast<ToggleControl*>(toggles[key]), &ToggleControl::toggleFlipped, [key, this](bool state) {
       if (started) {
         if (key == "AlwaysOnLateral" && state) {
           if (FrogPilotConfirmationDialog::toggleReboot(this)) {
             Hardware::reboot();
-          }
-        } else if (key == "NNFF" || key == "NNFFLite") {
-          if (!parent->isTorqueCar) {
-            if (FrogPilotConfirmationDialog::toggleReboot(this)) {
-              Hardware::reboot();
-            }
           }
         } else if (key != "AlwaysOnLateral") {
           if (FrogPilotConfirmationDialog::toggleReboot(this)) {
