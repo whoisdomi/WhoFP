@@ -357,7 +357,7 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-  def set_weights(self, acceleration_jerk=1.0, danger_jerk=1.0, speed_jerk=1.0, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_ego=0.0, lead_dist=50.0):
+  def set_weights(self, acceleration_jerk=1.0, danger_jerk=1.0, speed_jerk=1.0, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_ego=0.0, lead_dist=50.0, uncertainty=0.0):
     # Update parameters based on current speed with interpolation for smooth scaling
     speed_mph = v_ego * CV.MS_TO_MPH  # Convert m/s to mph
 
@@ -389,9 +389,16 @@ class LongitudinalMpc:
     danger_jerk *= dist_factor
     speed_jerk *= dist_factor
 
+    # Scene complexity adjustment based on model uncertainty
+    complexity_factor = 1.0
+    filter_time_factor = 1.0
+    if uncertainty > 1.0:  # High uncertainty indicates complex scene
+      complexity_factor = 1.5  # Boost responsiveness
+      filter_time_factor = 0.0  # Disable smoothing for immediate response
+
     if self.mode == 'acc':
       a_change_cost = acceleration_jerk if prev_accel_constraint else 0
-      cost_weights = [self.current_x_ego_cost, X_EGO_COST, V_EGO_COST, A_EGO_COST, a_change_cost, speed_jerk]
+      cost_weights = [self.current_x_ego_cost * complexity_factor, X_EGO_COST, V_EGO_COST, A_EGO_COST, a_change_cost, speed_jerk * (1.0 / complexity_factor)]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, danger_jerk]
     elif self.mode == 'blended':
       a_change_cost = 40.0 if prev_accel_constraint else 0
@@ -400,6 +407,15 @@ class LongitudinalMpc:
     else:
       raise NotImplementedError(f'Planner mode {self.mode} not recognized in planner cost set')
     self.set_cost_weights(cost_weights, constraint_cost_weights)
+
+    # Adjust filter time constants for complex scenes
+    if abs(filter_time_factor - getattr(self, 'prev_filter_time_factor', 1.0)) > 0.1:
+      current_a = self.lead_a_filter.x if hasattr(self.lead_a_filter, 'x') else 0.0
+      current_v = self.lead_v_filter.x if hasattr(self.lead_v_filter, 'x') else 0.0
+      new_filter_time = self.current_filter_time * filter_time_factor
+      self.lead_a_filter = FirstOrderFilter(current_a, new_filter_time, self.dt)
+      self.lead_v_filter = FirstOrderFilter(current_v, new_filter_time, self.dt)
+      self.prev_filter_time_factor = filter_time_factor
 
   def set_cur_state(self, v, a):
     v_prev = self.x0[1]

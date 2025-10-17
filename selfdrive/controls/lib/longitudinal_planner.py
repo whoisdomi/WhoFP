@@ -215,8 +215,19 @@ class LongitudinalPlanner:
     self.lead_two = sm['radarState'].leadTwo
 
     lead_dist = self.lead_one.dRel if self.lead_one.status else 50.0
+
+    # Calculate scene uncertainty from model plan weights
+    uncertainty = 0.0
+    if hasattr(sm['modelV2'], 'plan_weights'):
+      weights = sm['modelV2'].plan_weights
+      if len(weights) > 1:
+        # Compute entropy as uncertainty metric
+        weights = np.array(weights)
+        weights = weights / np.sum(weights)  # Normalize
+        uncertainty = -np.sum(weights * np.log(weights + 1e-10))
+
     self.mpc.set_weights(sm['frogpilotPlan'].accelerationJerk, sm['frogpilotPlan'].dangerJerk, sm['frogpilotPlan'].speedJerk, prev_accel_constraint,
-                         personality=sm['controlsState'].personality, v_ego=v_ego, lead_dist=lead_dist)
+                          personality=sm['controlsState'].personality, v_ego=v_ego, lead_dist=lead_dist, uncertainty=uncertainty)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     # After deciding the MPC mode via get_mpc_mode(), ensure MPC uses that mode when not mlsim
