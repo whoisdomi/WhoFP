@@ -102,6 +102,14 @@ def manager_init() -> None:
     with open(migration_flag_file, "w") as f:
       f.write("migrated")
 
+  # One-time migration for NNFFLite to off
+  nnfflite_migration_flag_file = "/data/media/0/frogpilot_nnfflite_migrated.flag"
+  if not os.path.exists(nnfflite_migration_flag_file):
+    if params.get_bool("NNFFLite"):
+      params.put_bool("NNFFLite", False)
+    with open(nnfflite_migration_flag_file, "w") as f:
+      f.write("migrated")
+
   # set dongle id
   reg_res = register(show_spinner=True)
   if reg_res:
