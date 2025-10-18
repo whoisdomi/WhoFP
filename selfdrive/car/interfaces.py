@@ -155,7 +155,8 @@ class CarInterfaceBase(ABC):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, ret.tireStiffnessFactor)
 
     # FrogPilot variables
-    if ret.lateralTuning.which() == "pid" and (frogpilot_toggles.force_torque_controller or frogpilot_toggles.nnff or frogpilot_toggles.nnff_lite):
+    toggles_to_check = ("force_torque_controller", "nnff", "nnff_lite")
+    if ret.lateralTuning.which() == "pid" and any(getattr(frogpilot_toggles, toggle, False) for toggle in toggles_to_check):
       CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     return ret

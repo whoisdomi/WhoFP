@@ -286,7 +286,7 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("NavSettingLeftSide", "0", 0, "0"),
   ("NavSettingTime24h", "0", 0, "0"),
   ("NewLongAPI", "1", 3, "1"),
-  ("NNFF", "0", 2, "0"),
+  ("NNFF", "1", 2, "0"),
   ("NNFFLite", "0", 2, "0"),
   ("NoLogging", "0", 2, "0"),
   ("NoUploads", "0", 2, "0"),
