@@ -42,6 +42,9 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent) : 
     {"SteerDelay", steerActuatorDelay != 0 ? QString(tr("Actuator Delay (Default: %1)")).arg(QString::number(steerActuatorDelay, 'f', 2)) : tr("Actuator Delay"), tr("<b>The time between openpilot's steering command and the vehicle's response.</b> Increase if the vehicle reacts late; decrease if it feels jumpy. Auto-learned by default."), ""},
     {"SteerFriction", friction != 0 ? QString(tr("Friction (Default: %1)")).arg(QString::number(friction, 'f', 2)) : tr("Friction"), tr("<b>Compensates for steering friction.</b> Increase if the wheel sticks near center; decrease if it jitters. Auto-learned by default."), ""},
     {"SteerKP", steerKp != 0 ? QString(tr("Kp Factor (Default: %1)")).arg(QString::number(steerKp, 'f', 2)) : tr("Kp Factor"), tr("<b>How strongly openpilot corrects lane position.</b> Higher is tighter but twitchier; lower is smoother but slower. Auto-learned by default."), ""},
+    {"SteerKF", steerKf != 0 ? QString(tr("Kf Factor (Default: %1)")).arg(QString::number(steerKf, 'f', 2)) : tr("Kf Factor"), tr("<b>Feedforward gain for steering control.</b> Adjusts how proactively openpilot steers."), ""},
+    {"SteerKI", steerKi != 0 ? QString(tr("Ki Factor (Default: %1)")).arg(QString::number(steerKi, 'f', 2)) : tr("Ki Factor"), tr("<b>Corrects persistent steering errors.</b> Higher values reduce steady-state error but can cause oscillations."), ""},
+    {"SteerKD", steerKd != 0 ? QString(tr("Kd Factor (Default: %1)")).arg(QString::number(steerKd, 'f', 2)) : tr("Kd Factor"), tr("<b>Dampens steering oscillations.</b> Higher values reduce overshoot but can make the steering feel sluggish."), ""},
     {"SteerLatAccel", latAccelFactor != 0 ? QString(tr("Lateral Acceleration (Default: %1)")).arg(QString::number(latAccelFactor, 'f', 2)) : tr("Lateral Acceleration"), tr("<b>Maps steering torque to turning response.</b> Increase for sharper turns; decrease for gentler steering. Auto-learned by default."), ""},
     {"SteerRatio", steerRatio != 0 ? QString(tr("Steer Ratio (Default: %1)")).arg(QString::number(steerRatio, 'f', 2)) : tr("Steer Ratio"), tr("<b>The relationship between steering wheel rotation and road wheel angle.</b> Increase if steering feels too quick or twitchy; decrease if it feels too slow or weak. Auto-learned by default."), ""},
     {"ForceAutoTune", tr("Force Auto-Tune On"), tr("<b>Force-enable openpilot's live auto-tuning for \"Friction\" and \"Lateral Acceleration\".</b>"), ""},
@@ -90,6 +93,15 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent) : 
     } else if (param == "SteerKP") {
       std::vector<QString> steerKPButton{"Reset"};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, steerKp * 0.25, steerKp * 3.0, QString(), std::map<float, QString>(), 0.01, false, {}, steerKPButton, false, false);
+    } else if (param == "SteerKI") {
+      std::vector<QString> steerKIButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0, 1.5, QString(), std::map<float, QString>(), 0.01, false, {}, steerKIButton, false, false);
+    } else if (param == "SteerKF") {
+      std::vector<QString> steerKFButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0, 1.5, QString(), std::map<float, QString>(), 0.01, false, {}, steerKFButton, false, false);
+    } else if (param == "SteerKD") {
+      std::vector<QString> steerKDButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0, 1.5, QString(), std::map<float, QString>(), 0.01, false, {}, steerKDButton, false, false);
     } else if (param == "SteerLatAccel") {
       std::vector<QString> steerLatAccelButton{"Reset"};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, latAccelFactor * 0.75, latAccelFactor * 1.25, QString(), std::map<float, QString>(), 0.01, false, {}, steerLatAccelButton, false, false);
@@ -229,7 +241,30 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent) : 
       steerKPToggle->refresh();
     }
   });
+  
+  steerKIToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerKI"]);
+  QObject::connect(steerKIToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Ki Factor</b> to its default value?"), this)) {
+      params.putFloat("SteerKI", steerKi);
+      steerKIToggle->refresh();
+    }
+  });
 
+  steerKFToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerKF"]);
+  QObject::connect(steerKFToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Kf Factor</b> to its default value?"), this)) {
+      params.putFloat("SteerKF", steerKf);
+      steerKFToggle->refresh();
+    }
+  });
+
+  steerKDToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerKD"]);
+  QObject::connect(steerKDToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Kd Factor</b> to its default value?"), this)) {
+      params.putFloat("SteerKD", steerKd);
+      steerKDToggle->refresh();
+    }
+  });
   steerLatAccelToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerLatAccel"]);
   QObject::connect(steerLatAccelToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
     if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Lateral Accel</b> to its default value?"), this)) {
@@ -268,6 +303,9 @@ void FrogPilotLateralPanel::showEvent(QShowEvent *event) {
   latAccelFactor = parent->latAccelFactor;
   steerActuatorDelay = parent->steerActuatorDelay;
   steerKp = parent->steerKp;
+  steerKi = parent->steerKi;
+  steerKf = parent->steerKf;
+  steerKd = parent->steerKd;
   steerRatio = parent->steerRatio;
   tuningLevel = parent->tuningLevel;
 
@@ -276,6 +314,9 @@ void FrogPilotLateralPanel::showEvent(QShowEvent *event) {
   steerKPToggle->setTitle(QString(tr("Kp Factor (Default: %1)")).arg(QString::number(steerKp, 'f', 2)));
   steerKPToggle->updateControl(steerKp * 0.25, steerKp * 3.0);
   steerLatAccelToggle->setTitle(QString(tr("Lateral Accel (Default: %1)")).arg(QString::number(latAccelFactor, 'f', 2)));
+  steerKIToggle->setTitle(QString(tr("Ki Factor (Default: %1)")).arg(QString::number(steerKi, 'f', 2)));
+  steerKFToggle->setTitle(QString(tr("Kf Factor (Default: %1)")).arg(QString::number(steerKf, 'f', 2)));
+  steerKDToggle->setTitle(QString(tr("Kd Factor (Default: %1)")).arg(QString::number(steerKd, 'f', 2)));
   steerLatAccelToggle->updateControl(latAccelFactor * 0.75, latAccelFactor * 1.25);
   steerRatioToggle->setTitle(QString(tr("Steer Ratio (Default: %1)")).arg(QString::number(steerRatio, 'f', 2)));
   steerRatioToggle->updateControl(steerRatio * 0.5, steerRatio * 1.5);
@@ -426,6 +467,21 @@ void FrogPilotLateralPanel::updateToggles() {
 
     else if (key == "SteerKP") {
       setVisible &= steerKp != 0;
+      setVisible &= isTorqueCar || forcingTorqueController;
+    }
+
+    else if (key == "SteerKI") {
+      setVisible &= steerKi != 0;
+      setVisible &= isTorqueCar || forcingTorqueController;
+    }
+
+    else if (key == "SteerKF") {
+      setVisible &= steerKf != 0;
+      setVisible &= isTorqueCar || forcingTorqueController;
+    }
+
+    else if (key == "SteerKD") {
+      setVisible &= steerKd != 0;  
       setVisible &= isTorqueCar || forcingTorqueController;
     }
 

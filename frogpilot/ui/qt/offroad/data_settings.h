@@ -1,6 +1,9 @@
 #pragma once
 
-#include "frogpilot/ui/qt/offroad/frogpilot_settings.h"
+#include "common/params.h"
+#include "frogpilot/ui/qt/widgets/frogpilot_controls.h"
+
+class FrogPilotSettingsWindow;
 
 class FrogPilotDataPanel : public FrogPilotListWidget {
   Q_OBJECT

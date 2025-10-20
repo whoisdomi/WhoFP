@@ -1,6 +1,8 @@
 #include <sys/xattr.h>
 
 #include "frogpilot/ui/qt/offroad/data_settings.h"
+#include "frogpilot/ui/qt/offroad/frogpilot_settings.h"
+#include <QObject>
 
 FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
   QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();

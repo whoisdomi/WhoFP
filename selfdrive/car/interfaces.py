@@ -156,6 +156,18 @@ class CarInterfaceBase(ABC):
     ret.rotationalInertia = scale_rot_inertia(ret.mass, ret.wheelbase)
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, ret.tireStiffnessFactor)
 
+    # FrogPilot lateral tuning
+    if ret.steerControlType != car.CarParams.SteerControlType.angle:
+      if ret.lateralTuning.which() == "pid":
+        ret.lateralTuning.pid.kpV = frogpilot_toggles.steerKp
+        ret.lateralTuning.pid.kiV = frogpilot_toggles.steerKi
+        ret.lateralTuning.pid.kf = frogpilot_toggles.steerKf
+      elif ret.lateralTuning.which() == "torque":
+        ret.lateralTuning.torque.kp = frogpilot_toggles.steerKp[1][0]  # Extract the value from nested list
+        ret.lateralTuning.torque.ki = frogpilot_toggles.steerKi[1][0]  # Same for ki
+        ret.lateralTuning.torque.kf = frogpilot_toggles.steerKf[1][0] 
+        ret.lateralTuning.torque.kd = frogpilot_toggles.steerKd[1][0]
+        
     return ret
 
   @classmethod

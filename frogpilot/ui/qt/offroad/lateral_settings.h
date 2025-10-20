@@ -32,13 +32,16 @@ private:
   float latAccelFactor;
   float steerActuatorDelay;
   float steerKp;
+  float steerKi;
+  float steerKf;
+  float steerKd;
   float steerRatio;
 
   int tuningLevel;
 
   std::map<QString, AbstractControl*> toggles;
 
-  QSet<QString> advancedLateralTuneKeys = {"ForceAutoTune", "ForceAutoTuneOff", "ForceTorqueController", "SteerDelay", "SteerFriction", "SteerLatAccel", "SteerKP", "SteerRatio"};
+  QSet<QString> advancedLateralTuneKeys = {"ForceAutoTune", "ForceAutoTuneOff", "ForceTorqueController", "SteerDelay", "SteerFriction", "SteerLatAccel", "SteerKP", "SteerKI", "SteerKF", "SteerKD", "SteerRatio"};
   QSet<QString> aolKeys = {"AlwaysOnLateralLKAS", "AlwaysOnLateralMain", "PauseAOLOnBrake"};
   QSet<QString> laneChangeKeys = {"LaneChangeTime", "LaneDetectionWidth", "MinimumLaneChangeSpeed", "NudgelessLaneChange", "OneLaneChange"};
   QSet<QString> lateralTuneKeys = {"NNFF", "NNFFLite", "TurnDesires"};
@@ -50,6 +53,9 @@ private:
   FrogPilotParamValueButtonControl *steerFrictionToggle;
   FrogPilotParamValueButtonControl *steerLatAccelToggle;
   FrogPilotParamValueButtonControl *steerKPToggle;
+  FrogPilotParamValueButtonControl *steerKIToggle;
+  FrogPilotParamValueButtonControl *steerKFToggle;
+  FrogPilotParamValueButtonControl *steerKDToggle;
   FrogPilotParamValueButtonControl *steerRatioToggle;
 
   FrogPilotSettingsWindow *parent;

@@ -292,6 +292,9 @@ void FrogPilotSettingsWindow::updateVariables() {
     float currentDelayStock = params.getFloat("SteerDelayStock");
     float currentFrictionStock = params.getFloat("SteerFrictionStock");
     float currentKPStock = params.getFloat("SteerKPStock");
+    float currentKIStock = params.getFloat("SteerKIStock");
+    float currentKFStock = params.getFloat("SteerKFStock");
+    float currentKDStock = params.getFloat("SteerKDStock");
     float currentLatAccelStock = params.getFloat("SteerLatAccelStock");
     float currentLongDelayStock = params.getFloat("LongitudinalActuatorDelayStock");
     float currentStartAccelStock = params.getFloat("StartAccelStock");
@@ -320,6 +323,27 @@ void FrogPilotSettingsWindow::updateVariables() {
         params.putFloat("SteerKP", steerKp);
       }
       params.putFloat("SteerKPStock", steerKp);
+    }
+
+    if (currentKIStock != steerKi && steerKi != 0) {
+      if (params.getFloat("SteerKI") == currentKIStock || currentKIStock == 0) {
+        params.putFloat("SteerKI", steerKi);
+      }
+      params.putFloat("SteerKIStock", steerKi);
+    }
+
+    if (currentKFStock != steerKf && steerKf != 0) {
+      if (params.getFloat("SteerKF") == currentKFStock || currentKFStock == 0) {
+        params.putFloat("SteerKF", steerKf);
+      }
+      params.putFloat("SteerKFStock", steerKf);
+    }
+  
+    if (currentKDStock != steerKd && steerKd != 0) {
+      if (params.getFloat("SteerKD") == currentKDStock || currentKDStock == 0) {
+        params.putFloat("SteerKD", steerKd);
+      }
+      params.putFloat("SteerKDStock", steerKd);
     }
 
     if (currentLatAccelStock != latAccelFactor && latAccelFactor != 0) {
@@ -393,6 +417,9 @@ void FrogPilotSettingsWindow::updateVariables() {
     latAccelFactor = FPCP.getLateralTuning().getTorque().getLatAccelFactor();
     openpilotLongitudinalControlDisabled = FPCP.getOpenpilotLongitudinalControlDisabled();
     steerKp = FPCP.getLateralTuning().getTorque().getKp();
+    steerKi = FPCP.getLateralTuning().getTorque().getKi();
+    steerKf = FPCP.getLateralTuning().getTorque().getKf();
+    steerKd = FPCP.getLateralTuning().getTorque().getKd();
   }
 
   isC3 = util::read_file("/sys/firmware/devicetree/base/model").find("tici") != std::string::npos;
