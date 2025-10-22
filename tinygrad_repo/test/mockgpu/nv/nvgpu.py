@@ -2,6 +2,7 @@ import ctypes, ctypes.util, time
 import tinygrad.runtime.autogen.nv_gpu as nv_gpu
 from enum import Enum, auto
 from test.mockgpu.gpu import VirtGPU
+from test.mockgpu.helpers import _try_dlopen_gpuocelot
 from tinygrad.helpers import to_mv, init_c_struct_t
 
 def make_qmd_struct_type():
@@ -16,10 +17,7 @@ def make_qmd_struct_type():
 qmd_struct_t = make_qmd_struct_type()
 assert ctypes.sizeof(qmd_struct_t) == 0x40 * 4
 
-try:
-  gpuocelot_lib = ctypes.CDLL(ctypes.util.find_library("gpuocelot"))
-  gpuocelot_lib.ptx_run.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_void_p), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]  # noqa: E501
-except Exception: pass
+gpuocelot_lib = _try_dlopen_gpuocelot()
 
 class SchedResult(Enum): CONT = auto(); YIELD = auto() # noqa: E702
 
@@ -55,7 +53,7 @@ class GPFIFO:
 
   def _reset_buf_state(self): self.buf, self.buf_ptr = None, 0
   def _set_buf_state(self, gpfifo_entry):
-    ptr = ((gpfifo_entry >> 2) & 0xfffffffff) << 2
+    ptr = ((gpfifo_entry >> 2) & 0x3fffffffff) << 2
     sz = ((gpfifo_entry >> 42) & 0x1fffff) << 2
     self.buf = to_mv(ptr, sz).cast("I")
     self.buf_sz = sz // 4
@@ -92,14 +90,17 @@ class GPFIFO:
     qmd = qmd_struct_t.from_address(qmd_addr)
     prg_addr = qmd.program_address_lower + (qmd.program_address_upper << 32)
     const0 = to_mv(qmd.constant_buffer_addr_lower_0 + (qmd.constant_buffer_addr_upper_0 << 32), 0x160).cast('I')
-    args_cnt, vals_cnt = const0[0], const0[1]
+    args_cnt, vals_cnt = const0[80], const0[81]
     args_addr = qmd.constant_buffer_addr_lower_0 + (qmd.constant_buffer_addr_upper_0 << 32) + 0x160
     args = to_mv(args_addr, args_cnt*8).cast('Q')
     vals = to_mv(args_addr + args_cnt*8, vals_cnt*4).cast('I')
     cargs = [ctypes.cast(args[i], ctypes.c_void_p) for i in range(args_cnt)] + [ctypes.cast(vals[i], ctypes.c_void_p) for i in range(vals_cnt)]
     gx, gy, gz = qmd.cta_raster_width, qmd.cta_raster_height, qmd.cta_raster_depth
     lx, ly, lz = qmd.cta_thread_dimension0, qmd.cta_thread_dimension1, qmd.cta_thread_dimension2
-    gpuocelot_lib.ptx_run(ctypes.cast(prg_addr, ctypes.c_char_p), args_cnt+vals_cnt, (ctypes.c_void_p*len(cargs))(*cargs), lx, ly, lz, gx, gy, gz, 0)
+    try:
+      gpuocelot_lib.ptx_run(ctypes.cast(prg_addr, ctypes.c_char_p), args_cnt+vals_cnt,
+        (ctypes.c_void_p*len(cargs))(*cargs), lx, ly, lz, gx, gy, gz, 0)
+    except Exception as e: print("failed to execute:", e)
     if qmd.release0_enable:
       rel0 = to_mv(qmd.release0_address_lower + (qmd.release0_address_upper << 32), 0x10).cast('Q')
       rel0[0] = qmd.release0_payload_lower + (qmd.release0_payload_upper << 32)
@@ -182,6 +183,7 @@ class GPFIFO:
 class NVGPU(VirtGPU):
   def __init__(self, gpuid):
     super().__init__(gpuid)
+    self.regs = {}
     self.mapped_ranges = set()
     self.queues = []
 

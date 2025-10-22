@@ -7,8 +7,6 @@ from openpilot.selfdrive.car import CarSpecs, DbcDict, PlatformConfig, Platforms
 from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarDocs, CarParts, Tool, Column
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries, p16
 
-from openpilot.selfdrive.frogpilot.frogpilot_variables import get_frogpilot_toggles
-
 Ecu = car.CarParams.Ecu
 
 
@@ -22,7 +20,7 @@ class CarControllerParams:
     self.STEER_DRIVER_FACTOR = 1       # from dbc
 
     if CP.flags & SubaruFlags.GLOBAL_GEN2:
-      self.STEER_MAX = 1000
+      self.STEER_MAX = 1600
       self.STEER_DELTA_UP = 40
       self.STEER_DELTA_DOWN = 40
     elif CP.carFingerprint == CAR.SUBARU_IMPREZA_2020:

@@ -25,7 +25,7 @@ from openpilot.system.hardware.power_monitoring import PowerMonitoring
 from openpilot.system.hardware.fan_controller import TiciFanController
 from openpilot.system.version import terms_version, training_version
 
-from openpilot.selfdrive.frogpilot.frogpilot_variables import get_frogpilot_toggles, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
 ThermalStatus = log.DeviceState.ThermalStatus
 NetworkType = log.DeviceState.NetworkType
@@ -301,7 +301,7 @@ def hardware_thread(end_event, hw_queue) -> None:
 
     # **** starting logic ****
 
-    startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get_bool("DisableUpdates") or params.get_bool("SnoozeUpdate") or frogpilot_toggles.offline_mode
+    startup_conditions["up_to_date"] = True
     startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
     startup_conditions["accepted_terms"] = params.get("HasAcceptedTerms") == terms_version
 
@@ -324,7 +324,7 @@ def hardware_thread(end_event, hw_queue) -> None:
     set_offroad_alert_if_changed("Offroad_TemperatureTooHigh", show_alert, extra_text=extra_text)
 
     # TODO: this should move to TICI.initialize_hardware, but we currently can't import params there
-    if TICI:
+    if TICI and HARDWARE.get_device_type() == "tici":
       if not os.path.isfile("/persist/comma/living-in-the-moment"):
         if not Path("/data/media").is_mount():
           set_offroad_alert_if_changed("Offroad_StorageMissing", True)
@@ -345,8 +345,8 @@ def hardware_thread(end_event, hw_queue) -> None:
       should_start = should_start and all(startup_conditions.values())
 
     # Handle force offroad/onroad
-    should_start |= params_memory.get_bool("ForceOnroad")
-    should_start &= not params_memory.get_bool("ForceOffroad")
+    should_start |= frogpilot_toggles.force_onroad
+    should_start &= not frogpilot_toggles.force_offroad
 
     if should_start != should_start_prev or (count == 0):
       params.put_bool("IsEngaged", False)
@@ -416,7 +416,7 @@ def hardware_thread(end_event, hw_queue) -> None:
     fpmsg = messaging.new_message('frogpilotDeviceState')
 
     fpmsg.frogpilotDeviceState.freeSpace = round(get_available_bytes(default=32.0 * (2 ** 30)) / (2 ** 30))
-    fpmsg.frogpilotDeviceState.usedSpace = round(get_used_bytes(default=0.0 * (2 ** 30)) / (2 ** 30))
+    fpmsg.frogpilotDeviceState.usedSpace = round(get_used_bytes(default=0.0) / (2 ** 30))
 
     pm.send("frogpilotDeviceState", fpmsg)
 
@@ -464,7 +464,7 @@ def hardware_thread(end_event, hw_queue) -> None:
     count += 1
     should_start_prev = should_start
 
-    # Update FrogPilot parameters
+    # Update FrogPilot variables
     if sm['frogpilotPlan'].togglesUpdated:
       frogpilot_toggles = get_frogpilot_toggles()
 

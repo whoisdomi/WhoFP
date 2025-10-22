@@ -17,8 +17,8 @@ from openpilot.selfdrive.car.car_helpers import get_car, get_one_can
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.controls.lib.events import Events
 
-from openpilot.selfdrive.frogpilot.controls.frogpilot_card import FrogPilotCard
-from openpilot.selfdrive.frogpilot.frogpilot_variables import get_frogpilot_toggles, update_frogpilot_toggles
+from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles, update_frogpilot_toggles
+from openpilot.frogpilot.controls.frogpilot_card import FrogPilotCard
 
 REPLAY = "REPLAY" in os.environ
 
@@ -30,7 +30,7 @@ class Car:
 
   def __init__(self, CI=None):
     self.can_sock = messaging.sub_sock('can', timeout=20)
-    self.sm = messaging.SubMaster(['pandaStates', 'carControl', 'liveCalibration', 'onroadEvents', 'frogpilotPlan'])
+    self.sm = messaging.SubMaster(['pandaStates', 'carControl', 'liveCalibration', 'onroadEvents', 'frogpilotOnroadEvents', 'frogpilotPlan'])
     self.pm = messaging.PubMaster(['sendcan', 'carState', 'carParams', 'carOutput', 'frogpilotCarState'])
 
     self.can_rcv_cum_timeout_counter = 0
@@ -49,9 +49,8 @@ class Car:
       get_one_can(self.can_sock)
 
       num_pandas = len(messaging.recv_one_retry(self.sm.sock['pandaStates']).pandaStates)
-      disable_openpilot_long = self.params.get_bool("DisableOpenpilotLongitudinal")
       experimental_long_allowed = self.params.get_bool("ExperimentalLongitudinalEnabled")
-      self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'], disable_openpilot_long, experimental_long_allowed, self.params, num_pandas, get_frogpilot_toggles())
+      self.CI, self.CP, FPCP = get_car(self.can_sock, self.pm.sock['sendcan'], experimental_long_allowed, self.params, num_pandas, get_frogpilot_toggles())
     else:
       self.CI, self.CP = CI, CI.CP
 
@@ -63,9 +62,9 @@ class Car:
 
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
 
-    controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
+    controller_available = self.CI.CC is not None and openpilot_enabled_toggle
 
-    self.CP.passive = not controller_available or self.CP.dashcamOnly
+    self.CP.passive = not controller_available
     if self.CP.passive:
       safety_config = car.CarParams.SafetyConfig.new_message()
       safety_config.safetyModel = car.CarParams.SafetyModel.noOutput
@@ -107,12 +106,13 @@ class Car:
 
     self.frogpilot_toggles = get_frogpilot_toggles()
 
-    if self.frogpilot_toggles.acceleration_profile == 3:
-      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX
-
     if self.frogpilot_toggles.always_on_lateral:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
+
+    fpcp_bytes = FPCP.to_bytes()
+    self.params.put("FrogPilotCarParams", fpcp_bytes)
+    self.params.put_nonblocking("FrogPilotCarParamsPersistent", fpcp_bytes)
 
     # Write CarParams for controls and radard
     cp_bytes = self.CP.to_bytes()
@@ -226,7 +226,7 @@ class Car:
       self.step()
       self.rk.monitor_time()
 
-      # Update FrogPilot parameters
+      # Update FrogPilot variables
       if self.sm['frogpilotPlan'].togglesUpdated:
         self.frogpilot_toggles = get_frogpilot_toggles()
 

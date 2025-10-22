@@ -35,7 +35,7 @@ class CarInterface(CarInterfaceBase):
       return CarControllerParams.NIDEC_ACCEL_MIN, interp(current_speed, ACCEL_MAX_BP, ACCEL_MAX_VALS)
 
   @staticmethod
-  def _get_params(ret, candidate, fingerprint, car_fw, disable_openpilot_long, experimental_long, docs):
+  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs, frogpilot_toggles):
     ret.carName = "honda"
 
     CAN = CanBus(ret, fingerprint)
@@ -52,7 +52,7 @@ class CarInterface(CarInterfaceBase):
     else:
       ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.hondaNidec)]
       ret.enableGasInterceptor = 0x201 in fingerprint[CAN.pt]
-      ret.openpilotLongitudinalControl = not disable_openpilot_long
+      ret.openpilotLongitudinalControl = not frogpilot_toggles.disable_openpilot_long
 
       ret.pcmCruise = not ret.enableGasInterceptor
 
@@ -65,6 +65,12 @@ class CarInterface(CarInterfaceBase):
 
     # Accord ICE 1.5T CVT has different gearbox message
     if candidate == CAR.HONDA_ACCORD and 0x191 in fingerprint[CAN.pt]:
+      ret.transmissionType = TransmissionType.cvt
+    # Civic Type R is missing 0x191 and 0x1A3
+    elif candidate == CAR.HONDA_CIVIC_2022 and all(msg not in fingerprint[CAN.pt] for msg in (0x191, 0x1A3)):
+      ret.transmissionType = TransmissionType.manual
+    # New Civics dont have 0x191, but do have 0x1A3
+    elif candidate == CAR.HONDA_CIVIC_2022 and 0x1A3 in fingerprint[CAN.pt]:
       ret.transmissionType = TransmissionType.cvt
 
     # Certain Hondas have an extra steering sensor at the bottom of the steering rack,
@@ -193,7 +199,6 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.18]] # TODO: can probably use some tuning
 
     elif candidate == CAR.HONDA_CLARITY:
-      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HONDA_CLARITY
       if eps_modified:
         for fw in car_fw:
           if fw.ecu == "eps" and b"-" not in fw.fwVersion and b"," in fw.fwVersion:
@@ -224,9 +229,6 @@ class CarInterface(CarInterfaceBase):
 
     if ret.openpilotLongitudinalControl and candidate in HONDA_BOSCH:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HONDA_BOSCH_LONG
-
-    if ret.enableGasInterceptor and candidate not in HONDA_BOSCH:
-      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HONDA_GAS_INTERCEPTOR
 
     if candidate in HONDA_BOSCH_RADARLESS:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HONDA_RADARLESS

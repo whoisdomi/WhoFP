@@ -1,11 +1,10 @@
 import json, pathlib, zipfile, pickle, tarfile, struct, functools, io
 from collections import OrderedDict
-from typing import Union, Optional, Any, Callable, BinaryIO, Iterable
+from typing import Any, Callable, BinaryIO, Iterable
 from tinygrad.tensor import Tensor
 from tinygrad.dtype import dtypes
 from tinygrad.helpers import prod, argsort, DEBUG, Timing, CI, unwrap, GlobalCounters, tqdm, round_up, T
 from tinygrad.shape.view import strides_for_shape
-from tinygrad.multi import MultiLazyBuffer
 
 class TensorIO(io.RawIOBase, BinaryIO):
   def __init__(self, t: Tensor):
@@ -36,22 +35,22 @@ safe_dtypes = {"BOOL":dtypes.bool, "I8":dtypes.int8, "U8":dtypes.uint8, "I16":dt
                "I64":dtypes.int64, "U64":dtypes.uint64, "F16":dtypes.float16, "BF16":dtypes.bfloat16, "F32":dtypes.float32, "F64":dtypes.float64}
 inverse_safe_dtypes = {v:k for k,v in safe_dtypes.items()}
 
-def accept_filename(func: Callable[[Tensor], T]) -> Callable[[Union[Tensor, str, pathlib.Path]], T]:
+def accept_filename(func: Callable[[Tensor], T]) -> Callable[[Tensor|str|pathlib.Path], T]:
   @functools.wraps(func)
-  def wrapper(fn: Union[Tensor, str, pathlib.Path]) -> T: return func(Tensor(pathlib.Path(fn)) if not isinstance(fn, Tensor) else fn)
+  def wrapper(fn: Tensor|str|pathlib.Path) -> T: return func(Tensor(pathlib.Path(fn)) if not isinstance(fn, Tensor) else fn)
   return wrapper
 
 @accept_filename
 def safe_load_metadata(t:Tensor) -> tuple[Tensor, int, dict[str, Any]]:
   """
-  Loads a .safetensor file from disk, returning the data, metadata length, and metadata.
+  Loads a .safetensor file, returning the source tensor, data start position, and metadata.
   """
   data_start = int.from_bytes(t[0:8].data(), "little") + 8
   return t, data_start, json.loads(t[8:data_start].data().tobytes())
 
-def safe_load(fn:Union[Tensor, str, pathlib.Path]) -> dict[str, Tensor]:
+def safe_load(fn:Tensor|str|pathlib.Path) -> dict[str, Tensor]:
   """
-  Loads a .safetensor file from disk, returning the state_dict.
+  Loads a .safetensor file, returning the `state_dict`.
 
   ```python
   state_dict = nn.state.safe_load("test.safetensor")
@@ -62,9 +61,9 @@ def safe_load(fn:Union[Tensor, str, pathlib.Path]) -> dict[str, Tensor]:
   return { k: data[v['data_offsets'][0]:v['data_offsets'][1]].bitcast(safe_dtypes[v['dtype']]).reshape(v['shape'])
           for k, v in metadata.items() if k != "__metadata__" }
 
-def safe_save(tensors:dict[str, Tensor], fn:str, metadata:Optional[dict[str, Any]]=None):
+def safe_save(tensors:dict[str, Tensor], fn:str, metadata:dict[str, Any]|None=None):
   """
-  Saves a state_dict to disk in a .safetensor file with optional metadata.
+  Saves a `state_dict` to disk in a .safetensor file with optional metadata.
 
   ```python
   t = Tensor([1, 2, 3])
@@ -88,7 +87,7 @@ def safe_save(tensors:dict[str, Tensor], fn:str, metadata:Optional[dict[str, Any
 
 def get_state_dict(obj, prefix:str='', tensor_type=Tensor) -> dict[str, Tensor]:
   """
-  Returns a state_dict of the object, with optional prefix.
+  Returns a `state_dict` of the object, with optional prefix.
 
   ```python exec="true" source="above" session="tensor" result="python"
   class Net:
@@ -125,9 +124,9 @@ def get_parameters(obj) -> list[Tensor]:
   """
   return list(get_state_dict(obj).values())
 
-def load_state_dict(model, state_dict:dict[str, Tensor], strict=True, verbose=True, consume=False) -> None:
+def load_state_dict(model, state_dict:dict[str, Tensor], strict=True, verbose=True, consume=False, realize=True) -> list[Tensor]:
   """
-  Loads a state_dict into a model.
+  Loads a `state_dict` into a model. Return the loaded Tensors.
 
   ```python
   class Net:
@@ -141,7 +140,9 @@ def load_state_dict(model, state_dict:dict[str, Tensor], strict=True, verbose=Tr
   ```
   """
   start_mem_used = GlobalCounters.mem_used
-  with Timing("loaded weights in ", lambda et_ns: f", {(B:=(GlobalCounters.mem_used-start_mem_used))/1e9:.2f} GB loaded at {B/et_ns:.2f} GB/s"):
+  ret = []
+  with Timing("loaded weights in ",
+              lambda et_ns: f", {(B:=(GlobalCounters.mem_used-start_mem_used))/1e9:.2f} GB loaded at {B/et_ns:.2f} GB/s", enabled=verbose):
     model_state_dict = get_state_dict(model)
     if DEBUG >= 1 and len(state_dict) > len(model_state_dict):
       print("WARNING: unused weights in state_dict", sorted(list(state_dict.keys() - model_state_dict.keys())))
@@ -152,16 +153,23 @@ def load_state_dict(model, state_dict:dict[str, Tensor], strict=True, verbose=Tr
         continue
       if v.shape != state_dict[k].shape:
         raise ValueError(f'Shape mismatch in layer `{k}`: Expected shape {v.shape}, but found {state_dict[k].shape} in state dict.')
-      if isinstance((mlb:=v.lazydata), MultiLazyBuffer):
-        if isinstance(state_dict[k].lazydata, MultiLazyBuffer): v.replace(state_dict[k]).realize()
-        else: v.replace(state_dict[k].shard(mlb.device, mlb.axis)).realize()
-      else: v.replace(state_dict[k].to(v.device)).realize()
+      if isinstance(v.device, tuple):
+        if isinstance(state_dict[k].device, tuple): v.replace(state_dict[k])
+        else: v.replace(state_dict[k].shard(v.device, v.uop.axis))
+      else: v.replace(state_dict[k].to(v.device))
+      if realize: v.realize()
       if consume: del state_dict[k]
+      ret.append(v)
+  return ret
 
 @accept_filename
 def tar_extract(t: Tensor) -> dict[str, Tensor]:
   """
-  Extracts files from a tar archive and returns them as dictionary of names (keys) and tensors (values).
+  ```python
+  tar_extract(fn: Tensor | str | Path) -> dict[str, Tensor]
+  ```
+
+  Extracts files from a tar archive and returns them as a dictionary of names (keys) and tensors (values).
 
   ```python
   tensors = nn.state.tar_extract(Tensor(pathlib.Path("archive.tar")))
@@ -175,14 +183,18 @@ def tar_extract(t: Tensor) -> dict[str, Tensor]:
 @accept_filename
 def torch_load(t:Tensor) -> dict[str, Tensor]:
   """
-  Loads a torch .pth file from disk.
+  ```python
+  torch_load(fn: Tensor | str | Path) -> dict[str, Tensor]
+  ```
+
+  Loads a torch .pth file, returning the `state_dict`.
 
   ```python
   state_dict = nn.state.torch_load("test.pth")
   ```
   """
-  offsets: dict[Union[str, int], int] = {}
-  lens: dict[Union[str, int], int] = {}
+  offsets: dict[str|int, int] = {}
+  lens: dict[str|int, int] = {}
   def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad=None, backward_hooks=None, metadata=None):
     #print(storage, storage_offset, size, stride, requires_grad, backward_hooks, metadata)
     lens[storage[2]] = storage[4] * storage[1].itemsize
@@ -196,8 +208,8 @@ def torch_load(t:Tensor) -> dict[str, Tensor]:
     if tuple(permute_indexes) != tuple(range(len(permute_indexes))):
       intermediate_shape = tuple([shape_strides[x][0] for x in argsort(permute_indexes)])
       assert tuple([shape_strides[i][1] for i in argsort(permute_indexes)]) == strides_for_shape(intermediate_shape), "nonpermutable strides"
-      if DEBUG >= 3: print(f"WARNING: this torch load is slow. CLANG to permute {intermediate_shape} with {permute_indexes}")
-      assert storage[1] != dtypes.bfloat16, "can't CLANG permute BF16"
+      if DEBUG >= 3: print(f"WARNING: this torch load is slow. to permute {intermediate_shape} with {permute_indexes}")
+      assert storage[1] != dtypes.bfloat16, "can't permute BF16"
       # TODO: find a nice way to support all shapetracker on disktensors
       ret = ret.to(None).reshape(intermediate_shape).permute(permute_indexes)
 
@@ -262,9 +274,9 @@ def ggml_data_to_tensor(t: Tensor, n: int, ggml_type: int) -> Tensor:
   Converts ggml tensor data to a tinygrad tensor.
 
   Supported native types: float32 (id: 0), float16 (id: 1), int8 (id: 16), int16 (id: 17), int32 (id: 18)
-  Supported quantized types: Q4_0 (id: 2), Q4_1 (id: 3), Q8_0 (id: 8), Q6_K (id: 14)
+  Supported quantized types: Q4_0 (id: 2), Q4_1 (id: 3), Q8_0 (id: 8), Q6_K (id: 14), MXFP4 (id: 39)
   """
-  # https://github.com/ggerganov/ggml/blob/6dccc647264f5429df2624f36138f601e7ce23e5/include/ggml.h#L356
+  # https://github.com/ggerganov/ggml/blob/323951f1bdcdfbd5b5ff3a9a7c3770e63b1a560e/include/ggml.h#L356
 
   # native types
   if (dtype := { 0: dtypes.float32, 1: dtypes.float16, 16: dtypes.int8, 17: dtypes.int16, 18: dtypes.int32 }.get(ggml_type)) is not None:
@@ -276,7 +288,7 @@ def ggml_data_to_tensor(t: Tensor, n: int, ggml_type: int) -> Tensor:
     return t.unsqueeze(-1).expand((*t.shape,8//b)).idiv(shift_tensor).bitwise_and(bitmask).transpose(-1, -2).flatten(-2)
 
   # map to (number of elements, number of bytes)
-  if (nelements_nbytes := { 2: (32, 18), 3: (32, 20), 14: (256, 210), 8: (32, 34) }.get(ggml_type)) is not None:
+  if (nelements_nbytes := { 2: (32, 18), 3: (32, 20), 14: (256, 210), 8: (32, 34), 39: (32, 17) }.get(ggml_type)) is not None:
     blocks = t[:(n//nelements_nbytes[0])*nelements_nbytes[1]].reshape((-1, nelements_nbytes[1]))
     if ggml_type == 2: return (q_to_uint8(blocks[:,2:], 4).bitcast(dtypes.int8) - 8) * blocks[:,:2].bitcast(dtypes.float16).cast(dtypes.float32)
     if ggml_type == 3:
@@ -288,18 +300,30 @@ def ggml_data_to_tensor(t: Tensor, n: int, ggml_type: int) -> Tensor:
       scales = blocks[:,192:208].bitcast(dtypes.int8).unsqueeze(-1).expand((-1, 16, 16)).reshape((-1, 256))
       d = blocks[:,-2:].bitcast(dtypes.float16).cast(dtypes.float32).expand((-1, 256))
       return d * (xl.bitwise_or(xh).bitcast(dtypes.int8) - 32).flatten(-2) * scales
+    if ggml_type == 39:
+      e_int = blocks[:, 0].cast(dtypes.int32)
+      d = ((e_int >= 2).cast(dtypes.float32) * (e_int.cast(dtypes.float32) - 128).exp2() +
+           (e_int == 1).cast(dtypes.float32) * 2.0**(-127) +
+           (e_int == 0).cast(dtypes.float32) * 2.0**(-128)).unsqueeze(-1)
+      codes = q_to_uint8(blocks[:, 1:17], 4)
+      sign = 1.0 - codes.rshift(3).cast(dtypes.float32) * 2.0
+      exp, mant = codes.rshift(1).bitwise_and(0x3).cast(dtypes.float32), codes.bitwise_and(0x1).cast(dtypes.float32)
+      fp4_val = sign * ((exp != 0).cast(dtypes.float32) * (1.0 + 0.5 * mant) * (exp - 1.0).exp2() +
+                        (exp == 0).cast(dtypes.float32) * 0.5 * mant)
+      return (fp4_val * d).flatten(-2)[:n]
   raise ValueError(f"GGML type '{ggml_type}' is not supported!")
 
 @accept_filename
 def gguf_load(tensor: Tensor) -> tuple[dict, dict[str, Tensor]]:
   """
-  Loads a gguf file from a tensor.
+  Loads a .gguf file, returning the `kv_data` and `state_dict`.
 
   ```python
-  fn = "Meta-Llama-3-8B-Instruct.Q4_0.gguf"
-  gguf_tensor = Tensor.empty(os.stat(fn).st_size, dtype=dtypes.uint8, device=f"disk:{fn}").to(Device.DEFAULT)
-  kv_data, state_dict = gguf_load(gguf_tensor)
+  gguf_tensor = Tensor(pathlib.Path("Meta-Llama-3-8B-Instruct.Q4_0.gguf")).to(Device.DEFAULT)
+  kv_data, state_dict = nn.state.gguf_load(gguf_tensor)
   ```
+
+  NOTE: The provided tensor must be on a device that supports execution.
   """
   reader, kv_data, state_dict = io.BufferedReader(TensorIO(tensor), 1_000_000), {}, {}
   def read_unpack(fmt: str, n: int): return struct.unpack(fmt, reader.read(n))[0]

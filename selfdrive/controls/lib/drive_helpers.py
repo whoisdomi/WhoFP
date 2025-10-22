@@ -1,9 +1,11 @@
 import math
+import numpy as np
 
 from cereal import car, log
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
-from openpilot.common.realtime import DT_CTRL
+from openpilot.common.realtime import DT_CTRL, DT_MDL
+from openpilot.selfdrive.controls.lib.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
@@ -23,6 +25,7 @@ MAX_CURVATURE = 0.2
 
 # EU guidelines
 MAX_LATERAL_JERK = 5.0
+MAX_LATERAL_ACCEL_NO_ROLL = 3.0  # m/s^2
 MAX_VEL_ERR = 5.0
 
 ButtonEvent = car.CarState.ButtonEvent
@@ -110,7 +113,7 @@ class VCruiseHelper:
     if not self.button_change_states[button_type]["enabled"]:
       return
 
-    v_cruise_delta_interval = frogpilot_toggles.custom_cruise_increase_long if long_press else frogpilot_toggles.custom_cruise_increase
+    v_cruise_delta_interval = frogpilot_toggles.cruise_increase_long if long_press else frogpilot_toggles.cruise_increase
     v_cruise_delta = v_cruise_delta * v_cruise_delta_interval
     if v_cruise_delta_interval % 5 == 0 and self.v_cruise_kph % v_cruise_delta != 0:  # partial interval
       self.v_cruise_kph = CRUISE_NEAREST_FUNC[button_type](self.v_cruise_kph / v_cruise_delta) * v_cruise_delta
@@ -178,28 +181,40 @@ def apply_center_deadzone(error, deadzone):
 def rate_limit(new_value, last_value, dw_step, up_step):
   return clip(new_value, last_value + dw_step, last_value + up_step)
 
+def clamp(val, min_val, max_val):
+  clamped_val = float(np.clip(val, min_val, max_val))
+  return clamped_val, clamped_val != val
 
-def clip_curvature(v_ego, prev_curvature, new_curvature, planner_curves):
-  if planner_curves:
-    new_curvature = clip(new_curvature, -MAX_CURVATURE, MAX_CURVATURE)
-  v_ego = max(MIN_SPEED, v_ego)
-  max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
-  safe_desired_curvature = clip(new_curvature,
-                                prev_curvature - max_curvature_rate * DT_CTRL,
-                                prev_curvature + max_curvature_rate * DT_CTRL)
+def smooth_value(val, prev_val, tau, dt=DT_MDL):
+  alpha = 1 - np.exp(-dt/tau) if tau > 0 else 1
+  return alpha * val + (1 - alpha) * prev_val
 
-  return safe_desired_curvature
+def clip_curvature(v_ego, prev_curvature, new_curvature, roll) -> tuple[float, bool]:
+  # This function respects ISO lateral jerk and acceleration limits + a max curvature
+  v_ego = max(v_ego, MIN_SPEED)
+  max_curvature_rate = MAX_LATERAL_JERK / (v_ego ** 2)  # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
+  new_curvature = np.clip(new_curvature,
+                          prev_curvature - max_curvature_rate * DT_CTRL,
+                          prev_curvature + max_curvature_rate * DT_CTRL)
+
+  roll_compensation = roll * ACCELERATION_DUE_TO_GRAVITY
+  max_lat_accel = MAX_LATERAL_ACCEL_NO_ROLL + roll_compensation
+  min_lat_accel = -MAX_LATERAL_ACCEL_NO_ROLL + roll_compensation
+  new_curvature, limited_accel = clamp(new_curvature, min_lat_accel / v_ego ** 2, max_lat_accel / v_ego ** 2)
+
+  new_curvature, limited_max_curv = clamp(new_curvature, -MAX_CURVATURE, MAX_CURVATURE)
+  return float(new_curvature), limited_accel or limited_max_curv
 
 
 def get_friction(lateral_accel_error: float, lateral_accel_deadzone: float, friction_threshold: float,
-                 torque_params: car.CarParams.LateralTorqueTuning, friction_compensation: bool) -> float:
+                 torque_params: car.CarParams.LateralTorqueTuning) -> float:
+  # TODO torque params' friction should be in lataxel space, not torque space
   friction_interp = interp(
     apply_center_deadzone(lateral_accel_error, lateral_accel_deadzone),
     [-friction_threshold, friction_threshold],
-    [-torque_params.friction, torque_params.friction]
+    [-torque_params.friction * torque_params.latAccelFactor, torque_params.friction * torque_params.latAccelFactor]
   )
-  friction = float(friction_interp) if friction_compensation else 0.0
-  return friction
+  return float(friction_interp)
 
 
 def get_speed_error(modelV2: log.ModelDataV2, v_ego: float) -> float:
@@ -208,3 +223,29 @@ def get_speed_error(modelV2: log.ModelDataV2, v_ego: float) -> float:
     vel_err = clip(modelV2.temporalPose.trans[0] - v_ego, -MAX_VEL_ERR, MAX_VEL_ERR)
     return float(vel_err)
   return 0.0
+
+
+def get_accel_from_plan(speeds, accels, t_idxs, action_t=DT_MDL, vEgoStopping=0.05):
+  if len(speeds) == len(t_idxs):
+    v_now = speeds[0]
+    a_now = accels[0]
+    v_target = np.interp(action_t, t_idxs, speeds)
+    a_target = 2 * (v_target - v_now) / (action_t) - a_now
+    v_target_1sec = np.interp(action_t + 1.0, t_idxs, speeds)
+  else:
+    v_target = 0.0
+    v_target_1sec = 0.0
+    a_target = 0.0
+  should_stop = (v_target < vEgoStopping and
+                 v_target_1sec < vEgoStopping)
+  return a_target, should_stop
+
+def curv_from_psis(psi_target, psi_rate, vego, action_t):
+  vego = np.clip(vego, MIN_SPEED, np.inf)
+  curv_from_psi = psi_target / (vego * action_t)
+  return 2*curv_from_psi - psi_rate / vego
+
+def get_curvature_from_plan(yaws, yaw_rates, t_idxs, vego, action_t):
+  psi_target = np.interp(action_t, t_idxs, yaws)
+  psi_rate = yaw_rates[0]
+  return curv_from_psis(psi_target, psi_rate, vego, action_t)

@@ -335,12 +335,6 @@ enum LaneChangeDirection {
   right @2;
 }
 
-enum TurnDirection {
-  none @0;
-  turnLeft @1;
-  turnRight @2;
-}
-
 struct CanData {
   address @0 :UInt32;
   busTime @1 :UInt16;
@@ -618,8 +612,6 @@ struct RadarState @0x9a185389d6fdd05f {
 
   leadOne @3 :LeadData;
   leadTwo @4 :LeadData;
-  leadLeft @13 :LeadData;
-  leadRight @14 :LeadData;
   cumLagMs @5 :Float32;
 
   struct LeadData {
@@ -753,7 +745,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     normal @0;       # low priority alert for user's convenience
     userPrompt @1;   # mid priority alert that might require user intervention
     critical @2;     # high priority alert that needs immediate user intervention
-    frogpilot @3;    # FrogPilot startup alert
   }
 
   enum AlertSize {
@@ -804,7 +795,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     saturated @7 :Bool;
     actualLateralAccel @9 :Float32;
     desiredLateralAccel @10 :Float32;
-    nnLog @11 :List(Float32);
    }
 
   struct LateralLQRState {
@@ -907,7 +897,6 @@ struct DrivingModelData {
   struct MetaData {
     laneChangeState @0 :LaneChangeState;
     laneChangeDirection @1 :LaneChangeDirection;
-    turnDirection @2 :TurnDirection;
   }
 }
 
@@ -1001,7 +990,6 @@ struct ModelDataV2 {
     hardBrakePredicted @7 :Bool;
     laneChangeState @8 :LaneChangeState;
     laneChangeDirection @9 :LaneChangeDirection;
-    turnDirection @10 :TurnDirection;
 
 
     # deprecated
@@ -1048,6 +1036,8 @@ struct ModelDataV2 {
 
   struct Action {
     desiredCurvature @0 :Float32;
+    desiredAcceleration @1 :Float32;
+    shouldStop @2 :Bool;
   }
 }
 
@@ -1261,6 +1251,38 @@ struct LiveLocationKalman {
   }
 
   struct Measurement {
+    value @0 : List(Float64);
+    std @1 : List(Float64);
+    valid @2 : Bool;
+  }
+}
+
+
+struct LivePose {
+  # More info on reference frames:
+  # https://github.com/commaai/openpilot/tree/master/common/transformations
+  orientationNED @0 :XYZMeasurement;
+  velocityDevice @1 :XYZMeasurement;
+  accelerationDevice @2 :XYZMeasurement;
+  angularVelocityDevice @3 :XYZMeasurement;
+
+  inputsOK @4 :Bool = false;
+  posenetOK @5 :Bool = false;
+  sensorsOK @6 :Bool = false;
+
+  filterState @7 :FilterState;
+
+  struct XYZMeasurement {
+    x @0 :Float32;
+    y @1 :Float32;
+    z @2 :Float32;
+    xStd @3 :Float32;
+    yStd @4 :Float32;
+    zStd @5 :Float32;
+    valid @6 :Bool;
+  }
+
+  struct FilterState {
     value @0 : List(Float64);
     std @1 : List(Float64);
     valid @2 : Bool;
@@ -2087,6 +2109,22 @@ struct LiveTorqueParametersData {
   useParams @12 :Bool;
 }
 
+struct LiveDelayData {
+  lateralDelay @0 :Float32;
+  validBlocks @1 :Int32;
+  status @2 :Status;
+
+  lateralDelayEstimate @3 :Float32;
+  lateralDelayEstimateStd @5 :Float32;
+  points @4 :List(Float32);
+
+  enum Status {
+    unestimated @0;
+    estimated @1;
+    invalid @2;
+  }
+}
+
 struct LiveMapDataDEPRECATED {
   speedLimitValid @0 :Bool;
   speedLimit @1 :Float32;
@@ -2303,12 +2341,14 @@ struct Event {
     gnssMeasurements @91 :GnssMeasurements;
     liveParameters @61 :LiveParametersData;
     liveTorqueParameters @94 :LiveTorqueParametersData;
+    liveDelay @130 : LiveDelayData;
     cameraOdometry @63 :CameraOdometry;
     thumbnail @66: Thumbnail;
     onroadEvents @68: List(Car.CarEvent);
     carParams @69: Car.CarParams;
     driverMonitoringState @71: DriverMonitoringState;
     liveLocationKalman @72 :LiveLocationKalman;
+    livePose @129 :LivePose;
     modelV2 @75 :ModelDataV2;
     drivingModelData @128 :DrivingModelData;
     driverStateV2 @92 :DriverStateV2;
@@ -2365,16 +2405,16 @@ struct Event {
     customReservedRawData2 @126 :Data;
 
     # *********** Custom: reserved for forks ***********
-    frogpilotCarState @107 :Custom.FrogPilotCarState;
-    frogpilotDeviceState @108 :Custom.FrogPilotDeviceState;
-    frogpilotNavigation @109 :Custom.FrogPilotNavigation;
-    frogpilotPlan @110 :Custom.FrogPilotPlan;
-    customReserved4 @111 :Custom.CustomReserved4;
-    customReserved5 @112 :Custom.CustomReserved5;
-    customReserved6 @113 :Custom.CustomReserved6;
-    customReserved7 @114 :Custom.CustomReserved7;
-    customReserved8 @115 :Custom.CustomReserved8;
-    customReserved9 @116 :Custom.CustomReserved9;
+    frogpilotCarControl @107 :Custom.FrogPilotCarControl;
+    frogpilotCarParams @108 :Custom.FrogPilotCarParams;
+    frogpilotCarState @109 :Custom.FrogPilotCarState;
+    frogpilotControlsState @110 :Custom.FrogPilotControlsState;
+    frogpilotDeviceState @111 :Custom.FrogPilotDeviceState;
+    frogpilotModelV2 @112 :Custom.FrogPilotModelDataV2;
+    frogpilotNavigation @113 :Custom.FrogPilotNavigation;
+    frogpilotOnroadEvents @114: List(Custom.FrogPilotCarEvent);
+    frogpilotPlan @115 :Custom.FrogPilotPlan;
+    frogpilotRadarState @116 :Custom.FrogPilotRadarState;
 
     # *********** legacy + deprecated ***********
     model @9 :Legacy.ModelData; # TODO: rename modelV2 and mark this as deprecated

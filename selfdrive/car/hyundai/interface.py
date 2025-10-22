@@ -9,8 +9,6 @@ from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.car.disable_ecu import disable_ecu
 
-from openpilot.selfdrive.frogpilot.frogpilot_variables import params
-
 Ecu = car.CarParams.Ecu
 ButtonType = car.CarState.ButtonEvent.Type
 FrogPilotButtonType = custom.FrogPilotCarState.ButtonEvent.Type
@@ -23,9 +21,7 @@ BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: Bu
 
 class CarInterface(CarInterfaceBase):
   @staticmethod
-  def _get_params(ret, candidate, fingerprint, car_fw, disable_openpilot_long, experimental_long, docs):
-    use_new_api = params.get_bool("NewLongAPI")
-
+  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs, frogpilot_toggles):
     ret.carName = "hyundai"
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or DBC[ret.carFingerprint]["radar"] is None
 
@@ -77,9 +73,6 @@ class CarInterface(CarInterfaceBase):
       if 0x38d in fingerprint[0] or 0x38d in fingerprint[2]:
         ret.flags |= HyundaiFlags.USE_FCA.value
 
-      if 0x53E in fingerprint[2]:
-        ret.flags |= HyundaiFlags.LKAS12.value
-
     ret.steerActuatorDelay = 0.1  # Default delay
     ret.steerLimitTimer = 0.4
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
@@ -89,14 +82,14 @@ class CarInterface(CarInterfaceBase):
 
     # *** longitudinal control ***
     if candidate in CANFD_CAR:
-      if not use_new_api:
+      if frogpilot_toggles.old_long_api:
         ret.longitudinalTuning.deadzoneBP = [0.]
         ret.longitudinalTuning.deadzoneV = [0.]
         ret.longitudinalTuning.kpV = [0.1]
         ret.longitudinalTuning.kiV = [0.0]
       ret.experimentalLongitudinalAvailable = candidate not in (CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR)
     else:
-      if not use_new_api:
+      if frogpilot_toggles.old_long_api:
         ret.longitudinalTuning.deadzoneBP = [0.]
         ret.longitudinalTuning.deadzoneV = [0.]
         ret.longitudinalTuning.kpV = [0.5]
@@ -114,14 +107,8 @@ class CarInterface(CarInterfaceBase):
     # *** feature detection ***
     if candidate in CANFD_CAR:
       ret.enableBsm = 0x1e5 in fingerprint[CAN.ECAN]
-
-      if 0x1fa in fingerprint[CAN.ECAN]:
-        ret.flags |= HyundaiFlags.NAV_MSG.value
     else:
       ret.enableBsm = 0x58b in fingerprint[0]
-
-      if 0x544 in fingerprint[0]:
-        ret.flags |= HyundaiFlags.NAV_MSG.value
 
     # *** panda safety config ***
     if candidate in CANFD_CAR:
@@ -147,10 +134,6 @@ class CarInterface(CarInterfaceBase):
 
       if candidate in CAMERA_SCC_CAR:
         ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HYUNDAI_CAMERA_SCC
-
-      if 0x391 in fingerprint[0]:
-        ret.flags |= HyundaiFlags.CAN_LFA_BTN.value
-        ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HYUNDAI_LFA_BTN
 
     if ret.openpilotLongitudinalControl:
       ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_LONG

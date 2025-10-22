@@ -15,10 +15,6 @@
         <source>Reboot and Update</source>
         <translation>重启并更新</translation>
     </message>
-    <message>
-        <source>Disable Internet Check</source>
-        <translation type="gpt-4o-generated">禁用互联网检查</translation>
-    </message>
 </context>
 <context>
     <name>AdvancedNetworking</name>
@@ -92,23 +88,23 @@
     </message>
     <message>
         <source>Off</source>
-        <translation type="gpt-4o-generated">关闭</translation>
+        <translation type="gpt-5-generated">关闭</translation>
     </message>
     <message>
         <source>Always</source>
-        <translation type="gpt-4o-generated">始终</translation>
+        <translation type="gpt-5-generated">始终</translation>
     </message>
     <message>
         <source>Only Onroad</source>
-        <translation type="gpt-4o-generated">仅限行车中</translation>
+        <translation type="gpt-5-generated">仅限行驶中</translation>
     </message>
     <message>
         <source>Until Reboot</source>
-        <translation type="gpt-4o-generated">直到重启</translation>
+        <translation type="gpt-5-generated">直到重启</translation>
     </message>
     <message>
         <source>Allow tethering with your data SIM and keep it active either while driving or continuously.</source>
-        <translation type="gpt-4o-generated">允许使用您的数据 SIM 卡进行网络共享，并在驾驶时或持续保持激活。</translation>
+        <translation type="gpt-5-generated">允许使用数据 SIM 启用网络共享，并在行驶期间或持续保持其处于活动状态。</translation>
     </message>
 </context>
 <context>
@@ -132,26 +128,6 @@
     <message>
         <source>LIMIT</source>
         <translation>LIMIT</translation>
-    </message>
-    <message>
-        <source>Vehicle in blind spot</source>
-        <translation type="gpt-4o-generated">车辆在盲区内</translation>
-    </message>
-    <message>
-        <source>m/s²</source>
-        <translation type="gpt-4o-generated">米每秒²</translation>
-    </message>
-    <message>
-        <source>m/s</source>
-        <translation type="gpt-4o-generated">米/秒</translation>
-    </message>
-    <message>
-        <source>PENDING</source>
-        <translation type="gpt-4o-generated">待处理</translation>
-    </message>
-    <message>
-        <source>ft/s²</source>
-        <translation type="gpt-4o-generated">英尺/秒²</translation>
     </message>
 </context>
 <context>
@@ -205,6 +181,77 @@
     <message>
         <source>work</source>
         <translation>工作</translation>
+    </message>
+</context>
+<context>
+    <name>DeveloperSidebar</name>
+    <message>
+        <source> m/s²</source>
+        <translation type="gpt-5-generated">米/秒²</translation>
+    </message>
+    <message>
+        <source> ft/s²</source>
+        <translation type="gpt-5-generated">英尺/秒²</translation>
+    </message>
+    <message>
+        <source>ACCEL</source>
+        <translation type="gpt-5-generated">加速</translation>
+    </message>
+    <message>
+        <source>ACCEL JERK</source>
+        <translation type="gpt-5-generated">加速度跃变</translation>
+    </message>
+    <message>
+        <source>ACT ACCEL</source>
+        <translation type="gpt-5-generated">ACT 加速</translation>
+    </message>
+    <message>
+        <source>DANGER JERK</source>
+        <translation type="gpt-5-generated">危险颠簸</translation>
+    </message>
+    <message>
+        <source>STEER DELAY</source>
+        <translation type="gpt-5-generated">转向延迟</translation>
+    </message>
+    <message>
+        <source>FRICTION</source>
+        <translation type="gpt-5-generated">摩擦</translation>
+    </message>
+    <message>
+        <source>LAT ACCEL</source>
+        <translation type="gpt-5-generated">横向加速度</translation>
+    </message>
+    <message>
+        <source>LATERAL %</source>
+        <translation type="gpt-5-generated">横向 %</translation>
+    </message>
+    <message>
+        <source>LONG %</source>
+        <translation type="gpt-5-generated">LONG %</translation>
+    </message>
+    <message>
+        <source>MAX ACCEL</source>
+        <translation type="gpt-5-generated">最大加速度</translation>
+    </message>
+    <message>
+        <source>SPEED JERK</source>
+        <translation type="gpt-5-generated">速度抖动</translation>
+    </message>
+    <message>
+        <source>STEER ANGLE</source>
+        <translation type="gpt-5-generated">转向角</translation>
+    </message>
+    <message>
+        <source>STEER RATIO</source>
+        <translation type="gpt-5-generated">转向比</translation>
+    </message>
+    <message>
+        <source>STEER STIFF</source>
+        <translation type="gpt-5-generated">转向僵硬</translation>
+    </message>
+    <message>
+        <source>TORQUE %</source>
+        <translation type="gpt-5-generated">扭矩 %</translation>
     </message>
 </context>
 <context>
@@ -349,36 +396,32 @@
         <source>PAIR</source>
         <translation>配对</translation>
     </message>
+    <message>
+        <source>Pair your device with Konik connect (stable.konik.ai).</source>
+        <translation type="gpt-5-generated">将您的设备与 Konik connect（stable.konik.ai）配对。</translation>
+    </message>
 </context>
 <context>
     <name>DriveStats</name>
     <message>
-        <source>ALL TIME</source>
-        <translation type="gpt-4o-generated">所有时间</translation>
-    </message>
-    <message>
-        <source>PAST WEEK</source>
-        <translation type="gpt-4o-generated">过去一周</translation>
-    </message>
-    <message>
         <source>FROGPILOT</source>
-        <translation type="gpt-4o-generated">青蛙驾驶员</translation>
+        <translation type="gpt-5-generated">FROGPILOT</translation>
     </message>
     <message>
         <source>Drives</source>
-        <translation type="gpt-4o-generated">驾驶记录</translation>
+        <translation type="gpt-5-generated">行驶</translation>
     </message>
     <message>
         <source>Hours</source>
-        <translation type="gpt-4o-generated">小时</translation>
+        <translation type="gpt-5-generated">小时</translation>
     </message>
     <message>
         <source>KM</source>
-        <translation type="gpt-4o-generated">公里</translation>
+        <translation type="gpt-5-generated">千米</translation>
     </message>
     <message>
         <source>Miles</source>
-        <translation type="gpt-4o-generated">英里</translation>
+        <translation type="gpt-5-generated">英里</translation>
     </message>
 </context>
 <context>
@@ -400,3139 +443,3919 @@
     </message>
 </context>
 <context>
+    <name>FrogPilotAnnotatedCameraWidget</name>
+    <message>
+        <source> m/s²</source>
+        <translation type="gpt-5-generated">m/s²</translation>
+    </message>
+    <message>
+        <source> meters</source>
+        <translation type="gpt-5-generated"> 米</translation>
+    </message>
+    <message>
+        <source> m/s</source>
+        <translation type="gpt-5-generated">米/秒</translation>
+    </message>
+    <message>
+        <source> km/h</source>
+        <translation type="gpt-5-generated">公里/小时</translation>
+    </message>
+    <message>
+        <source> ft/s²</source>
+        <translation type="gpt-5-generated">英尺/秒²</translation>
+    </message>
+    <message>
+        <source> feet</source>
+        <translation type="gpt-5-generated">英尺</translation>
+    </message>
+    <message>
+        <source> mph</source>
+        <translation type="gpt-5-generated"> 英里/小时</translation>
+    </message>
+    <message>
+        <source>Vehicle in blind spot</source>
+        <translation type="gpt-5-generated">车辆在盲区</translation>
+    </message>
+    <message>
+        <source>PENDING</source>
+        <translation type="gpt-5-generated">待处理</translation>
+    </message>
+    <message>
+        <source>LIMIT</source>
+        <translation type="gpt-5-generated">限速</translation>
+    </message>
+</context>
+<context>
     <name>FrogPilotConfirmationDialog</name>
     <message>
-        <source>Reboot Later</source>
-        <translation type="gpt-4o-generated">稍后重启</translation>
-    </message>
-    <message>
-        <source>Yes</source>
-        <translation type="gpt-4o-generated">是</translation>
-    </message>
-    <message>
-        <source>No</source>
-        <translation type="gpt-4o-generated">否</translation>
-    </message>
-    <message>
         <source>Reboot required to take effect.</source>
-        <translation type="gpt-4o-generated">需要重启才能生效。</translation>
+        <translation type="gpt-5-generated">需要重启才能生效。</translation>
     </message>
     <message>
         <source>Reboot Now</source>
-        <translation type="gpt-4o-generated">立即重启</translation>
+        <translation type="gpt-5-generated">立即重启</translation>
+    </message>
+    <message>
+        <source>Reboot Later</source>
+        <translation type="gpt-5-generated">稍后重启</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation type="gpt-5-generated">是</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation type="gpt-5-generated">否</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotDataPanel</name>
     <message>
-        <source>Delete Driving Footage and Data</source>
-        <translation type="gpt-4o-generated">删除驾驶录像和数据</translation>
+        <source>Delete Driving Data</source>
+        <translation type="gpt-5-generated">删除行驶数据</translation>
     </message>
     <message>
         <source>DELETE</source>
-        <translation type="gpt-4o-generated">删除</translation>
+        <translation type="gpt-5-generated">删除</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Delete all stored driving footage and data&lt;/b&gt; to free up space and clear private information.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;删除所有已存储的驾驶影像和数据&lt;/b&gt;以释放空间并清除私人信息。</translation>
+    </message>
+    <message>
+        <source>Delete all driving data and footage?</source>
+        <translation type="gpt-5-generated">删除所有驾驶数据和影像？</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="gpt-4o-generated">删除</translation>
+        <translation type="gpt-5-generated">删除</translation>
     </message>
     <message>
         <source>Deleting...</source>
-        <translation type="gpt-4o-generated">正在删除…</translation>
+        <translation type="gpt-5-generated">正在删除…</translation>
     </message>
     <message>
         <source>Deleted!</source>
-        <translation type="gpt-4o-generated">已删除！</translation>
-    </message>
-    <message>
-        <source>Screen Recordings</source>
-        <translation type="gpt-4o-generated">屏幕录制</translation>
-    </message>
-    <message>
-        <source>Manage your screen recordings.</source>
-        <translation type="gpt-4o-generated">管理您的屏幕录制。</translation>
-    </message>
-    <message>
-        <source>RENAME</source>
-        <translation type="gpt-4o-generated">重命名</translation>
-    </message>
-    <message>
-        <source>Select a recording to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的录音</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete this recording?</source>
-        <translation type="gpt-4o-generated">您确定要删除此录音吗？</translation>
-    </message>
-    <message>
-        <source>Select a recording to rename</source>
-        <translation type="gpt-4o-generated">选择要重命名的录音</translation>
-    </message>
-    <message>
-        <source>Enter a new name</source>
-        <translation type="gpt-4o-generated">输入新名称</translation>
-    </message>
-    <message>
-        <source>Rename Recording</source>
-        <translation type="gpt-4o-generated">重命名录制</translation>
-    </message>
-    <message>
-        <source>Renaming...</source>
-        <translation type="gpt-4o-generated">重命名中...</translation>
-    </message>
-    <message>
-        <source>Renamed!</source>
-        <translation type="gpt-4o-generated">已重命名！</translation>
-    </message>
-    <message>
-        <source>FrogPilot Backups</source>
-        <translation type="gpt-4o-generated">FrogPilot 备份</translation>
-    </message>
-    <message>
-        <source>Manage your FrogPilot backups.</source>
-        <translation type="gpt-4o-generated">管理您的FrogPilot备份。</translation>
-    </message>
-    <message>
-        <source>BACKUP</source>
-        <translation type="gpt-4o-generated">备份</translation>
-    </message>
-    <message>
-        <source>RESTORE</source>
-        <translation type="gpt-4o-generated">恢复</translation>
-    </message>
-    <message>
-        <source>Name your backup</source>
-        <translation type="gpt-4o-generated">命名您的备份</translation>
-    </message>
-    <message>
-        <source>Compressing...</source>
-        <translation type="gpt-4o-generated">正在压缩...</translation>
-    </message>
-    <message>
-        <source>Select a backup to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的备份</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete this backup?</source>
-        <translation type="gpt-4o-generated">您确定要删除此备份吗？</translation>
-    </message>
-    <message>
-        <source>Select a restore point</source>
-        <translation type="gpt-4o-generated">选择一个还原点</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore this version of FrogPilot?</source>
-        <translation type="gpt-4o-generated">您确定要恢复此版本的FrogPilot吗？</translation>
-    </message>
-    <message>
-        <source>Restore</source>
-        <translation type="gpt-4o-generated">恢复</translation>
-    </message>
-    <message>
-        <source>Restoring...</source>
-        <translation type="gpt-4o-generated">正在恢复...</translation>
-    </message>
-    <message>
-        <source>Extracting...</source>
-        <translation type="gpt-4o-generated">提取中...</translation>
-    </message>
-    <message>
-        <source>Restored!</source>
-        <translation type="gpt-4o-generated">已恢复！</translation>
-    </message>
-    <message>
-        <source>Rebooting...</source>
-        <translation type="gpt-4o-generated">正在重启…</translation>
-    </message>
-    <message>
-        <source>Toggle Backups</source>
-        <translation type="gpt-4o-generated">切换备份</translation>
-    </message>
-    <message>
-        <source>Manage your toggle backups.</source>
-        <translation type="gpt-4o-generated">管理您的切换备份。</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore this toggle backup?</source>
-        <translation type="gpt-4o-generated">您确定要恢复此切换备份吗？</translation>
-    </message>
-    <message>
-        <source>DELETE ALL</source>
-        <translation type="gpt-4o-generated">删除全部</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all screen recordings?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有屏幕录制吗？</translation>
-    </message>
-    <message>
-        <source>Delete All</source>
-        <translation type="gpt-4o-generated">删除所有</translation>
-    </message>
-    <message>
-        <source>A recording with this name already exists. Please choose a different name.</source>
-        <translation type="gpt-4o-generated">已存在同名录音。请选择一个不同的名称。</translation>
-    </message>
-    <message>
-        <source>A backup with this name already exists. Please choose a different name.</source>
-        <translation type="gpt-4o-generated">已存在同名备份。请选择其他名称。</translation>
-    </message>
-    <message>
-        <source>Backing up...</source>
-        <translation type="gpt-4o-generated">正在备份中...</translation>
-    </message>
-    <message>
-        <source>Backup created!</source>
-        <translation type="gpt-4o-generated">备份已创建！</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all FrogPilot backups?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有 FrogPilot 备份吗？</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all toggle backups?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有切换备份吗？</translation>
+        <translation type="gpt-5-generated">已删除！</translation>
     </message>
     <message>
         <source>Delete Error Logs</source>
-        <translation type="gpt-4o-generated">删除错误日志</translation>
+        <translation type="gpt-5-generated">删除错误日志</translation>
     </message>
     <message>
-        <source>Deletes all stored driving footage and data from your device. Ideal for maintaining privacy or for simply freeing up space.</source>
-        <translation type="gpt-4o-generated">从您的设备中删除所有存储的驾驶录像和数据。非常适合维护隐私或仅仅是为了释放空间。</translation>
+        <source>&lt;b&gt;Delete collected error logs&lt;/b&gt; to free up space and clear old crash records.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;删除收集的错误日志&lt;/b&gt;以释放空间并清除旧的崩溃记录。</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete all of your driving footage and data?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有驾驶录像和数据吗？</translation>
+        <source>Delete all error logs?</source>
+        <translation type="gpt-5-generated">删除所有错误日志？</translation>
     </message>
     <message>
-        <source>Deletes all stored error logs from your device. Ideal for freeing up space.</source>
-        <translation type="gpt-4o-generated">删除设备中所有存储的错误日志。非常适合释放空间。</translation>
+        <source>Screen Recordings</source>
+        <translation type="gpt-5-generated">屏幕录制</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete all of the error logs?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有错误日志吗？</translation>
+        <source>&lt;b&gt;Delete or rename screen recordings.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;删除或重命名屏幕录制。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Do you want to compress this backup? This will take a few minutes, but the final result will be smaller and run in the background.</source>
-        <translation type="gpt-4o-generated">您想压缩此备份吗？这将需要几分钟时间，但最终结果会更小，并在后台运行。</translation>
+        <source>DELETE ALL</source>
+        <translation type="gpt-5-generated">全部删除</translation>
     </message>
     <message>
-        <source>Name your toggle backup</source>
-        <translation type="gpt-4o-generated">命名您的切换备份</translation>
+        <source>RENAME</source>
+        <translation type="gpt-5-generated">重命名</translation>
     </message>
     <message>
-        <source>A toggle backup with this name already exists. Please choose a different name.</source>
-        <translation type="gpt-4o-generated">此名称的切换备份已存在。请选择其他名称。</translation>
+        <source>Choose a screen recording to delete</source>
+        <translation type="gpt-5-generated">选择要删除的屏幕录制</translation>
     </message>
     <message>
-        <source>Select a toggle backup to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的切换备份</translation>
+        <source>Delete this screen recording?</source>
+        <translation type="gpt-5-generated">删除此屏幕录制？</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete this toggle backup?</source>
-        <translation type="gpt-4o-generated">您确定要删除此切换备份吗？</translation>
+        <source>Delete all screen recordings?</source>
+        <translation type="gpt-5-generated">删除所有屏幕录制？</translation>
     </message>
     <message>
-        <source>Select a toggle restore point</source>
-        <translation type="gpt-4o-generated">选择切换恢复点</translation>
+        <source>Delete All</source>
+        <translation type="gpt-5-generated">全部删除</translation>
+    </message>
+    <message>
+        <source>Choose a screen recording to rename</source>
+        <translation type="gpt-5-generated">选择要重命名的屏幕录制</translation>
+    </message>
+    <message>
+        <source>Enter a new name</source>
+        <translation type="gpt-5-generated">输入新名称</translation>
+    </message>
+    <message>
+        <source>Rename Screen Recording</source>
+        <translation type="gpt-5-generated">重命名屏幕录制</translation>
+    </message>
+    <message>
+        <source>Name already in use. Please choose a different name.</source>
+        <translation type="gpt-5-generated">名称已被使用。请选择其他名称。</translation>
+    </message>
+    <message>
+        <source>Renaming...</source>
+        <translation type="gpt-5-generated">正在重命名…</translation>
+    </message>
+    <message>
+        <source>Renamed!</source>
+        <translation type="gpt-5-generated">已重命名！</translation>
+    </message>
+    <message>
+        <source>FrogPilot Backups</source>
+        <translation type="gpt-5-generated">FrogPilot 备份</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Create, delete, or restore FrogPilot backups.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;创建、删除或恢复 FrogPilot 备份。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>BACKUP</source>
+        <translation type="gpt-5-generated">备份</translation>
+    </message>
+    <message>
+        <source>RESTORE</source>
+        <translation type="gpt-5-generated">恢复</translation>
+    </message>
+    <message>
+        <source>Enter a name for this backup</source>
+        <translation type="gpt-5-generated">为此备份输入名称</translation>
+    </message>
+    <message>
+        <source>Compress this backup? This will save space and run in the background but take a bit longer.</source>
+        <translation type="gpt-5-generated">压缩此备份？这将节省空间并在后台运行，但会花更长时间。</translation>
+    </message>
+    <message>
+        <source>Backing up...</source>
+        <translation type="gpt-5-generated">正在备份…</translation>
+    </message>
+    <message>
+        <source>Compressing...</source>
+        <translation type="gpt-5-generated">正在压缩…</translation>
+    </message>
+    <message>
+        <source>Backup created!</source>
+        <translation type="gpt-5-generated">备份已创建！</translation>
+    </message>
+    <message>
+        <source>Choose a FrogPilot backup to delete</source>
+        <translation type="gpt-5-generated">选择要删除的FrogPilot备份</translation>
+    </message>
+    <message>
+        <source>Delete this backup?</source>
+        <translation type="gpt-5-generated">删除此备份？</translation>
+    </message>
+    <message>
+        <source>Delete all backups?</source>
+        <translation type="gpt-5-generated">删除所有备份？</translation>
+    </message>
+    <message>
+        <source>Choose a backup to restore</source>
+        <translation type="gpt-5-generated">选择要恢复的备份</translation>
+    </message>
+    <message>
+        <source>Restore this backup?</source>
+        <translation type="gpt-5-generated">恢复此备份？</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation type="gpt-5-generated">恢复</translation>
+    </message>
+    <message>
+        <source>Restoring...</source>
+        <translation type="gpt-5-generated">正在恢复…</translation>
+    </message>
+    <message>
+        <source>Extracting...</source>
+        <translation type="gpt-5-generated">正在解压…</translation>
+    </message>
+    <message>
+        <source>Restored!</source>
+        <translation type="gpt-5-generated">已恢复！</translation>
+    </message>
+    <message>
+        <source>Rebooting...</source>
+        <translation type="gpt-5-generated">正在重启…</translation>
+    </message>
+    <message>
+        <source>Toggle Backups</source>
+        <translation type="gpt-5-generated">切换备份</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Create, delete, or restore toggle backups.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;创建、删除或恢复切换备份。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Choose a backup to delete</source>
+        <translation type="gpt-5-generated">选择要删除的备份</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotDevicePanel</name>
     <message>
         <source>Device Settings</source>
-        <translation type="gpt-4o-generated">设备设置</translation>
+        <translation type="gpt-5-generated">设备设置</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Settings that control how the device runs, powers off, and manages driving data.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;控制设备运行、关机和驾驶数据管理的设置。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Device Shutdown Timer</source>
-        <translation type="gpt-4o-generated">设备关机计时器</translation>
+        <translation type="gpt-5-generated">设备关机计时器</translation>
     </message>
     <message>
-        <source>Disable Internet Requirement</source>
-        <translation type="gpt-4o-generated">禁用互联网要求</translation>
+        <source>&lt;b&gt;Keep the device on for the set amount of time after a drive&lt;/b&gt; before it shuts down automatically.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在行驶结束后，将设备保持开启设定的时间&lt;/b&gt;，然后它会自动关机。</translation>
     </message>
     <message>
-        <source>Increase Thermal Safety Limit</source>
-        <translation type="gpt-4o-generated">增加热安全限制</translation>
-    </message>
-    <message>
-        <source>Screen Settings</source>
-        <translation type="gpt-4o-generated">屏幕设置</translation>
-    </message>
-    <message>
-        <source>Screen Brightness (Offroad)</source>
-        <translation type="gpt-4o-generated">屏幕亮度（非驾驶模式）</translation>
-    </message>
-    <message>
-        <source>Screen Brightness (Onroad)</source>
-        <translation type="gpt-4o-generated">屏幕亮度（行驶中）</translation>
-    </message>
-    <message>
-        <source>Screen Recorder</source>
-        <translation type="gpt-4o-generated">屏幕录制器</translation>
-    </message>
-    <message>
-        <source>Screen Timeout (Offroad)</source>
-        <translation type="gpt-4o-generated">屏幕超时（非行驶状态）</translation>
-    </message>
-    <message>
-        <source>Screen Timeout (Onroad)</source>
-        <translation type="gpt-4o-generated">屏幕超时（行驶中）</translation>
-    </message>
-    <message>
-        <source>5 mins</source>
-        <translation type="gpt-4o-generated">5分钟</translation>
-    </message>
-    <message>
-        <source> mins</source>
-        <translation type="gpt-4o-generated">分钟</translation>
-    </message>
-    <message>
-        <source> hour</source>
-        <translation type="gpt-4o-generated">小时</translation>
-    </message>
-    <message>
-        <source> hours</source>
-        <translation type="gpt-4o-generated">小时</translation>
-    </message>
-    <message>
-        <source> volts</source>
-        <translation type="gpt-4o-generated">伏特</translation>
-    </message>
-    <message>
-        <source>Auto</source>
-        <translation type="gpt-4o-generated">自动</translation>
-    </message>
-    <message>
-        <source> seconds</source>
-        <translation type="gpt-4o-generated">秒</translation>
-    </message>
-    <message>
-        <source>Screen Off</source>
-        <translation type="gpt-4o-generated">关闭屏幕</translation>
-    </message>
-    <message>
-        <source>Battery Shutdown Threshold</source>
-        <translation type="gpt-4o-generated">电池关机阈值</translation>
+        <source>Disable Logging</source>
+        <translation type="gpt-5-generated">禁用日志</translation>
     </message>
     <message>
         <source>WARNING: This will prevent your drives from being recorded and all data will be unobtainable!</source>
-        <translation type="gpt-4o-generated">警告：这将阻止记录您的驾驶数据，所有数据将无法获取！</translation>
+        <translation type="gpt-5-generated">警告：这将阻止记录您的驾驶，并使所有数据无法获取！</translation>
     </message>
     <message>
-        <source>Only Disable While Onroad</source>
-        <translation type="gpt-4o-generated">仅在行车时禁用</translation>
+        <source>&lt;b&gt;Prevent the device from saving driving data.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;防止设备保存行驶数据。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Allow the device to work indefinitely without an internet connection.</source>
-        <translation type="gpt-4o-generated">允许设备在没有互联网连接的情况下无限期工作。</translation>
+        <source>Disable Uploads</source>
+        <translation type="gpt-5-generated">禁用上传</translation>
     </message>
     <message>
-        <source>Disable all data logging to improve privacy.</source>
-        <translation type="gpt-4o-generated">禁用所有数据记录以提高隐私。</translation>
+        <source>WARNING: This will prevent your drives from being uploaded to &lt;b&gt;comma connect&lt;/b&gt; which will impact debugging and official support from comma!</source>
+        <translation type="gpt-5-generated">警告：这将阻止你的行驶记录上传到 &lt;b&gt;comma connect&lt;/b&gt;，从而影响调试以及 comma 的官方支持！</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Prevent the device from uploading driving data.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;防止设备上传驾驶数据。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>High-Quality Recording</source>
+        <translation type="gpt-5-generated">高质量录制</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Save drive footage in higher video quality.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;以更高视频质量保存驾驶影像。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Low-Voltage Cutoff</source>
+        <translation type="gpt-5-generated">低电压断开</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;While parked, if the battery voltage falls below the set level, the device shuts down&lt;/b&gt; to prevent excessive battery drain.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;停车时，如果电池电压低于设定水平，设备将关闭&lt;/b&gt;以防止电池过度耗电。</translation>
+    </message>
+    <message>
+        <source>Raise Temperature Limits</source>
+        <translation type="gpt-5-generated">提高温度限制</translation>
+    </message>
+    <message>
+        <source>WARNING: Running at higher temperatures may damage your device!</source>
+        <translation type="gpt-5-generated">警告：在较高温度下运行可能会损坏您的设备！</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Allow the device to run at higher temperatures&lt;/b&gt; before throttling or shutting down. Use only if you understand the risks!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在降频或关机前允许设备在更高温度下运行&lt;/b&gt;。仅在你了解风险的情况下使用！</translation>
+    </message>
+    <message>
+        <source>Use Konik Server</source>
+        <translation type="gpt-5-generated">使用 Konik Server</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Upload driving data to "connect.konik.ai" instead of "connect.comma.ai".&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将驾驶数据上传到“connect.konik.ai”，而非“connect.comma.ai”。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Screen Settings</source>
+        <translation type="gpt-5-generated">屏幕设置</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Settings that control screen brightness, screen recording, and timeout duration.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;控制屏幕亮度、屏幕录制和超时时长的设置。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Screen Brightness (Offroad)</source>
+        <translation type="gpt-5-generated">屏幕亮度（离线）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The screen brightness while not driving.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;非行驶时的屏幕亮度。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Screen Brightness (Onroad)</source>
+        <translation type="gpt-5-generated">屏幕亮度（行驶中）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The screen brightness while driving.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;行驶时的屏幕亮度。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Screen Recorder</source>
+        <translation type="gpt-5-generated">屏幕录制器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add a button to the driving screen to record the display.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕添加一个录制显示的按钮。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Screen Timeout (Offroad)</source>
+        <translation type="gpt-5-generated">屏幕超时（离线）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How long the screen stays on after being tapped while not driving.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在未驾驶时，点击后屏幕保持亮起的时长。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Screen Timeout (Onroad)</source>
+        <translation type="gpt-5-generated">屏幕超时（行驶中）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How long the screen stays on after being tapped while driving.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;驾驶时点击后屏幕保持显示的时长。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Standby Mode</source>
+        <translation type="gpt-5-generated">待机模式</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Turn the screen off while driving and automatically wake it up for alerts or engagement state changes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶时关闭屏幕，并在有警报或接管状态变化时自动唤醒。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>5 mins</source>
+        <translation type="gpt-5-generated">5 分钟</translation>
+    </message>
+    <message>
+        <source> mins</source>
+        <translation type="gpt-5-generated"> 分钟</translation>
+    </message>
+    <message>
+        <source> hour</source>
+        <translation type="gpt-5-generated">小时</translation>
+    </message>
+    <message>
+        <source> hours</source>
+        <translation type="gpt-5-generated"> 小时</translation>
+    </message>
+    <message>
+        <source>Disable Onroad Only</source>
+        <translation type="gpt-5-generated">仅在行驶中禁用</translation>
+    </message>
+    <message>
+        <source> volts</source>
+        <translation type="gpt-5-generated">伏特</translation>
+    </message>
+    <message>
+        <source>Screen Off</source>
+        <translation type="gpt-5-generated">关屏</translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="gpt-5-generated">自动</translation>
     </message>
     <message>
         <source>Start Recording</source>
-        <translation type="gpt-4o-generated">开始录制</translation>
+        <translation type="gpt-5-generated">开始录制</translation>
     </message>
     <message>
         <source>Stop Recording</source>
-        <translation type="gpt-4o-generated">停止录制</translation>
+        <translation type="gpt-5-generated">停止录制</translation>
     </message>
     <message>
-        <source>Settings that control device behavior.</source>
-        <translation type="gpt-4o-generated">控制设备行为的设置。</translation>
-    </message>
-    <message>
-        <source>Disable Data Logging</source>
-        <translation type="gpt-4o-generated">禁用数据记录</translation>
-    </message>
-    <message>
-        <source>Disable Data Uploads</source>
-        <translation type="gpt-4o-generated">禁用数据上传</translation>
-    </message>
-    <message>
-        <source>Prevent the device from sending any data to &lt;b&gt;comma&lt;/b&gt;'s servers.</source>
-        <translation type="gpt-4o-generated">防止设备向&lt;b&gt;comma&lt;/b&gt;的服务器发送任何数据。</translation>
-    </message>
-    <message>
-        <source>WARNING: This can damage your device by exceeding safe temperature limits!</source>
-        <translation type="gpt-4o-generated">警告：这可能会通过超过安全温度限制而损坏您的设备！</translation>
-    </message>
-    <message>
-        <source>Settings that control screen behavior.</source>
-        <translation type="gpt-4o-generated">控制屏幕行为的设置。</translation>
-    </message>
-    <message>
-        <source>The screen brightness when not driving.</source>
-        <translation type="gpt-4o-generated">未驾驶时的屏幕亮度。</translation>
-    </message>
-    <message>
-        <source>The screen brightness while driving.</source>
-        <translation type="gpt-4o-generated">驾驶时的屏幕亮度。</translation>
-    </message>
-    <message>
-        <source>Enable a button in the driving screen to record the screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕中启用按钮以录制屏幕。</translation>
-    </message>
-    <message>
-        <source>How long it takes for the screen to turn off when not driving.</source>
-        <translation type="gpt-4o-generated">当不驾驶时，屏幕关闭需要多长时间。</translation>
-    </message>
-    <message>
-        <source>How long it takes for the screen to turn off while driving.</source>
-        <translation type="gpt-4o-generated">在驾驶过程中，屏幕关闭所需的时间。</translation>
-    </message>
-    <message>
-        <source>Automatically shut down the device when the vehicle's battery voltage reaches the set threshold preventing excessive battery drain to protect the battery.</source>
-        <translation type="gpt-4o-generated">当车辆电池电压达到设定阈值时，自动关闭设备，以防止过度电池消耗，保护电池。</translation>
-    </message>
-    <message>
-        <source>How long the device stays on for after you go offroad.</source>
-        <translation type="gpt-4o-generated">设备在您离开道路后保持开启的时间长度。</translation>
-    </message>
-    <message>
-        <source>WARNING: This will prevent your drives from appearing on &lt;b&gt;comma connect&lt;/b&gt; which may impact debugging and support!</source>
-        <translation type="gpt-4o-generated">警告：这将阻止您的行程出现在&lt;b&gt;comma connect&lt;/b&gt;上，可能会影响调试和支持！</translation>
-    </message>
-    <message>
-        <source>Allow the device to run hotter than comma recommended limit.</source>
-        <translation type="gpt-4o-generated">允许设备运行温度高于推荐限制。</translation>
+        <source> seconds</source>
+        <translation type="gpt-5-generated"> 秒</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotLateralPanel</name>
     <message>
-        <source>Always on Lateral</source>
-        <translation type="gpt-4o-generated">始终开启横向控制</translation>
-    </message>
-    <message>
-        <source>Pause on Brake Below</source>
-        <translation type="gpt-4o-generated">在以下情况下刹车暂停</translation>
-    </message>
-    <message>
-        <source>Lane Change Delay</source>
-        <translation type="gpt-4o-generated">变道延迟</translation>
-    </message>
-    <message>
-        <source>Lateral Tuning</source>
-        <translation type="gpt-4o-generated">横向调节</translation>
-    </message>
-    <message>
-        <source>Neural Network Feedforward (NNFF)</source>
-        <translation type="gpt-4o-generated">神经网络前馈 (NNFF)</translation>
-    </message>
-    <message>
-        <source>Smooth Curve Handling</source>
-        <translation type="gpt-4o-generated">平滑曲线处理</translation>
-    </message>
-    <message>
-        <source>Pause Steering Below</source>
-        <translation type="gpt-4o-generated">暂停转向低于</translation>
-    </message>
-    <message>
-        <source>mph</source>
-        <translation type="gpt-4o-generated">英里/小时</translation>
-    </message>
-    <message>
-        <source> feet</source>
-        <translation type="gpt-4o-generated">英尺</translation>
-    </message>
-    <message>
-        <source> meters</source>
-        <translation type="gpt-4o-generated">米</translation>
-    </message>
-    <message>
         <source>Advanced Lateral Tuning</source>
-        <translation type="gpt-4o-generated">高级横向调节</translation>
+        <translation type="gpt-5-generated">高级横向调校</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Advanced steering control changes to fine-tune how openpilot drives.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;高级转向控制更改，可微调 openpilot 的驾驶行为。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Actuator Delay (Default: %1)</source>
+        <translation type="gpt-5-generated">执行器延迟（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Actuator Delay</source>
+        <translation type="gpt-5-generated">执行器延迟</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The time between openpilot's steering command and the vehicle's response.&lt;/b&gt; Increase if the vehicle reacts late; decrease if it feels jumpy. Auto-learned by default.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 转向指令与车辆响应之间的时间。&lt;/b&gt; 如果车辆反应滞后，请增大；如果感觉跳跃，请减小。默认自动学习。</translation>
     </message>
     <message>
         <source>Friction (Default: %1)</source>
-        <translation type="gpt-4o-generated">摩擦（默认值：%1）</translation>
+        <translation type="gpt-5-generated">摩擦（默认：%1）</translation>
     </message>
     <message>
         <source>Friction</source>
-        <translation type="gpt-4o-generated">摩擦</translation>
+        <translation type="gpt-5-generated">摩擦</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Compensates for steering friction.&lt;/b&gt; Increase if the wheel sticks near center; decrease if it jitters. Auto-learned by default.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;补偿转向摩擦。&lt;/b&gt; 如果方向盘在中心附近发粘，请增加；如果抖动，请减少。默认自动学习。</translation>
     </message>
     <message>
         <source>Kp Factor (Default: %1)</source>
-        <translation type="gpt-4o-generated">Kp系数（默认值：%1）</translation>
+        <translation type="gpt-5-generated">Kp 系数（默认：%1）</translation>
     </message>
     <message>
         <source>Kp Factor</source>
-        <translation type="gpt-4o-generated">Kp因子</translation>
+        <translation type="gpt-5-generated">Kp 因子</translation>
     </message>
     <message>
-        <source>Lateral Accel (Default: %1)</source>
-        <translation type="gpt-4o-generated">横向加速度（默认值：%1）</translation>
+        <source>&lt;b&gt;How strongly openpilot corrects lane position.&lt;/b&gt; Higher is tighter but twitchier; lower is smoother but slower. Auto-learned by default.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 修正车道位置的力度。&lt;/b&gt;数值越高越贴紧但更敏感；数值越低越平顺但反应更慢。默认自动学习。</translation>
     </message>
     <message>
-        <source>Lateral Accel</source>
-        <translation type="gpt-4o-generated">横向加速度</translation>
+        <source>Lateral Acceleration (Default: %1)</source>
+        <translation type="gpt-5-generated">横向加速度（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Lateral Acceleration</source>
+        <translation type="gpt-5-generated">横向加速度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Maps steering torque to turning response.&lt;/b&gt; Increase for sharper turns; decrease for gentler steering. Auto-learned by default.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将转向扭矩映射到转向响应。&lt;/b&gt; 增大以获得更敏锐的转弯；减小以获得更平缓的转向。默认自动学习。</translation>
     </message>
     <message>
         <source>Steer Ratio (Default: %1)</source>
-        <translation type="gpt-4o-generated">转向比（默认值：%1）</translation>
+        <translation type="gpt-5-generated">转向比（默认：%1）</translation>
     </message>
     <message>
         <source>Steer Ratio</source>
-        <translation type="gpt-4o-generated">转向比</translation>
+        <translation type="gpt-5-generated">转向比</translation>
     </message>
     <message>
-        <source>Force Auto Tune On</source>
-        <translation type="gpt-4o-generated">强制自动调谐开启</translation>
+        <source>&lt;b&gt;The relationship between steering wheel rotation and road wheel angle.&lt;/b&gt; Increase if steering feels too quick or twitchy; decrease if it feels too slow or weak. Auto-learned by default.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;方向盘转角与车轮转角之间的关系。&lt;/b&gt; 若转向过快或敏感，请增大；若感觉过慢或无力，请减小。默认自动学习。</translation>
     </message>
     <message>
-        <source>Force Auto Tune Off</source>
-        <translation type="gpt-4o-generated">强制关闭自动调谐</translation>
+        <source>Force Auto-Tune On</source>
+        <translation type="gpt-5-generated">强制开启自动调谐</translation>
     </message>
     <message>
-        <source>Automatic Lane Changes</source>
-        <translation type="gpt-4o-generated">自动变道</translation>
+        <source>&lt;b&gt;Force-enable openpilot's live auto-tuning for "Friction" and "Lateral Acceleration".&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;强制启用 openpilot 的“摩擦”和“横向加速度”实时自动调校。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Force Turn Desires Below Lane Change Speed</source>
-        <translation type="gpt-4o-generated">在变道速度以下强制关闭转弯需求</translation>
+        <source>Force Auto-Tune Off</source>
+        <translation type="gpt-5-generated">强制关闭自动调校</translation>
     </message>
     <message>
-        <source>Instant</source>
-        <translation type="gpt-4o-generated">瞬间</translation>
+        <source>&lt;b&gt;Force-disable openpilot's live auto-tuning for "Friction" and "Lateral Acceleration" and use the set value instead.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;强制禁用 openpilot 的“摩擦”和“横向加速度”的实时自动调校，并改用设定值。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Advanced settings for fine-tuning openpilot's lateral controls.</source>
-        <translation type="gpt-4o-generated">用于微调openpilot横向控制的高级设置。</translation>
+        <source>Force Torque Controller</source>
+        <translation type="gpt-5-generated">力矩控制器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Use torque-based steering control instead of angle-based control for smoother lane keeping, especially in curves.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用基于扭矩的转向控制替代基于角度的控制，以实现更平顺的车道保持，尤其在弯道中。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Always On Lateral</source>
+        <translation type="gpt-5-generated">始终开启横向控制</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;openpilot's steering remains active even when the accelerator or brake pedals are pressed.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;即使踩下加速踏板或制动踏板，openpilot 的转向仍保持激活。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enable With Cruise Control</source>
-        <translation type="gpt-4o-generated">启用巡航控制</translation>
+        <translation type="gpt-5-generated">启用巡航控制</translation>
     </message>
     <message>
-        <source>Minimum Lane Change Speed</source>
-        <translation type="gpt-4o-generated">最低变道速度</translation>
+        <source>&lt;b&gt;Enable "Always On Lateral" whenever "Cruise Control" is on, even when openpilot is not engaged.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在启用“巡航控制”时，即使未启用 openpilot，也启用“始终开启横向”。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Minimum speed required for openpilot to perform a lane change.</source>
-        <translation type="gpt-4o-generated">openpilot 执行变道所需的最低速度。</translation>
+        <source>Enable With LKAS</source>
+        <translation type="gpt-5-generated">与LKAS一起启用</translation>
     </message>
     <message>
-        <source>Settings for fine-tuning openpilot's lateral controls.</source>
-        <translation type="gpt-4o-generated">用于微调 openpilot 横向控制的设置。</translation>
+        <source>&lt;b&gt;Enable "Always On Lateral" whenever "LKAS" is on, even when openpilot is not engaged.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当“LKAS”开启时，即使未启用openpilot，也启用“始终开启横向控制”。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Force turn desires below the minimum lane change speed to improve turning accuracy.</source>
-        <translation type="gpt-4o-generated">在最低变道速度以下强制转向，以提高转向精度。</translation>
+        <source>Pause on Brake Press Below</source>
+        <translation type="gpt-5-generated">低速时刹车按下即暂停</translation>
     </message>
     <message>
-        <source>Off</source>
-        <translation type="gpt-4o-generated">关闭</translation>
-    </message>
-    <message>
-        <source>km/h</source>
-        <translation type="gpt-4o-generated">公里/小时</translation>
+        <source>&lt;b&gt;Pause "Always On Lateral" below the set speed while the brake pedal is pressed.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在按下制动踏板时，于设定速度以下暂停“始终开启横向”。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Lane Changes</source>
-        <translation type="gpt-4o-generated">变道</translation>
+        <translation type="gpt-5-generated">变道</translation>
     </message>
     <message>
-        <source>Adjust steering resistance. Higher values feel more stable but heavier; lower values feel lighter but more sensitive.</source>
-        <translation type="gpt-4o-generated">调整转向阻力。较高的数值感觉更稳定但更重；较低的数值感觉更轻但更敏感。</translation>
+        <source>&lt;b&gt;Allow openpilot to change lanes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;允许 openpilot 变道。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Limit lane changes to one per turn signal activation.</source>
-        <translation type="gpt-4o-generated">将车道变更限制为每次转向灯激活时只能变更一次。</translation>
+        <source>Automatic Lane Changes</source>
+        <translation type="gpt-5-generated">自动变道</translation>
     </message>
     <message>
-        <source>How aggressively openpilot corrects steering. Higher values respond faster but may feel jerky; lower values are smoother but slower.</source>
-        <translation type="gpt-4o-generated">openpilot校正方向盘的力度。较高的值响应更快，但可能感觉不平稳；较低的值更平稳但响应较慢。</translation>
+        <source>&lt;b&gt;When the turn signal is on, openpilot will automatically change lanes.&lt;/b&gt; No steering-wheel nudge required!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当转向灯开启时，openpilot 将自动变道。&lt;/b&gt; 无需方向盘提示！</translation>
     </message>
     <message>
-        <source>How quickly openpilot makes lateral adjustments. Higher values allow sharper turns; lower values provide smoother steering.</source>
-        <translation type="gpt-4o-generated">openpilot进行横向调整的速度。较高的值允许更急的转弯；较低的值提供更平稳的转向。</translation>
+        <source>Lane Change Delay</source>
+        <translation type="gpt-5-generated">变道延迟</translation>
     </message>
     <message>
-        <source>How much the steering wheel turns in response to commands. Higher values feel more stable; lower values feel quicker.</source>
-        <translation type="gpt-4o-generated">方向盘对命令响应的转动程度。较高的值感觉更稳定；较低的值感觉更敏捷。</translation>
+        <source>&lt;b&gt;Delay between turn signal activation and the start of an automatic lane change.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;转向灯激活与自动变道开始之间的延迟。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>openpilot's steering control stays active even when the brake or gas pedals are pressed.&lt;br&gt;&lt;br&gt;Deactivation only occurs with the &lt;b&gt;Cruise Control&lt;/b&gt; button.</source>
-        <translation type="gpt-4o-generated">即使踩下制动或油门踏板，openpilot 的转向控制仍保持激活。&lt;br&gt;&lt;br&gt;仅当按下&lt;b&gt;巡航控制&lt;/b&gt;按钮时才会停用。</translation>
+        <source>Minimum Lane Change Speed</source>
+        <translation type="gpt-5-generated">最低变道速度</translation>
     </message>
     <message>
-        <source>Allow &lt;b&gt;Always on Lateral&lt;/b&gt; to be active whenever &lt;b&gt;Cruise Control&lt;/b&gt; is active, bypassing the need to enable openpilot first.</source>
-        <translation type="gpt-4o-generated">允许&lt;b&gt;始终开启横向控制&lt;/b&gt;在&lt;b&gt;巡航控制&lt;/b&gt;激活时随时处于激活状态，无需先启用openpilot。</translation>
-    </message>
-    <message>
-        <source>Enable With LKAS Button</source>
-        <translation type="gpt-4o-generated">通过 LKAS 按钮启用</translation>
-    </message>
-    <message>
-        <source>Allow &lt;b&gt;Always on Lateral&lt;/b&gt; to be active whenever &lt;b&gt;LKAS&lt;/b&gt; is active, bypassing the need to enable openpilot first.</source>
-        <translation type="gpt-4o-generated">允许&lt;b&gt;始终启用横向控制&lt;/b&gt;在&lt;b&gt;LKAS&lt;/b&gt;激活时始终处于活动状态，无需先启用openpilot。</translation>
-    </message>
-    <message>
-        <source>Temporarily pause &lt;b&gt;Always on Lateral&lt;/b&gt; below the set speed when braking.</source>
-        <translation type="gpt-4o-generated">制动时在低于设定速度时暂时暂停&lt;b&gt;始终开启横向控制&lt;/b&gt;。</translation>
-    </message>
-    <message>
-        <source>Customize how openpilot performs lane changes.</source>
-        <translation type="gpt-4o-generated">自定义 openpilot 如何执行变道。</translation>
-    </message>
-    <message>
-        <source>Change lanes automatically when the turn signal is on. No steering input needed!</source>
-        <translation type="gpt-4o-generated">打开转向灯时自动变道。无需转向输入！</translation>
-    </message>
-    <message>
-        <source>Delay automatic lane changes by the set amount of time.</source>
-        <translation type="gpt-4o-generated">将自动变道延迟设定的时间。</translation>
+        <source>&lt;b&gt;Lowest speed at which openpilot will change lanes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 会变道的最低速度。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Minimum Lane Width</source>
-        <translation type="gpt-4o-generated">最小车道宽度</translation>
+        <translation type="gpt-5-generated">最小车道宽度</translation>
     </message>
     <message>
-        <source>openpilot won't initiate a lane change into a lane narrower than this width.</source>
-        <translation type="gpt-4o-generated">openpilot 不会在车道宽度小于此值时发起变道。</translation>
+        <source>&lt;b&gt;Prevent automatic lane changes into lanes narrower than the set width.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;防止自动变道进入小于设定宽度的车道。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>One Lane Change Per Signal</source>
-        <translation type="gpt-4o-generated">每次信号只变更一条车道</translation>
+        <translation type="gpt-5-generated">每次打灯仅变更一条车道</translation>
     </message>
     <message>
-        <source>Use &lt;b&gt;Twilsonco’s&lt;/b&gt; &lt;b&gt;Neural Network FeedForward&lt;/b&gt; model for smoother, model-based steering trained on your vehicle's data.</source>
-        <translation type="gpt-4o-generated">使用 &lt;b&gt;Twilsonco 的神经网络前馈（Neural Network FeedForward）&lt;/b&gt; 模型，根据您车辆的数据进行训练，实现更平稳的基于模型的转向。</translation>
+        <source>&lt;b&gt;Limit automatic lane changes to one per turn-signal activation.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将自动变道限制为每次转向灯激活仅一次。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Use &lt;b&gt;Twilsonco’s&lt;/b&gt; torque-based adjustments to smooth out steering during curves.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;Twilsonco&lt;/b&gt;的扭矩调整来平滑弯道中的转向。</translation>
+        <source>Lateral Tuning</source>
+        <translation type="gpt-5-generated">横向调校</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Miscellaneous steering control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;其他转向控制更改&lt;/b&gt;用于微调 openpilot 的驾驶方式。</translation>
+    </message>
+    <message>
+        <source>Force Turn Desires Below Lane Change Speed</source>
+        <translation type="gpt-5-generated">在变道速度以下强制转向需求</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在低于最小变道速度并开启转向灯行驶时，指示 openpilot 向左/向右转向。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Quality of Life</source>
-        <translation type="gpt-4o-generated">生活质量</translation>
+        <translation type="gpt-5-generated">生活质量</translation>
     </message>
     <message>
-        <source>Miscellaneous features to improve the steering experience.</source>
-        <translation type="gpt-4o-generated">其他功能以改善转向体验。</translation>
+        <source>&lt;b&gt;Steering control changes to fine-tune how openpilot drives.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;转向控制更改可微调 openpilot 的驾驶方式。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Temporarily pause steering control below the set speed.</source>
-        <translation type="gpt-4o-generated">在设定速度以下暂时暂停转向控制。</translation>
+        <source>Pause Steering Below</source>
+        <translation type="gpt-5-generated">在以下速度下暂停转向</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Pause steering below the set speed.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在设定速度以下暂停转向。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Instant</source>
+        <translation type="gpt-5-generated">瞬时</translation>
     </message>
     <message>
         <source> second</source>
-        <translation type="gpt-4o-generated">秒</translation>
+        <translation type="gpt-5-generated"> 秒</translation>
     </message>
     <message>
         <source> seconds</source>
-        <translation type="gpt-4o-generated">秒</translation>
+        <translation type="gpt-5-generated"> 秒</translation>
     </message>
     <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Friction&lt;/b&gt; values?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置您的&lt;b&gt;摩擦&lt;/b&gt;值吗？</translation>
+        <source>Turn Signal Only</source>
+        <translation type="gpt-5-generated">仅转向灯</translation>
     </message>
     <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Kp Factor&lt;/b&gt; values?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置您的 &lt;b&gt;Kp 因子&lt;/b&gt; 值吗？</translation>
+        <source>Reset &lt;b&gt;Actuator Delay&lt;/b&gt; to its default value?</source>
+        <translation type="gpt-5-generated">将&lt;b&gt;执行器延迟&lt;/b&gt;重置为默认值？</translation>
     </message>
     <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Lateral Accel&lt;/b&gt; values?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置您的&lt;b&gt;横向加速度&lt;/b&gt;值吗？</translation>
+        <source>Reset &lt;b&gt;Friction&lt;/b&gt; to its default value?</source>
+        <translation type="gpt-5-generated">将&lt;b&gt;Friction&lt;/b&gt;重置为默认值？</translation>
     </message>
     <message>
-        <source>Are you sure you want to completely reset your &lt;b&gt;Steer Ratio&lt;/b&gt; values?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置&lt;b&gt;转向比&lt;/b&gt;值吗？</translation>
+        <source>Reset &lt;b&gt;Kp Factor&lt;/b&gt; to its default value?</source>
+        <translation type="gpt-5-generated">将&lt;b&gt;Kp 系数&lt;/b&gt;重置为默认值？</translation>
+    </message>
+    <message>
+        <source>Reset &lt;b&gt;Lateral Accel&lt;/b&gt; to its default value?</source>
+        <translation type="gpt-5-generated">将&lt;b&gt;横向加速度&lt;/b&gt;重置为默认值？</translation>
+    </message>
+    <message>
+        <source>Reset &lt;b&gt;Steer Ratio&lt;/b&gt; to its default value?</source>
+        <translation type="gpt-5-generated">将&lt;b&gt;转向比&lt;/b&gt;重置为默认值？</translation>
+    </message>
+    <message>
+        <source>Lateral Accel (Default: %1)</source>
+        <translation type="gpt-5-generated">横向加速度（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="gpt-5-generated">关闭</translation>
     </message>
     <message>
         <source> foot</source>
-        <translation type="gpt-4o-generated">英尺</translation>
+        <translation type="gpt-5-generated">英尺</translation>
+    </message>
+    <message>
+        <source> feet</source>
+        <translation type="gpt-5-generated">英尺</translation>
+    </message>
+    <message>
+        <source> mph</source>
+        <translation type="gpt-5-generated">英里/小时</translation>
     </message>
     <message>
         <source> meter</source>
-        <translation type="gpt-4o-generated">米</translation>
+        <translation type="gpt-5-generated">米</translation>
     </message>
     <message>
-        <source>Force-enable comma’s auto lateral tuning.</source>
-        <translation type="gpt-4o-generated">强制启用 comma 的自动横向调节。</translation>
+        <source> meters</source>
+        <translation type="gpt-5-generated">米</translation>
     </message>
     <message>
-        <source>Force-disable comma’s auto lateral tuning.</source>
-        <translation type="gpt-4o-generated">强制禁用 comma 的自动横向调校。</translation>
+        <source> km/h</source>
+        <translation type="gpt-5-generated">km/h</translation>
+    </message>
+    <message>
+        <source>Neural Network Feedforward (NNFF)</source>
+        <translation type="gpt-5-generated">神经网络前馈（NNFF）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Twilsonco's "Neural Network FeedForward" model controller for smoother, model-based steering trained on your vehicle's data.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Twilsonco 的“Neural Network FeedForward”模型控制器，基于模型的更平顺转向，使用您车辆的数据进行训练。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Smooth Curve Handling</source>
+        <translation type="gpt-5-generated">平稳弯道处理</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Twilsonco's torque-based adjustments to smoothen out steering in curves.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Twilsonco 基于扭矩的调整，用于在弯道中平滑转向。&lt;/b&gt;</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotLongitudinalPanel</name>
     <message>
+        <source>Advanced Longitudinal Tuning</source>
+        <translation type="gpt-5-generated">高级纵向调校</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Advanced acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;高级加速和制动控制更改&lt;/b&gt;，以微调 openpilot 的驾驶方式。</translation>
+    </message>
+    <message>
+        <source>Actuator Delay (Default: %1)</source>
+        <translation type="gpt-5-generated">执行器延迟（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Actuator Delay</source>
+        <translation type="gpt-5-generated">执行器延迟</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The time between openpilot's throttle or brake command and the vehicle's response.&lt;/b&gt; Increase if the vehicle feels slow to react; decrease if it feels too eager or overshoots.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 发出油门或制动指令与车辆响应之间的时间。&lt;/b&gt; 如果车辆反应迟缓请增大；如果反应过于积极或出现过冲请减小。</translation>
+    </message>
+    <message>
+        <source>Start Acceleration (Default: %1)</source>
+        <translation type="gpt-5-generated">起步加速度（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Start Acceleration</source>
+        <translation type="gpt-5-generated">开始加速</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Extra acceleration applied when starting from a stop.&lt;/b&gt; Increase for quicker takeoffs; decrease for smoother, gentler starts.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;从静止起步时施加额外加速。&lt;/b&gt; 增加可更快起步；减少可更平稳、温和地起步。</translation>
+    </message>
+    <message>
+        <source>Start Speed (Default: %1)</source>
+        <translation type="gpt-5-generated">起始速度（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Start Speed</source>
+        <translation type="gpt-5-generated">起始速度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The speed at which openpilot exits the stopped state.&lt;/b&gt; Increase to reduce creeping; decrease to move sooner after stopping.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot退出停止状态的速度。&lt;/b&gt; 增大以减少缓慢前行；减小以在停车后更快起步。</translation>
+    </message>
+    <message>
+        <source>Stop Acceleration (Default: %1)</source>
+        <translation type="gpt-5-generated">停止加速（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Stop Acceleration</source>
+        <translation type="gpt-5-generated">停止加速</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Brake force applied to hold the vehicle at a standstill.&lt;/b&gt; Increase to prevent rolling on hills; decrease for smoother, softer stops.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;施加制动力以使车辆保持静止。&lt;/b&gt; 增加可防止在坡道上溜车；减少可获得更平顺、更柔和的停车效果。</translation>
+    </message>
+    <message>
+        <source>Stopping Rate (Default: %1)</source>
+        <translation type="gpt-5-generated">减速率（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Stopping Rate</source>
+        <translation type="gpt-5-generated">制动速率</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How quickly braking ramps up when stopping.&lt;/b&gt; Increase for shorter, firmer stops; decrease for smoother, longer stops.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;车辆停车时制动加力度的速度。&lt;/b&gt; 增大以获得更短、更硬的停车；减小以获得更平顺、更长的停车。</translation>
+    </message>
+    <message>
+        <source>Stop Speed (Default: %1)</source>
+        <translation type="gpt-5-generated">停止速度（默认：%1）</translation>
+    </message>
+    <message>
+        <source>Stop Speed</source>
+        <translation type="gpt-5-generated">停止速度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The speed at which openpilot considers the vehicle stopped.&lt;/b&gt; Increase to brake earlier and stop smoothly; decrease to wait longer but risk overshooting.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 认为车辆已停止的速度。&lt;/b&gt; 增加该值可更早制动并平稳停下；降低该值会等待更久但有冲过的风险。</translation>
+    </message>
+    <message>
         <source>Conditional Experimental Mode</source>
-        <translation type="gpt-4o-generated">条件实验模式</translation>
+        <translation type="gpt-5-generated">条件实验模式</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Automatically switch to "Experimental Mode" when set conditions are met.&lt;/b&gt; Allows the model to handle challenging situations with smarter decision making.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当满足设定条件时自动切换到“实验模式”。&lt;/b&gt; 允许模型以更智能的决策应对复杂情况。</translation>
     </message>
     <message>
         <source>Below</source>
-        <translation type="gpt-4o-generated">下方</translation>
+        <translation type="gpt-5-generated">下方</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when driving below this speed without a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在无前车且车速低于此速度时切换到“实验模式”&lt;/b&gt;，以帮助 openpilot 更顺畅地处理低速情况。</translation>
     </message>
     <message>
         <source>Curve Detected Ahead</source>
-        <translation type="gpt-4o-generated">前方检测到弯道</translation>
+        <translation type="gpt-5-generated">前方检测到弯道</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when a curve is detected&lt;/b&gt; to allow the model to set an appropriate speed for the curve.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;检测到弯道时切换到“实验模式”&lt;/b&gt;，以允许模型为该弯道设定合适的车速。</translation>
     </message>
     <message>
         <source>Lead Detected Ahead</source>
-        <translation type="gpt-4o-generated">前方检测到引导车</translation>
+        <translation type="gpt-5-generated">前方检测到前车</translation>
     </message>
     <message>
-        <source>Navigation Data</source>
-        <translation type="gpt-4o-generated">导航数据</translation>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when a slower or stopped vehicle is detected.&lt;/b&gt; Can make braking smoother and more reliable on some vehicles.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当检测到较慢或已停止的车辆时切换到“实验模式”。&lt;/b&gt; 在部分车辆上可使制动更平顺且更可靠。</translation>
     </message>
     <message>
-        <source>openpilot Wants to Stop In</source>
-        <translation type="gpt-4o-generated">openpilot想要停止</translation>
+        <source>Navigation-Based</source>
+        <translation type="gpt-5-generated">基于导航</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when approaching intersections or turns on the active route&lt;/b&gt; while using "Navigate on openpilot" (NOO) to allow the model to set an appropriate speed for upcoming maneuvers.</source>
+        <translation type="gpt-5-generated">在使用“Navigate on openpilot”（NOO）时，&lt;b&gt;在接近活动路线上的路口或转弯时切换到“实验模式”&lt;/b&gt;，以便模型为即将到来的操作设定合适的速度。</translation>
+    </message>
+    <message>
+        <source>Predicted Stop In</source>
+        <translation type="gpt-5-generated">预计在…停止</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when openpilot predicts a stop within the set time.&lt;/b&gt; This is usually triggered when the model "sees" a red light or stop sign ahead.&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In "Experimental Mode", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason.&lt;/i&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当 openpilot 预测在设定时间内会停车时，切换到“实验模式”。&lt;/b&gt; 这通常在模型“看到”前方红灯或停车标志时触发。&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;免责声明&lt;/b&gt;：openpilot 不会显式检测交通信号灯或停车标志。在“实验模式”下，openpilot 基于摄像头输入进行端到端驾驶决策，这意味着即使没有明显原因也可能停车。&lt;/i&gt;</translation>
     </message>
     <message>
         <source>Turn Signal Below</source>
-        <translation type="gpt-4o-generated">转向灯下方</translation>
+        <translation type="gpt-5-generated">转向灯在下方</translation>
     </message>
     <message>
-        <source>Curve Speed Control</source>
-        <translation type="gpt-4o-generated">曲线速度控制</translation>
-    </message>
-    <message>
-        <source>Curve Detection Method</source>
-        <translation type="gpt-4o-generated">曲线检测方法</translation>
-    </message>
-    <message>
-        <source>Curve Detection Failsafe</source>
-        <translation type="gpt-4o-generated">曲线检测故障保护</translation>
-    </message>
-    <message>
-        <source>Longitudinal Tuning</source>
-        <translation type="gpt-4o-generated">纵向调节</translation>
-    </message>
-    <message>
-        <source>Settings that control how openpilot manages speed and acceleration.</source>
-        <translation type="gpt-4o-generated">控制 openpilot 如何管理速度和加速度的设置。</translation>
-    </message>
-    <message>
-        <source>Acceleration Profile</source>
-        <translation type="gpt-4o-generated">加速度曲线图</translation>
-    </message>
-    <message>
-        <source>Deceleration Profile</source>
-        <translation type="gpt-4o-generated">减速曲线</translation>
-    </message>
-    <message>
-        <source>Human-Like Acceleration</source>
-        <translation type="gpt-4o-generated">类人加速</translation>
-    </message>
-    <message>
-        <source>Increase Stopped Distance</source>
-        <translation type="gpt-4o-generated">增加停止距离</translation>
-    </message>
-    <message>
-        <source>Map Accel/Decel to Gears</source>
-        <translation type="gpt-4o-generated">将加速/减速映射到挡位</translation>
-    </message>
-    <message>
-        <source>Reverse Cruise Increase</source>
-        <translation type="gpt-4o-generated">反向巡航增加</translation>
-    </message>
-    <message>
-        <source>Speed Limit Controller</source>
-        <translation type="gpt-4o-generated">速度限制控制器</translation>
-    </message>
-    <message>
-        <source>Confirm New Speed Limits</source>
-        <translation type="gpt-4o-generated">确认新的限速</translation>
-    </message>
-    <message>
-        <source>Speed Limit Offsets</source>
-        <translation type="gpt-4o-generated">速度限制偏移量</translation>
-    </message>
-    <message>
-        <source>Show Speed Limit Offset</source>
-        <translation type="gpt-4o-generated">显示限速偏移</translation>
-    </message>
-    <message>
-        <source>mph</source>
-        <translation type="gpt-4o-generated">英里/小时</translation>
-    </message>
-    <message>
-        <source>With Lead</source>
-        <translation type="gpt-4o-generated">有前车</translation>
-    </message>
-    <message>
-        <source>Slower Lead</source>
-        <translation type="gpt-4o-generated">更慢的前车</translation>
-    </message>
-    <message>
-        <source>Stopped Lead</source>
-        <translation type="gpt-4o-generated">停止的前车</translation>
-    </message>
-    <message>
-        <source>Intersections</source>
-        <translation type="gpt-4o-generated">交叉路口</translation>
-    </message>
-    <message>
-        <source>Turns</source>
-        <translation type="gpt-4o-generated">转弯</translation>
-    </message>
-    <message>
-        <source>Map Based</source>
-        <translation type="gpt-4o-generated">基于地图</translation>
-    </message>
-    <message>
-        <source>Vision</source>
-        <translation type="gpt-4o-generated">视觉</translation>
-    </message>
-    <message>
-        <source>Standard</source>
-        <translation type="gpt-4o-generated">标准</translation>
-    </message>
-    <message>
-        <source>Eco</source>
-        <translation type="gpt-4o-generated">经济模式</translation>
-    </message>
-    <message>
-        <source>Sport</source>
-        <translation type="gpt-4o-generated">运动模式</translation>
-    </message>
-    <message>
-        <source>Sport+</source>
-        <translation type="gpt-4o-generated">运动+</translation>
-    </message>
-    <message>
-        <source> feet</source>
-        <translation type="gpt-4o-generated">英尺</translation>
-    </message>
-    <message>
-        <source>Acceleration</source>
-        <translation type="gpt-4o-generated">加速度</translation>
-    </message>
-    <message>
-        <source>Deceleration</source>
-        <translation type="gpt-4o-generated">减速</translation>
-    </message>
-    <message>
-        <source>Lower Limits</source>
-        <translation type="gpt-4o-generated">下限</translation>
-    </message>
-    <message>
-        <source>Higher Limits</source>
-        <translation type="gpt-4o-generated">更高限制</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation type="gpt-4o-generated">无</translation>
-    </message>
-    <message>
-        <source>Set Speed</source>
-        <translation type="gpt-4o-generated">设置速度</translation>
-    </message>
-    <message>
-        <source>Experimental Mode</source>
-        <translation type="gpt-4o-generated">实验模式</translation>
-    </message>
-    <message>
-        <source>Previous Limit</source>
-        <translation type="gpt-4o-generated">上一个限制</translation>
-    </message>
-    <message>
-        <source>SELECT</source>
-        <translation type="gpt-4o-generated">选择</translation>
-    </message>
-    <message>
-        <source>Dashboard</source>
-        <translation type="gpt-4o-generated">仪表盘</translation>
-    </message>
-    <message>
-        <source>Navigation</source>
-        <translation type="gpt-4o-generated">导航</translation>
-    </message>
-    <message>
-        <source>Highest</source>
-        <translation type="gpt-4o-generated">最高</translation>
-    </message>
-    <message>
-        <source>Lowest</source>
-        <translation type="gpt-4o-generated">最低</translation>
-    </message>
-    <message>
-        <source>Select your primary priority</source>
-        <translation type="gpt-4o-generated">选择你的首要优先事项</translation>
-    </message>
-    <message>
-        <source>Select your secondary priority</source>
-        <translation type="gpt-4o-generated">选择您的次要优先级</translation>
-    </message>
-    <message>
-        <source>Select your tertiary priority</source>
-        <translation type="gpt-4o-generated">选择您的第三优先级</translation>
-    </message>
-    <message>
-        <source>MANAGE</source>
-        <translation type="gpt-4o-generated">管理</translation>
-    </message>
-    <message>
-        <source> seconds</source>
-        <translation type="gpt-4o-generated">秒</translation>
-    </message>
-    <message>
-        <source> meters</source>
-        <translation type="gpt-4o-generated">米</translation>
-    </message>
-    <message>
-        <source>Curve Detection Sensitivity</source>
-        <translation type="gpt-4o-generated">曲线检测灵敏度</translation>
-    </message>
-    <message>
-        <source>Customize Driving Personalities</source>
-        <translation type="gpt-4o-generated">自定义驾驶个性</translation>
-    </message>
-    <message>
-        <source>Traffic Personality</source>
-        <translation type="gpt-4o-generated">交通特性</translation>
-    </message>
-    <message>
-        <source>Following Distance</source>
-        <translation type="gpt-4o-generated">跟车距离</translation>
-    </message>
-    <message>
-        <source>Acceleration Sensitivity</source>
-        <translation type="gpt-4o-generated">加速度灵敏度</translation>
-    </message>
-    <message>
-        <source>Deceleration Sensitivity</source>
-        <translation type="gpt-4o-generated">减速灵敏度</translation>
-    </message>
-    <message>
-        <source>Safety Distance Sensitivity</source>
-        <translation type="gpt-4o-generated">安全距离灵敏度</translation>
-    </message>
-    <message>
-        <source>Reset Settings</source>
-        <translation type="gpt-4o-generated">重置设置</translation>
-    </message>
-    <message>
-        <source>Aggressive Personality</source>
-        <translation type="gpt-4o-generated">激进性格</translation>
-    </message>
-    <message>
-        <source>Standard Personality</source>
-        <translation type="gpt-4o-generated">标准个性</translation>
-    </message>
-    <message>
-        <source>Relaxed Personality</source>
-        <translation type="gpt-4o-generated">轻松个性</translation>
-    </message>
-    <message>
-        <source>Human-Like Approach Behind Leads</source>
-        <translation type="gpt-4o-generated">类人化接近目标车策略</translation>
-    </message>
-    <message>
-        <source>Lead Detection Confidence</source>
-        <translation type="gpt-4o-generated">前车检测置信度</translation>
-    </message>
-    <message>
-        <source>Maximum Acceleration Rate</source>
-        <translation type="gpt-4o-generated">最大加速度率</translation>
-    </message>
-    <message>
-        <source>Force Keep openpilot in the Standstill State</source>
-        <translation type="gpt-4o-generated">强制保持 openpilot 处于静止状态</translation>
-    </message>
-    <message>
-        <source>Set Speed Offset</source>
-        <translation type="gpt-4o-generated">设置速度偏移量</translation>
-    </message>
-    <message>
-        <source>Show Speed Limit Sources</source>
-        <translation type="gpt-4o-generated">显示限速来源</translation>
-    </message>
-    <message>
-        <source>RESET</source>
-        <translation type="gpt-4o-generated">重置</translation>
-    </message>
-    <message>
-        <source>Set With Gas Pedal</source>
-        <translation type="gpt-4o-generated">使用油门设置</translation>
-    </message>
-    <message>
-        <source>Max Set Speed</source>
-        <translation type="gpt-4o-generated">最大设定速度</translation>
-    </message>
-    <message>
-        <source>Map Data</source>
-        <translation type="gpt-4o-generated">地图数据</translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation type="gpt-4o-generated">关闭</translation>
-    </message>
-    <message>
-        <source> second</source>
-        <translation type="gpt-4o-generated">秒</translation>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when using a turn signal below the set speed&lt;/b&gt; to allow the model to choose an appropriate speed for smoother left and right turns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在设定速度以下使用转向灯时切换到“实验模式”&lt;/b&gt;，以便模型选择合适速度，从而更平顺地完成左右转弯。</translation>
     </message>
     <message>
         <source>Status Widget</source>
-        <translation type="gpt-4o-generated">状态小部件</translation>
+        <translation type="gpt-5-generated">状态小部件</translation>
     </message>
     <message>
-        <source>km/h</source>
-        <translation type="gpt-4o-generated">公里/小时</translation>
+        <source>&lt;b&gt;Show which condition triggered "Experimental Mode"&lt;/b&gt; on the driving screen.</source>
+        <translation type="gpt-5-generated">在驾驶屏幕上&lt;b&gt;显示触发“实验模式”的条件&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Automatically switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when set conditions are met.</source>
-        <translation type="gpt-4o-generated">当设置条件满足时，自动切换到&lt;b&gt;实验模式&lt;/b&gt;。</translation>
+        <source>Curve Speed Controller</source>
+        <translation type="gpt-5-generated">弯道速度控制器</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when driving below this speed.</source>
-        <translation type="gpt-4o-generated">当车速低于此速度时，切换到&lt;b&gt;实验模式&lt;/b&gt;。</translation>
+        <source>&lt;b&gt;Automatically slow down for upcoming curves&lt;/b&gt; using data learned from your driving style, adapting to curves as you would.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;根据您的驾驶风格自动为前方弯道减速&lt;/b&gt;，以您习惯的方式适应弯道。</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when a curve is detected ahead. Useful for letting the model choose the appropriate speed for the curve.</source>
-        <translation type="gpt-4o-generated">在前方检测到弯道时切换到&lt;b&gt;实验模式&lt;/b&gt;。有助于让模型选择适合弯道的速度。</translation>
+        <source>Calibrated Lateral Acceleration</source>
+        <translation type="gpt-5-generated">校准的横向加速度</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when a slower or stopped vehicle is detected ahead. Can improve braking smoothness and reliability on some vehicles.</source>
-        <translation type="gpt-4o-generated">当检测到前方有较慢或停止的车辆时，切换到&lt;b&gt;实验模式&lt;/b&gt;。可以在某些车辆上提高制动的平稳性和可靠性。</translation>
+        <source>&lt;b&gt;The learned lateral acceleration from collected driving data.&lt;/b&gt; This sets how fast openpilot will take curves. Higher values allow faster cornering; lower values slow the vehicle for gentler turns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;根据收集的驾驶数据学习到的横向加速度。&lt;/b&gt; 这将决定 openpilot 通过弯道的速度。数值越高，过弯越快；数值越低，车辆会放慢以更平缓转向。</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when approaching intersections or turns on the active route while using &lt;b&gt;Navigate on openpilot (NOO)&lt;/b&gt;. Useful for letting the model choose the appropriate speed for upcoming navigation maneuvers.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;openpilot导航（NOO）&lt;/b&gt;时，当接近交叉路口或转弯处时切换到&lt;b&gt;实验模式&lt;/b&gt;。这有助于让模型为即将到来的导航动作选择合适的速度。</translation>
+        <source>Calibration Progress</source>
+        <translation type="gpt-5-generated">校准进度</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when openpilot wants to stop within the set amount of time. This is typically triggered by the driving model "detecting" a red light or stop sign.</source>
-        <translation type="gpt-4o-generated">当openpilot希望在设定的时间内停止时，切换到&lt;b&gt;实验模式&lt;/b&gt;。这通常由驾驶模型“检测”到红灯或停车标志触发。</translation>
+        <source>&lt;b&gt;How much curve data has been collected.&lt;/b&gt; This is a progress meter; it is normal for the value to stay low and rarely reach 100%.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;已收集的弯道路况数据量。&lt;/b&gt; 这是一个进度指示器；数值保持较低且很少达到100%是正常的。</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when using a turn signal below the set speed. Useful for letting the model choose the appropriate speed for upcoming left or right turns.</source>
-        <translation type="gpt-4o-generated">在设定速度以下使用转向信号时切换到&lt;b&gt;实验模式&lt;/b&gt;。这对于让模型选择合适的速度以应对即将到来的左转或右转非常有用。</translation>
+        <source>Reset Curve Data</source>
+        <translation type="gpt-5-generated">重置曲线数据</translation>
     </message>
     <message>
-        <source>Show the &lt;b&gt;Conditional Experimental Mode&lt;/b&gt; status on the driving screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕上显示&lt;b&gt;条件实验模式&lt;/b&gt;状态。</translation>
+        <source>&lt;b&gt;Reset collected user data for "Curve Speed Controller".&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;重置“弯道速度控制器”的已收集用户数据。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Automatically slow down for upcoming curves using downloaded maps or the driving model.</source>
-        <translation type="gpt-4o-generated">使用下载的地图或驾驶模型自动减速以应对即将到来的弯道。</translation>
+        <source>&lt;b&gt;Show the "Curve Speed Controller" target speed on the driving screen.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕上显示“曲线速度控制器”的目标速度。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>How curves are detected. &lt;b&gt;Map-Based&lt;/b&gt; uses downloaded map data to identify curves and determine the appropriate speed in which to handle them at, while &lt;b&gt;Vision&lt;/b&gt; relies solely on the driving model.</source>
-        <translation type="gpt-4o-generated">如何检测曲线。&lt;b&gt;基于地图&lt;/b&gt;使用下载的地图数据来识别曲线并确定合适的通过速度，而&lt;b&gt;视觉&lt;/b&gt;完全依赖于驾驶模型。</translation>
+        <source>Driving Personalities</source>
+        <translation type="gpt-5-generated">驾驶风格</translation>
     </message>
     <message>
-        <source>Only trigger &lt;b&gt;Curve Speed Control&lt;/b&gt; if a curve is detected with the model while using the &lt;b&gt;Map-Based&lt;/b&gt; method. Useful to help prevent false positives.</source>
-        <translation type="gpt-4o-generated">仅在使用&lt;b&gt;基于地图&lt;/b&gt;方法时模型检测到曲线时触发&lt;b&gt;曲线速度控制&lt;/b&gt;。有助于防止误报。</translation>
+        <source>&lt;b&gt;Customize the "Driving Personalities"&lt;/b&gt; to better match your driving style.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义“驾驶个性”&lt;/b&gt;以更好匹配你的驾驶风格。</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is when detecting curves. Higher values trigger earlier responses at the risk of triggering too often, while lower values increase confidence at the risk of triggering too infrequently.</source>
-        <translation type="gpt-4o-generated">openpilot在检测曲线时的灵敏度。较高的值会在冒着过于频繁触发的风险下提前触发响应，而较低的值则会在冒着触发过于不频繁的风险下增加信心。</translation>
+        <source>Traffic Mode</source>
+        <translation type="gpt-5-generated">交通模式</translation>
     </message>
     <message>
-        <source>Curve Speed Aggressiveness</source>
-        <translation type="gpt-4o-generated">弯道速度激进性</translation>
+        <source>&lt;b&gt;Customize the "Traffic Mode" personality profile.&lt;/b&gt; Designed for stop-and-go driving.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义“交通模式”的个性化配置。&lt;/b&gt;为走走停停的驾驶而设计。</translation>
     </message>
     <message>
-        <source>How aggressive openpilot is when navigating through curves. Higher values result in faster turns but may reduce comfort or stability, while lower values result in slower, smoother turns at the risk of being overly cautious.</source>
-        <translation type="gpt-4o-generated">openpilot在通过曲线时的激进程度。较高的值会导致更快的转弯，但可能降低舒适性或稳定性，而较低的值会导致转弯更慢、更平稳，但可能过于谨慎。</translation>
+        <source>Following Distance</source>
+        <translation type="gpt-5-generated">跟车距离</translation>
     </message>
     <message>
-        <source>Show &lt;b&gt;Curve Speed Control&lt;/b&gt;'s desired speed on the driving screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕上显示&lt;b&gt;弯道速度控制&lt;/b&gt;的目标速度。</translation>
+        <source>&lt;b&gt;The minimum following distance to the lead vehicle in "Traffic Mode".&lt;/b&gt; openpilot blends between this value and the "Aggressive" profile as speed increases. Increase for more space; decrease for tighter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;“交通模式”下与前车的最小跟车距离。&lt;/b&gt; 随着速度提高，openpilot会在此数值与“激进”配置之间进行融合。增大以获得更大间距；减小以缩小车距。</translation>
     </message>
     <message>
-        <source>Customize the personality profiles to your driving style.</source>
-        <translation type="gpt-4o-generated">根据您的驾驶风格自定义个性化配置文件。</translation>
+        <source>Acceleration Smoothness</source>
+        <translation type="gpt-5-generated">加速平顺性</translation>
     </message>
     <message>
-        <source>Customize the &lt;b&gt;Traffic&lt;/b&gt; personality profile. Tailored for navigating through traffic.</source>
-        <translation type="gpt-4o-generated">自定义&lt;b&gt;交通&lt;/b&gt;个性配置文件。专为穿越交通而设计。</translation>
+        <source>&lt;b&gt;How smoothly openpilot accelerates in "Traffic Mode".&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“交通模式”下，openpilot 加速的平顺程度。&lt;/b&gt; 增加以获得更柔和的起步；减少以获得更快但更突兀的起步。</translation>
     </message>
     <message>
-        <source>The minimum following distance while in &lt;b&gt;Traffic Mode&lt;/b&gt;. openpilot will dynamically adjust between this value and the value in the &lt;b&gt;Aggressive&lt;/b&gt; profile based on your current speed.</source>
-        <translation type="gpt-4o-generated">在&lt;b&gt;交通模式&lt;/b&gt;下的最小跟车距离。openpilot 将根据您当前的速度在该值和&lt;b&gt;激进&lt;/b&gt;配置中的值之间动态调整。</translation>
+        <source>Braking Smoothness</source>
+        <translation type="gpt-5-generated">制动平顺性</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in acceleration while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">openpilot 在&lt;b&gt;交通模式&lt;/b&gt;下对加速度变化的敏感度。较高的数值会导致更平稳、更逐渐的加速，而较低的数值则允许更快速、更灵敏的变化，可能感觉比较突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot brakes in "Traffic Mode".&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 在“交通模式”下制动的平顺程度。&lt;/b&gt;增大以获得更柔和的减速停车；减小以实现更快速但更急促的制动。</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in deceleration while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">openpilot在&lt;b&gt;交通模式&lt;/b&gt;下对减速变化的敏感程度。较高的值会导致更平稳、更渐进的减速，而较低的值则允许更快速、更灵敏的变化，可能会感觉突然。</translation>
+        <source>Safety Gap Bias</source>
+        <translation type="gpt-5-generated">安全间距偏置</translation>
     </message>
     <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="gpt-4o-generated">在&lt;b&gt;交通模式&lt;/b&gt;下，openpilot对其他车辆或障碍物的谨慎程度。较高的值会增加跟车距离并优先考虑安全，导致更谨慎的驾驶，而较低的值允许更近距离跟随，但可能会减少反应时间。</translation>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead in "Traffic Mode".&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“交通模式”下，openpilot 与前车保持的额外间距。&lt;/b&gt; 增大以获得更大的车距和更谨慎的跟车；减小以获得更紧凑的车距和更靠近的跟车。</translation>
     </message>
     <message>
-        <source>Speed Increase Response</source>
-        <translation type="gpt-4o-generated">加速响应</translation>
+        <source>Slowdown Response</source>
+        <translation type="gpt-5-generated">减速响应</translation>
     </message>
     <message>
-        <source>How quickly openpilot increases speed while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">openpilot在&lt;b&gt;交通模式&lt;/b&gt;下加速时增加速度的快慢。较高的值可以确保加速时更加平稳、逐渐的速度变化，而较低的值则允许更快速、更灵敏的变化，但可能会显得突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot slows down in "Traffic Mode".&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“交通模式”下，openpilot 减速的平顺程度。&lt;/b&gt; 增加以获得更平缓的减速；减少则减速更快但更急。</translation>
     </message>
     <message>
-        <source>Speed Decrease Response</source>
-        <translation type="gpt-4o-generated">速度减小响应</translation>
+        <source>Speed-Up Response</source>
+        <translation type="gpt-5-generated">加快响应</translation>
     </message>
     <message>
-        <source>How quickly openpilot decreases speed while in &lt;b&gt;Traffic Mode&lt;/b&gt;. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">openpilot在&lt;b&gt;交通模式&lt;/b&gt;下降低速度的快慢。较高的数值可确保减速时更平稳、渐进的速度变化，而较低的数值则允许更快速、更灵敏的变化，但可能感觉较为突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot speeds up in "Traffic Mode".&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“交通模式”下，openpilot 加速的平顺程度。&lt;/b&gt; 增加以获得更渐进的加速；减少以获得更快速但更颠簸的加速。</translation>
     </message>
     <message>
-        <source>Reset &lt;b&gt;Traffic Mode&lt;/b&gt; settings to default values.</source>
-        <translation type="gpt-4o-generated">将&lt;b&gt;交通模式&lt;/b&gt;设置重置为默认值。</translation>
+        <source>Reset to Defaults</source>
+        <translation type="gpt-5-generated">重置为默认设置</translation>
     </message>
     <message>
-        <source>Customize the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Designed for a more assertive driving style.</source>
-        <translation type="gpt-4o-generated">自定义&lt;b&gt;激进&lt;/b&gt;个性配置文件。设计用于更果断的驾驶风格。</translation>
+        <source>&lt;b&gt;Reset "Traffic Mode" settings to defaults.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将“交通模式”设置重置为默认值。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>How many seconds openpilot will follow behind lead vehicles while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;激进&lt;/b&gt;个性档案时，openpilot 将在前车后方跟随多少秒。&lt;br&gt;&lt;br&gt;默认值：1.25 秒。</translation>
+        <source>Aggressive</source>
+        <translation type="gpt-5-generated">激进</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in acceleration while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;激进&lt;/b&gt;个性配置文件时，openpilot 对加速变化的敏感程度。较高的数值会导致更平稳、更渐进的加速，而较低的数值则允许更快速、更灵敏的变化，这可能会感觉突然。</translation>
+        <source>&lt;b&gt;Customize the "Aggressive" personality profile.&lt;/b&gt; Designed for assertive driving with tighter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义“激进”驾驶性格配置。&lt;/b&gt;为更果断、车距更紧的驾驶而设计。</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in deceleration while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">openpilot 在使用&lt;b&gt;激进&lt;/b&gt;个性配置文件时对减速变化的敏感程度。较高的值会导致更平稳、更渐进的减速，而较低的值允许更快速、更灵敏的变化，可能会显得突然。</translation>
+        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the "Aggressive" profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.25 seconds.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在使用“激进”档位时，openpilot 跟随前车的时间间隔（秒）。&lt;/b&gt; 增加以获得更大间距；减少以缩小车距。&lt;br&gt;&lt;br&gt;默认：1.25 秒。</translation>
     </message>
     <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;激进&lt;/b&gt;个性配置时，openpilot 对其他车辆或障碍物的谨慎程度。较高的数值会增加跟车距离并优先考虑安全，从而导致更谨慎的驾驶，而较低的数值允许更近的跟车，但可能会减少反应时间。</translation>
+        <source>&lt;b&gt;How smoothly openpilot accelerates with the "Aggressive" profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“激进”配置文件时，openpilot 加速的平顺程度。&lt;/b&gt; 增大以获得更温和的起步；减小以获得更快但更突然的起步。</translation>
     </message>
     <message>
-        <source>How quickly openpilot increases speed while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">当使用&lt;b&gt;激进&lt;/b&gt;个性配置文件时，openpilot提高速度的快慢。较高的数值确保在加速时速度变化更平稳、更渐进，而较低的数值则允许更快、更灵敏的变化，这可能会感觉突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot brakes with the "Aggressive" profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“激进”档位时，openpilot 制动的平顺程度。&lt;/b&gt; 增大以获得更温和的减速停车；减小以实现更快速但更急促的制动。</translation>
     </message>
     <message>
-        <source>How quickly openpilot decreases speed while using the &lt;b&gt;Aggressive&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;激进&lt;/b&gt;个性配置文件时，openpilot 减速的速度。较高的值可确保在减速时实现更加平稳、渐进的速度变化，而较低的值则允许更快速、更敏捷的变化，但可能感觉突然。</translation>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the "Aggressive" profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“激进”档位下，openpilot与前车保持的额外间距。&lt;/b&gt; 增大以获得更大的车距和更谨慎的跟车；减小以获得更紧凑的车距和更贴近的跟车。</translation>
     </message>
     <message>
-        <source>Reset the &lt;b&gt;Aggressive&lt;/b&gt; personality profile settings to default values.</source>
-        <translation type="gpt-4o-generated">将&lt;b&gt;激进&lt;/b&gt;个性配置文件设置重置为默认值。</translation>
+        <source>&lt;b&gt;How smoothly openpilot slows down with the "Aggressive" profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“激进”配置下，openpilot 减速的平顺程度。&lt;/b&gt; 增大以获得更渐进的减速；减小以实现更快速但更急促的减速。</translation>
     </message>
     <message>
-        <source>Customize the &lt;b&gt;Standard&lt;/b&gt; personality profile. Designed for a balanced driving style.</source>
-        <translation type="gpt-4o-generated">自定义&lt;b&gt;标准&lt;/b&gt;个性配置文件。专为平衡驾驶风格设计。</translation>
+        <source>&lt;b&gt;How smoothly openpilot speeds up with the "Aggressive" profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“激进”配置下，openpilot 加速的平顺程度。&lt;/b&gt; 增加以获得更平缓的加速；减少以获得更迅速但更颠簸的加速。</translation>
     </message>
     <message>
-        <source>How many seconds openpilot will follow behind lead vehicles while using the &lt;b&gt;Standard&lt;/b&gt; personality profile.&lt;br&gt;&lt;br&gt;Default: 1.45 seconds.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;标准&lt;/b&gt;个性配置文件时，openpilot 将跟随前车的时间（以秒为单位）。&lt;br&gt;&lt;br&gt;默认值：1.45秒。</translation>
+        <source>&lt;b&gt;Reset the "Aggressive" profile to defaults.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将“激进”配置文件重置为默认值。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in acceleration while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;标准&lt;/b&gt;个性配置文件时，openpilot 对加速变化的敏感程度。较高的值会导致更平稳、更逐渐的加速，而较低的值允许更快速、更灵敏的变化，但可能感觉突兀。</translation>
+        <source>Standard</source>
+        <translation type="gpt-5-generated">标准</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in deceleration while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;标准&lt;/b&gt;个性配置文件时，openpilot对减速变化的敏感程度。较高的值会导致更加平稳、逐渐的减速，而较低的值则允许更快速、更灵敏的变化，这可能会显得突然。</translation>
+        <source>&lt;b&gt;Customize the "Standard" personality profile.&lt;/b&gt; Designed for balanced driving with moderate gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义“标准”个性配置文件。&lt;/b&gt;为平衡驾驶设计，保持适中车距。</translation>
     </message>
     <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;标准&lt;/b&gt;个性档案时，openpilot在其他车辆或障碍物周围的谨慎程度。较高的值会增加跟车距离并优先考虑安全，从而导致更谨慎的驾驶，而较低的值允许更近的跟车，但可能会降低反应时间。</translation>
+        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the "Standard" profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.45 seconds.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“标准”档位时，openpilot 跟随前车的时间（秒）。&lt;/b&gt; 增大以留出更多空间；减小以缩小车距。&lt;br&gt;&lt;br&gt;默认：1.45 秒。</translation>
     </message>
     <message>
-        <source>How quickly openpilot increases speed while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;标准&lt;/b&gt;个性配置文件时，openpilot提高速度的速度。较高的值确保在加速时速度变化更加平稳和渐进，而较低的值则允许更快速、更灵敏的变化，这可能会感觉突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot accelerates with the "Standard" profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“标准”配置时，openpilot 加速的平顺度。&lt;/b&gt; 增大以获得更柔和的起步；减小以获得更快速但更突兀的起步。</translation>
     </message>
     <message>
-        <source>How quickly openpilot decreases speed while using the &lt;b&gt;Standard&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;标准&lt;/b&gt;个性配置文件时，openpilot降低速度的速度。较高的数值可确保在减速时更加平稳、渐进地改变速度，而较低的数值则允许更快速、响应更灵敏的变化，可能会感觉突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot brakes with the "Standard" profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“标准”配置文件时，openpilot 制动的平顺程度。&lt;/b&gt; 增加以获得更柔和的停车；减少以实现更快速但更急促的制动。</translation>
     </message>
     <message>
-        <source>Reset the &lt;b&gt;Standard&lt;/b&gt; personality profile settings to default values.</source>
-        <translation type="gpt-4o-generated">将&lt;b&gt;标准&lt;/b&gt;个性配置文件设置重置为默认值。</translation>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the "Standard" profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;“标准”配置下，openpilot 与前车保持的额外距离。&lt;/b&gt; 增大以获得更大车距并更谨慎跟车；减小以获得更紧凑的车距并更贴近跟车。</translation>
     </message>
     <message>
-        <source>Customize the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Designed for a more laid-back driving style.</source>
-        <translation type="gpt-4o-generated">自定义&lt;b&gt;轻松&lt;/b&gt;个性配置文件。设计为更悠闲的驾驶风格。</translation>
+        <source>&lt;b&gt;How smoothly openpilot slows down with the "Standard" profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“标准”档位时，openpilot减速的平顺程度。&lt;/b&gt; 提高以获得更渐进的减速；降低以获得更快但更急促的减速。</translation>
     </message>
     <message>
-        <source>How many seconds openpilot will follow behind lead vehicles while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile.&lt;br&gt;&lt;br&gt;Default: 1.75 seconds.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;放松&lt;/b&gt;个性配置文件时，openpilot将跟随前车多少秒。&lt;br&gt;&lt;br&gt;默认值：1.75秒。</translation>
+        <source>&lt;b&gt;How smoothly openpilot speeds up with the "Standard" profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“标准”配置文件时，openpilot 加速的平顺程度。&lt;/b&gt; 增大以获得更缓和的加速；减小以获得更迅速但更颠簸的加速。</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in acceleration while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values result in smoother, more gradual acceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;轻松&lt;/b&gt;个性配置文件时，openpilot 对加速变化的敏感程度。较高的数值会导致更平稳、更渐进的加速，而较低的数值则允许更快速、更灵敏的变化，可能让人觉得突兀。</translation>
+        <source>&lt;b&gt;Reset the "Standard" profile to defaults.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将“标准”配置重置为默认值。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to changes in deceleration while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values result in smoother, more gradual deceleration, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;轻松&lt;/b&gt;个性配置文件时，openpilot 对减速变化的敏感程度。较高的数值会导致更平稳、更逐渐的减速，而较低的数值则允许更快速、更灵敏的变化，可能显得突然。</translation>
+        <source>Relaxed</source>
+        <translation type="gpt-5-generated">宽松</translation>
     </message>
     <message>
-        <source>How cautious openpilot is around other vehicles or obstacles while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values increase following distances and prioritize safety, leading to more cautious driving, while lower values allow for closer following but may reduce reaction time.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;轻松&lt;/b&gt;个性配置文件时，openpilot在其他车辆或障碍物周围的谨慎程度。较高的数值会增加跟车距离并优先考虑安全，从而导致更谨慎的驾驶，而较低的数值则允许更近的跟随，但可能会减少反应时间。</translation>
+        <source>&lt;b&gt;Customize the "Relaxed" personality profile.&lt;/b&gt; Designed for smoother, more comfortable driving with larger gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义“宽松”驾驶风格配置。&lt;/b&gt;为更平顺、更舒适且保持更大车距的驾驶而设计。</translation>
     </message>
     <message>
-        <source>How quickly openpilot increases speed while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when accelerating, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">在使用&lt;b&gt;轻松&lt;/b&gt;个性配置文件时，openpilot 提升速度的速度。较高的数值可确保加速时速度变化更平稳、更渐进，而较低的数值则允许更快速、更灵敏的变化，但可能显得突兀。</translation>
+        <source>&lt;b&gt;How many seconds openpilot follows behind lead vehicles when using the "Relaxed" profile.&lt;/b&gt; Increase for more space; decrease for tighter gaps.&lt;br&gt;&lt;br&gt;Default: 1.75 seconds.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“宽松”档位时，openpilot 跟随前车的时间间隔（秒）。&lt;/b&gt; 增大以留出更多空间；减小以缩小车距。&lt;br&gt;&lt;br&gt;默认：1.75 秒。</translation>
     </message>
     <message>
-        <source>How quickly openpilot decreases speed while using the &lt;b&gt;Relaxed&lt;/b&gt; personality profile. Higher values ensure smoother, more gradual speed changes when slowing down, while lower values allow for quicker, more responsive changes that may feel abrupt.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;放松&lt;/b&gt;个性化配置文件时，openpilot降低速度的速度。较高的值可确保在减速时实现更平稳、更渐进的速度变化，而较低的值则允许更快速、更灵敏的变化，可能会显得突然。</translation>
+        <source>&lt;b&gt;How smoothly openpilot accelerates with the "Relaxed" profile.&lt;/b&gt; Increase for gentler starts; decrease for faster but more abrupt takeoffs.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“放松”档位时，openpilot 加速的平顺程度。&lt;/b&gt; 提高以获得更温和的起步；降低以实现更快但更突兀的起步。</translation>
     </message>
     <message>
-        <source>Reset the &lt;b&gt;Relaxed&lt;/b&gt; personality profile settings to default values.</source>
-        <translation type="gpt-4o-generated">将&lt;b&gt;放松&lt;/b&gt;个性配置文件设置重置为默认值。</translation>
+        <source>&lt;b&gt;How smoothly openpilot brakes with the "Relaxed" profile.&lt;/b&gt; Increase for gentler stops; decrease for quicker but sharper braking.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“放松”配置下，openpilot 制动的平顺程度。&lt;/b&gt; 增大以获得更柔和的停车；减小以实现更快速但更锐利的制动。</translation>
     </message>
     <message>
-        <source>Enable either a sporty or eco-friendly acceleration profile. &lt;b&gt;Sport+&lt;/b&gt; aims to make openpilot accelerate as fast as possible!</source>
-        <translation type="gpt-4o-generated">启用运动或环保的加速模式。&lt;b&gt;Sport+&lt;/b&gt; 旨在让 openpilot 尽可能快地加速！</translation>
+        <source>&lt;b&gt;How much extra space openpilot keeps from the vehicle ahead with the "Relaxed" profile.&lt;/b&gt; Increase for larger gaps and more cautious following; decrease for tighter gaps and closer following.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“放松”档位下，openpilot 与前车保持的额外距离。&lt;/b&gt; 增大以获得更大的车距和更谨慎的跟车；减小以获得更紧凑的车距和更贴近的跟车。</translation>
     </message>
     <message>
-        <source>Enable either a sporty or eco-friendly deceleration profile.</source>
-        <translation type="gpt-4o-generated">启用运动型或环保型减速模式。</translation>
+        <source>&lt;b&gt;How smoothly openpilot slows down with the "Relaxed" profile.&lt;/b&gt; Increase for more gradual deceleration; decrease for faster but sharper slowdowns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“放松”配置时 openpilot 减速的平顺程度。&lt;/b&gt; 增大以实现更缓慢、更平滑的减速；减小以获得更快但更陡峭的减速。</translation>
     </message>
     <message>
-        <source>Use the lead vehicle's acceleration rate when at a takeoff and ramp off the acceleration rate when approaching the maximum set speed for a more "human-like" driving experience.</source>
-        <translation type="gpt-4o-generated">在起步时使用前车的加速度，并在接近设定的最高速度时逐渐降低加速度，以获得更“人性化”的驾驶体验。</translation>
+        <source>&lt;b&gt;How smoothly openpilot speeds up with the "Relaxed" profile.&lt;/b&gt; Increase for more gradual acceleration; decrease for quicker but more jolting acceleration.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“放松”配置时，openpilot 加速的平顺程度。&lt;/b&gt; 增加以获得更渐进的加速；减少以获得更迅速但更颠簸的加速。</translation>
     </message>
     <message>
-        <source>Dynamically adjust the desired following distance when approaching slower or stopped vehicles for a more "human-like" driving experience.</source>
-        <translation type="gpt-4o-generated">在接近较慢或停止的车辆时，动态调整期望的跟车距离，以获得更“人性化”的驾驶体验。</translation>
+        <source>&lt;b&gt;Reset the "Relaxed" profile to defaults.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将“宽松”配置文件重置为默认值。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>How sensitive openpilot is to detecting vehicles ahead. A lower value can help detect vehicles sooner and from farther away, but increases the chance openpilot mistakes other objects for vehicles.</source>
-        <translation type="gpt-4o-generated">openpilot 对前方车辆检测的敏感度。较低的值可以帮助更快、更远地检测车辆，但会增加 openpilot 将其他物体误认为车辆的可能性。</translation>
+        <source>Longitudinal Tuning</source>
+        <translation type="gpt-5-generated">纵向调校</translation>
     </message>
     <message>
-        <source>Set a cap on how fast openpilot can accelerate.</source>
-        <translation type="gpt-4o-generated">设置openpilot的加速上限。</translation>
+        <source>&lt;b&gt;Acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;加速和制动控制的更改&lt;/b&gt;可微调 openpilot 的驾驶方式。</translation>
+    </message>
+    <message>
+        <source>Acceleration Profile</source>
+        <translation type="gpt-5-generated">加速配置</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How quickly openpilot speeds up.&lt;/b&gt; "Eco" is gentle and efficient, "Sport" is firmer and more responsive, and "Sport+" accelerates at the maximum rate allowed.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot加速的速度。&lt;/b&gt;“Eco”更平顺且高效，“Sport”更坚实且更灵敏，“Sport+”以允许的最大速率加速。</translation>
+    </message>
+    <message>
+        <source>Deceleration Profile</source>
+        <translation type="gpt-5-generated">减速曲线</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How firmly openpilot slows down.&lt;/b&gt; "Eco" favors coasting, "Sport" applies stronger braking.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot减速的力度。&lt;/b&gt;“Eco”偏向滑行，“Sport”会更强力制动。</translation>
+    </message>
+    <message>
+        <source>Human-Like Acceleration</source>
+        <translation type="gpt-5-generated">类人加速</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Acceleration that mimics human behavior&lt;/b&gt; by easing the throttle at low speeds and adding extra power when taking off from a stop.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;模仿人类行为的加速&lt;/b&gt;：在低速时轻踩油门，并在起步时提供额外动力。</translation>
+    </message>
+    <message>
+        <source>Human-Like Following</source>
+        <translation type="gpt-5-generated">类人化跟随</translation>
+    </message>
+    <message>
+        <source>Lead Detection Sensitivity</source>
+        <translation type="gpt-5-generated">前车检测灵敏度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How sensitive openpilot is to detecting vehicles.&lt;/b&gt; Higher sensitivity allows quicker detection at longer distances but may react to non-vehicle objects; lower sensitivity is more conservative and reduces false detections.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 对车辆检测的敏感度。&lt;/b&gt;更高的敏感度可在更远距离更快检测，但可能会对非车辆物体产生反应；较低的敏感度更保守并减少误检。</translation>
+    </message>
+    <message>
+        <source>Maximum Acceleration</source>
+        <translation type="gpt-5-generated">最大加速度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Limit the strongest acceleration&lt;/b&gt; openpilot can command.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;限制&lt;/b&gt;openpilot可指令的最强加速度。</translation>
     </message>
     <message>
         <source>"Taco Bell Run" Turn Speed Hack</source>
-        <translation type="gpt-4o-generated">“Taco Bell Run” 转弯速度调整</translation>
+        <translation type="gpt-5-generated">“Taco Bell Run”转弯限速破解</translation>
     </message>
     <message>
-        <source>The turn speed hack from comma’s 2022 "Taco Bell Run" drive. Designed to slow down when taking left/right turns for smoother turns.</source>
-        <translation type="gpt-4o-generated">来自 comma 的 2022 年“Taco Bell Run”驾驶中的转弯速度优化。设计为在左转/右转时减速，以实现更平滑的转弯。</translation>
+        <source>&lt;b&gt;The turn-speed hack from comma's 2022 "Taco Bell Run".&lt;/b&gt; Designed to slow down for left and right turns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;来自 comma 2022 年“Taco Bell Run”的转弯速度 hack。&lt;/b&gt; 旨在在左转和右转时减速。</translation>
     </message>
     <message>
         <source>Quality of Life</source>
-        <translation type="gpt-4o-generated">生活质量</translation>
+        <translation type="gpt-5-generated">生活品质</translation>
     </message>
     <message>
-        <source>Miscellaneous features to improve the acceleration and braking experience.</source>
-        <translation type="gpt-4o-generated">各种功能以改善加速和制动体验。</translation>
+        <source>&lt;b&gt;Miscellaneous acceleration and braking control changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;各种加速与制动控制的其他更改&lt;/b&gt;，用于微调 openpilot 的驾驶方式。</translation>
     </message>
     <message>
         <source>Cruise Interval</source>
-        <translation type="gpt-4o-generated">巡航间隔</translation>
+        <translation type="gpt-5-generated">跟车间距</translation>
     </message>
     <message>
-        <source>The interval used when changing the cruise control speed.</source>
-        <translation type="gpt-4o-generated">更改巡航控制速度时使用的间隔。</translation>
+        <source>&lt;b&gt;How much the set speed increases or decreases&lt;/b&gt; for each + or – cruise control button press.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;每次按下巡航控制的 + 或 – 按钮时&lt;/b&gt; 设定车速增加或减少的幅度</translation>
     </message>
     <message>
-        <source>Cruise Interval (Long Press)</source>
-        <translation type="gpt-4o-generated">巡航间隔（长按）</translation>
+        <source>Cruise Interval (Hold)</source>
+        <translation type="gpt-5-generated">巡航间距（按住）</translation>
     </message>
     <message>
-        <source>The interval used when changing the cruise control speed while holding down the button for 0.5+ seconds.</source>
-        <translation type="gpt-4o-generated">按住按钮超过0.5秒时，用于更改巡航控制速度的间隔。</translation>
+        <source>&lt;b&gt;How much the set speed increases or decreases while holding the + or – cruise control buttons.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;按住巡航控制的 + 或 – 按钮时，设定车速增加或减少的幅度。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Keep openpilot in the standstill state until either the gas pedal or &lt;b&gt;resume&lt;/b&gt; button is pressed.</source>
-        <translation type="gpt-4o-generated">将openpilot保持在静止状态，直到按下油门踏板或&lt;b&gt;恢复&lt;/b&gt;按钮。</translation>
+        <source>Force Stop at "Detected" Stop Lights/Signs</source>
+        <translation type="gpt-5-generated">在“已检测到”的红绿灯/停车标志处强制停车</translation>
     </message>
     <message>
-        <source>Force Stop for "Detected" Stop Lights/Signs</source>
-        <translation type="gpt-4o-generated">强制停止用于“检测到”的红绿灯/停车标志</translation>
+        <source>&lt;b&gt;Force openpilot to stop whenever the driving model "detects" a red light or stop sign.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In "Experimental Mode", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason.&lt;/i&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当驾驶模型“检测到”红灯或停止标志时，强制 openpilot 停止。&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;免责声明&lt;/b&gt;：openpilot 并不会明确检测交通信号灯或停止标志。在“实验模式”中，openpilot 基于摄像头输入进行端到端驾驶决策，这意味着即使没有明显理由也可能会停车。&lt;/i&gt;</translation>
     </message>
     <message>
-        <source>Force a stop whenever openpilot &lt;b&gt;detects&lt;/b&gt; a potential red light/stop sign to prevent it from running the red light/stop sign.</source>
-        <translation type="gpt-4o-generated">每当 openpilot &lt;b&gt;检测到&lt;/b&gt;潜在的红灯/停车标志时，强制停车，以防止闯红灯/停车标志。</translation>
+        <source>Increase Stopped Distance by:</source>
+        <translation type="gpt-5-generated">增加停止距离：</translation>
     </message>
     <message>
-        <source>Increase the distance openpilot stops behind vehicles.</source>
-        <translation type="gpt-4o-generated">增加openpilot在车辆后方停车的距离。</translation>
+        <source>&lt;b&gt;Add extra space when stopped behind vehicles.&lt;/b&gt; Increase for more room; decrease for shorter gaps.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在车辆后方停下时留出额外空间。&lt;/b&gt; 增大以留出更多空间；减小以缩短间距。</translation>
     </message>
     <message>
-        <source>How much higher or lower the set speed should be compared to your current set speed. For example, if you prefer to drive 5 mph above the speed limit, this setting will automatically add that difference when you adjust your set speed.</source>
-        <translation type="gpt-4o-generated">设置速度应比当前设定速度高或低多少。例如，如果您希望在限速基础上多开5英里/小时，那么在调整设定速度时，此设置将自动加上该差值。</translation>
+        <source>Map Accel/Decel to Gears</source>
+        <translation type="gpt-5-generated">将加速/减速映射到挡位</translation>
     </message>
     <message>
-        <source>Map the acceleration and deceleration profiles to your car's &lt;b&gt;Eco&lt;/b&gt; or &lt;b&gt;Sport&lt;/b&gt; gear modes.</source>
-        <translation type="gpt-4o-generated">将加速和减速曲线映射到您汽车的&lt;b&gt;经济&lt;/b&gt;或&lt;b&gt;运动&lt;/b&gt;档模式。</translation>
+        <source>&lt;b&gt;Map the Acceleration or Deceleration profiles to the vehicle's "Eco" and "Sport" gear modes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将加速或减速配置映射到车辆的“Eco”和“Sport”档位模式。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Reverse the &lt;b&gt;long press&lt;/b&gt; cruise increase feature to increase the max speed by 5 instead of 1 on short presses.</source>
-        <translation type="gpt-4o-generated">将&lt;b&gt;长按&lt;/b&gt;巡航增速功能反转为短按时将最大速度增加5而不是1。</translation>
+        <source>Offset Set Speed by:</source>
+        <translation type="gpt-5-generated">将设定速度偏移为：</translation>
     </message>
     <message>
-        <source>Limit openpilot's maximum driving speed based on data from downloaded maps, &lt;b&gt;Mapbox&lt;/b&gt;, &lt;b&gt;Navigate on openpilot&lt;/b&gt;, or the dashboard (supported vehicles: &lt;b&gt;Ford&lt;/b&gt;, &lt;b&gt;Genesis&lt;/b&gt;, &lt;b&gt;Hyundai&lt;/b&gt;, &lt;b&gt;Kia&lt;/b&gt;, &lt;b&gt;Lexus&lt;/b&gt;, &lt;b&gt;Toyota&lt;/b&gt;).</source>
-        <translation type="gpt-4o-generated">根据下载的地图、&lt;b&gt;Mapbox&lt;/b&gt;、&lt;b&gt;Navigate on openpilot&lt;/b&gt;或仪表盘上的数据限制openpilot的最高行驶速度（支持的车辆：&lt;b&gt;福特&lt;/b&gt;、&lt;b&gt;捷尼赛思&lt;/b&gt;、&lt;b&gt;现代&lt;/b&gt;、&lt;b&gt;起亚&lt;/b&gt;、&lt;b&gt;雷克萨斯&lt;/b&gt;、&lt;b&gt;丰田&lt;/b&gt;）。</translation>
+        <source>&lt;b&gt;Increase the set speed by the chosen offset.&lt;/b&gt; For example, set +5 if you usually drive 5 over the limit.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;按所选偏移量提高设定速度。&lt;/b&gt; 例如，如果你通常比限速快5，则设置为+5。</translation>
+    </message>
+    <message>
+        <source>Reverse Cruise Increase</source>
+        <translation type="gpt-5-generated">倒车巡航增加</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Reverse the cruise control button behavior&lt;/b&gt; so a short press increases the set speed by 5 instead of 1.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;反转巡航控制按钮行为&lt;/b&gt;，使短按将设定速度增加 5 而不是 1。</translation>
+    </message>
+    <message>
+        <source>Speed Limit Controller</source>
+        <translation type="gpt-5-generated">限速控制器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Limit openpilot's maximum driving speed to the current speed limit&lt;/b&gt; obtained from downloaded maps, Mapbox, Navigate on openpilot, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota).</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将 openpilot 的最高行驶速度限制为当前限速&lt;/b&gt;，该限速来自已下载的地图、Mapbox、Navigate on openpilot，或受支持车辆（Ford、Genesis、Hyundai、Kia、Lexus、Toyota）的仪表盘。</translation>
     </message>
     <message>
         <source>Fallback Speed</source>
-        <translation type="gpt-4o-generated">备用速度</translation>
+        <translation type="gpt-5-generated">回退速度</translation>
     </message>
     <message>
-        <source>The speed limit source when no speed limit data is available.</source>
-        <translation type="gpt-4o-generated">当没有限速数据时的限速来源。</translation>
+        <source>&lt;b&gt;The speed used by "Speed Limit Controller" when no speed limit is found.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;- &lt;b&gt;Experimental Mode&lt;/b&gt;: Estimate the limit using the driving model&lt;br&gt;- &lt;b&gt;Previous Limit&lt;/b&gt;: Keep using the last confirmed limit</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当未找到限速时，“Speed Limit Controller”使用的速度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;设定速度&lt;/b&gt;：使用巡航设定速度&lt;br&gt;- &lt;b&gt;实验模式&lt;/b&gt;：使用驾驶模型估计限速&lt;br&gt;- &lt;b&gt;先前限速&lt;/b&gt;：继续使用上次确认的限速</translation>
     </message>
     <message>
         <source>Override Speed</source>
-        <translation type="gpt-4o-generated">覆盖速度</translation>
+        <translation type="gpt-5-generated">覆盖速度</translation>
     </message>
     <message>
-        <source>The speed openpilot uses after manually exceeding the posted speed limit.&lt;br&gt;&lt;br&gt;&lt;b&gt;- Set With Gas Pedal&lt;/b&gt;: Uses the speed obtained while pressing the gas&lt;br&gt;&lt;b&gt;- Max Set Speed&lt;/b&gt;: Uses the cruise control set speed&lt;br&gt;&lt;br&gt;Overrides clear upon disengagement.</source>
-        <translation type="gpt-4o-generated">手动超过限速后 openpilot 使用的速度。&lt;br&gt;&lt;br&gt;&lt;b&gt;- 使用油门设定&lt;/b&gt;：使用踩油门时获得的速度&lt;br&gt;&lt;b&gt;- 最大设定速度&lt;/b&gt;：使用巡航控制设定的速度&lt;br&gt;&lt;br&gt;解除时覆盖清除。</translation>
+        <source>&lt;b&gt;The speed used by "Speed Limit Controller" after you manually drive faster than the posted limit.&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;Set with Gas Pedal&lt;/b&gt;: Use the highest speed reached while pressing the gas&lt;br&gt;- &lt;b&gt;Max Set Speed&lt;/b&gt;: Use the cruise set speed&lt;br&gt;&lt;br&gt;Overrides clear when openpilot disengages.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当您手动驾驶超过限速后，“Speed Limit Controller” 使用的速度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;- &lt;b&gt;以油门设定&lt;/b&gt;：在踩住油门时使用达到的最高速度&lt;br&gt;- &lt;b&gt;最高设定速度&lt;/b&gt;：使用巡航设定速度&lt;br&gt;&lt;br&gt;当 openpilot 解除接管时，覆盖将被清除。</translation>
     </message>
     <message>
-        <source>Miscellaneous features to improve the &lt;b&gt;Speed Limit Controller&lt;/b&gt; experience.</source>
-        <translation type="gpt-4o-generated">改善&lt;b&gt;速度限制控制器&lt;/b&gt;体验的其他功能。</translation>
+        <source>&lt;b&gt;Miscellaneous "Speed Limit Controller" changes&lt;/b&gt; to fine-tune how openpilot drives.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;杂项“限速控制器”更改&lt;/b&gt;，用于微调 openpilot 的驾驶方式。</translation>
     </message>
     <message>
-        <source>Require confirmation before applying new speed limits. To accept, use the flashing widget on the driving screen or press the &lt;b&gt;Cruise Increase&lt;/b&gt; button. To deny, press the &lt;b&gt;Cruise Decrease&lt;/b&gt; button or simply ignore the prompt for 30 seconds.</source>
-        <translation type="gpt-4o-generated">在应用新的速度限制之前需要确认。要接受，请使用驾驶屏幕上的闪烁小部件或按下&lt;b&gt;巡航增加&lt;/b&gt;按钮。要拒绝，请按下&lt;b&gt;巡航减少&lt;/b&gt;按钮或在30秒内忽略提示。</translation>
+        <source>Confirm New Speed Limits</source>
+        <translation type="gpt-5-generated">确认新限速</translation>
     </message>
     <message>
-        <source>Force dashboard speed limit readings to be in mph.</source>
-        <translation type="gpt-4o-generated">强制仪表盘速度限制读数以英里/小时显示。</translation>
+        <source>&lt;b&gt;Ask before changing to a new speed limit.&lt;/b&gt; To accept, tap the flashing on-screen widget or press the Cruise Increase button. To deny, press the Cruise Decrease button or ignore the prompt for 30 seconds.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在更改为新的限速前询问。&lt;/b&gt; 要接受，请点击闪烁的屏幕小部件或按下巡航增加按钮。要拒绝，请按下巡航降低按钮或忽略提示30秒。</translation>
+    </message>
+    <message>
+        <source>Force MPH from Dashboard</source>
+        <translation type="gpt-5-generated">从仪表板强制启用MPH</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Always read dashboard speed limit signs in mph.&lt;/b&gt; Turn this on if the cluster shows mph but the limit is interpreted as km/h.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;始终以 mph 阅读仪表盘限速标志。&lt;/b&gt; 如果仪表显示为 mph，但限速被解释为 km/h，请开启此选项。</translation>
     </message>
     <message>
         <source>Higher Limit Lookahead Time</source>
-        <translation type="gpt-4o-generated">更高限值预判时间</translation>
+        <translation type="gpt-5-generated">更高的限速前瞻时间</translation>
     </message>
     <message>
-        <source>How far ahead openpilot anticipates upcoming higher speed limits from the downloaded map data.</source>
-        <translation type="gpt-4o-generated">openpilot 从下载的地图数据中预测即将到来的更高限速的提前距离。</translation>
+        <source>&lt;b&gt;How far ahead openpilot anticipates upcoming higher speed limits&lt;/b&gt; from downloaded map data.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 从下载的地图数据中预判即将到来的更高限速的提前距离&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Lower Limit Lookahead Time</source>
-        <translation type="gpt-4o-generated">下限前视时间</translation>
+        <translation type="gpt-5-generated">下限前瞻时间</translation>
     </message>
     <message>
-        <source>How far ahead openpilot anticipates upcoming lower speed limits from the downloaded map data.</source>
-        <translation type="gpt-4o-generated">openpilot 从下载的地图数据中预测即将到来的低速限制的距离。</translation>
+        <source>&lt;b&gt;How far ahead openpilot anticipates upcoming lower speed limits&lt;/b&gt; from downloaded map data.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 根据已下载地图数据预判即将到来的更低限速的提前距离&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Match Speed Limit on Engage</source>
-        <translation type="gpt-4o-generated">在启动时匹配限速</translation>
+        <translation type="gpt-5-generated">在启用时匹配限速</translation>
     </message>
     <message>
-        <source>Automatically set cruise control speed to match the current speed limit when first enabling openpilot.</source>
-        <translation type="gpt-4o-generated">首次启用openpilot时，自动将巡航控制速度设置为与当前限速相匹配。</translation>
+        <source>&lt;b&gt;When openpilot is first enabled, automatically set the max speed to the current posted limit.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;首次启用 openpilot 时，自动将最高速度设置为当前公布的限速。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Use Mapbox as Fallback</source>
+        <translation type="gpt-5-generated">将 Mapbox 用作备用</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Use Mapbox speed-limit data when no other source is available.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当没有其他来源可用时，使用 Mapbox 的限速数据。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Speed Limit Source Priority</source>
-        <translation type="gpt-4o-generated">限速来源优先级</translation>
+        <translation type="gpt-5-generated">限速来源优先级</translation>
     </message>
     <message>
-        <source>Define the priority order for speed limit sources (&lt;b&gt;Dashboard&lt;/b&gt;, &lt;b&gt;Map Data&lt;/b&gt;, &lt;b&gt;Navigation&lt;/b&gt;). Higher-priority sources override lower ones when multiple limits are detected.</source>
-        <translation type="gpt-4o-generated">定义车速限制来源的优先顺序（&lt;b&gt;仪表盘&lt;/b&gt;、&lt;b&gt;地图数据&lt;/b&gt;、&lt;b&gt;导航&lt;/b&gt;）。当检测到多个限制时，高优先级来源会覆盖低优先级来源。</translation>
+        <source>&lt;b&gt;The source order for speed limits&lt;/b&gt; when more than one is available.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当有多个可用时&lt;/b&gt;的限速来源优先顺序</translation>
     </message>
     <message>
-        <source>Offsets relative to the posted speed limit for a more "human-like" driving experience.</source>
-        <translation type="gpt-4o-generated">相对于限速标志的偏移量，以提供更“人性化”的驾驶体验。</translation>
+        <source>Speed Limit Offsets</source>
+        <translation type="gpt-5-generated">限速偏移</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (0–24 mph)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（0–24 英里/小时）</translation>
+        <source>&lt;b&gt;Add an offset to the posted speed limit&lt;/b&gt; to better match your driving style.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在公告的限速上添加一个偏移&lt;/b&gt;，以更好地匹配你的驾驶风格。</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 0 and 24 mph.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在0到24英里/小时之间。</translation>
+        <source>Speed Offset (0–24 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（0–24 mph）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (25–34 mph)</source>
-        <translation type="gpt-4o-generated">限速偏移（25-34 英里/小时）</translation>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 0 and 24 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将标示的限速偏移多少&lt;/b&gt;，范围为 0 到 24 mph。</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 25 and 34 mph.</source>
-        <translation type="gpt-4o-generated">目标速度偏差适用于限速在25至34英里/小时之间。</translation>
+        <source>Speed Offset (25–34 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（25–34 mph）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (35–44 mph)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（35–44 英里/小时）</translation>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 25 and 34 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在25至34 mph之间将限速偏移多少&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 35 and 44 mph.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在35至44英里/小时之间的情况。</translation>
+        <source>Speed Offset (35–44 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（35–44 mph）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (45–54 mph)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（45–54 英里/小时）</translation>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 35 and 44 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在 35 至 44 mph 之间，偏移公布的限速多少&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 45 and 54 mph.</source>
-        <translation type="gpt-4o-generated">对于45到54英里/小时之间的限速，应用目标速度偏移。</translation>
+        <source>Speed Offset (45–54 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（45–54 mph）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (55–64 mph)</source>
-        <translation type="gpt-4o-generated">限速偏移（55–64 英里/小时）</translation>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 45 and 54 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在45到54 mph之间，偏移标示限速的幅度&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 55 and 64 mph.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在55到64英里/小时之间的情况。</translation>
+        <source>Speed Offset (55–64 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（55–64 mph）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (65–74 mph)</source>
-        <translation type="gpt-4o-generated">限速偏移（65–74 英里/小时）</translation>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 55 and 64 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在&lt;/b&gt; 55 到 64 mph &lt;b&gt;之间，偏移已发布限速的幅度&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 65 and 74 mph.</source>
-        <translation type="gpt-4o-generated">对于限速在65到74英里/小时之间的路段，应用目标速度偏移。</translation>
+        <source>Speed Offset (65–74 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（65–74 mph）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (75–99 mph)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（75–99 英里/小时）</translation>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 65 and 74 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在65到74 mph之间偏移张贴限速的幅度&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 75 and 99 mph.</source>
-        <translation type="gpt-4o-generated">目标速度偏移应用于限速在75到99英里每小时之间的路段。</translation>
+        <source>Speed Offset (75–99 mph)</source>
+        <translation type="gpt-5-generated">速度偏移（75–99 mph）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How much to offset posted speed-limits&lt;/b&gt; between 75 and 99 mph.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;对已公布限速偏移多少&lt;/b&gt;，范围为 75 到 99 mph。</translation>
     </message>
     <message>
         <source>Visual Settings</source>
-        <translation type="gpt-4o-generated">视觉设置</translation>
+        <translation type="gpt-5-generated">视觉设置</translation>
     </message>
     <message>
-        <source>Visual features to improve the &lt;b&gt;Speed Limit Controller&lt;/b&gt; experience.</source>
-        <translation type="gpt-4o-generated">视觉功能以提升&lt;b&gt;速度限制控制器&lt;/b&gt;体验。</translation>
+        <source>&lt;b&gt;Visual "Speed Limit Controller" changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;视觉“限速控制器”更改&lt;/b&gt;用于微调驾驶屏幕的外观。</translation>
     </message>
     <message>
-        <source>Display the speed limit offset separately on the driving screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕上单独显示限速偏移。</translation>
+        <source>Show Speed Limit Offset</source>
+        <translation type="gpt-5-generated">显示限速偏移</translation>
     </message>
     <message>
-        <source>Display the speed limit sources on the driving screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕上显示限速来源。</translation>
+        <source>&lt;b&gt;Show the current offset from the posted limit&lt;/b&gt; on the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕上显示与标示限速的当前偏差&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Switch to &lt;b&gt;Experimental Mode&lt;/b&gt; when driving below this speed with a lead.</source>
-        <translation type="gpt-4o-generated">在有前车的情况下，低于此速度时切换到&lt;b&gt;实验模式&lt;/b&gt;。</translation>
+        <source>Show Speed Limit Sources</source>
+        <translation type="gpt-5-generated">显示限速来源</translation>
     </message>
     <message>
-        <source>The &lt;b&gt;Map Based&lt;/b&gt; option is only available when some &lt;b&gt;Map Data&lt;/b&gt; has been downloaded!</source>
-        <translation type="gpt-4o-generated">仅当下载了一些&lt;b&gt;地图数据&lt;/b&gt;时，&lt;b&gt;基于地图&lt;/b&gt;的选项才可用！</translation>
+        <source>&lt;b&gt;Display the speed-limit sources and their current values&lt;/b&gt; on the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕上显示限速来源及其当前值&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source> seconds</source>
+        <translation type="gpt-5-generated">秒</translation>
+    </message>
+    <message>
+        <source> m/s²</source>
+        <translation type="gpt-5-generated">米/秒²</translation>
+    </message>
+    <message>
+        <source> mph</source>
+        <translation type="gpt-5-generated"> 英里/小时</translation>
+    </message>
+    <message>
+        <source>With Lead</source>
+        <translation type="gpt-5-generated">有前车</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Switch to "Experimental Mode" when driving below this speed with a lead&lt;/b&gt; to help openpilot handle low-speed situations more smoothly.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在有前车且车速低于此速度时切换到“实验模式”&lt;/b&gt;，以帮助 openpilot 更顺畅地处理低速情况。</translation>
+    </message>
+    <message>
+        <source>Slower Lead</source>
+        <translation type="gpt-5-generated">前车更慢</translation>
+    </message>
+    <message>
+        <source>Stopped Lead</source>
+        <translation type="gpt-5-generated">已停的前车</translation>
+    </message>
+    <message>
+        <source>Intersections</source>
+        <translation type="gpt-5-generated">交叉路口</translation>
+    </message>
+    <message>
+        <source>Turns</source>
+        <translation type="gpt-5-generated">转弯</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="gpt-5-generated">关闭</translation>
+    </message>
+    <message>
+        <source> second</source>
+        <translation type="gpt-5-generated"> 秒</translation>
+    </message>
+    <message>
+        <source>Not For Detected Lanes</source>
+        <translation type="gpt-5-generated">不适用于检测到的车道</translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation type="gpt-5-generated">重置</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to completely reset your curvature data?</source>
+        <translation type="gpt-5-generated">您确定要完全重置您的曲率数据吗？</translation>
+    </message>
+    <message>
+        <source>Eco</source>
+        <translation type="gpt-5-generated">经济</translation>
+    </message>
+    <message>
+        <source>Sport</source>
+        <translation type="gpt-5-generated">运动</translation>
+    </message>
+    <message>
+        <source>Sport+</source>
+        <translation type="gpt-5-generated">运动+</translation>
+    </message>
+    <message>
+        <source> feet</source>
+        <translation type="gpt-5-generated">英尺</translation>
+    </message>
+    <message>
+        <source>Acceleration</source>
+        <translation type="gpt-5-generated">加速度</translation>
+    </message>
+    <message>
+        <source>Deceleration</source>
+        <translation type="gpt-5-generated">减速</translation>
+    </message>
+    <message>
+        <source>MANAGE</source>
+        <translation type="gpt-5-generated">管理</translation>
+    </message>
+    <message>
+        <source>Set Speed</source>
+        <translation type="gpt-5-generated">设定速度</translation>
+    </message>
+    <message>
+        <source>Experimental Mode</source>
+        <translation type="gpt-5-generated">实验模式</translation>
+    </message>
+    <message>
+        <source>Previous Limit</source>
+        <translation type="gpt-5-generated">上一个限速</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="gpt-5-generated">无</translation>
+    </message>
+    <message>
+        <source>Set With Gas Pedal</source>
+        <translation type="gpt-5-generated">用油门踏板设定</translation>
+    </message>
+    <message>
+        <source>Max Set Speed</source>
+        <translation type="gpt-5-generated">最大设定速度</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation type="gpt-5-generated">选择</translation>
+    </message>
+    <message>
+        <source>Dashboard</source>
+        <translation type="gpt-5-generated">仪表板</translation>
+    </message>
+    <message>
+        <source>Map Data</source>
+        <translation type="gpt-5-generated">地图数据</translation>
+    </message>
+    <message>
+        <source>Navigation</source>
+        <translation type="gpt-5-generated">导航</translation>
+    </message>
+    <message>
+        <source>Highest</source>
+        <translation type="gpt-5-generated">最高</translation>
+    </message>
+    <message>
+        <source>Lowest</source>
+        <translation type="gpt-5-generated">最低</translation>
+    </message>
+    <message>
+        <source>Select your primary priority</source>
+        <translation type="gpt-5-generated">选择你的主要优先级</translation>
+    </message>
+    <message>
+        <source>Select your secondary priority</source>
+        <translation type="gpt-5-generated">选择你的次要优先级</translation>
+    </message>
+    <message>
+        <source>Select your tertiary priority</source>
+        <translation type="gpt-5-generated">选择你的第三级优先级</translation>
+    </message>
+    <message>
+        <source>Lower Limits</source>
+        <translation type="gpt-5-generated">下限</translation>
+    </message>
+    <message>
+        <source>Higher Limits</source>
+        <translation type="gpt-5-generated">更高的限速</translation>
     </message>
     <message>
         <source>Are you sure you want to completely reset your settings for &lt;b&gt;Traffic Mode&lt;/b&gt;?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置您的&lt;b&gt;交通模式&lt;/b&gt;设置吗？</translation>
+        <translation type="gpt-5-generated">您确定要完全重置&lt;b&gt;交通模式&lt;/b&gt;的设置吗？</translation>
     </message>
     <message>
         <source>Are you sure you want to completely reset your settings for the &lt;b&gt;Aggressive&lt;/b&gt; personality?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置&lt;b&gt;激进&lt;/b&gt;个性设置吗？</translation>
+        <translation type="gpt-5-generated">您确定要完全重置&lt;b&gt;进取&lt;/b&gt;个性的设置吗？</translation>
     </message>
     <message>
         <source>Are you sure you want to completely reset your settings for the &lt;b&gt;Standard&lt;/b&gt; personality?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置您的&lt;b&gt;标准&lt;/b&gt;个性设置吗？</translation>
+        <translation type="gpt-5-generated">您确定要完全重置&lt;b&gt;标准&lt;/b&gt;性格的设置吗？</translation>
     </message>
     <message>
         <source>Are you sure you want to completely reset your settings for the &lt;b&gt;Relaxed&lt;/b&gt; personality?</source>
-        <translation type="gpt-4o-generated">您确定要完全重置&lt;b&gt;放松&lt;/b&gt;个性设置吗？</translation>
+        <translation type="gpt-5-generated">您确定要完全重置&lt;b&gt;宽松&lt;/b&gt;个性的设置吗？</translation>
     </message>
     <message>
         <source> foot</source>
-        <translation type="gpt-4o-generated">英尺</translation>
+        <translation type="gpt-5-generated">英尺</translation>
     </message>
     <message>
         <source> meter</source>
-        <translation type="gpt-4o-generated">米</translation>
+        <translation type="gpt-5-generated">米</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (0–29 km/h)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（0–29 公里/小时）</translation>
+        <source> meters</source>
+        <translation type="gpt-5-generated"> 米</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (30–49 km/h)</source>
-        <translation type="gpt-4o-generated">限速偏移（30–49 公里/小时）</translation>
+        <source> km/h</source>
+        <translation type="gpt-5-generated">公里/小时</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (50–59 km/h)</source>
-        <translation type="gpt-4o-generated">限速偏移量 (50–59 公里/小时)</translation>
+        <source>Speed Offset (0–29 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（0–29 km/h）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (60–79 km/h)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（60–79 公里/小时）</translation>
+        <source>Speed Offset (30–49 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（30–49 km/h）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (80–99 km/h)</source>
-        <translation type="gpt-4o-generated">速度限制偏移（80–99 公里/小时）</translation>
+        <source>Speed Offset (50–59 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（50–59 km/h）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (100–119 km/h)</source>
-        <translation type="gpt-4o-generated">车速限制偏移（100–119 公里/小时）</translation>
+        <source>Speed Offset (60–79 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（60–79 km/h）</translation>
     </message>
     <message>
-        <source>Speed Limit Offset (120–140 km/h)</source>
-        <translation type="gpt-4o-generated">限速偏移（120–140 公里/小时）</translation>
+        <source>Speed Offset (80–99 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（80–99 km/h）</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 0 and 29 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在0到29公里/小时之间。</translation>
+        <source>Speed Offset (100–119 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（100–119 km/h）</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 30 and 49 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在30到49公里/小时之间的情况。</translation>
+        <source>Speed Offset (120–140 km/h)</source>
+        <translation type="gpt-5-generated">速度偏移（120–140 km/h）</translation>
     </message>
     <message>
-        <source>Target speed offset applied for posted limits between 50 and 59 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在50至59公里/小时之间的情况。</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 60 and 79 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在60至79公里/小时之间的情况。</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 80 and 99 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在80到99公里/小时之间。</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 100 and 119 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在100至119公里/小时之间。</translation>
-    </message>
-    <message>
-        <source>Target speed offset applied for posted limits between 120 and 140 km/h.</source>
-        <translation type="gpt-4o-generated">目标速度偏移适用于限速在120至140公里/小时之间的情况。</translation>
-    </message>
-    <message>
-        <source>Force MPH Readings from Dashboard</source>
-        <translation type="gpt-4o-generated">强制仪表盘显示MPH读数</translation>
+        <source>&lt;b&gt;Following behavior that mimics human drivers&lt;/b&gt; by closing gaps behind faster vehicles for quicker takeoffs and dynamically adjusting the desired following distance for gentler, more efficient braking.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;模仿人类驾驶员的跟车行为&lt;/b&gt;，通过在更快车辆后方缩小车距以更快起步，并动态调整期望跟车距离，以实现更平顺、更高效的制动。</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotManageControl</name>
     <message>
         <source>MANAGE</source>
-        <translation type="gpt-4o-generated">管理</translation>
+        <translation type="gpt-5-generated">管理</translation>
+    </message>
+</context>
+<context>
+    <name>FrogPilotMapsPanel</name>
+    <message>
+        <source>Manually</source>
+        <translation type="gpt-5-generated">手动</translation>
+    </message>
+    <message>
+        <source>Weekly</source>
+        <translation type="gpt-5-generated">每周</translation>
+    </message>
+    <message>
+        <source>Monthly</source>
+        <translation type="gpt-5-generated">每月</translation>
+    </message>
+    <message>
+        <source>Automatically Update Maps</source>
+        <translation type="gpt-5-generated">自动更新地图</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;How often maps update&lt;/b&gt; from "OpenStreetMap (OSM)" with the latest speed limit information. Weekly updates run every Sunday; monthly updates run on the 1st.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;地图更新频率&lt;/b&gt;：来自“OpenStreetMap (OSM)”的最新限速信息。每周更新在每周日进行；每月更新在每月1日进行。</translation>
+    </message>
+    <message>
+        <source>Download Maps</source>
+        <translation type="gpt-5-generated">下载地图</translation>
+    </message>
+    <message>
+        <source>DOWNLOAD</source>
+        <translation type="gpt-5-generated">下载</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manually update your selected map sources&lt;/b&gt; so "Speed Limit Controller" has the latest speed limit information.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;手动更新您选择的地图来源&lt;/b&gt;，以便“Speed Limit Controller”拥有最新的限速信息。</translation>
+    </message>
+    <message>
+        <source>CANCEL</source>
+        <translation type="gpt-5-generated">取消</translation>
+    </message>
+    <message>
+        <source>Cancel the download?</source>
+        <translation type="gpt-5-generated">取消下载？</translation>
+    </message>
+    <message>
+        <source>Last Updated</source>
+        <translation type="gpt-5-generated">最近更新</translation>
+    </message>
+    <message>
+        <source>Map Sources</source>
+        <translation type="gpt-5-generated">地图来源</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the countries or U.S. states to use with "Speed Limit Controller".&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择与“速度限制控制器”一起使用的国家或美国州。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>COUNTRIES</source>
+        <translation type="gpt-5-generated">国家</translation>
+    </message>
+    <message>
+        <source>STATES</source>
+        <translation type="gpt-5-generated">状态</translation>
+    </message>
+    <message>
+        <source>Progress</source>
+        <translation type="gpt-5-generated">进度</translation>
+    </message>
+    <message>
+        <source>Time Elapsed</source>
+        <translation type="gpt-5-generated">已用时间</translation>
+    </message>
+    <message>
+        <source>Time Remaining</source>
+        <translation type="gpt-5-generated">剩余时间</translation>
+    </message>
+    <message>
+        <source>Remove Maps</source>
+        <translation type="gpt-5-generated">移除地图</translation>
+    </message>
+    <message>
+        <source>REMOVE</source>
+        <translation type="gpt-5-generated">移除</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Delete downloaded map data&lt;/b&gt; to free up storage space.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;删除已下载的地图数据&lt;/b&gt;以释放存储空间。</translation>
+    </message>
+    <message>
+        <source>Delete all downloaded maps?</source>
+        <translation type="gpt-5-generated">删除所有已下载的地图？</translation>
+    </message>
+    <message>
+        <source>Reset Downloader</source>
+        <translation type="gpt-5-generated">重置下载器</translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation type="gpt-5-generated">重置</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Reset the map downloader.&lt;/b&gt; Use this if downloads are stuck or failing.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;重置地图下载器。&lt;/b&gt; 如果下载卡住或失败，请使用此选项。</translation>
+    </message>
+    <message>
+        <source>Reset the map downloader? Your device will reboot afterward.</source>
+        <translation type="gpt-5-generated">重置地图下载器？之后设备将会重启。</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation type="gpt-5-generated">重置</translation>
+    </message>
+    <message>
+        <source>Resetting...</source>
+        <translation type="gpt-5-generated">正在重置…</translation>
+    </message>
+    <message>
+        <source>Reset!</source>
+        <translation type="gpt-5-generated">重置！</translation>
+    </message>
+    <message>
+        <source>Rebooting...</source>
+        <translation type="gpt-5-generated">正在重启…</translation>
+    </message>
+    <message>
+        <source>Storage Used</source>
+        <translation type="gpt-5-generated">已用存储</translation>
+    </message>
+    <message>
+        <source>Africa</source>
+        <translation type="gpt-5-generated">非洲</translation>
+    </message>
+    <message>
+        <source>Antarctica</source>
+        <translation type="gpt-5-generated">南极洲</translation>
+    </message>
+    <message>
+        <source>Asia</source>
+        <translation type="gpt-5-generated">亚洲</translation>
+    </message>
+    <message>
+        <source>Europe</source>
+        <translation type="gpt-5-generated">欧洲</translation>
+    </message>
+    <message>
+        <source>North America</source>
+        <translation type="gpt-5-generated">北美洲</translation>
+    </message>
+    <message>
+        <source>Oceania</source>
+        <translation type="gpt-5-generated">大洋洲</translation>
+    </message>
+    <message>
+        <source>South America</source>
+        <translation type="gpt-5-generated">南美洲</translation>
+    </message>
+    <message>
+        <source>United States - Midwest</source>
+        <translation type="gpt-5-generated">美国 - 中西部</translation>
+    </message>
+    <message>
+        <source>United States - Northeast</source>
+        <translation type="gpt-5-generated">美国——东北部</translation>
+    </message>
+    <message>
+        <source>United States - South</source>
+        <translation type="gpt-5-generated">美国-南部</translation>
+    </message>
+    <message>
+        <source>United States - West</source>
+        <translation type="gpt-5-generated">美国 - 西部</translation>
+    </message>
+    <message>
+        <source>United States - Territories</source>
+        <translation type="gpt-5-generated">美国 - 属地</translation>
+    </message>
+    <message>
+        <source>Offline...</source>
+        <translation type="gpt-5-generated">离线…</translation>
+    </message>
+    <message>
+        <source>CANCELLED</source>
+        <translation type="gpt-5-generated">已取消</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotModelPanel</name>
     <message>
-        <source>Model Randomizer</source>
-        <translation type="gpt-4o-generated">模型随机器</translation>
-    </message>
-    <message>
-        <source>Manage Model Blacklist</source>
-        <translation type="gpt-4o-generated">管理模型黑名单</translation>
-    </message>
-    <message>
-        <source>ADD</source>
-        <translation type="gpt-4o-generated">添加</translation>
-    </message>
-    <message>
-        <source>REMOVE</source>
-        <translation type="gpt-4o-generated">移除</translation>
-    </message>
-    <message>
-        <source>REMOVE ALL</source>
-        <translation type="gpt-4o-generated">全部移除</translation>
-    </message>
-    <message>
-        <source>There are no more models to blacklist! The only available model is "%1"!</source>
-        <translation type="gpt-4o-generated">没有更多模型可供加入黑名单！唯一可用的模型是“%1”！</translation>
-    </message>
-    <message>
-        <source>Select a model to add to the blacklist</source>
-        <translation type="gpt-4o-generated">选择要添加到黑名单的模型</translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation type="gpt-4o-generated">添加</translation>
-    </message>
-    <message>
-        <source>Select a model to remove from the blacklist</source>
-        <translation type="gpt-4o-generated">选择要从黑名单中移除的车型</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="gpt-4o-generated">移除</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove all of your blacklisted models?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有列入黑名单的模型吗？</translation>
-    </message>
-    <message>
-        <source>RESET</source>
-        <translation type="gpt-4o-generated">重置</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to reset all of your model drives and scores?</source>
-        <translation type="gpt-4o-generated">您确定要重置所有模型行驶记录和评分吗？</translation>
-    </message>
-    <message>
-        <source>DELETE</source>
-        <translation type="gpt-4o-generated">删除</translation>
-    </message>
-    <message>
-        <source>DELETE ALL</source>
-        <translation type="gpt-4o-generated">删除所有</translation>
-    </message>
-    <message>
-        <source>Select a driving model to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的驾驶模型</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="gpt-4o-generated">删除</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all of your downloaded driving models?</source>
-        <translation type="gpt-4o-generated">您确定要删除所有已下载的驾驶模型吗？</translation>
-    </message>
-    <message>
-        <source>DOWNLOAD</source>
-        <translation type="gpt-4o-generated">下载</translation>
-    </message>
-    <message>
-        <source>DOWNLOAD ALL</source>
-        <translation type="gpt-4o-generated">下载全部</translation>
-    </message>
-    <message>
-        <source>Select a driving model to download</source>
-        <translation type="gpt-4o-generated">选择一个驾驶模型进行下载</translation>
-    </message>
-    <message>
-        <source>SELECT</source>
-        <translation type="gpt-4o-generated">选择</translation>
-    </message>
-    <message>
-        <source>Select a model - 🗺️ = Navigation | 📡 = Radar | 👀 = VOACC</source>
-        <translation type="gpt-4o-generated">选择一个模型 - 🗺️ = 导航 | 📡 = 雷达 | 👀 = VOACC</translation>
-    </message>
-    <message>
-        <source>CANCEL</source>
-        <translation type="gpt-4o-generated">取消</translation>
-    </message>
-    <message>
         <source>Automatically Download New Models</source>
-        <translation type="gpt-4o-generated">自动下载新模型</translation>
+        <translation type="gpt-5-generated">自动下载新模型</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Automatically download new driving models&lt;/b&gt; as they become available.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在有新驾驶模型可用时自动下载&lt;/b&gt;。&lt;/b</translation>
     </message>
     <message>
         <source>Delete Driving Models</source>
-        <translation type="gpt-4o-generated">删除驾驶模型</translation>
+        <translation type="gpt-5-generated">删除驾驶模型</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Delete downloaded driving models&lt;/b&gt; to free up storage space.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;删除已下载的驾驶模型&lt;/b&gt;以释放存储空间。</translation>
     </message>
     <message>
         <source>Download Driving Models</source>
-        <translation type="gpt-4o-generated">下载驾驶模型</translation>
+        <translation type="gpt-5-generated">下载驾驶模型</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manually download driving models&lt;/b&gt; to the device.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;手动下载驾驶模型&lt;/b&gt;到设备。</translation>
+    </message>
+    <message>
+        <source>Model Randomizer</source>
+        <translation type="gpt-5-generated">模型随机器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select a random driving model each drive&lt;/b&gt; and use feedback prompts at the end of the drive to help find the model that best suits you!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;每次行驶随机选择一个驾驶模型&lt;/b&gt;，并在行程结束时使用反馈提示，帮助找到最适合你的模型！</translation>
+    </message>
+    <message>
+        <source>Manage Model Blacklist</source>
+        <translation type="gpt-5-generated">管理模型黑名单</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add or remove driving models from the "Model Randomizer" blacklist.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在“模型随机器”黑名单中添加或移除驾驶模型。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Manage Model Ratings</source>
-        <translation type="gpt-4o-generated">管理模型评分</translation>
+        <translation type="gpt-5-generated">管理模型评分</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;View or reset saved model ratings&lt;/b&gt; used by the "Model Randomizer".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;查看或重置“模型随机器”使用的已保存模型评分&lt;/b&gt;。</translation>
     </message>
     <message>
         <source>Select Driving Model</source>
-        <translation type="gpt-4o-generated">选择驾驶模式</translation>
+        <translation type="gpt-5-generated">选择驾驶模型</translation>
     </message>
     <message>
-        <source>Select the active driving model.</source>
-        <translation type="gpt-4o-generated">选择主动驾驶模式。</translation>
+        <source>&lt;b&gt;Choose which driving model openpilot uses.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择 openpilot 使用的驾驶模型。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Update Model Manager</source>
+        <translation type="gpt-5-generated">更新模型管理器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Update the "Model Manager"&lt;/b&gt; to support the latest models.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;更新“模型管理器”&lt;/b&gt;以支持最新模型。</translation>
+    </message>
+    <message>
+        <source>DELETE</source>
+        <translation type="gpt-5-generated">删除</translation>
+    </message>
+    <message>
+        <source>DELETE ALL</source>
+        <translation type="gpt-5-generated">全部删除</translation>
+    </message>
+    <message>
+        <source>Select a driving model to delete</source>
+        <translation type="gpt-5-generated">选择要删除的驾驶模型</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the "%1" model?</source>
-        <translation type="gpt-4o-generated">您确定要删除“%1”模型吗？</translation>
+        <translation type="gpt-5-generated">确定要删除“%1”模型吗？</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="gpt-5-generated">删除</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete all of your downloaded driving models?</source>
+        <translation type="gpt-5-generated">您确定要删除所有已下载的驾驶模型吗？</translation>
+    </message>
+    <message>
+        <source>DOWNLOAD</source>
+        <translation type="gpt-5-generated">下载</translation>
+    </message>
+    <message>
+        <source>DOWNLOAD ALL</source>
+        <translation type="gpt-5-generated">全部下载</translation>
+    </message>
+    <message>
+        <source>Tinygrad is out of date and must be updated before you can download new models. Update now?</source>
+        <translation type="gpt-5-generated">Tinygrad 已过期，必须更新后才能下载新模型。现在更新吗？</translation>
+    </message>
+    <message>
+        <source>Updating Tinygrad will delete all existing Tinygrad-based models which will need to be re-downloaded. Proceed?</source>
+        <translation type="gpt-5-generated">更新 Tinygrad 将删除所有基于 Tinygrad 的现有模型，且需要重新下载。是否继续？</translation>
+    </message>
+    <message>
+        <source>CANCEL</source>
+        <translation type="gpt-5-generated">取消</translation>
+    </message>
+    <message>
+        <source>Updating...</source>
+        <translation type="gpt-5-generated">正在更新…</translation>
+    </message>
+    <message>
+        <source>Select a driving model to download</source>
+        <translation type="gpt-5-generated">选择要下载的驾驶模型</translation>
+    </message>
+    <message>
+        <source>ADD</source>
+        <translation type="gpt-5-generated">添加</translation>
+    </message>
+    <message>
+        <source>REMOVE</source>
+        <translation type="gpt-5-generated">移除</translation>
+    </message>
+    <message>
+        <source>REMOVE ALL</source>
+        <translation type="gpt-5-generated">全部移除</translation>
+    </message>
+    <message>
+        <source>There are no more driving models to blacklist. The only available model is "%1"!</source>
+        <translation type="gpt-5-generated">没有更多可加入黑名单的驾驶模型。唯一可用的模型是“%1”！</translation>
+    </message>
+    <message>
+        <source>Select a driving model to add to the blacklist</source>
+        <translation type="gpt-5-generated">选择要添加到黑名单的驾驶模型</translation>
     </message>
     <message>
         <source>Are you sure you want to add the "%1" model to the blacklist?</source>
-        <translation type="gpt-4o-generated">您确定要将“%1”型号添加到黑名单吗？</translation>
+        <translation type="gpt-5-generated">您确定要将“%1”模型添加到黑名单吗？</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="gpt-5-generated">添加</translation>
+    </message>
+    <message>
+        <source>Select a driving model to remove from the blacklist</source>
+        <translation type="gpt-5-generated">选择要从黑名单中移除的驾驶模型</translation>
     </message>
     <message>
         <source>Are you sure you want to remove the "%1" model from the blacklist?</source>
-        <translation type="gpt-4o-generated">您确定要从黑名单中移除“%1”模型吗？</translation>
+        <translation type="gpt-5-generated">您确定要将“%1”模型从黑名单中移除吗？</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="gpt-5-generated">移除</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove all of your blacklisted driving models?</source>
+        <translation type="gpt-5-generated">确定要移除所有已列入黑名单的驾驶模型吗？</translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation type="gpt-5-generated">重置</translation>
     </message>
     <message>
         <source>VIEW</source>
-        <translation type="gpt-4o-generated">查看</translation>
+        <translation type="gpt-5-generated">查看</translation>
     </message>
     <message>
-        <source>The "Model Randomizer" only works with downloaded models. Do you want to download all the driving models?</source>
-        <translation type="gpt-4o-generated">“模型随机器”仅适用于已下载的模型。您要下载所有驾驶模型吗？</translation>
+        <source>Reset all model drives and ratings? This clears your drive history and collected feedback!</source>
+        <translation type="gpt-5-generated">重置所有模型的行程和评分？这将清除你的行程历史和已收集的反馈！</translation>
     </message>
     <message>
-        <source>Automatically download new driving models as they become available.</source>
-        <translation type="gpt-4o-generated">自动下载新的驾驶模型。</translation>
+        <source>SELECT</source>
+        <translation type="gpt-5-generated">选择</translation>
     </message>
     <message>
-        <source>Delete driving models from the device.</source>
-        <translation type="gpt-4o-generated">从设备中删除驾驶模型。</translation>
+        <source>UPDATE</source>
+        <translation type="gpt-5-generated">更新</translation>
     </message>
     <message>
-        <source>Download driving models to the device.</source>
-        <translation type="gpt-4o-generated">下载驾驶模型到设备。</translation>
+        <source>Cancelling...</source>
+        <translation type="gpt-5-generated">正在取消…</translation>
     </message>
     <message>
-        <source>Driving models are chosen at random each drive and feedback prompts are used to find the model that best suits your needs.</source>
-        <translation type="gpt-4o-generated">每次驾驶时驾驶模型会被随机选择，并使用反馈提示来寻找最适合您需求的模型。</translation>
+        <source>Updating Tinygrad will delete existing Tinygrad-based driving models and need to be re-downloaded. Proceed?</source>
+        <translation type="gpt-5-generated">更新 Tinygrad 将删除现有的基于 Tinygrad 的驾驶模型，需要重新下载。是否继续？</translation>
     </message>
     <message>
-        <source>Add or remove models from the &lt;b&gt;Model Randomizer&lt;/b&gt;'s blacklist list.</source>
-        <translation type="gpt-4o-generated">从&lt;b&gt;模型随机器&lt;/b&gt;的黑名单中添加或移除模型。</translation>
+        <source>The "Model Randomizer" works only with downloaded models. Download all models now?</source>
+        <translation type="gpt-5-generated">“模型随机器”仅适用于已下载的模型。现在下载所有模型吗？</translation>
     </message>
     <message>
-        <source>Reset or view the saved ratings for the driving models.</source>
-        <translation type="gpt-4o-generated">重置或查看驾驶模型的保存评分。</translation>
+        <source>Offline...</source>
+        <translation type="gpt-5-generated">离线…</translation>
+    </message>
+    <message>
+        <source>Update available!</source>
+        <translation type="gpt-5-generated">有可用更新！</translation>
+    </message>
+    <message>
+        <source>Up to date!</source>
+        <translation type="gpt-5-generated">已是最新！</translation>
+    </message>
+    <message>
+        <source>Select a Model — 🗺️ = Navigation | 📡 = Radar | 👀 = VOACC</source>
+        <translation type="gpt-5-generated">选择模型 — 🗺️ = 导航 | 📡 = 雷达 | 👀 = VOACC</translation>
+    </message>
+</context>
+<context>
+    <name>FrogPilotModelReview</name>
+    <message>
+        <source>How would you rate that drive?</source>
+        <translation type="gpt-5-generated">你会如何评价这次驾驶？</translation>
+    </message>
+    <message>
+        <source>Model successfully blacklisted!</source>
+        <translation type="gpt-5-generated">模型已成功列入黑名单！</translation>
+    </message>
+    <message>
+        <source>Drive Rating Selection</source>
+        <translation type="gpt-5-generated">驾驶评分选择</translation>
+    </message>
+    <message>
+        <source>Blacklist this model to remove it from rotation</source>
+        <translation type="gpt-5-generated">将此模型加入黑名单以将其从轮换中移除</translation>
+    </message>
+    <message>
+        <source>Blacklist Model</source>
+        <translation type="gpt-5-generated">黑名单模型</translation>
+    </message>
+    <message>
+        <source>Model used during that drive:</source>
+        <translation type="gpt-5-generated">该次行驶使用的模型：</translation>
+    </message>
+    <message>
+        <source>Model Rank</source>
+        <translation type="gpt-5-generated">模型排名</translation>
+    </message>
+    <message>
+        <source>Model Rating</source>
+        <translation type="gpt-5-generated">模型评分</translation>
+    </message>
+    <message>
+        <source>Model Drives</source>
+        <translation type="gpt-5-generated">模型驱动</translation>
+    </message>
+    <message>
+        <source>Total Drives</source>
+        <translation type="gpt-5-generated">总行程</translation>
+    </message>
+    <message>
+        <source>#%1</source>
+        <translation type="gpt-5-generated">#%1</translation>
+    </message>
+    <message>
+        <source>%1%</source>
+        <translation type="gpt-5-generated">%1%</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="gpt-5-generated">%1 %2</translation>
+    </message>
+    <message>
+        <source>Drive</source>
+        <translation type="gpt-5-generated">驾驶</translation>
+    </message>
+    <message>
+        <source>Drives</source>
+        <translation type="gpt-5-generated">行驶</translation>
+    </message>
+    <message>
+        <source>%1 Total %2</source>
+        <translation type="gpt-5-generated">%1 总计 %2</translation>
+    </message>
+</context>
+<context>
+    <name>FrogPilotNavigationPanel</name>
+    <message>
+        <source>Manage Your Settings At</source>
+        <translation type="gpt-5-generated">在以下位置管理您的设置</translation>
+    </message>
+    <message>
+        <source>Offline...</source>
+        <translation type="gpt-5-generated">离线…</translation>
+    </message>
+    <message>
+        <source>Mapbox</source>
+        <translation type="gpt-5-generated">Mapbox</translation>
+    </message>
+    <message>
+        <source>Amap</source>
+        <translation type="gpt-5-generated">Amap</translation>
+    </message>
+    <message>
+        <source>Destination Search Provider</source>
+        <translation type="gpt-5-generated">目的地搜索提供商</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The search provider used for destination queries&lt;/b&gt; in "Navigate on Openpilot". Options include Mapbox (recommended) and Amap.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;“在 Openpilot 上导航”中用于目的地查询的搜索提供商&lt;/b&gt;。选项包括 Mapbox（推荐）和 Amap。</translation>
+    </message>
+    <message>
+        <source>Amap Key #1</source>
+        <translation type="gpt-5-generated">Amap 密钥 #1</translation>
+    </message>
+    <message>
+        <source>Amap Key #2</source>
+        <translation type="gpt-5-generated">高德地图密钥 #2</translation>
+    </message>
+    <message>
+        <source>Public Mapbox Key</source>
+        <translation type="gpt-5-generated">公共 Mapbox 密钥</translation>
+    </message>
+    <message>
+        <source>Secret Mapbox Key</source>
+        <translation type="gpt-5-generated">Mapbox 密钥（保密）</translation>
+    </message>
+    <message>
+        <source>Mapbox Setup Instructions</source>
+        <translation type="gpt-5-generated">Mapbox 设置说明</translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation type="gpt-5-generated">查看</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Instructions on how to set up Mapbox&lt;/b&gt; for "Primeless Navigation".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置 Mapbox 的说明&lt;/b&gt;，用于“无 Prime 导航”。</translation>
+    </message>
+    <message>
+        <source>CANCEL</source>
+        <translation type="gpt-5-generated">取消</translation>
+    </message>
+    <message>
+        <source>Manually Update Speed Limits</source>
+        <translation type="gpt-5-generated">手动更新限速</translation>
+    </message>
+    <message>
+        <source>Speed Limit Filler</source>
+        <translation type="gpt-5-generated">限速填充器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Automatically collect missing or incorrect speed limits while you drive&lt;/b&gt; using speeds limits sourced from your dashboard (if supported), Mapbox, and "Navigate on openpilot".&lt;br&gt;&lt;br&gt;When you're parked and connected to Wi-Fi, FrogPilot will automatically processes this data into a file to be used with the tool located at "SpeedLimitFiller.frogpilot.download".&lt;br&gt;&lt;br&gt;You can download this file from "The Pond" in the "Download Speed Limits" menu.&lt;br&gt;&lt;br&gt;Need a step-by-step guide? Visit &lt;b&gt;#speed-limit-filler&lt;/b&gt; in the FrogPilot Discord!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶时自动收集缺失或不正确的限速信息&lt;/b&gt;，限速数据来源于您的仪表盘（如果支持）、Mapbox，以及“Navigate on openpilot”。&lt;br&gt;&lt;br&gt;当您停车并连接到 Wi‑Fi 时，FrogPilot 将自动处理这些数据为一个文件，用于位于“SpeedLimitFiller.frogpilot.download”的工具。&lt;br&gt;&lt;br&gt;您可以在“The Pond”的“Download Speed Limits”菜单中下载此文件。&lt;br&gt;&lt;br&gt;需要一步步的指南？请访问 FrogPilot Discord 中的 &lt;b&gt;#speed-limit-filler&lt;/b&gt;！</translation>
+    </message>
+    <message>
+        <source>Cancel the speed-limit update?</source>
+        <translation type="gpt-5-generated">取消速度限制更新？</translation>
+    </message>
+    <message>
+        <source>Cancelled...</source>
+        <translation type="gpt-5-generated">已取消…</translation>
+    </message>
+    <message>
+        <source>You've hit today's request limit.
+
+It will reset in %1 hours and %2 minutes.</source>
+        <translation type="gpt-5-generated">您已达到今日请求上限。
+
+将在 %1 小时 %2 分钟后重置。</translation>
+    </message>
+    <message>
+        <source>This process takes a while. It's recommended to start when you're done driving and connected to stable Wi-Fi. Continue?</source>
+        <translation type="gpt-5-generated">此过程需要一段时间。建议在您结束驾驶并连接稳定的 Wi‑Fi 时开始。是否继续？</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manage your "%1".&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;管理您的“%1”。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>ADD</source>
+        <translation type="gpt-5-generated">添加</translation>
+    </message>
+    <message>
+        <source>Enter your %1</source>
+        <translation type="gpt-5-generated">输入你的%1</translation>
+    </message>
+    <message>
+        <source>Inputted key is invalid or too short!</source>
+        <translation type="gpt-5-generated">输入的密钥无效或过短！</translation>
+    </message>
+    <message>
+        <source>Remove your %1?</source>
+        <translation type="gpt-5-generated">要移除你的%1吗？</translation>
+    </message>
+    <message>
+        <source>REMOVE</source>
+        <translation type="gpt-5-generated">移除</translation>
+    </message>
+    <message>
+        <source>Completed!</source>
+        <translation type="gpt-5-generated">已完成！</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotSettingsWindow</name>
     <message>
-        <source>Alerts and Sounds</source>
-        <translation type="gpt-4o-generated">警报和声音</translation>
-    </message>
-    <message>
-        <source>Driving Controls</source>
-        <translation type="gpt-4o-generated">驾驶控制</translation>
-    </message>
-    <message>
-        <source>Navigation</source>
-        <translation type="gpt-4o-generated">导航</translation>
-    </message>
-    <message>
-        <source>System Management</source>
-        <translation type="gpt-4o-generated">系统管理</translation>
-    </message>
-    <message>
-        <source>Theme and Appearance</source>
-        <translation type="gpt-4o-generated">主题和外观</translation>
-    </message>
-    <message>
-        <source>Vehicle Controls</source>
-        <translation type="gpt-4o-generated">车辆控制</translation>
-    </message>
-    <message>
         <source>MANAGE</source>
-        <translation type="gpt-4o-generated">管理</translation>
-    </message>
-    <message>
-        <source>GAS / BRAKE</source>
-        <translation type="gpt-4o-generated">油门 / 刹车</translation>
-    </message>
-    <message>
-        <source>STEERING</source>
-        <translation type="gpt-4o-generated">转向</translation>
-    </message>
-    <message>
-        <source>DATA</source>
-        <translation type="gpt-4o-generated">数据</translation>
-    </message>
-    <message>
-        <source>UTILITIES</source>
-        <translation type="gpt-4o-generated">实用工具</translation>
-    </message>
-    <message>
-        <source>APPEARANCE</source>
-        <translation type="gpt-4o-generated">外观</translation>
-    </message>
-    <message>
-        <source>THEME</source>
-        <translation type="gpt-4o-generated">主题</translation>
+        <translation type="gpt-5-generated">管理</translation>
     </message>
     <message>
         <source>DRIVING MODEL</source>
-        <translation type="gpt-4o-generated">驾驶模型</translation>
+        <translation type="gpt-5-generated">驾驶模型</translation>
+    </message>
+    <message>
+        <source>GAS / BRAKE</source>
+        <translation type="gpt-5-generated">油门 / 刹车</translation>
+    </message>
+    <message>
+        <source>STEERING</source>
+        <translation type="gpt-5-generated">转向</translation>
     </message>
     <message>
         <source>MAP DATA</source>
-        <translation type="gpt-4o-generated">地图数据</translation>
-    </message>
-    <message>
-        <source>DEVICE CONTROLS</source>
-        <translation type="gpt-4o-generated">设备控制</translation>
-    </message>
-    <message>
-        <source>Minimal</source>
-        <translation type="gpt-4o-generated">最小</translation>
-    </message>
-    <message>
-        <source>Standard</source>
-        <translation type="gpt-4o-generated">标准</translation>
-    </message>
-    <message>
-        <source>Advanced</source>
-        <translation type="gpt-4o-generated">高级</translation>
-    </message>
-    <message>
-        <source>Developer</source>
-        <translation type="gpt-4o-generated">开发者</translation>
-    </message>
-    <message>
-        <source>Tuning Level</source>
-        <translation type="gpt-4o-generated">调优级别</translation>
-    </message>
-    <message>
-        <source>WARNING: This unlocks some potentially dangerous settings that can DRASTICALLY alter your driving experience!</source>
-        <translation type="gpt-4o-generated">警告：这将解锁一些可能危险的设置，可能会极大地改变您的驾驶体验！</translation>
+        <translation type="gpt-5-generated">地图数据</translation>
     </message>
     <message>
         <source>NAVIGATION</source>
-        <translation type="gpt-4o-generated">导航</translation>
+        <translation type="gpt-5-generated">导航</translation>
+    </message>
+    <message>
+        <source>DATA</source>
+        <translation type="gpt-5-generated">数据</translation>
+    </message>
+    <message>
+        <source>DEVICE CONTROLS</source>
+        <translation type="gpt-5-generated">设备控制</translation>
+    </message>
+    <message>
+        <source>UTILITIES</source>
+        <translation type="gpt-5-generated">实用工具</translation>
+    </message>
+    <message>
+        <source>APPEARANCE</source>
+        <translation type="gpt-5-generated">外观</translation>
+    </message>
+    <message>
+        <source>THEME</source>
+        <translation type="gpt-5-generated">主题</translation>
     </message>
     <message>
         <source>VEHICLE SETTINGS</source>
-        <translation type="gpt-4o-generated">车辆设置</translation>
+        <translation type="gpt-5-generated">车辆设置</translation>
     </message>
     <message>
         <source>WHEEL CONTROLS</source>
-        <translation type="gpt-4o-generated">方向盘控制</translation>
+        <translation type="gpt-5-generated">方向盘控制</translation>
     </message>
     <message>
-        <source>FrogPilot settings for alert volumes and custom notifications to stay informed about important driving events.</source>
-        <translation type="gpt-4o-generated">FrogPilot 设置用于警报音量和自定义通知，以随时了解重要驾驶事件。</translation>
+        <source>Alerts and Sounds</source>
+        <translation type="gpt-5-generated">警报和声音</translation>
     </message>
     <message>
-        <source>FrogPilot settings for acceleration, braking, and steering.</source>
-        <translation type="gpt-4o-generated">FrogPilot加速、制动和转向设置。</translation>
+        <source>&lt;b&gt;Adjust alert volumes and enable custom notifications.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;调整警报音量并启用自定义通知。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Download map data for &lt;b&gt;Curve Speed Control&lt;/b&gt;, &lt;b&gt;Speed Limit Controller&lt;/b&gt;, and set up &lt;b&gt;Navigate on openpilot (NOO)&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">下载地图数据以用于&lt;b&gt;弯道速度控制&lt;/b&gt;、&lt;b&gt;速度限制控制器&lt;/b&gt;，并设置&lt;b&gt;openpilot导航功能 (NOO)&lt;/b&gt;。</translation>
+        <source>Driving Controls</source>
+        <translation type="gpt-5-generated">驾驶控制</translation>
     </message>
     <message>
-        <source>Data storage management, debugging tools, device settings, screen behavior settings, system backups, and utilities to maintain, optimize, and troubleshoot FrogPilot.</source>
-        <translation type="gpt-4o-generated">数据存储管理、调试工具、设备设置、屏幕行为设置、系统备份以及用于维护、优化和排除 FrogPilot 故障的实用工具。</translation>
+        <source>&lt;b&gt;Fine-tune custom FrogPilot acceleration, braking, and steering controls.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;微调自定义的 FrogPilot 加速、制动和转向控制。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>FrogPilot settings for the current theme, driving-screen, and the overall user interface.</source>
-        <translation type="gpt-4o-generated">FrogPilot 当前主题、驾驶屏幕和整体用户界面的设置。</translation>
+        <source>Navigation</source>
+        <translation type="gpt-5-generated">导航</translation>
     </message>
     <message>
-        <source>Options unique to supported manufacturers and vehicle fingerprint management.</source>
-        <translation type="gpt-4o-generated">支持的制造商的独有选项和车辆指纹管理。</translation>
+        <source>&lt;b&gt;Download map data for the "Speed Limit Controller" and configure "Navigate on openpilot" (NOO).&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;为“Speed Limit Controller”下载地图数据并配置“Navigate on openpilot”（NOO）。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>The visibility and complexity of tuning settings. Lower levels simplify the interface by hiding advanced options, while higher levels unlock detailed customization.
+        <source>System Settings</source>
+        <translation type="gpt-5-generated">系统设置</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manage backups, device settings, screen options, storage, and tools to keep FrogPilot running smoothly.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;管理备份、设备设置、屏幕选项、存储和工具，以保持 FrogPilot 运行顺畅。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Theme and Appearance</source>
+        <translation type="gpt-5-generated">主题和外观</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Customize the look of the driving screen and interface, including themes!&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义驾驶屏幕和界面的外观，包括主题！&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Vehicle Settings</source>
+        <translation type="gpt-5-generated">车辆设置</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Configure car-specific options and steering wheel button mappings.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;配置特定车辆选项和方向盘按键映射。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Minimal</source>
+        <translation type="gpt-5-generated">最小</translation>
+    </message>
+    <message>
+        <source>Standard</source>
+        <translation type="gpt-5-generated">标准</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="gpt-5-generated">高级</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <translation type="gpt-5-generated">开发者</translation>
+    </message>
+    <message>
+        <source>Tuning Level</source>
+        <translation type="gpt-5-generated">调校级别</translation>
+    </message>
+    <message>
+        <source>Choose your tuning level. Lower levels keep it simple; higher levels unlock more toggles for finer control.
 
 Minimal - Ideal for those who prefer simplicity or ease of use
 Standard - Recommended for most users for a balanced experience
-Advanced - Unlocks fine-tuning controls for more experienced users
-Developer - Unlocks highly customizable settings for seasoned enthusiasts</source>
-        <translation type="gpt-4o-generated">调节设置的可见性和复杂性。较低级别通过隐藏高级选项来简化界面，而较高级别则解锁详细的自定义选项。
+Advanced - Fine-tuning for experienced users
+Developer - Highly customizable settings for seasoned enthusiasts</source>
+        <translation type="gpt-5-generated">选择你的调校级别。较低级别更简单；较高级别解锁更多开关以实现更精细的控制。
 
-最低 - 理想适合于喜欢简洁或易用性的用户
-标准 - 为大多数用户推荐，提供平衡的体验
-高级 - 解锁微调控制，适合更有经验的用户
-开发者 - 解锁高度可自定义的设置，适合资深爱好者</translation>
+最简 — 适合偏好简单或易用性的用户
+标准 — 为大多数用户推荐，体验更均衡
+高级 — 适合有经验用户的精细调校
+开发者 — 面向资深爱好者的高度可自定义设置</translation>
     </message>
     <message>
-        <source>The &lt;b&gt;Developer&lt;/b&gt; preset is only available for users with either over 100 hours on FrogPilot, or 250 hours with openpilot.</source>
-        <translation type="gpt-4o-generated">&lt;b&gt;开发者&lt;/b&gt;预设仅对在FrogPilot上超过100小时或在openpilot上超过250小时的用户可用。</translation>
+        <source>WARNING: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do!</source>
+        <translation type="gpt-5-generated">警告：这些设置存在风险，可能会极大改变 openpilot 的驾驶方式。只有在你完全了解其作用时才进行更改！</translation>
+    </message>
+    <message>
+        <source>All toggle descriptions are currently expanded. You can tap a toggle's name to open or close its description at any time!</source>
+        <translation type="gpt-5-generated">所有切换项的说明目前均已展开。你可以随时点击切换项的名称来打开或关闭其说明！</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotSoundsPanel</name>
     <message>
+        <source>Alert Volume Controller</source>
+        <translation type="gpt-5-generated">警报音量控制器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set how loud each type of openpilot alert is&lt;/b&gt; to keep routine prompts from becoming distracting.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置每种 openpilot 警报的音量&lt;/b&gt;，以防常规提示变得分散注意力。</translation>
+    </message>
+    <message>
         <source>Disengage Volume</source>
-        <translation type="gpt-4o-generated">解除音量</translation>
+        <translation type="gpt-5-generated">解除提示音音量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the volume for alerts when openpilot disengages.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Cruise Fault: Restart the Car", "Parking Brake Engaged", "Pedal Pressed".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置 openpilot 解除接管时的警报音量。&lt;/b&gt;&lt;br&gt;&lt;br&gt;示例包括：“巡航故障：请重启车辆”、“已拉起驻车制动”、“踏板被按下”。</translation>
     </message>
     <message>
         <source>Engage Volume</source>
-        <translation type="gpt-4o-generated">启动音量</translation>
+        <translation type="gpt-5-generated">启用音量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the volume for the chime when openpilot engages&lt;/b&gt;, such as after pressing the "RESUME" or "SET" steering wheel buttons.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置openpilot接入时提示音的音量&lt;/b&gt;，例如按下方向盘上的“RESUME”或“SET”按钮后。</translation>
     </message>
     <message>
         <source>Prompt Volume</source>
-        <translation type="gpt-4o-generated">提示音量</translation>
+        <translation type="gpt-5-generated">提示音量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the volume for prompts that need attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Car Detected in Blindspot", "Steering Temporarily Unavailable", "Turn Exceeds Steering Limit".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;为需要注意的提示设置音量。&lt;/b&gt;&lt;br&gt;&lt;br&gt;示例包括：“盲点检测到车辆”、“转向暂时不可用”、“转弯超出转向限制”。</translation>
     </message>
     <message>
         <source>Prompt Distracted Volume</source>
-        <translation type="gpt-4o-generated">提示分心音量</translation>
+        <translation type="gpt-5-generated">提示分心音量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the volume for prompts when openpilot detects driver distraction or unresponsiveness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Pay Attention", "Touch Steering Wheel".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置当 openpilot 检测到驾驶员分心或无反应时的提示音量。&lt;/b&gt;&lt;br&gt;&lt;br&gt;例如：“请注意”、“触摸方向盘”。</translation>
     </message>
     <message>
         <source>Refuse Volume</source>
-        <translation type="gpt-4o-generated">拒绝音量</translation>
+        <translation type="gpt-5-generated">拒绝音量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the volume for alerts when openpilot refuses to engage.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "Brake Hold Active", "Door Open", "Seatbelt Unlatched".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置当openpilot拒绝接管时的警报音量。&lt;/b&gt;&lt;br&gt;&lt;br&gt;示例包括：“刹车保持已激活”、“车门已打开”、“安全带未系”。</translation>
     </message>
     <message>
         <source>Warning Soft Volume</source>
-        <translation type="gpt-4o-generated">警告柔和音量</translation>
+        <translation type="gpt-5-generated">警告 软音量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the volume for softer warnings about potential risks.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "BRAKE! Risk of Collision", "Steering Temporarily Unavailable".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;为潜在风险的较轻警告设置音量。&lt;/b&gt;&lt;br&gt;&lt;br&gt;示例包括：“刹车！碰撞风险”、“转向暂时不可用”。</translation>
     </message>
     <message>
         <source>Warning Immediate Volume</source>
-        <translation type="gpt-4o-generated">警告立即音量调整</translation>
+        <translation type="gpt-5-generated">警告 立即音量</translation>
     </message>
     <message>
-        <source>Goat Scream Steering Saturated Alert</source>
-        <translation type="gpt-4o-generated">山羊尖叫转向饱和警报</translation>
-    </message>
-    <message>
-        <source>Green Light Alert</source>
-        <translation type="gpt-4o-generated">绿灯提醒</translation>
-    </message>
-    <message>
-        <source>Lead Departing Alert</source>
-        <translation type="gpt-4o-generated">前车驶离提醒</translation>
-    </message>
-    <message>
-        <source>Auto</source>
-        <translation type="gpt-4o-generated">自动</translation>
-    </message>
-    <message>
-        <source>Muted</source>
-        <translation type="gpt-4o-generated">静音</translation>
-    </message>
-    <message>
-        <source>Alert Volume Control</source>
-        <translation type="gpt-4o-generated">警报音量控制</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for each alert in openpilot.</source>
-        <translation type="gpt-4o-generated">调整openpilot中每个警报的音量。</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;Adaptive Cruise Disabled&lt;/b&gt;&lt;br&gt;&lt;b&gt;Brake Pedal Pressed&lt;/b&gt;&lt;br&gt;&lt;b&gt;Parking Brake Engaged&lt;/b&gt;&lt;br&gt;&lt;b&gt;Speed too Low&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整提醒音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;自适应巡航已禁用&lt;/b&gt;&lt;br&gt;&lt;b&gt;刹车踏板已按下&lt;/b&gt;&lt;br&gt;&lt;b&gt;驻车制动已开启&lt;/b&gt;&lt;br&gt;&lt;b&gt;车速过低&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;NNFF Torque Controller loaded&lt;/b&gt;&lt;br&gt;&lt;b&gt;openpilot engaged&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整警报音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;NNFF 扭矩控制器已加载&lt;/b&gt;&lt;br&gt;&lt;b&gt;openpilot 已启用&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;Pay Attention, Driver Distracted&lt;/b&gt;&lt;br&gt;&lt;b&gt;Touch Steering Wheel, Driver Unresponsive&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整警报的音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;注意，司机注意力不集中&lt;/b&gt;&lt;br&gt;&lt;b&gt;触摸方向盘，司机无反应&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;openpilot Unavailable&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整警报音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;openpilot 不可用&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;BRAKE!, Risk of Collision&lt;/b&gt;&lt;br&gt;&lt;b&gt;TAKE CONTROL IMMEDIATELY&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整警报音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;刹车！碰撞风险&lt;/b&gt;&lt;br&gt;&lt;b&gt;立即接管控制&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;DISENGAGE IMMEDIATELY, Driver Distracted&lt;/b&gt;&lt;br&gt;&lt;b&gt;DISENGAGE IMMEDIATELY, Driver Unresponsive&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整警报音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;立即脱离，驾驶员分心&lt;/b&gt;&lt;br&gt;&lt;b&gt;立即脱离，驾驶员无反应&lt;/b&gt;</translation>
+        <source>&lt;b&gt;Set the volume for the loudest warnings that require urgent attention.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Examples include: "DISENGAGE IMMEDIATELY — Driver Distracted", "DISENGAGE IMMEDIATELY — Driver Unresponsive".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置需要紧急注意的最响亮警报的音量。&lt;/b&gt;&lt;br&gt;&lt;br&gt;示例包括：“立即解除 — 驾驶员分心”，“立即解除 — 驾驶员无反应”。</translation>
     </message>
     <message>
         <source>FrogPilot Alerts</source>
-        <translation type="gpt-4o-generated">FrogPilot 警报</translation>
+        <translation type="gpt-5-generated">FrogPilot 警报</translation>
     </message>
     <message>
-        <source>FrogPilot alerts for various events in openpilot.</source>
-        <translation type="gpt-4o-generated">FrogPilot为openpilot中的各种事件提供警报。</translation>
+        <source>&lt;b&gt;Optional FrogPilot alerts&lt;/b&gt; that highlight driving events in a more noticeable way.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;可选的 FrogPilot 警报&lt;/b&gt;，以更醒目的方式突出驾驶事件。</translation>
+    </message>
+    <message>
+        <source>Goat Scream</source>
+        <translation type="gpt-5-generated">山羊尖叫</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Play the infamous "Goat Scream" when the steering controller reaches its limit.&lt;/b&gt; Based on the "Turn Exceeds Steering Limit" event.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当转向控制器达到其极限时播放臭名昭著的“山羊尖叫”。&lt;/b&gt; 基于“转向超出转向极限”事件。</translation>
+    </message>
+    <message>
+        <source>Green Light Alert</source>
+        <translation type="gpt-5-generated">绿灯提醒</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Play an alert when the model predicts a red light has turned green.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights. This alert is based on end-to-end model predictions from camera input and may trigger even when the light has not changed.&lt;/i&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当模型预测红灯已变为绿灯时播放警报。&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;免责声明&lt;/b&gt;：openpilot 并不显式检测交通信号灯。此警报基于来自摄像头输入的端到端模型预测，即使信号灯尚未变化也可能触发。&lt;/i&gt;</translation>
+    </message>
+    <message>
+        <source>Lead Departing Alert</source>
+        <translation type="gpt-5-generated">前车起步提醒</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Play an alert when the lead vehicle departs from a stop.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当前车前方车辆起步时播放提醒。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Loud "Car Detected in Blindspot" Alert</source>
-        <translation type="gpt-4o-generated">响亮的“盲点检测到车辆”警报</translation>
+        <translation type="gpt-5-generated">响亮的“检测到盲点车辆”警报</translation>
     </message>
     <message>
-        <source>A louder alert for when a vehicle is detected in the blindspot when attempting to change lanes.</source>
-        <translation type="gpt-4o-generated">在尝试变更车道时检测到盲区内有车辆时发出更响的警报。</translation>
-    </message>
-    <message>
-        <source>Adjust the volume for alerts like:&lt;br&gt;&lt;br&gt;&lt;b&gt;Car Detected in Blindspot&lt;/b&gt;&lt;br&gt;&lt;b&gt;Steer Unavailable Below "X"&lt;/b&gt;&lt;br&gt;&lt;b&gt;Speed too Low&lt;/b&gt;&lt;br&gt;&lt;b&gt;Take Control, Turn Exceeds Steering Limit&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">调整警报音量，例如：&lt;br&gt;&lt;br&gt;&lt;b&gt;汽车在盲区检测到&lt;/b&gt;&lt;br&gt;&lt;b&gt;方向盘不可用，低于“X”&lt;/b&gt;&lt;br&gt;&lt;b&gt;速度过低&lt;/b&gt;&lt;br&gt;&lt;b&gt;请接管，转向超过转向限制&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>The infamous "Goat Scream" that has brought both joy and anger to FrogPilot users all around the world!</source>
-        <translation type="gpt-4o-generated">臭名昭著的“山羊尖叫”，给全世界的FrogPilot用户带来了欢乐和愤怒！</translation>
-    </message>
-    <message>
-        <source>Get an alert when the traffic light changes from red to green.</source>
-        <translation type="gpt-4o-generated">当红灯变绿时收到提醒。</translation>
-    </message>
-    <message>
-        <source>Get an alert when the lead vehicle begins to depart from a standstill.</source>
-        <translation type="gpt-4o-generated">当前车从静止状态开始移动时收到警报。</translation>
+        <source>&lt;b&gt;Play a louder alert if a vehicle is in the blind spot when attempting to change lanes.&lt;/b&gt; Based on the "Car Detected in Blindspot" event.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当尝试变道时若有车辆处于盲区，播放更响亮的警报。&lt;/b&gt; 基于“盲区检测到车辆”事件。</translation>
     </message>
     <message>
         <source>Speed Limit Changed Alert</source>
-        <translation type="gpt-4o-generated">限速变更提醒</translation>
+        <translation type="gpt-5-generated">限速变更警报</translation>
     </message>
     <message>
-        <source>Get an alert when the speed limit changes.</source>
-        <translation type="gpt-4o-generated">当限速发生变化时收到提醒。</translation>
+        <source>&lt;b&gt;Play an alert when the posted speed limit changes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当公布的限速变化时播放提醒。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Muted</source>
+        <translation type="gpt-5-generated">已静音</translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="gpt-5-generated">自动</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation type="gpt-5-generated">测试</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotThemesPanel</name>
     <message>
-        <source>Custom Theme</source>
-        <translation type="gpt-4o-generated">自定义主题</translation>
+        <source>Custom Themes</source>
+        <translation type="gpt-5-generated">自定义主题</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The overall look and feel of openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 的整体外观与体验。&lt;/b&gt; 在 “The Pond” 中使用 “Theme Maker” 来创建并分享你自己的主题！</translation>
     </message>
     <message>
         <source>Color Scheme</source>
-        <translation type="gpt-4o-generated">配色方案</translation>
+        <translation type="gpt-5-generated">配色方案</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The color scheme used throughout openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 全局使用的配色方案。&lt;/b&gt;在“The Pond”的“Theme Maker”中创建并分享你自己的主题！</translation>
+    </message>
+    <message>
+        <source>Distance Button</source>
+        <translation type="gpt-5-generated">距离按钮</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The distance button icons shown on the driving screen.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;驾驶屏幕上显示的距离按钮图标。&lt;/b&gt; 使用“The Pond”中的“Theme Maker”来创建并分享你自己的主题！</translation>
     </message>
     <message>
         <source>Icon Pack</source>
-        <translation type="gpt-4o-generated">图标包</translation>
+        <translation type="gpt-5-generated">图标包</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The icon style used across openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 全局使用的图标样式。&lt;/b&gt; 使用“The Pond”中的“Theme Maker”来创建并分享你自己的主题！</translation>
     </message>
     <message>
         <source>Sound Pack</source>
-        <translation type="gpt-4o-generated">声音包</translation>
+        <translation type="gpt-5-generated">声音包</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The sound pack used by openpilot.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 使用的音效包。&lt;/b&gt;在“The Pond”中使用“Theme Maker”创建并分享你自己的主题！</translation>
     </message>
     <message>
         <source>Steering Wheel</source>
-        <translation type="gpt-4o-generated">方向盘</translation>
+        <translation type="gpt-5-generated">方向盘</translation>
     </message>
     <message>
-        <source>Turn Signal Animation</source>
-        <translation type="gpt-4o-generated">转向灯动画</translation>
+        <source>&lt;b&gt;The steering-wheel icon&lt;/b&gt; shown at the top-right of the driving screen. Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">驾驶屏幕右上角显示的&lt;b&gt;方向盘图标&lt;/b&gt;。使用“The Pond”中的“Theme Maker”来创建并分享你自己的主题！</translation>
+    </message>
+    <message>
+        <source>Turn Signal</source>
+        <translation type="gpt-5-generated">转向灯</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Themed turn-signal animations.&lt;/b&gt; Use the "Theme Maker" in "The Pond" to create and share your own themes!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;主题式转向灯动画。&lt;/b&gt;在“The Pond”中使用“Theme Maker”创建并分享你自己的主题！</translation>
     </message>
     <message>
         <source>Download Status</source>
-        <translation type="gpt-4o-generated">下载状态</translation>
+        <translation type="gpt-5-generated">下载状态</translation>
     </message>
     <message>
         <source>Holiday Themes</source>
-        <translation type="gpt-4o-generated">节日主题</translation>
+        <translation type="gpt-5-generated">节日主题</translation>
     </message>
     <message>
-        <source>Random Events</source>
-        <translation type="gpt-4o-generated">随机事件</translation>
-    </message>
-    <message>
-        <source>Startup Alert</source>
-        <translation type="gpt-4o-generated">启动警报</translation>
-    </message>
-    <message>
-        <source>DELETE</source>
-        <translation type="gpt-4o-generated">删除</translation>
-    </message>
-    <message>
-        <source>DOWNLOAD</source>
-        <translation type="gpt-4o-generated">下载</translation>
-    </message>
-    <message>
-        <source>SELECT</source>
-        <translation type="gpt-4o-generated">选择</translation>
-    </message>
-    <message>
-        <source>Select a color scheme to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的配色方案</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="gpt-4o-generated">删除</translation>
-    </message>
-    <message>
-        <source>Select a color scheme to download</source>
-        <translation type="gpt-4o-generated">选择要下载的配色方案</translation>
-    </message>
-    <message>
-        <source>Select a color scheme</source>
-        <translation type="gpt-4o-generated">选择配色方案</translation>
-    </message>
-    <message>
-        <source>Select an icon pack to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的图标包</translation>
-    </message>
-    <message>
-        <source>Select an icon pack to download</source>
-        <translation type="gpt-4o-generated">选择一个图标包进行下载</translation>
-    </message>
-    <message>
-        <source>Select an icon pack</source>
-        <translation type="gpt-4o-generated">选择图标包</translation>
-    </message>
-    <message>
-        <source>Select a sound pack to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的音效包</translation>
-    </message>
-    <message>
-        <source>Select a sound pack to download</source>
-        <translation type="gpt-4o-generated">选择一个声音包进行下载</translation>
-    </message>
-    <message>
-        <source>Select a steering wheel to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的方向盘</translation>
-    </message>
-    <message>
-        <source>Select a steering wheel to download</source>
-        <translation type="gpt-4o-generated">选择一个方向盘进行下载</translation>
-    </message>
-    <message>
-        <source>Select a steering wheel</source>
-        <translation type="gpt-4o-generated">选择一个方向盘</translation>
-    </message>
-    <message>
-        <source>STOCK</source>
-        <translation type="gpt-4o-generated">原厂</translation>
-    </message>
-    <message>
-        <source>FROGPILOT</source>
-        <translation type="gpt-4o-generated">FROGPILOT</translation>
-    </message>
-    <message>
-        <source>CUSTOM</source>
-        <translation type="gpt-4o-generated">自定义</translation>
-    </message>
-    <message>
-        <source>CLEAR</source>
-        <translation type="gpt-4o-generated">清除</translation>
-    </message>
-    <message>
-        <source>Characters: 0/%1</source>
-        <translation type="gpt-4o-generated">字符数：0/%1</translation>
-    </message>
-    <message>
-        <source>CANCEL</source>
-        <translation type="gpt-4o-generated">取消</translation>
+        <source>&lt;b&gt;Themes based on U.S. holidays.&lt;/b&gt; Minor holidays last one day; major holidays (Christmas, Easter, Halloween) run for a full week.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;基于美国节日的主题。&lt;/b&gt; 次要节日持续一天；主要节日（Christmas、Easter、Halloween）持续一整周。</translation>
     </message>
     <message>
         <source>Rainbow Path</source>
-        <translation type="gpt-4o-generated">彩虹路径</translation>
+        <translation type="gpt-5-generated">彩虹路径</translation>
     </message>
     <message>
-        <source>Select a distance icon pack to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的距离图标包</translation>
+        <source>&lt;b&gt;Color the driving path like a Mario Kart–style "Rainbow Road".&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将行驶路径着色为类似马里奥赛车“彩虹之路”的效果。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Select a distance icon pack to download</source>
-        <translation type="gpt-4o-generated">选择要下载的距离图标包</translation>
+        <source>Random Events</source>
+        <translation type="gpt-5-generated">随机事件</translation>
     </message>
     <message>
-        <source>Select a distance icon pack</source>
-        <translation type="gpt-4o-generated">选择距离图标包</translation>
-    </message>
-    <message>
-        <source>Select a signal animation to delete</source>
-        <translation type="gpt-4o-generated">选择要删除的信号动画</translation>
-    </message>
-    <message>
-        <source>Select a signal animation to download</source>
-        <translation type="gpt-4o-generated">选择要下载的信号动画</translation>
-    </message>
-    <message>
-        <source>Select a signal animation</source>
-        <translation type="gpt-4o-generated">选择信号动画</translation>
-    </message>
-    <message>
-        <source>Select a sound pack</source>
-        <translation type="gpt-4o-generated">选择声音包</translation>
-    </message>
-    <message>
-        <source>Enter the text for the top half</source>
-        <translation type="gpt-4o-generated">输入上半部分的文本</translation>
-    </message>
-    <message>
-        <source>Enter the text for the bottom half</source>
-        <translation type="gpt-4o-generated">输入下半部分的文本</translation>
-    </message>
-    <message>
-        <source>The overall appearance of openpilot.</source>
-        <translation type="gpt-4o-generated">openpilot 的整体外观。</translation>
-    </message>
-    <message>
-        <source>openpilot's color scheme.
-
-Want to submit your own color scheme? Share it in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="gpt-4o-generated">openpilot 的配色方案。
-
-想提交自己的配色方案吗？请在 FrogPilot Discord 的 "custom-themes" 频道中分享！</translation>
-    </message>
-    <message>
-        <source>openpilot's icon pack.
-
-Want to submit your own icons? Share them in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="gpt-4o-generated">openpilot 的图标包。
-
-想提交你自己的图标吗？请在 FrogPilot Discord 的 "custom-themes" 频道分享它们！</translation>
-    </message>
-    <message>
-        <source>openpilot's sound effects.
-
-Want to submit your own sounds? Share them in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="gpt-4o-generated">openpilot 的音效。
-
-想提交您自己的声音吗？请在 FrogPilot Discord 的“custom-themes”频道中分享它们！</translation>
-    </message>
-    <message>
-        <source>The steering wheel icon in the top right of the driving screen.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕右上角的方向盘图标。</translation>
-    </message>
-    <message>
-        <source>Themed turn signal animations.
-
-Want to submit your own animations? Share them in the "custom-themes" channel on the FrogPilot Discord!</source>
-        <translation type="gpt-4o-generated">主题转向信号动画。
-
-想提交您自己的动画吗？请在 FrogPilot Discord 的“custom-themes”频道中分享它们！</translation>
-    </message>
-    <message>
-        <source>Holiday-based visual themes for openpilot. Minor holidays last one day; major holidays (Christmas, Easter, Halloween, etc.) continue all week.</source>
-        <translation type="gpt-4o-generated">基于节日的openpilot视觉主题。小节日持续一天；大节日（圣诞节、复活节、万圣节等）则持续一周。</translation>
-    </message>
-    <message>
-        <source>The path on the driving screen turns into a Mario Kart inspired "Rainbow Path".</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上的路径变成了受《马里奥赛车》启发的“彩虹路径”。</translation>
-    </message>
-    <message>
-        <source>Random cosmetic events that trigger after certain driving conditions. These events are purely for fun and don't affect driving controls!</source>
-        <translation type="gpt-4o-generated">在特定驾驶条件下触发的随机装饰性事件。这些事件纯属娱乐，不影响驾驶控制！</translation>
+        <source>&lt;b&gt;Occasional on-screen effects triggered by driving conditions.&lt;/b&gt; These are purely a visual and don't impact how openpilot drives!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;偶尔会出现由驾驶条件触发的屏幕效果。&lt;/b&gt;这些只是视觉效果，不会影响 openpilot 的驾驶方式！</translation>
     </message>
     <message>
         <source>Random Themes</source>
-        <translation type="gpt-4o-generated">随机主题</translation>
+        <translation type="gpt-5-generated">随机主题</translation>
     </message>
     <message>
-        <source>Cycles through your downloaded themes randomly on each boot, giving every theme in your collection a chance to shine!</source>
-        <translation type="gpt-4o-generated">在每次启动时随机循环播放您下载的主题，让您收藏中的每个主题都有机会展示！</translation>
+        <source>&lt;b&gt;Pick a random theme between each drive&lt;/b&gt; from the themes you have downloaded. Great for variety without changing settings while driving.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在每次行程之间随机选择一个主题&lt;/b&gt;，从你已下载的主题中挑选。无需在驾驶时更改设置即可获得多样化体验。</translation>
     </message>
     <message>
-        <source>The text of the "Startup Alert" message that appears at the beginning of a drive.</source>
-        <translation type="gpt-4o-generated">“启动警报”消息在行驶开始时出现的文本。</translation>
+        <source>Startup Alert</source>
+        <translation type="gpt-5-generated">启动警报</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" color scheme?</source>
-        <translation type="gpt-4o-generated">您确定要删除“%1”配色方案吗？</translation>
+        <source>&lt;b&gt;Customize the "Startup Alert" message&lt;/b&gt; shown at the start of each drive.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;自定义每次行程开始时显示的“启动警报”消息&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" distance icon pack?</source>
-        <translation type="gpt-4o-generated">您确定要删除“%1”距离图标包吗？</translation>
+        <source>DELETE</source>
+        <translation type="gpt-5-generated">删除</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" icon pack?</source>
-        <translation type="gpt-4o-generated">您确定要删除“%1”图标包吗？</translation>
+        <source>DOWNLOAD</source>
+        <translation type="gpt-5-generated">下载</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" signal animation?</source>
-        <translation type="gpt-4o-generated">您确定要删除“%1”信号动画吗？</translation>
+        <source>SELECT</source>
+        <translation type="gpt-5-generated">选择</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" sound pack?</source>
-        <translation type="gpt-4o-generated">您确定要删除“%1”音效包吗？</translation>
+        <source>Select a color scheme to delete</source>
+        <translation type="gpt-5-generated">选择要删除的配色方案</translation>
     </message>
     <message>
-        <source>Are you sure you want to delete the "%1" steering wheel?</source>
-        <translation type="gpt-4o-generated">您确定要删除 "%1" 方向盘吗？</translation>
+        <source>Delete the "%1" color scheme?</source>
+        <translation type="gpt-5-generated">删除“%1”配色方案？</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="gpt-5-generated">删除</translation>
+    </message>
+    <message>
+        <source>Select a color scheme to download</source>
+        <translation type="gpt-5-generated">选择要下载的配色方案</translation>
+    </message>
+    <message>
+        <source>Select a color scheme</source>
+        <translation type="gpt-5-generated">选择配色方案</translation>
+    </message>
+    <message>
+        <source>Select a distance icon pack to delete</source>
+        <translation type="gpt-5-generated">选择要删除的距离图标包</translation>
+    </message>
+    <message>
+        <source>Delete the "%1" distance icon pack?</source>
+        <translation type="gpt-5-generated">删除“%1”距离图标包？</translation>
+    </message>
+    <message>
+        <source>Select a distance icon pack to download</source>
+        <translation type="gpt-5-generated">选择要下载的距离图标包</translation>
+    </message>
+    <message>
+        <source>Select a distance icon pack</source>
+        <translation type="gpt-5-generated">选择距离图标包</translation>
+    </message>
+    <message>
+        <source>Select an icon pack to delete</source>
+        <translation type="gpt-5-generated">选择要删除的图标包</translation>
+    </message>
+    <message>
+        <source>Delete the "%1" icon pack?</source>
+        <translation type="gpt-5-generated">删除“%1”图标包？</translation>
+    </message>
+    <message>
+        <source>Select an icon pack to download</source>
+        <translation type="gpt-5-generated">选择要下载的图标包</translation>
+    </message>
+    <message>
+        <source>Select an icon pack</source>
+        <translation type="gpt-5-generated">选择一个图标包</translation>
+    </message>
+    <message>
+        <source>Select a signal animation to delete</source>
+        <translation type="gpt-5-generated">选择要删除的信号动画</translation>
+    </message>
+    <message>
+        <source>Delete the "%1" signal animation?</source>
+        <translation type="gpt-5-generated">删除“%1”信号动画？</translation>
+    </message>
+    <message>
+        <source>Select a signal animation to download</source>
+        <translation type="gpt-5-generated">选择要下载的信号动画</translation>
+    </message>
+    <message>
+        <source>Select a signal animation</source>
+        <translation type="gpt-5-generated">选择一个信号动画</translation>
+    </message>
+    <message>
+        <source>Select a sound pack to delete</source>
+        <translation type="gpt-5-generated">选择要删除的音效包</translation>
+    </message>
+    <message>
+        <source>Delete the "%1" sound pack?</source>
+        <translation type="gpt-5-generated">删除“%1”音效包？</translation>
+    </message>
+    <message>
+        <source>Select a sound pack to download</source>
+        <translation type="gpt-5-generated">选择要下载的音效包</translation>
+    </message>
+    <message>
+        <source>Select a sound pack</source>
+        <translation type="gpt-5-generated">选择音效包</translation>
+    </message>
+    <message>
+        <source>Select a steering wheel to delete</source>
+        <translation type="gpt-5-generated">选择要删除的方向盘</translation>
+    </message>
+    <message>
+        <source>Delete the "%1" steering wheel?</source>
+        <translation type="gpt-5-generated">删除“%1”方向盘？</translation>
+    </message>
+    <message>
+        <source>Select a steering wheel to download</source>
+        <translation type="gpt-5-generated">选择要下载的方向盘</translation>
+    </message>
+    <message>
+        <source>Select a steering wheel</source>
+        <translation type="gpt-5-generated">选择一个方向盘</translation>
+    </message>
+    <message>
+        <source>STOCK</source>
+        <translation type="gpt-5-generated">库存</translation>
+    </message>
+    <message>
+        <source>FROGPILOT</source>
+        <translation type="gpt-5-generated">FROGPILOT</translation>
+    </message>
+    <message>
+        <source>CUSTOM</source>
+        <translation type="gpt-5-generated">自定义</translation>
+    </message>
+    <message>
+        <source>CLEAR</source>
+        <translation type="gpt-5-generated">清除</translation>
+    </message>
+    <message>
+        <source>Enter the text for the top half</source>
+        <translation type="gpt-5-generated">输入上半部分的文本</translation>
+    </message>
+    <message>
+        <source>Characters: 0/%1</source>
+        <translation type="gpt-5-generated">字符数：0/%1</translation>
+    </message>
+    <message>
+        <source>Enter the text for the bottom half</source>
+        <translation type="gpt-5-generated">请输入下半部分的文本</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to completely reset your startup message?</source>
+        <translation type="gpt-5-generated">您确定要完全重置您的启动消息吗？</translation>
     </message>
     <message>
         <source>"Random Themes" only works with downloaded themes, so make sure you download the themes you want it to use!</source>
-        <translation type="gpt-4o-generated">“随机主题”仅适用于已下载的主题，因此请确保下载您希望使用的主题！</translation>
+        <translation type="gpt-5-generated">“随机主题”仅适用于已下载的主题，请确保下载你希望它使用的主题！</translation>
+    </message>
+    <message>
+        <source>CANCEL</source>
+        <translation type="gpt-5-generated">取消</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotUtilitiesPanel</name>
     <message>
+        <source>Debug Mode</source>
+        <translation type="gpt-5-generated">调试模式</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Use FrogPilot's developer metrics on your next drive&lt;/b&gt; to diagnose issues and improve bug reports.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在下次驾驶中使用 FrogPilot 的开发者指标&lt;/b&gt;，以诊断问题并改进错误报告。</translation>
+    </message>
+    <message>
         <source>Flash Panda</source>
-        <translation type="gpt-4o-generated">闪烁熊猫</translation>
+        <translation type="gpt-5-generated">刷写Panda</translation>
     </message>
     <message>
         <source>FLASH</source>
-        <translation type="gpt-4o-generated">闪存</translation>
+        <translation type="gpt-5-generated">闪光</translation>
     </message>
     <message>
-        <source>Are you sure you want to flash the Panda?</source>
-        <translation type="gpt-4o-generated">您确定要刷新Panda吗？</translation>
+        <source>&lt;b&gt;Reinstall the Panda firmware&lt;/b&gt; to fix connection or reliability issues.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;重新安装 Panda 固件&lt;/b&gt;以修复连接或可靠性问题。</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to flash the Panda firmware?</source>
+        <translation type="gpt-5-generated">您确定要刷写 Panda 固件吗？</translation>
     </message>
     <message>
         <source>Flash</source>
-        <translation type="gpt-4o-generated">闪存</translation>
+        <translation type="gpt-5-generated">闪光</translation>
     </message>
     <message>
         <source>Flashing...</source>
-        <translation type="gpt-4o-generated">正在刷新…</translation>
+        <translation type="gpt-5-generated">正在刷新…</translation>
     </message>
     <message>
         <source>Flashed!</source>
-        <translation type="gpt-4o-generated">已刷写！</translation>
+        <translation type="gpt-5-generated">已刷写！</translation>
     </message>
     <message>
         <source>Rebooting...</source>
-        <translation type="gpt-4o-generated">正在重启...</translation>
+        <translation type="gpt-5-generated">正在重启…</translation>
     </message>
     <message>
-        <source>Force Started State</source>
-        <translation type="gpt-4o-generated">强制启动状态</translation>
+        <source>Force Drive State</source>
+        <translation type="gpt-5-generated">强制驾驶状态</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manually set openpilot to be offroad or onroad.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;手动将 openpilot 设置为离线或在线。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>OFFROAD</source>
-        <translation type="gpt-4o-generated">离线</translation>
+        <translation type="gpt-5-generated">越野</translation>
     </message>
     <message>
         <source>ONROAD</source>
-        <translation type="gpt-4o-generated">行驶中</translation>
+        <translation type="gpt-5-generated">行车模式</translation>
     </message>
     <message>
         <source>OFF</source>
-        <translation type="gpt-4o-generated">关闭</translation>
+        <translation type="gpt-5-generated">关闭</translation>
     </message>
     <message>
         <source>Report a Bug or an Issue</source>
-        <translation type="gpt-4o-generated">报告错误或问题</translation>
+        <translation type="gpt-5-generated">报告错误或问题</translation>
     </message>
     <message>
         <source>REPORT</source>
-        <translation type="gpt-4o-generated">报告</translation>
+        <translation type="gpt-5-generated">报告</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Send a bug report&lt;/b&gt; so we can help fix the problem!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;发送错误报告&lt;/b&gt;，以便我们帮助修复问题！</translation>
+    </message>
+    <message>
+        <source>Please connect to the internet before sending a report!</source>
+        <translation type="gpt-5-generated">发送报告前请先连接到互联网！</translation>
+    </message>
+    <message>
+        <source>I saw an alert that said "openpilot crashed"</source>
+        <translation type="gpt-5-generated">我看到一个警报显示“openpilot 崩溃”</translation>
+    </message>
+    <message>
+        <source>Acceleration feels harsh or jerky</source>
+        <translation type="gpt-5-generated">加速感觉生硬或顿挫</translation>
+    </message>
+    <message>
+        <source>An alert was unclear and I didn't know what it meant</source>
+        <translation type="gpt-5-generated">有个警报不清楚，我不知道它是什么意思</translation>
+    </message>
+    <message>
+        <source>Braking is too sudden or uncomfortable</source>
+        <translation type="gpt-5-generated">制动过于突然或不舒适</translation>
+    </message>
+    <message>
+        <source>I'm not sure if this is normal or a bug:</source>
+        <translation type="gpt-5-generated">我不确定这是正常情况还是一个错误：</translation>
+    </message>
+    <message>
+        <source>My screen froze or is stuck loading something</source>
+        <translation type="gpt-5-generated">我的屏幕卡住了或一直在加载内容</translation>
+    </message>
+    <message>
+        <source>My steering wheel buttons aren't working</source>
+        <translation type="gpt-5-generated">我的方向盘按键无法使用</translation>
+    </message>
+    <message>
+        <source>openpilot disengages when I don't expect it</source>
+        <translation type="gpt-5-generated">openpilot 在我意料之外时会退出控制</translation>
+    </message>
+    <message>
+        <source>openpilot doesn't react to stopped vehicles ahead</source>
+        <translation type="gpt-5-generated">openpilot不会对前方静止车辆作出反应</translation>
+    </message>
+    <message>
+        <source>openpilot doesn't resume from a stop</source>
+        <translation type="gpt-5-generated">openpilot不会从停止状态恢复</translation>
+    </message>
+    <message>
+        <source>openpilot feels sluggish or slow to respond</source>
+        <translation type="gpt-5-generated">openpilot 感觉迟缓或响应缓慢</translation>
+    </message>
+    <message>
+        <source>Steering feels twitchy or unnatural</source>
+        <translation type="gpt-5-generated">转向感觉抽搐或不自然</translation>
+    </message>
+    <message>
+        <source>The car doesn't follow curves well</source>
+        <translation type="gpt-5-generated">车辆在转弯时跟随得不好</translation>
+    </message>
+    <message>
+        <source>The car isn't staying centered in its lane</source>
+        <translation type="gpt-5-generated">车辆未能保持在车道中央</translation>
+    </message>
+    <message>
+        <source>Something else (please describe)</source>
+        <translation type="gpt-5-generated">其他（请描述）</translation>
     </message>
     <message>
         <source>What's going on?</source>
-        <translation type="gpt-4o-generated">发生了什么？</translation>
+        <translation type="gpt-5-generated">发生了什么？</translation>
     </message>
     <message>
         <source>Please describe what's happening</source>
-        <translation type="gpt-4o-generated">请描述正在发生的情况</translation>
+        <translation type="gpt-5-generated">请描述正在发生的情况</translation>
     </message>
     <message>
         <source>Send Report</source>
-        <translation type="gpt-4o-generated">发送报告</translation>
+        <translation type="gpt-5-generated">发送报告</translation>
     </message>
     <message>
         <source>What's your Discord username?</source>
-        <translation type="gpt-4o-generated">你的 Discord 用户名是什么？</translation>
+        <translation type="gpt-5-generated">你的 Discord 用户名是什么？</translation>
+    </message>
+    <message>
+        <source>Report Sent! Thanks for letting us know!</source>
+        <translation type="gpt-5-generated">报告已发送！感谢告知！</translation>
     </message>
     <message>
         <source>Reset Toggles to Default</source>
-        <translation type="gpt-4o-generated">重置切换为默认设置</translation>
+        <translation type="gpt-5-generated">将切换项重置为默认设置</translation>
     </message>
     <message>
         <source>RESET</source>
-        <translation type="gpt-4o-generated">重置</translation>
+        <translation type="gpt-5-generated">重置</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation type="gpt-4o-generated">重置</translation>
-    </message>
-    <message>
-        <source>Resetting...</source>
-        <translation type="gpt-4o-generated">正在重置…</translation>
-    </message>
-    <message>
-        <source>Reset!</source>
-        <translation type="gpt-4o-generated">重置！</translation>
-    </message>
-    <message>
-        <source>Debug Mode</source>
-        <translation type="gpt-4o-generated">调试模式</translation>
-    </message>
-    <message>
-        <source>Debug FrogPilot during the next drive by utilizing all of FrogPilot's developer metrics for either bug reporting, or self-debugging.</source>
-        <translation type="gpt-4o-generated">在下次驾驶时，通过利用所有FrogPilot的开发者指标来调试FrogPilot，以进行错误报告或自我调试。</translation>
-    </message>
-    <message>
-        <source>Force openpilot either offroad or onroad.</source>
-        <translation type="gpt-4o-generated">强制将openpilot置于离线或在线状态。</translation>
-    </message>
-    <message>
-        <source>Your report has been submitted. Thanks for letting us know!</source>
-        <translation type="gpt-4o-generated">您的报告已提交。感谢您的反馈！</translation>
-    </message>
-    <message>
-        <source>Flash the Panda's firmware. Use if you're running into issues with the Panda.</source>
-        <translation type="gpt-4o-generated">刷新Panda的固件。如果您遇到Panda的问题，请使用此选项。</translation>
-    </message>
-    <message>
-        <source>I saw an alert that said &lt;b&gt;openpilot crashed&lt;/b&gt;</source>
-        <translation type="gpt-4o-generated">我看到一个警报说&lt;b&gt;openpilot崩溃&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>I'm noticing harsh acceleration</source>
-        <translation type="gpt-4o-generated">我注意到加速过猛</translation>
-    </message>
-    <message>
-        <source>I'm noticing harsh braking</source>
-        <translation type="gpt-4o-generated">我注意到刹车过猛</translation>
-    </message>
-    <message>
-        <source>I'm noticing unusual steering</source>
-        <translation type="gpt-4o-generated">我注意到转向异常</translation>
-    </message>
-    <message>
-        <source>My car isn't staying in its lane</source>
-        <translation type="gpt-4o-generated">我的车没有保持在车道内</translation>
-    </message>
-    <message>
-        <source>Something else</source>
-        <translation type="gpt-4o-generated">其他内容</translation>
-    </message>
-    <message>
-        <source>Let FrogsGoMoo know about an issue you're facing!</source>
-        <translation type="gpt-4o-generated">让 FrogsGoMoo 知道您遇到的问题！</translation>
-    </message>
-    <message>
-        <source>Reset all toggles to their default values.</source>
-        <translation type="gpt-4o-generated">将所有切换项重置为默认值。</translation>
+        <source>&lt;b&gt;Reset all toggles to their default values.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将所有切换项重置为其默认值。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Are you sure you want to reset all toggles to their default values?</source>
-        <translation type="gpt-4o-generated">您确定要将所有切换按钮重置为默认值吗？</translation>
+        <translation type="gpt-5-generated">您确定要将所有切换项重置为默认值吗？</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation type="gpt-5-generated">重置</translation>
+    </message>
+    <message>
+        <source>Resetting...</source>
+        <translation type="gpt-5-generated">正在重置…</translation>
+    </message>
+    <message>
+        <source>Reset!</source>
+        <translation type="gpt-5-generated">重置！</translation>
+    </message>
+    <message>
+        <source>Reset Toggles to Stock openpilot</source>
+        <translation type="gpt-5-generated">将切换项重置为原厂 openpilot</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Reset all toggles to match stock openpilot.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;将所有切换项重置为与原版 openpilot 一致。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to reset all toggles to match stock openpilot?</source>
+        <translation type="gpt-5-generated">您确定要将所有开关重置为与原版 openpilot 匹配吗？</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotVehiclesPanel</name>
     <message>
-        <source>Select Make</source>
-        <translation type="gpt-4o-generated">选择制造商</translation>
+        <source>Car Make</source>
+        <translation type="gpt-5-generated">汽车品牌</translation>
     </message>
     <message>
         <source>SELECT</source>
-        <translation type="gpt-4o-generated">选择</translation>
+        <translation type="gpt-5-generated">选择</translation>
     </message>
     <message>
-        <source>Select a Make</source>
-        <translation type="gpt-4o-generated">选择一个品牌</translation>
+        <source>Choose your car make</source>
+        <translation type="gpt-5-generated">选择您的汽车品牌</translation>
     </message>
     <message>
-        <source>Select Model</source>
-        <translation type="gpt-4o-generated">选择模型</translation>
+        <source>Car Model</source>
+        <translation type="gpt-5-generated">车型</translation>
     </message>
     <message>
-        <source>Select a Model</source>
-        <translation type="gpt-4o-generated">选择模型</translation>
+        <source>Choose your car model</source>
+        <translation type="gpt-5-generated">选择你的车型</translation>
     </message>
     <message>
         <source>Disable Automatic Fingerprint Detection</source>
-        <translation type="gpt-4o-generated">禁用自动指纹检测</translation>
+        <translation type="gpt-5-generated">禁用自动指纹检测</translation>
     </message>
     <message>
-        <source>Forces the selected fingerprint and prevents it from ever changing.</source>
-        <translation type="gpt-4o-generated">强制使用所选指纹，并防止其更改。</translation>
+        <source>&lt;b&gt;Force the selected fingerprint&lt;/b&gt; and prevent it from ever changing.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;强制使用所选指纹&lt;/b&gt;并防止其发生任何更改。</translation>
     </message>
     <message>
         <source>Disable openpilot Longitudinal Control</source>
-        <translation type="gpt-4o-generated">禁用 openpilot 纵向控制</translation>
+        <translation type="gpt-5-generated">禁用 openpilot 纵向控制</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Disable openpilot longitudinal&lt;/b&gt; and use the car's stock ACC instead.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;禁用 openpilot 纵向控制&lt;/b&gt;，改用车辆原厂 ACC。</translation>
     </message>
     <message>
         <source>Are you sure you want to completely disable openpilot longitudinal control?</source>
-        <translation type="gpt-4o-generated">您确定要完全禁用openpilot纵向控制吗？</translation>
-    </message>
-    <message>
-        <source>Automatically Lock/Unlock Doors</source>
-        <translation type="gpt-4o-generated">自动锁定/解锁车门</translation>
-    </message>
-    <message>
-        <source>Cluster Speed Offset</source>
-        <translation type="gpt-4o-generated">仪表盘速度偏移</translation>
-    </message>
-    <message>
-        <source>Lock</source>
-        <translation type="gpt-4o-generated">锁定</translation>
-    </message>
-    <message>
-        <source>Unlock</source>
-        <translation type="gpt-4o-generated">解锁</translation>
-    </message>
-    <message>
-        <source>Disables openpilot longitudinal control and uses the car's stock ACC instead.</source>
-        <translation type="gpt-4o-generated">禁用 openpilot 纵向控制，改为使用汽车的原厂自适应巡航控制（ACC）。</translation>
-    </message>
-    <message>
-        <source>MANAGE</source>
-        <translation type="gpt-4o-generated">管理</translation>
-    </message>
-    <message>
-        <source>Lock Doors On Ignition Off After</source>
-        <translation type="gpt-4o-generated">点火关闭后锁门</translation>
-    </message>
-    <message>
-        <source>Never</source>
-        <translation type="gpt-4o-generated">从不</translation>
-    </message>
-    <message>
-        <source>Stop and Go Hack</source>
-        <translation type="gpt-4o-generated">启停破解</translation>
-    </message>
-    <message>
-        <source>comma's New Longitudinal API</source>
-        <translation type="gpt-4o-generated">Comma 的新纵向 API</translation>
-    </message>
-    <message>
-        <source>FrogsGoMoo's Personal Tweaks</source>
-        <translation type="gpt-4o-generated">FrogsGoMoo的个人调整</translation>
-    </message>
-    <message>
-        <source>Automatically lock the doors after the car's ignition has been turned off and no one is detected in either of the front seats.</source>
-        <translation type="gpt-4o-generated">汽车点火关闭后，若前排座位无人，则自动锁门。</translation>
+        <translation type="gpt-5-generated">您确定要完全禁用 openpilot 纵向控制吗？</translation>
     </message>
     <message>
         <source>General Motors Settings</source>
-        <translation type="gpt-4o-generated">通用汽车设置</translation>
+        <translation type="gpt-5-generated">通用汽车设置</translation>
     </message>
     <message>
-        <source>Settings specific to &lt;b&gt;General Motors&lt;/b&gt; vehicles.</source>
-        <translation type="gpt-4o-generated">&lt;b&gt;通用汽车&lt;/b&gt;车辆的特定设置。</translation>
+        <source>&lt;b&gt;FrogPilot features for General Motors vehicles.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;适用于通用汽车车辆的 FrogPilot 功能。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>FrogsGoMoo's Experimental Tune</source>
-        <translation type="gpt-4o-generated">FrogsGoMoo的实验调校</translation>
+        <translation type="gpt-5-generated">FrogsGoMoo 的实验调校</translation>
     </message>
     <message>
-        <source>&lt;b&gt;FrogsGoMoo's&lt;/b&gt; experimental &lt;b&gt;General Motors&lt;/b&gt; tune that aims to smoothen out stopping and takeoff control based on nothing but guesswork. Use at your own risk!</source>
-        <translation type="gpt-4o-generated">&lt;b&gt;FrogsGoMoo&lt;/b&gt; 的实验性 &lt;b&gt;通用汽车&lt;/b&gt; 调校，旨在仅凭猜测平滑停止和起步控制。使用风险自负！</translation>
+        <source>&lt;b&gt;Experimental GM tune by FrogsGoMoo&lt;/b&gt; that attempts to smoothen stopping and takeoff control. Use at your own risk!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;FrogsGoMoo 的实验性 GM 调校&lt;/b&gt;，尝试平滑停车和起步控制。风险自负！</translation>
     </message>
     <message>
         <source>Smooth Pedal Response on Hills</source>
-        <translation type="gpt-4o-generated">在坡道上平稳的油门响应</translation>
+        <translation type="gpt-5-generated">坡道上的平顺踏板响应</translation>
     </message>
     <message>
-        <source>Smoothen the acceleration and braking when driving uphill or downhill.</source>
-        <translation type="gpt-4o-generated">在上下坡时平滑加速和制动。</translation>
+        <source>&lt;b&gt;Smoothen acceleration and braking&lt;/b&gt; when driving downhill/uphill.</source>
+        <translation type="gpt-5-generated">在下坡/上坡驾驶时&lt;b&gt;平顺加速和制动&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>Force stop and go on the &lt;b&gt;2017 Chevy Volt&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">在&lt;b&gt;2017款雪佛兰沃尔特&lt;/b&gt;上强制启停。</translation>
+        <source>Stop-and-Go Hack</source>
+        <translation type="gpt-5-generated">走走停停优化 Hack</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Force stop-and-go&lt;/b&gt; on the 2017 Chevy Volt.</source>
+        <translation type="gpt-5-generated">在2017款雪佛兰Volt上&lt;b&gt;强制启停&lt;/b&gt;。</translation>
     </message>
     <message>
         <source>Hyundai/Kia/Genesis Settings</source>
-        <translation type="gpt-4o-generated">现代/起亚/捷尼赛思设置</translation>
+        <translation type="gpt-5-generated">现代/起亚/捷尼赛思设置</translation>
     </message>
     <message>
-        <source>Settings specific to &lt;b&gt;Hyundai&lt;/b&gt;, &lt;b&gt;Kia&lt;/b&gt;, and &lt;b&gt;Genesis&lt;/b&gt; vehicles.</source>
-        <translation type="gpt-4o-generated">适用于&lt;b&gt;现代&lt;/b&gt;、&lt;b&gt;起亚&lt;/b&gt;和&lt;b&gt;捷尼赛思&lt;/b&gt;车辆的设置。</translation>
+        <source>&lt;b&gt;FrogPilot features for Genesis, Hyundai, and Kia vehicles.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;适用于Genesis、现代和起亚车辆的FrogPilot功能。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>comma's new longitudinal control system that has shown great improvement with acceleration and braking, but has issues on some &lt;b&gt;Hyundai&lt;/b&gt;/&lt;b&gt;Kia&lt;/b&gt;/&lt;b&gt;Genesis&lt;/b&gt; vehicles.</source>
-        <translation type="gpt-4o-generated">comma 最新的纵向控制系统在加速和制动方面表现出显著改进，但在某些&lt;b&gt;现代&lt;/b&gt;/&lt;b&gt;起亚&lt;/b&gt;/&lt;b&gt;捷尼赛思&lt;/b&gt;车辆上存在问题。</translation>
+        <source>comma's New Longitudinal API</source>
+        <translation type="gpt-5-generated">comma 的新纵向 API</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;comma's new gas and brake control system&lt;/b&gt; that improves acceleration and braking but may cause issues on some Genesis/Hyundai/Kia vehicles.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;comma 的新油门和刹车控制系统&lt;/b&gt;，可改善加速和制动，但可能在部分 Genesis/Hyundai/Kia 车辆上引发问题。</translation>
+    </message>
+    <message>
+        <source>"Taco Bell Run" Torque Hack</source>
+        <translation type="gpt-5-generated">“Taco Bell Run”扭矩破解</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;The steering torque hack from comma's 2022 "Taco Bell Run".&lt;/b&gt; Designed to increase steering torque at low speeds for left and right turns.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;来自comma 2022年“Taco Bell Run”的转向扭矩破解。&lt;/b&gt;旨在在低速左转和右转时提高转向扭矩。</translation>
     </message>
     <message>
         <source>Toyota/Lexus Settings</source>
-        <translation type="gpt-4o-generated">丰田/雷克萨斯设置</translation>
+        <translation type="gpt-5-generated">Toyota/Lexus 设置</translation>
     </message>
     <message>
-        <source>Settings specific to &lt;b&gt;Toyota&lt;/b&gt; and &lt;b&gt;Lexus&lt;/b&gt; vehicles.</source>
-        <translation type="gpt-4o-generated">针对&lt;b&gt;丰田&lt;/b&gt;和&lt;b&gt;雷克萨斯&lt;/b&gt;车辆的特定设置。</translation>
+        <source>&lt;b&gt;FrogPilot features for Lexus and Toyota vehicles.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;Lexus 和 Toyota 车辆的 FrogPilot 功能。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Automatically lock the doors when shifting into drive and unlock them when shifting into park.</source>
-        <translation type="gpt-4o-generated">在换入行驶档时自动锁定车门，在换入停车档时自动解锁车门。</translation>
+        <source>Automatically Lock/Unlock Doors</source>
+        <translation type="gpt-5-generated">自动锁定/解锁车门</translation>
     </message>
     <message>
-        <source>The cluster speed offset used by openpilot to match the speed displayed on the dash.</source>
-        <translation type="gpt-4o-generated">openpilot 用于匹配仪表盘显示速度的集群速度偏移值。</translation>
+        <source>&lt;b&gt;Automatically lock/unlock doors&lt;/b&gt; when shifting in and out of drive.</source>
+        <translation type="gpt-5-generated">在切换进出行驶挡时&lt;b&gt;自动锁定/解锁车门&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>&lt;b&gt;FrogsGoMoo's&lt;/b&gt; personal tweaks for quicker acceleration and smoother braking.</source>
-        <translation type="gpt-4o-generated">&lt;b&gt;FrogsGoMoo的&lt;/b&gt;个性化调整，以实现更快的加速和更平稳的制动。</translation>
+        <source>Dashboard Speed Offset</source>
+        <translation type="gpt-5-generated">仪表盘车速偏移</translation>
     </message>
     <message>
-        <source>Force stop and go on &lt;b&gt;Toyota&lt;/b&gt;/&lt;b&gt;Lexus&lt;/b&gt; vehicles without stock stop and go functionality.</source>
-        <translation type="gpt-4o-generated">在没有原厂启停功能的&lt;b&gt;丰田&lt;/b&gt;/&lt;b&gt;雷克萨斯&lt;/b&gt;车辆上强制启停。</translation>
+        <source>&lt;b&gt;The speed offset openpilot uses to match the speed on the dashboard display.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 用于匹配仪表盘显示速度的速度偏移量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>FrogsGoMoo's Personal Tweaks</source>
+        <translation type="gpt-5-generated">FrogsGoMoo 的个人调整</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Personal tweaks by FrogsGoMoo for quicker acceleration and smoother braking.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;由 FrogsGoMoo 提供的个人调整，实现更快的加速和更平顺的制动。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Lock Doors On Ignition Off After</source>
+        <translation type="gpt-5-generated">点火关闭后锁门</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Automatically lock the doors on ignition off&lt;/b&gt; when no one is detected in the front seats.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当点火关闭时自动锁门&lt;/b&gt;，如果未检测到前排座位有人。</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Force stop-and-go&lt;/b&gt; on Lexus/Toyota vehicles without stock stop-and-go functionality.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在不具备原厂走走停停功能的雷克萨斯/丰田车辆上强制启用走走停停&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>MANAGE</source>
+        <translation type="gpt-5-generated">管理</translation>
+    </message>
+    <message>
+        <source>Lock</source>
+        <translation type="gpt-5-generated">锁定</translation>
+    </message>
+    <message>
+        <source>Unlock</source>
+        <translation type="gpt-5-generated">解锁</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation type="gpt-5-generated">从不</translation>
     </message>
     <message>
         <source> seconds</source>
-        <translation type="gpt-4o-generated">秒</translation>
+        <translation type="gpt-5-generated">秒</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="gpt-5-generated">无</translation>
+    </message>
+    <message>
+        <source>Vehicle Info</source>
+        <translation type="gpt-5-generated">车辆信息</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Information about your vehicle in regards to openpilot support and functionality.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;有关您的车辆在 openpilot 支持与功能方面的信息。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Detected 3rd party hardware.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;检测到第三方硬件。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>openpilot Longitudinal Support</source>
+        <translation type="gpt-5-generated">openpilot 纵向支持</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Can openpilot control the vehicle's acceleration and braking?&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot可以控制车辆的加速和制动吗？&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Does your vehicle support the "comma pedal"?&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;您的车辆支持“comma pedal”吗？&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Radar Support</source>
+        <translation type="gpt-5-generated">雷达支持</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Does openpilot use the vehicle's radar data&lt;/b&gt; alongside the device's camera for tracking lead vehicles?</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 是否会在使用设备摄像头跟踪前车的同时使用车辆的雷达数据&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>SDSU Support</source>
+        <translation type="gpt-5-generated">SDSU 支持</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Does your vehicle support "SDSUs"?&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;您的车辆是否支持“SDSUs”？&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Stop-and-Go Support</source>
+        <translation type="gpt-5-generated">走走停停支持</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Does your vehicle support stop-and-go driving?&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;您的车辆是否支持走走停停的驾驶？&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation type="gpt-5-generated">查看</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation type="gpt-5-generated">是</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation type="gpt-5-generated">否</translation>
+    </message>
+    <message>
+        <source>3rd Party Hardware Detected</source>
+        <translation type="gpt-5-generated">检测到第三方硬件</translation>
+    </message>
+    <message>
+        <source>Blind Spot Support</source>
+        <translation type="gpt-5-generated">盲点辅助支持</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Does openpilot use the vehicle's blind spot data?&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;openpilot 会使用车辆的盲点数据吗？&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>comma Pedal Support</source>
+        <translation type="gpt-5-generated">comma Pedal 支持</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotVisualsPanel</name>
     <message>
-        <source>Compass</source>
-        <translation type="gpt-4o-generated">罗盘</translation>
-    </message>
-    <message>
-        <source>Dynamic Path Width</source>
-        <translation type="gpt-4o-generated">动态路径宽度</translation>
-    </message>
-    <message>
-        <source>Road Name</source>
-        <translation type="gpt-4o-generated">路名</translation>
-    </message>
-    <message>
-        <source>Rotating Steering Wheel</source>
-        <translation type="gpt-4o-generated">旋转方向盘</translation>
-    </message>
-    <message>
-        <source>Larger Map Display</source>
-        <translation type="gpt-4o-generated">更大的地图显示</translation>
-    </message>
-    <message>
-        <source>Map Style</source>
-        <translation type="gpt-4o-generated">地图样式</translation>
-    </message>
-    <message>
-        <source>Show Driver Camera When In Reverse</source>
-        <translation type="gpt-4o-generated">倒车时显示驾驶员摄像头</translation>
-    </message>
-    <message>
-        <source>Stopped Timer</source>
-        <translation type="gpt-4o-generated">停止计时器</translation>
-    </message>
-    <message>
-        <source>Blind Spot</source>
-        <translation type="gpt-4o-generated">盲点</translation>
-    </message>
-    <message>
-        <source>Dynamic</source>
-        <translation type="gpt-4o-generated">动态</translation>
-    </message>
-    <message>
-        <source>Static</source>
-        <translation type="gpt-4o-generated">静态</translation>
-    </message>
-    <message>
-        <source>Full Map</source>
-        <translation type="gpt-4o-generated">完整地图</translation>
-    </message>
-    <message>
-        <source>Mapbox Streets</source>
-        <translation type="gpt-4o-generated">Mapbox 街道</translation>
-    </message>
-    <message>
-        <source>Mapbox Outdoors</source>
-        <translation type="gpt-4o-generated">Mapbox 户外地图</translation>
-    </message>
-    <message>
-        <source>Mapbox Light</source>
-        <translation type="gpt-4o-generated">Mapbox Light</translation>
-    </message>
-    <message>
-        <source>Mapbox Dark</source>
-        <translation type="gpt-4o-generated">Mapbox 深色模式</translation>
-    </message>
-    <message>
-        <source>Mapbox Satellite</source>
-        <translation type="gpt-4o-generated">Mapbox 卫星地图</translation>
-    </message>
-    <message>
-        <source>Mapbox Satellite Streets</source>
-        <translation type="gpt-4o-generated">Mapbox 卫星街道</translation>
-    </message>
-    <message>
-        <source>Mapbox Navigation Day</source>
-        <translation type="gpt-4o-generated">Mapbox导航日</translation>
-    </message>
-    <message>
-        <source>Mapbox Navigation Night</source>
-        <translation type="gpt-4o-generated">Mapbox导航夜间模式</translation>
-    </message>
-    <message>
-        <source>Mapbox Traffic Night</source>
-        <translation type="gpt-4o-generated">Mapbox 夜间交通</translation>
-    </message>
-    <message>
-        <source>mike854's (Satellite hybrid)</source>
-        <translation type="gpt-4o-generated">mike854的（卫星混合）</translation>
-    </message>
-    <message>
-        <source>SELECT</source>
-        <translation type="gpt-4o-generated">选择</translation>
-    </message>
-    <message>
-        <source>Select a map style</source>
-        <translation type="gpt-4o-generated">选择地图样式</translation>
-    </message>
-    <message>
-        <source>Visual features to improve your overall openpilot experience.</source>
-        <translation type="gpt-4o-generated">视觉功能以提升您的整体 openpilot 体验。</translation>
-    </message>
-    <message>
-        <source>Camera View</source>
-        <translation type="gpt-4o-generated">摄像头视图</translation>
-    </message>
-    <message>
-        <source>Standby Mode</source>
-        <translation type="gpt-4o-generated">待机模式</translation>
-    </message>
-    <message>
         <source>Advanced UI Controls</source>
-        <translation type="gpt-4o-generated">高级用户界面控件</translation>
+        <translation type="gpt-5-generated">高级界面控件</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Advanced visual changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;高级视觉更改&lt;/b&gt;，用于微调驾驶屏幕的外观。</translation>
     </message>
     <message>
         <source>Hide Current Speed</source>
-        <translation type="gpt-4o-generated">隐藏当前速度</translation>
+        <translation type="gpt-5-generated">隐藏当前速度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Hide the current speed&lt;/b&gt; from the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕中隐藏当前速度&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Hide Lead Marker</source>
-        <translation type="gpt-4o-generated">隐藏前车标记</translation>
+        <translation type="gpt-5-generated">隐藏前车标记</translation>
     </message>
     <message>
-        <source>Hide Max Speed</source>
-        <translation type="gpt-4o-generated">隐藏最高速度</translation>
-    </message>
-    <message>
-        <source>Hide Non-Critical Alerts</source>
-        <translation type="gpt-4o-generated">隐藏非关键警报</translation>
-    </message>
-    <message>
-        <source>Hide Speed Limits</source>
-        <translation type="gpt-4o-generated">隐藏限速信息</translation>
-    </message>
-    <message>
-        <source>Use Wheel Speed</source>
-        <translation type="gpt-4o-generated">使用车轮速度</translation>
-    </message>
-    <message>
-        <source>Developer UI</source>
-        <translation type="gpt-4o-generated">开发者界面</translation>
-    </message>
-    <message>
-        <source>Developer Metrics</source>
-        <translation type="gpt-4o-generated">开发者指标</translation>
-    </message>
-    <message>
-        <source>Border Metrics</source>
-        <translation type="gpt-4o-generated">边界指标</translation>
-    </message>
-    <message>
-        <source>FPS Display</source>
-        <translation type="gpt-4o-generated">FPS显示</translation>
-    </message>
-    <message>
-        <source>Lateral Metrics</source>
-        <translation type="gpt-4o-generated">横向指标</translation>
-    </message>
-    <message>
-        <source>Longitudinal Metrics</source>
-        <translation type="gpt-4o-generated">纵向指标</translation>
-    </message>
-    <message>
-        <source>Numerical Temperature Gauge</source>
-        <translation type="gpt-4o-generated">数字温度计</translation>
-    </message>
-    <message>
-        <source>Sidebar</source>
-        <translation type="gpt-4o-generated">侧边栏</translation>
-    </message>
-    <message>
-        <source>Use International System of Units</source>
-        <translation type="gpt-4o-generated">使用国际单位制</translation>
-    </message>
-    <message>
-        <source>Developer Widgets</source>
-        <translation type="gpt-4o-generated">开发者小部件</translation>
-    </message>
-    <message>
-        <source>Model Stopping Point</source>
-        <translation type="gpt-4o-generated">模型停止点</translation>
-    </message>
-    <message>
-        <source>Model UI</source>
-        <translation type="gpt-4o-generated">模型用户界面</translation>
-    </message>
-    <message>
-        <source>Lane Lines Width</source>
-        <translation type="gpt-4o-generated">车道线宽度</translation>
-    </message>
-    <message>
-        <source>Path Edges Width</source>
-        <translation type="gpt-4o-generated">路径边缘宽度</translation>
-    </message>
-    <message>
-        <source>Path Width</source>
-        <translation type="gpt-4o-generated">路径宽度</translation>
-    </message>
-    <message>
-        <source>Road Edges Width</source>
-        <translation type="gpt-4o-generated">道路边缘宽度</translation>
-    </message>
-    <message>
-        <source>Navigation Widgets</source>
-        <translation type="gpt-4o-generated">导航小部件</translation>
-    </message>
-    <message>
-        <source>Show Speed Limits</source>
-        <translation type="gpt-4o-generated">显示限速</translation>
-    </message>
-    <message>
-        <source>Use Vienna-Style Speed Signs</source>
-        <translation type="gpt-4o-generated">使用维也纳风格的速度标志</translation>
-    </message>
-    <message>
-        <source>Acceleration Path</source>
-        <translation type="gpt-4o-generated">加速路径</translation>
-    </message>
-    <message>
-        <source>Adjacent Lanes</source>
-        <translation type="gpt-4o-generated">相邻车道</translation>
-    </message>
-    <message>
-        <source>Blind Spot Path</source>
-        <translation type="gpt-4o-generated">盲点路径</translation>
-    </message>
-    <message>
-        <source>Gas / Brake Pedal Indicators</source>
-        <translation type="gpt-4o-generated">油门/刹车踏板指示器</translation>
-    </message>
-    <message>
-        <source>Auto</source>
-        <translation type="gpt-4o-generated">自动</translation>
-    </message>
-    <message>
-        <source>Driver</source>
-        <translation type="gpt-4o-generated">驾驶员</translation>
-    </message>
-    <message>
-        <source>Standard</source>
-        <translation type="gpt-4o-generated">标准</translation>
-    </message>
-    <message>
-        <source>Wide</source>
-        <translation type="gpt-4o-generated">宽</translation>
-    </message>
-    <message>
-        <source>MANAGE</source>
-        <translation type="gpt-4o-generated">管理</translation>
-    </message>
-    <message>
-        <source>Steering Torque</source>
-        <translation type="gpt-4o-generated">转向扭矩</translation>
-    </message>
-    <message>
-        <source>Turn Signal</source>
-        <translation type="gpt-4o-generated">转向灯</translation>
-    </message>
-    <message>
-        <source>Adjacent Path Metrics</source>
-        <translation type="gpt-4o-generated">相邻路径指标</translation>
-    </message>
-    <message>
-        <source>Auto Tune</source>
-        <translation type="gpt-4o-generated">自动调谐</translation>
-    </message>
-    <message>
-        <source>Lead Info</source>
-        <translation type="gpt-4o-generated">引导信息</translation>
-    </message>
-    <message>
-        <source>Jerk Values</source>
-        <translation type="gpt-4o-generated">抖动值</translation>
-    </message>
-    <message>
-        <source>Fahrenheit</source>
-        <translation type="gpt-4o-generated">华氏度</translation>
-    </message>
-    <message>
-        <source>CPU</source>
-        <translation type="gpt-4o-generated">中央处理器 (CPU)</translation>
-    </message>
-    <message>
-        <source>GPU</source>
-        <translation type="gpt-4o-generated">GPU</translation>
-    </message>
-    <message>
-        <source>IP</source>
-        <translation type="gpt-4o-generated">IP</translation>
-    </message>
-    <message>
-        <source>RAM</source>
-        <translation type="gpt-4o-generated">内存</translation>
-    </message>
-    <message>
-        <source>SSD Left</source>
-        <translation type="gpt-4o-generated">SSD 剩余</translation>
-    </message>
-    <message>
-        <source>SSD Used</source>
-        <translation type="gpt-4o-generated">已用SSD</translation>
-    </message>
-    <message>
-        <source>Show Distance</source>
-        <translation type="gpt-4o-generated">显示距离</translation>
-    </message>
-    <message>
-        <source> inches</source>
-        <translation type="gpt-4o-generated">英寸</translation>
-    </message>
-    <message>
-        <source> feet</source>
-        <translation type="gpt-4o-generated">英尺</translation>
-    </message>
-    <message>
-        <source>Stock</source>
-        <translation type="gpt-4o-generated">原厂</translation>
-    </message>
-    <message>
-        <source> centimeters</source>
-        <translation type="gpt-4o-generated">厘米</translation>
-    </message>
-    <message>
-        <source> meters</source>
-        <translation type="gpt-4o-generated">米</translation>
-    </message>
-    <message>
-        <source>Adjacent Leads Tracking</source>
-        <translation type="gpt-4o-generated">相邻目标跟踪</translation>
-    </message>
-    <message>
-        <source>Radar Tracks</source>
-        <translation type="gpt-4o-generated">雷达轨迹</translation>
-    </message>
-    <message>
-        <source>Advanced settings for fine-tuning openpilot's driving screen.</source>
-        <translation type="gpt-4o-generated">用于微调 openpilot 驾驶屏幕的高级设置。</translation>
-    </message>
-    <message>
-        <source>Hide the current speed from the driving screen.</source>
-        <translation type="gpt-4o-generated">隐藏驾驶屏幕上的当前速度。</translation>
-    </message>
-    <message>
-        <source>Hide the marker for lead vehicles from the driving screen.</source>
-        <translation type="gpt-4o-generated">隐藏驾驶屏幕上前车的标记。</translation>
+        <source>&lt;b&gt;Hide the lead-vehicle marker&lt;/b&gt; from the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕上隐藏前车标记&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Hide Map Settings Button</source>
-        <translation type="gpt-4o-generated">隐藏地图设置按钮</translation>
+        <translation type="gpt-5-generated">隐藏地图设置按钮</translation>
     </message>
     <message>
-        <source>Hide the map settings button from the driving screen.</source>
-        <translation type="gpt-4o-generated">从驾驶屏幕中隐藏地图设置按钮。</translation>
+        <source>&lt;b&gt;Hide the map settings button or map&lt;/b&gt; from the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕上隐藏地图设置按钮或地图&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Hide the max speed from the driving screen.</source>
-        <translation type="gpt-4o-generated">隐藏驾驶屏幕上的最高速度。</translation>
+        <source>Hide Max Speed</source>
+        <translation type="gpt-5-generated">隐藏最高速度</translation>
     </message>
     <message>
-        <source>Hide non-critical alerts from the driving screen.</source>
-        <translation type="gpt-4o-generated">隐藏驾驶屏幕上的非关键警报。</translation>
+        <source>&lt;b&gt;Hide the max speed&lt;/b&gt; from the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在行驶屏幕中隐藏最高速度&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Hide the speed limits from the driving screen.</source>
-        <translation type="gpt-4o-generated">从驾驶屏幕上隐藏限速信息。</translation>
+        <source>Hide Non-Critical Alerts</source>
+        <translation type="gpt-5-generated">隐藏非关键警报</translation>
     </message>
     <message>
-        <source>Use the vehicle's wheel speed instead of the cluster speed. This is purely a visual change and doesn't impact how openpilot drives.</source>
-        <translation type="gpt-4o-generated">使用车辆的车轮速度而不是仪表盘速度。这仅仅是一个视觉变化，并不影响openpilot的驾驶方式。</translation>
+        <source>&lt;b&gt;Hide non-critical alerts&lt;/b&gt; from the driving screen.</source>
+        <translation type="gpt-5-generated">从驾驶屏幕&lt;b&gt;隐藏非关键警报&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>Detailed information about openpilot's internal operations.</source>
-        <translation type="gpt-4o-generated">关于openpilot内部运作的详细信息。</translation>
+        <source>Hide Speed Limits</source>
+        <translation type="gpt-5-generated">隐藏限速</translation>
     </message>
     <message>
-        <source>Performance data, sensor readings, and system metrics for debugging and optimizing openpilot.</source>
-        <translation type="gpt-4o-generated">性能数据、传感器读数和系统指标用于调试和优化openpilot。</translation>
+        <source>&lt;b&gt;Hide posted speed limits&lt;/b&gt; from the driving screen.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶界面隐藏已发布的限速&lt;/b&gt;。</translation>
     </message>
     <message>
-        <source>Metrics displayed around the border of the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Blind Spot&lt;/b&gt;: Turn the border red when a vehicle is detected in a blind spot&lt;br&gt;&lt;b&gt;Steering Torque&lt;/b&gt;: Highlight the border green to red in accordance to the amount of steering torque being used&lt;br&gt;&lt;b&gt;Turn Signal&lt;/b&gt;: Flash the border yellow when a turn signal is active</source>
-        <translation type="gpt-4o-generated">驾驶屏幕边框周围显示的指标。&lt;br&gt;&lt;br&gt;&lt;b&gt;盲点&lt;/b&gt;：当检测到盲点中有车辆时，将边框变为红色&lt;br&gt;&lt;b&gt;转向扭矩&lt;/b&gt;：根据使用的转向扭矩量，将边框从绿色渐变为红色&lt;br&gt;&lt;b&gt;转向灯&lt;/b&gt;：当转向灯激活时，边框闪烁黄色</translation>
+        <source>Use Wheel Speed</source>
+        <translation type="gpt-5-generated">使用车轮速度</translation>
     </message>
     <message>
-        <source>Display the &lt;b&gt;Frames Per Second (FPS)&lt;/b&gt; at the bottom of the driving screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕底部显示&lt;b&gt;每秒帧数 (FPS)&lt;/b&gt;。</translation>
+        <source>&lt;b&gt;Use the vehicle's wheel speed&lt;/b&gt; instead of the cluster speed. This is purely a visual change and doesn't impact how openpilot drives!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用车辆的车轮速度&lt;/b&gt;而不是仪表速度。这只是视觉上的变化，不会影响 openpilot 的驾驶方式！</translation>
     </message>
     <message>
-        <source>Metrics related to steering control.&lt;br&gt;&lt;br&gt;&lt;b&gt;Adjacent Path Metrics&lt;/b&gt;: Paint the adjacent lanes and their width measurements&lt;br&gt;&lt;b&gt;Auto Tune&lt;/b&gt;: Display the &lt;b&gt;Friction&lt;/b&gt; and &lt;b&gt;Lateral Acceleration&lt;/b&gt; values from comma's auto tune at the top of the driving screen</source>
-        <translation type="gpt-4o-generated">与转向控制相关的指标。&lt;br&gt;&lt;br&gt;&lt;b&gt;相邻路径指标&lt;/b&gt;：绘制相邻车道及其宽度测量值&lt;br&gt;&lt;b&gt;自动调校&lt;/b&gt;：在驾驶屏幕顶部显示来自comma自动调校的&lt;b&gt;摩擦力&lt;/b&gt;和&lt;b&gt;横向加速度&lt;/b&gt;值</translation>
+        <source>Developer UI</source>
+        <translation type="gpt-5-generated">开发者界面</translation>
     </message>
     <message>
-        <source>Metrics related to gas/brake control.&lt;br&gt;&lt;br&gt;&lt;b&gt;Lead Info&lt;/b&gt;: Display the lead vehicle's distance and speed on the lead marker&lt;br&gt;&lt;b&gt;Jerk Values&lt;/b&gt;: Display the current longitudinal jerk values and any offsets from FrogPilot functions at the top of the driving screen</source>
-        <translation type="gpt-4o-generated">与油门/刹车控制相关的指标。&lt;br&gt;&lt;br&gt;&lt;b&gt;前车信息&lt;/b&gt;：在前车标记上显示前车的距离和速度&lt;br&gt;&lt;b&gt;加速度变化值&lt;/b&gt;：在驾驶屏幕顶部显示当前纵向加速度变化值以及来自FrogPilot功能的任何偏移量</translation>
+        <source>&lt;b&gt;Detailed information about openpilot's internal operations.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;关于 openpilot 内部运行的详细信息。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Use numerical temperature readings instead of status labels in the sidebar.</source>
-        <translation type="gpt-4o-generated">在侧边栏中使用数值温度读数而不是状态标签。</translation>
+        <source>Adjacent Path Metrics</source>
+        <translation type="gpt-5-generated">相邻路径指标</translation>
     </message>
     <message>
-        <source>Display system information (&lt;b&gt;CPU&lt;/b&gt;, &lt;b&gt;GPU&lt;/b&gt;, &lt;b&gt;RAM usage&lt;/b&gt;, &lt;b&gt;IP address&lt;/b&gt;, &lt;b&gt;device storage&lt;/b&gt;) in the sidebar.</source>
-        <translation type="gpt-4o-generated">在侧边栏显示系统信息（&lt;b&gt;CPU&lt;/b&gt;、&lt;b&gt;GPU&lt;/b&gt;、&lt;b&gt;内存使用&lt;/b&gt;、&lt;b&gt;IP地址&lt;/b&gt;、&lt;b&gt;设备存储&lt;/b&gt;）。</translation>
+        <source>&lt;b&gt;Show the width of the adjacent lanes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;显示相邻车道的宽度。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Display measurements using the &lt;b&gt;International System of Units (SI)&lt;/b&gt; standard.</source>
-        <translation type="gpt-4o-generated">使用&lt;b&gt;国际单位制 (SI)&lt;/b&gt;标准显示测量值。</translation>
+        <source>Developer Metrics</source>
+        <translation type="gpt-5-generated">开发者指标</translation>
     </message>
     <message>
-        <source>Overlays displaying debugging visuals, internal states, and model predictions on the driving screen.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕上显示调试视觉效果、内部状态和模型预测的覆盖层。</translation>
+        <source>&lt;b&gt;Performance data, sensor readings, and system metrics&lt;/b&gt; for debugging and optimizing openpilot.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;用于调试和优化 openpilot 的性能数据、传感器读数和系统指标&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Adjacent leads detected by the car's radar to the left and right of the current driving path.</source>
-        <translation type="gpt-4o-generated">车辆的雷达检测到当前行驶路径左侧和右侧的相邻目标物。</translation>
+        <source>Border Metrics</source>
+        <translation type="gpt-5-generated">边界指标</translation>
     </message>
     <message>
-        <source>Display an image on the screen where openpilot is wanting to stop.</source>
-        <translation type="gpt-4o-generated">在屏幕上显示 openpilot 想要停车的图像。</translation>
+        <source>&lt;b&gt;Show statuses along the border of the driving screen.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Blind Spot&lt;/b&gt;: The border turns red when a vehicle is in a blind spot&lt;br&gt;&lt;b&gt;Steering Torque&lt;/b&gt;: The border goes from green to red according to how much steering torque is being used&lt;br&gt;&lt;b&gt;Turn Signal&lt;/b&gt;: The border flashes yellow when a turn signal is on</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕边缘显示状态。&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;盲区&lt;/b&gt;：当有车辆处于盲区时，边框变为红色&lt;br&gt;&lt;b&gt;转向扭矩&lt;/b&gt;：边框会根据使用的转向扭矩从绿色逐渐变为红色&lt;br&gt;&lt;b&gt;转向灯&lt;/b&gt;：当转向灯开启时，边框闪烁黄色</translation>
     </message>
     <message>
-        <source>Display all of the radar points produced by the car's radar.</source>
-        <translation type="gpt-4o-generated">显示车辆雷达生成的所有雷达点。</translation>
+        <source>Lead Info</source>
+        <translation type="gpt-5-generated">前车信息</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show each tracked vehicle's distance and speed&lt;/b&gt; below its marker.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在其标记下方显示每个被跟踪车辆的距离和速度&lt;/b&gt;。</translation>
+    </message>
+    <message>
+        <source>FPS Display</source>
+        <translation type="gpt-5-generated">FPS 显示</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show the frames per second (FPS)&lt;/b&gt; at the bottom of the driving screen.</source>
+        <translation type="gpt-5-generated">在驾驶屏幕底部&lt;b&gt;显示每秒帧数（FPS）&lt;/b&gt;。</translation>
+    </message>
+    <message>
+        <source>Numerical Temperature Gauge</source>
+        <translation type="gpt-5-generated">数字温度表</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show a numerical temperature in the sidebar&lt;/b&gt; instead of the status labels.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在侧边栏显示数值温度&lt;/b&gt;，而不是状态标签。</translation>
+    </message>
+    <message>
+        <source>Sidebar Metrics</source>
+        <translation type="gpt-5-generated">侧边栏指标</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Display system information&lt;/b&gt; (CPU, GPU, RAM usage, IP address, device storage) in the sidebar.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在侧栏显示系统信息&lt;/b&gt;（CPU、GPU、RAM 使用率、IP 地址、设备存储）。</translation>
+    </message>
+    <message>
+        <source>Use International System of Units</source>
+        <translation type="gpt-5-generated">使用国际单位制</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Display measurements using the "International System of Units" (SI)&lt;/b&gt; standard.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用“国际单位制”（SI）标准显示度量&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Developer Sidebar</source>
+        <translation type="gpt-5-generated">开发者侧边栏</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Display debugging info and metrics&lt;/b&gt; in a dedicated sidebar on the right side of the screen.</source>
+        <translation type="gpt-5-generated">在屏幕右侧的专用侧栏&lt;b&gt;显示调试信息和指标&lt;/b&gt;。</translation>
+    </message>
+    <message>
+        <source>Metric #1</source>
+        <translation type="gpt-5-generated">指标 #1</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the first "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择第一个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Metric #2</source>
+        <translation type="gpt-5-generated">度量 #2</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the second "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择第二个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Metric #3</source>
+        <translation type="gpt-5-generated">指标 #3</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the third "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择第三个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Metric #4</source>
+        <translation type="gpt-5-generated">指标 #4</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the fourth "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择第四个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Metric #5</source>
+        <translation type="gpt-5-generated">指标 #5</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the fifth "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择在第五个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Metric #6</source>
+        <translation type="gpt-5-generated">度量 #6</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the sixth "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择第六个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Metric #7</source>
+        <translation type="gpt-5-generated">指标 #7</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the metric shown in the seventh "Developer Sidebar" widget.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择第七个“开发者侧边栏”小部件中显示的度量。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Developer Widgets</source>
+        <translation type="gpt-5-generated">开发者小部件</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Overlays for debugging visuals, internal states, and model predictions&lt;/b&gt; on the driving screen.</source>
+        <translation type="gpt-5-generated">在驾驶屏幕上&lt;b&gt;用于调试可视化、内部状态和模型预测的叠加层&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Adjacent Leads Tracking</source>
+        <translation type="gpt-5-generated">相邻车辆跟踪</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Display adjacent leads detected by the car's radar&lt;/b&gt; to the left and right of the current driving path.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在当前行驶路径的左右显示车辆雷达检测到的相邻前车&lt;/b&gt;。</translation>
+    </message>
+    <message>
+        <source>Model Stopping Point</source>
+        <translation type="gpt-5-generated">模型停止点</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show a stop-sign marker where the model intends to stop.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在模型计划停车的位置显示停止标志标记。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Radar Tracks</source>
+        <translation type="gpt-5-generated">雷达跟踪</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Display all radar points&lt;/b&gt; produced by the car's radar.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;显示车辆雷达生成的所有雷达点&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Driving Screen Widgets</source>
-        <translation type="gpt-4o-generated">驾驶屏幕小部件</translation>
+        <translation type="gpt-5-generated">驾驶屏幕小部件</translation>
     </message>
     <message>
-        <source>Custom FrogPilot widgets for the driving screen.</source>
-        <translation type="gpt-4o-generated">自定义FrogPilot小部件用于驾驶屏幕。</translation>
+        <source>&lt;b&gt;Custom FrogPilot widgets&lt;/b&gt; for the driving screen.</source>
+        <translation type="gpt-5-generated">用于驾驶屏幕的&lt;b&gt;自定义 FrogPilot 小部件&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Colorize the driving path based on openpilot's current desired acceleration and deceleration rate.</source>
-        <translation type="gpt-4o-generated">根据openpilot当前期望的加速和减速速率对驾驶路径进行着色。</translation>
+        <source>Acceleration Path</source>
+        <translation type="gpt-5-generated">加速度路径</translation>
     </message>
     <message>
-        <source>Driving paths for the left and right adjacent lanes.</source>
-        <translation type="gpt-4o-generated">左侧和右侧相邻车道的行驶路径。</translation>
+        <source>&lt;b&gt;Color the driving path by planned acceleration and braking.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;根据规划的加速与制动为行驶路径着色。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Display a red driving path for detected vehicles in the corresponding lane's blind spot.</source>
-        <translation type="gpt-4o-generated">在相应车道的盲区为检测到的车辆显示红色驾驶路径。</translation>
+        <source>Adjacent Lanes</source>
+        <translation type="gpt-5-generated">相邻车道</translation>
     </message>
     <message>
-        <source>A compass to show the current driving direction.</source>
-        <translation type="gpt-4o-generated">一个显示当前行驶方向的指南针。</translation>
+        <source>&lt;b&gt;Show the driving paths for the left and right lanes.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;显示左右车道的行驶路径。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Pedals to indicate when either of the pedals are currently being used.&lt;br&gt;&lt;br&gt;&lt;b&gt;Dynamic&lt;/b&gt;: The pedals change in opacity in accordance to how much openpilot is accelerating or decelerating&lt;br&gt;&lt;b&gt;Static&lt;/b&gt;: The pedals are displayed with full opacity when active, and dimmed when not in use</source>
-        <translation type="gpt-4o-generated">踏板用于指示当前是否正在使用任何一个踏板。&lt;br&gt;&lt;br&gt;&lt;b&gt;动态&lt;/b&gt;：踏板的不透明度会根据openpilot的加速或减速程度而变化&lt;br&gt;&lt;b&gt;静态&lt;/b&gt;：踏板在激活时以全不透明度显示，未使用时会变暗显示</translation>
+        <source>Blind Spot Path</source>
+        <translation type="gpt-5-generated">盲点路径</translation>
     </message>
     <message>
-        <source>Rotate the steering wheel alongside the vehicle's physical steering wheel.</source>
-        <translation type="gpt-4o-generated">请同时旋转方向盘和车辆的实体方向盘。</translation>
+        <source>&lt;b&gt;Show a red path when a vehicle is in that lane's blind spot.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当有车辆位于该车道盲区时显示红色路径。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Model visualizations on the driving screen for the driving path, lane lines, path edges, and road edges.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上的模型可视化包括驾驶路径、车道线、路径边缘和道路边缘。</translation>
+        <source>Compass</source>
+        <translation type="gpt-5-generated">指南针</translation>
     </message>
     <message>
-        <source>Adjust the width of the driving path based on the current engagement state.&lt;br&gt;&lt;br&gt;&lt;b&gt;Fully engaged&lt;/b&gt;: 100%&lt;br&gt;&lt;b&gt;Always On Lateral&lt;/b&gt;: 75%&lt;br&gt;&lt;b&gt;Fully disengaged&lt;/b&gt;: 50%</source>
-        <translation type="gpt-4o-generated">根据当前启用状态调整驾驶路径的宽度。&lt;br&gt;&lt;br&gt;&lt;b&gt;完全启用&lt;/b&gt;: 100%&lt;br&gt;&lt;b&gt;始终启用横向&lt;/b&gt;: 75%&lt;br&gt;&lt;b&gt;完全禁用&lt;/b&gt;: 50%</translation>
-    </message>
-    <message>
-        <source>The thickness of the lane lines on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 4 inches.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上车道线的厚度。&lt;br&gt;&lt;br&gt;&lt;b&gt;默认与&lt;b&gt;MUTCD&lt;/b&gt;车道线宽度标准的4英寸一致。</translation>
-    </message>
-    <message>
-        <source>The width of the edges of the driving path that represent different driving modes and statuses.&lt;br&gt;&lt;br&gt;Default is &lt;b&gt;20%&lt;/b&gt; of the total path width.&lt;br&gt;&lt;br&gt;Color Guide:&lt;br&gt;&lt;br&gt;- &lt;b&gt;Blue&lt;/b&gt;: Navigation&lt;br&gt;- &lt;b&gt;Light Blue&lt;/b&gt;: Always On Lateral&lt;br&gt;- &lt;b&gt;Green&lt;/b&gt;: Default&lt;br&gt;- &lt;b&gt;Orange&lt;/b&gt;: Experimental Mode&lt;br&gt;- &lt;b&gt;Red&lt;/b&gt;: Traffic Mode&lt;br&gt;- &lt;b&gt;Yellow&lt;/b&gt;: Conditional Experimental Mode overridden</source>
-        <translation type="gpt-4o-generated">驾驶路径边缘的宽度代表不同的驾驶模式和状态。&lt;br&gt;&lt;br&gt;默认宽度是总路径宽度的&lt;b&gt;20%&lt;/b&gt;。&lt;br&gt;&lt;br&gt;颜色指南：&lt;br&gt;&lt;br&gt;- &lt;b&gt;蓝色&lt;/b&gt;：导航&lt;br&gt;- &lt;b&gt;浅蓝色&lt;/b&gt;：始终开启横向控制&lt;br&gt;- &lt;b&gt;绿色&lt;/b&gt;：默认&lt;br&gt;- &lt;b&gt;橙色&lt;/b&gt;：实验模式&lt;br&gt;- &lt;b&gt;红色&lt;/b&gt;：交通模式&lt;br&gt;- &lt;b&gt;黄色&lt;/b&gt;：条件实验模式被覆盖</translation>
-    </message>
-    <message>
-        <source>The width of the driving path on the driving screen.&lt;br&gt;&lt;br&gt;Default &lt;b&gt;(6.1 feet / 1.9 meters)&lt;/b&gt; matches the width of a &lt;b&gt;2019 Lexus ES 350&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上驾驶路径的宽度。&lt;br&gt;&lt;br&gt;默认值&lt;b&gt;（6.1英尺/1.9米）&lt;/b&gt;与&lt;b&gt;2019款雷克萨斯ES 350&lt;/b&gt;的宽度一致。</translation>
-    </message>
-    <message>
-        <source>The thickness of the road edges on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches half of the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 4 inches.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上道路边缘的厚度。&lt;br&gt;&lt;br&gt;&lt;b&gt;默认匹配&lt;b&gt;MUTCD&lt;/b&gt;车道线宽标准的一半，即4英寸。</translation>
-    </message>
-    <message>
-        <source>"Unlimited" Road UI</source>
-        <translation type="gpt-4o-generated">“无限”道路用户界面</translation>
-    </message>
-    <message>
-        <source>Extend the display of the driving path, lane lines, and road edges as far as the model can see.</source>
-        <translation type="gpt-4o-generated">将驾驶路径、车道线和道路边缘的显示范围扩展到模型所能看到的最远处。</translation>
-    </message>
-    <message>
-        <source>Map style tweaks, speed limits, and other navigation related widgets.</source>
-        <translation type="gpt-4o-generated">地图样式调整、速度限制及其他导航相关小部件。</translation>
-    </message>
-    <message>
-        <source>Increase the size of the map for easier navigation readings.</source>
-        <translation type="gpt-4o-generated">增大地图尺寸以便更易于导航读取。</translation>
-    </message>
-    <message>
-        <source>The map style used for &lt;b&gt;Navigate on openpilot (NOO)&lt;/b&gt;:&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock&lt;/b&gt;: Default comma.ai style&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;: Standard street-focused view&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;: Emphasizes outdoor and terrain features&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;: Minimalist, bright theme&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;: Minimalist, dark theme&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;: Optimized for daytime navigation&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;: Optimized for nighttime navigation&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;: Satellite imagery only&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;: Hybrid satellite imagery with street labels&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;: Dark theme emphasizing traffic conditions&lt;br&gt;&lt;b&gt;mike854's (Satellite hybrid)&lt;/b&gt;: Customized hybrid satellite view</source>
-        <translation type="gpt-4o-generated">&lt;b&gt;在 openpilot 上导航 (NOO)&lt;/b&gt; 使用的地图样式：&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock&lt;/b&gt;：默认的 comma.ai 风格&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;：标准的街道视图&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;：强调户外和地形特征&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;：简约明亮主题&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;：简约暗黑主题&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;：优化用于白天导航&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;：优化用于夜间导航&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;：仅卫星图像&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;：混合卫星图像带有街道标签&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;：暗黑主题，强调交通状况&lt;br&gt;&lt;b&gt;mike854's (Satellite hybrid)&lt;/b&gt;：自定义混合卫星视图</translation>
-    </message>
-    <message>
-        <source>Display the road name at the bottom of the driving screen using data from &lt;b&gt;OpenStreetMap&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕底部显示路名，使用&lt;b&gt;OpenStreetMap&lt;/b&gt;的数据。</translation>
-    </message>
-    <message>
-        <source>Display speed limits in the top left corner of the driving screen. Uses data from your car's dashboard (if supported) and data from &lt;b&gt;OpenStreetMaps&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">在驾驶屏幕的左上角显示速度限制。使用来自您车辆仪表盘的数据（如果支持）和来自&lt;b&gt;OpenStreetMaps&lt;/b&gt;的数据。</translation>
-    </message>
-    <message>
-        <source>Force &lt;b&gt;Vienna-style (EU)&lt;/b&gt; speed limit signs instead of &lt;b&gt;MUTCD (US)&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">强制使用&lt;b&gt;维也纳风格（欧盟）&lt;/b&gt;的限速标志，而不是&lt;b&gt;MUTCD（美国）&lt;/b&gt;。</translation>
-    </message>
-    <message>
-        <source>Quality of Life</source>
-        <translation type="gpt-4o-generated">生活质量</translation>
-    </message>
-    <message>
-        <source>The active camera view display. This is purely a visual change and doesn't impact how openpilot drives!</source>
-        <translation type="gpt-4o-generated">活动摄像头视图显示。这只是一个视觉变化，不会影响 openpilot 的驾驶方式！</translation>
-    </message>
-    <message>
-        <source>Display the current driving personality on the screen. Tap to switch personalities, or long press for 0.5 seconds to change the current state of &lt;b&gt;Experimental Mode&lt;/b&gt;, or 2.5 seconds for &lt;b&gt;Traffic Mode&lt;/b&gt;.</source>
-        <translation type="gpt-4o-generated">在屏幕上显示当前驾驶个性。点击切换个性，或长按0.5秒以更改&lt;b&gt;实验模式&lt;/b&gt;的当前状态，长按2.5秒以更改&lt;b&gt;交通模式&lt;/b&gt;。</translation>
-    </message>
-    <message>
-        <source>Display the driver camera feed when the vehicle is in reverse.</source>
-        <translation type="gpt-4o-generated">当车辆倒车时显示驾驶员摄像头画面。</translation>
-    </message>
-    <message>
-        <source>Turn the screen off when driving and automatically wake it up if engagement state changes or important alerts occur.</source>
-        <translation type="gpt-4o-generated">驾驶时关闭屏幕，并在交互状态变化或发生重要警报时自动唤醒。</translation>
-    </message>
-    <message>
-        <source>Replace the current speed with a timer when stopped to indicate how long the vehicle has been stopped for.</source>
-        <translation type="gpt-4o-generated">当车辆停止时，用计时器替换当前速度以指示车辆已停止多久。</translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation type="gpt-4o-generated">关闭</translation>
-    </message>
-    <message>
-        <source> foot</source>
-        <translation type="gpt-4o-generated">英尺</translation>
-    </message>
-    <message>
-        <source> inch</source>
-        <translation type="gpt-4o-generated">英寸</translation>
-    </message>
-    <message>
-        <source> meter</source>
-        <translation type="gpt-4o-generated">米</translation>
-    </message>
-    <message>
-        <source> centimeter</source>
-        <translation type="gpt-4o-generated">厘米</translation>
-    </message>
-    <message>
-        <source>The thickness of the lane lines on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 10 centimeters.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上车道线的厚度。&lt;br&gt;&lt;br&gt;&lt;b&gt;默认与&lt;b&gt;MUTCD&lt;/b&gt;车道线宽度标准10厘米相匹配。</translation>
-    </message>
-    <message>
-        <source>The thickness of the road edges on the driving screen.&lt;br&gt;&lt;br&gt;&lt;b&gt;Default matches half of the &lt;b&gt;MUTCD&lt;/b&gt; lane line width standard of 10 centimeters.</source>
-        <translation type="gpt-4o-generated">驾驶屏幕上道路边缘的厚度。&lt;br&gt;&lt;br&gt;&lt;b&gt;默认值符合&lt;b&gt;MUTCD&lt;/b&gt;车道线宽度标准的一半，即10厘米。</translation>
+        <source>&lt;b&gt;Show the current driving direction&lt;/b&gt; with a simple on-screen compass.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;使用简单的屏幕罗盘&lt;/b&gt;显示当前行驶方向。</translation>
     </message>
     <message>
         <source>Driving Personality Button</source>
-        <translation type="gpt-4o-generated">驾驶风格按钮</translation>
+        <translation type="gpt-5-generated">驾驶个性按钮</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Control and view the current driving personality&lt;/b&gt; via a driving screen widget.</source>
+        <translation type="gpt-5-generated">通过驾驶屏幕小部件&lt;b&gt;控制并查看当前驾驶风格&lt;/b&gt;。</translation>
+    </message>
+    <message>
+        <source>Gas / Brake Pedal Indicators</source>
+        <translation type="gpt-5-generated">油门/刹车踏板指示器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;On-screen gas and brake indicators.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Dynamic&lt;/b&gt;: Opacity changes according to how much openpilot is accelerating or braking&lt;br&gt;&lt;b&gt;Static&lt;/b&gt;: Full when active, dim when not</source>
+        <translation type="gpt-5-generated">&lt;b&gt;屏幕上的油门和制动指示器。&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;动态&lt;/b&gt;：透明度随 openpilot 加速或制动的程度变化&lt;br&gt;&lt;b&gt;静态&lt;/b&gt;：激活时为全亮，未激活时为变暗</translation>
+    </message>
+    <message>
+        <source>Rotating Steering Wheel</source>
+        <translation type="gpt-5-generated">转动方向盘</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Rotate the driving screen wheel&lt;/b&gt; with the physical steering wheel.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;旋转驾驶屏幕滚轮&lt;/b&gt;，使用实体方向盘。</translation>
+    </message>
+    <message>
+        <source>Model UI</source>
+        <translation type="gpt-5-generated">模型界面</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Model visualizations&lt;/b&gt; for the driving path, lane lines, path edges, and road edges.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;模型可视化&lt;/b&gt;，包括行驶路径、车道线、路径边缘和道路边缘。</translation>
+    </message>
+    <message>
+        <source>Dynamic Path Width</source>
+        <translation type="gpt-5-generated">动态车道宽度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Change the path width based on engagement.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Fully Engaged&lt;/b&gt;: 100%&lt;br&gt;&lt;b&gt;Always On Lateral&lt;/b&gt;: 75%&lt;br&gt;&lt;b&gt;Disengaged&lt;/b&gt;: 50%</source>
+        <translation type="gpt-5-generated">&lt;b&gt;根据接管状态改变路径宽度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;完全接管&lt;/b&gt;：100%&lt;br&gt;&lt;b&gt;始终开启横向控制&lt;/b&gt;：75%&lt;br&gt;&lt;b&gt;未接管&lt;/b&gt;：50%</translation>
+    </message>
+    <message>
+        <source>Lane Lines Width</source>
+        <translation type="gpt-5-generated">车道线宽度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the lane-line thickness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default matches the MUTCD lane-line width standard of 4 inches.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置车道线厚度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;默认值符合MUTCD车道线宽度标准为4英寸。</translation>
+    </message>
+    <message>
+        <source>Path Edges Width</source>
+        <translation type="gpt-5-generated">路径边缘宽度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the driving-path edge width&lt;/b&gt; that represents different driving modes and statuses.&lt;br&gt;&lt;br&gt;Default is 20% of the total path width.&lt;br&gt;&lt;br&gt;Color Guide:&lt;br&gt;&lt;br&gt;- &lt;b&gt;Blue&lt;/b&gt;: Navigation&lt;br&gt;- &lt;b&gt;Light Blue&lt;/b&gt;: Always On Lateral&lt;br&gt;- &lt;b&gt;Green&lt;/b&gt;: Default&lt;br&gt;- &lt;b&gt;Orange&lt;/b&gt;: Experimental Mode&lt;br&gt;- &lt;b&gt;Red&lt;/b&gt;: Traffic Mode&lt;br&gt;- &lt;b&gt;Yellow&lt;/b&gt;: Conditional Experimental Mode overridden</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置行驶路径边缘宽度&lt;/b&gt;，用于表示不同的驾驶模式与状态。&lt;br&gt;&lt;br&gt;默认为总路径宽度的 20%。&lt;br&gt;&lt;br&gt;颜色指南：&lt;br&gt;&lt;br&gt;- &lt;b&gt;蓝色&lt;/b&gt;：导航&lt;br&gt;- &lt;b&gt;浅蓝色&lt;/b&gt;：始终开启横向控制&lt;br&gt;- &lt;b&gt;绿色&lt;/b&gt;：默认&lt;br&gt;- &lt;b&gt;橙色&lt;/b&gt;：实验模式&lt;br&gt;- &lt;b&gt;红色&lt;/b&gt;：交通模式&lt;br&gt;- &lt;b&gt;黄色&lt;/b&gt;：条件实验模式被覆盖</translation>
+    </message>
+    <message>
+        <source>Path Width</source>
+        <translation type="gpt-5-generated">路径宽度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the driving-path width.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default (6.1 feet) matches the width of a 2019 Lexus ES 350.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置行驶路径宽度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;默认值（6.1 英尺）与 2019 款雷克萨斯 ES 350 的车宽相同。</translation>
+    </message>
+    <message>
+        <source>Road Edges Width</source>
+        <translation type="gpt-5-generated">道路边缘宽度</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the road-edge thickness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default matches half of the MUTCD lane-line width standard of 4 inches.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置道路边缘线厚度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;默认值相当于 MUTCD 车道线标准宽度 4 英寸的一半。</translation>
+    </message>
+    <message>
+        <source>"Unlimited" Road UI</source>
+        <translation type="gpt-5-generated">“无限制”道路界面</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Extend the length of the driving path, lane lines, and road edges&lt;/b&gt; for as far as the model can see.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;尽可能延长行驶路径、车道线和路缘的长度&lt;/b&gt;，达到模型可见的最远距离。</translation>
+    </message>
+    <message>
+        <source>Navigation Widgets</source>
+        <translation type="gpt-5-generated">导航小部件</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Map style, speed limits, and other navigation widgets.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;地图样式、限速及其他导航组件。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Larger Map Display</source>
+        <translation type="gpt-5-generated">更大的地图显示</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Increase the map size&lt;/b&gt; for easier navigation readings.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;增大地图尺寸&lt;/b&gt;以便更容易读取导航信息。</translation>
+    </message>
+    <message>
+        <source>Map Style</source>
+        <translation type="gpt-5-generated">地图样式</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the map style&lt;/b&gt; for "Navigate on openpilot" (NOO):&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock openpilot&lt;/b&gt;: Default comma.ai style&lt;br&gt;&lt;b&gt;FrogPilot&lt;/b&gt;: Official FrogPilot map style&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;: Standard street-focused view&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;: Emphasizes outdoor and terrain features&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;: Minimalist, bright theme&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;: Minimalist, dark theme&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;: Optimized for daytime navigation&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;: Optimized for nighttime navigation&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;: Satellite imagery only&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;: Hybrid satellite imagery with street labels&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;: Dark theme emphasizing traffic conditions&lt;br&gt;&lt;b&gt;Mike's Personalized Style&lt;/b&gt;: Customized hybrid satellite view</source>
+        <translation type="gpt-5-generated">&lt;b&gt;为“Navigate on openpilot”（NOO）选择地图样式&lt;/b&gt;：&lt;br&gt;&lt;br&gt;&lt;b&gt;Stock openpilot&lt;/b&gt;：默认 comma.ai 样式&lt;br&gt;&lt;b&gt;FrogPilot&lt;/b&gt;：FrogPilot 官方地图样式&lt;br&gt;&lt;b&gt;Mapbox Streets&lt;/b&gt;：标准街道视图&lt;br&gt;&lt;b&gt;Mapbox Outdoors&lt;/b&gt;：突出户外与地形特征&lt;br&gt;&lt;b&gt;Mapbox Light&lt;/b&gt;：极简明亮主题&lt;br&gt;&lt;b&gt;Mapbox Dark&lt;/b&gt;：极简深色主题&lt;br&gt;&lt;b&gt;Mapbox Navigation Day&lt;/b&gt;：为白天导航优化&lt;br&gt;&lt;b&gt;Mapbox Navigation Night&lt;/b&gt;：为夜间导航优化&lt;br&gt;&lt;b&gt;Mapbox Satellite&lt;/b&gt;：仅卫星影像&lt;br&gt;&lt;b&gt;Mapbox Satellite Streets&lt;/b&gt;：卫星与街道标签的混合视图&lt;br&gt;&lt;b&gt;Mapbox Traffic Night&lt;/b&gt;：强调交通状况的深色主题&lt;br&gt;&lt;b&gt;Mike's Personalized Style&lt;/b&gt;：个性化混合卫星视图</translation>
+    </message>
+    <message>
+        <source>Road Name</source>
+        <translation type="gpt-5-generated">道路名称</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Display the road name at the bottom of the driving screen&lt;/b&gt; using data from "OpenStreetMap (OSM)".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕底部显示道路名称&lt;/b&gt;，使用来自“OpenStreetMap (OSM)”的数据。</translation>
+    </message>
+    <message>
+        <source>Show Speed Limits</source>
+        <translation type="gpt-5-generated">显示限速</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show speed limits&lt;/b&gt; in the top-left corner of the driving screen. Uses data from the car's dashboard (if supported) and "OpenStreetMap (OSM)".</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在驾驶屏幕左上角显示限速&lt;/b&gt;。使用车辆仪表盘的数据（如支持）以及“OpenStreetMap (OSM)”。</translation>
+    </message>
+    <message>
+        <source>Show Speed Limits from Mapbox</source>
+        <translation type="gpt-5-generated">从 Mapbox 显示限速</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Use Mapbox speed-limit data when no other source is available.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在没有其他来源时使用 Mapbox 的限速数据。&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Use Vienna-Style Speed Signs</source>
+        <translation type="gpt-5-generated">使用维也纳式限速标志</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show Vienna-style (EU) speed-limit signs&lt;/b&gt; instead of MUTCD (US).</source>
+        <translation type="gpt-5-generated">&lt;b&gt;显示维也纳风格（欧盟）的限速标志&lt;/b&gt;，而不是 MUTCD（美国）。</translation>
+    </message>
+    <message>
+        <source>Quality of Life</source>
+        <translation type="gpt-5-generated">生活质量</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Miscellaneous visual changes&lt;/b&gt; to fine-tune how the driving screen looks.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;其他视觉更改&lt;/b&gt;，用于微调驾驶屏幕的外观。</translation>
+    </message>
+    <message>
+        <source>Camera View</source>
+        <translation type="gpt-5-generated">摄像头视图</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Select the active camera view.&lt;/b&gt; This is purely a visual change and doesn't impact how openpilot drives!</source>
+        <translation type="gpt-5-generated">&lt;b&gt;选择活动摄像头视图。&lt;/b&gt; 这只是视觉上的变化，不会影响 openpilot 的驾驶方式！</translation>
+    </message>
+    <message>
+        <source>Show Driver Camera When In Reverse</source>
+        <translation type="gpt-5-generated">倒车时显示驾驶员摄像头</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show the driver camera feed&lt;/b&gt; when the vehicle is in reverse.</source>
+        <translation type="gpt-5-generated">当车辆处于倒挡时&lt;b&gt;显示驾驶员摄像头画面&lt;/b&gt;。</translation>
+    </message>
+    <message>
+        <source>Stopped Timer</source>
+        <translation type="gpt-5-generated">已停止计时器</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Show a timer when stopped&lt;/b&gt; in place of the current speed to indicate how long the vehicle has been stopped.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;在停止时显示计时器&lt;/b&gt;，取代当前速度，以指示车辆已停止的时长。</translation>
+    </message>
+    <message>
+        <source>Hide Map</source>
+        <translation type="gpt-5-generated">隐藏地图</translation>
+    </message>
+    <message>
+        <source>Blind Spot</source>
+        <translation type="gpt-5-generated">盲点</translation>
+    </message>
+    <message>
+        <source>Steering Torque</source>
+        <translation type="gpt-5-generated">转向扭矩</translation>
+    </message>
+    <message>
+        <source>Turn Signal</source>
+        <translation type="gpt-5-generated">转向信号</translation>
+    </message>
+    <message>
+        <source>Fahrenheit</source>
+        <translation type="gpt-5-generated">华氏度</translation>
+    </message>
+    <message>
+        <source>CPU</source>
+        <translation type="gpt-5-generated">CPU</translation>
+    </message>
+    <message>
+        <source>GPU</source>
+        <translation type="gpt-5-generated">GPU</translation>
+    </message>
+    <message>
+        <source>IP</source>
+        <translation type="gpt-5-generated">IP</translation>
+    </message>
+    <message>
+        <source>RAM</source>
+        <translation type="gpt-5-generated">RAM</translation>
+    </message>
+    <message>
+        <source>SSD Left</source>
+        <translation type="gpt-5-generated">SSD 左侧</translation>
+    </message>
+    <message>
+        <source>SSD Used</source>
+        <translation type="gpt-5-generated">SSD 已用</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="gpt-5-generated">无</translation>
+    </message>
+    <message>
+        <source>Acceleration: Current</source>
+        <translation type="gpt-5-generated">加速度：当前</translation>
+    </message>
+    <message>
+        <source>Acceleration: Max</source>
+        <translation type="gpt-5-generated">加速：最大</translation>
+    </message>
+    <message>
+        <source>Auto Tune: Actuator Delay</source>
+        <translation type="gpt-5-generated">自动调校：执行器延迟</translation>
+    </message>
+    <message>
+        <source>Auto Tune: Friction</source>
+        <translation type="gpt-5-generated">自动调谐：摩擦</translation>
+    </message>
+    <message>
+        <source>Auto Tune: Lateral Acceleration</source>
+        <translation type="gpt-5-generated">自动调谐：横向加速度</translation>
+    </message>
+    <message>
+        <source>Auto Tune: Steer Ratio</source>
+        <translation type="gpt-5-generated">自动调谐：转向比</translation>
+    </message>
+    <message>
+        <source>Auto Tune: Stiffness Factor</source>
+        <translation type="gpt-5-generated">自动调谐：刚度系数</translation>
+    </message>
+    <message>
+        <source>Engagement %: Lateral</source>
+        <translation type="gpt-5-generated">参与率 %：横向</translation>
+    </message>
+    <message>
+        <source>Engagement %: Longitudinal</source>
+        <translation type="gpt-5-generated">参与率 %：纵向</translation>
+    </message>
+    <message>
+        <source>Lateral Control: Steering Angle</source>
+        <translation type="gpt-5-generated">横向控制：转向角</translation>
+    </message>
+    <message>
+        <source>Lateral Control: Torque % Used</source>
+        <translation type="gpt-5-generated">横向控制：扭矩使用率 %</translation>
+    </message>
+    <message>
+        <source>Longitudinal Control: Actuator Acceleration Output</source>
+        <translation type="gpt-5-generated">纵向控制：执行器加速度输出</translation>
+    </message>
+    <message>
+        <source>Longitudinal MPC Jerk: Acceleration</source>
+        <translation type="gpt-5-generated">纵向MPC抖动：加速度</translation>
+    </message>
+    <message>
+        <source>Longitudinal MPC Jerk: Danger Zone</source>
+        <translation type="gpt-5-generated">纵向MPC加加速度：危险区域</translation>
+    </message>
+    <message>
+        <source>Longitudinal MPC Jerk: Speed Control</source>
+        <translation type="gpt-5-generated">纵向MPC加加速度：速度控制</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation type="gpt-5-generated">选择</translation>
+    </message>
+    <message>
+        <source>Select a metric to display</source>
+        <translation type="gpt-5-generated">选择要显示的度量指标</translation>
+    </message>
+    <message>
+        <source>Show Distance</source>
+        <translation type="gpt-5-generated">显示距离</translation>
+    </message>
+    <message>
+        <source>Dynamic</source>
+        <translation type="gpt-5-generated">动态</translation>
+    </message>
+    <message>
+        <source>Static</source>
+        <translation type="gpt-5-generated">静态</translation>
+    </message>
+    <message>
+        <source> inches</source>
+        <translation type="gpt-5-generated">英寸</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="gpt-5-generated">关闭</translation>
+    </message>
+    <message>
+        <source> feet</source>
+        <translation type="gpt-5-generated">英尺</translation>
+    </message>
+    <message>
+        <source>Full Map</source>
+        <translation type="gpt-5-generated">完整地图</translation>
+    </message>
+    <message>
+        <source>Stock openpilot</source>
+        <translation type="gpt-5-generated">原厂 openpilot</translation>
+    </message>
+    <message>
+        <source>FrogPilot</source>
+        <translation type="gpt-5-generated">FrogPilot</translation>
+    </message>
+    <message>
+        <source>Mapbox Streets</source>
+        <translation type="gpt-5-generated">Mapbox 街道</translation>
+    </message>
+    <message>
+        <source>Mapbox Outdoors</source>
+        <translation type="gpt-5-generated">Mapbox 户外</translation>
+    </message>
+    <message>
+        <source>Mapbox Light</source>
+        <translation type="gpt-5-generated">Mapbox 亮色</translation>
+    </message>
+    <message>
+        <source>Mapbox Dark</source>
+        <translation type="gpt-5-generated">Mapbox 深色</translation>
+    </message>
+    <message>
+        <source>Mapbox Navigation Day</source>
+        <translation type="gpt-5-generated">Mapbox 导航（白天）</translation>
+    </message>
+    <message>
+        <source>Mapbox Navigation Night</source>
+        <translation type="gpt-5-generated">Mapbox 导航夜间模式</translation>
+    </message>
+    <message>
+        <source>Mapbox Satellite</source>
+        <translation type="gpt-5-generated">Mapbox 卫星</translation>
+    </message>
+    <message>
+        <source>Mapbox Satellite Streets</source>
+        <translation type="gpt-5-generated">Mapbox 卫星街道</translation>
+    </message>
+    <message>
+        <source>Mapbox Traffic Night</source>
+        <translation type="gpt-5-generated">Mapbox 交通夜间模式</translation>
+    </message>
+    <message>
+        <source>Mike's Personalized Style</source>
+        <translation type="gpt-5-generated">Mike 的个性化风格</translation>
+    </message>
+    <message>
+        <source>Select a map style</source>
+        <translation type="gpt-5-generated">选择地图样式</translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="gpt-5-generated">自动</translation>
+    </message>
+    <message>
+        <source>Driver</source>
+        <translation type="gpt-5-generated">驾驶员</translation>
+    </message>
+    <message>
+        <source>Standard</source>
+        <translation type="gpt-5-generated">标准</translation>
+    </message>
+    <message>
+        <source>Wide</source>
+        <translation type="gpt-5-generated">宽</translation>
+    </message>
+    <message>
+        <source> foot</source>
+        <translation type="gpt-5-generated">英尺</translation>
+    </message>
+    <message>
+        <source> inch</source>
+        <translation type="gpt-5-generated">英寸</translation>
+    </message>
+    <message>
+        <source> meter</source>
+        <translation type="gpt-5-generated">米</translation>
+    </message>
+    <message>
+        <source> meters</source>
+        <translation type="gpt-5-generated">米</translation>
+    </message>
+    <message>
+        <source> centimeter</source>
+        <translation type="gpt-5-generated">厘米</translation>
+    </message>
+    <message>
+        <source> centimeters</source>
+        <translation type="gpt-5-generated">厘米</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the lane-line thickness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default matches the MUTCD lane-line width standard of 10 centimeters.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置车道线厚度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;默认值符合 MUTCD 车道线宽度标准：10 厘米。</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the driving-path width.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default (1.9 meters) matches the width of a 2019 Lexus ES 350.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置行驶路径宽度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;默认值（1.9米）与2019款雷克萨斯ES 350的车宽相匹配。</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set the road-edge thickness.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Default matches half of the MUTCD lane-line width standard of 10 centimeters.</source>
+        <translation type="gpt-5-generated">&lt;b&gt;设置路缘厚度。&lt;/b&gt;&lt;br&gt;&lt;br&gt;默认值等于 MUTCD 车道线宽度标准 10 厘米的一半。</translation>
     </message>
 </context>
 <context>
     <name>FrogPilotWheelPanel</name>
     <message>
         <source>Distance Button</source>
-        <translation type="gpt-4o-generated">距离按钮</translation>
+        <translation type="gpt-5-generated">距离按钮</translation>
     </message>
     <message>
-        <source>The action for a short press of the &lt;b&gt;Distance&lt;/b&gt; button.</source>
-        <translation type="gpt-4o-generated">“距离”按钮短按的操作。</translation>
+        <source>&lt;b&gt;Action performed when the "Distance" button is pressed.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;按下“距离”按钮时执行的操作。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Distance Button (Long Press)</source>
-        <translation type="gpt-4o-generated">距离按钮（长按）</translation>
+        <translation type="gpt-5-generated">距离按钮（长按）</translation>
     </message>
     <message>
-        <source>The action for a 0.5+ second press of the &lt;b&gt;Distance&lt;/b&gt; button.</source>
-        <translation type="gpt-4o-generated">&lt;b&gt;距离&lt;/b&gt;按钮按下0.5秒以上的操作。</translation>
+        <source>&lt;b&gt;Action performed when the "Distance" button is pressed for more than 0.5 seconds.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;长按“距离”按钮超过0.5秒时执行的操作。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Distance Button (Very Long Press)</source>
-        <translation type="gpt-4o-generated">距离按钮（长按）</translation>
+        <translation type="gpt-5-generated">距离按钮（超长按）</translation>
     </message>
     <message>
-        <source>The action for a 2.5+ second press of the &lt;b&gt;Distance&lt;/b&gt; button.</source>
-        <translation type="gpt-4o-generated">长按 &lt;b&gt;距离&lt;/b&gt; 按钮 2.5 秒以上的操作。</translation>
+        <source>&lt;b&gt;Action performed when the "Distance" button is pressed for more than 2.5 seconds.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;当按住“距离”按钮超过 2.5 秒时执行的操作。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>LKAS Button</source>
-        <translation type="gpt-4o-generated">LKAS按钮</translation>
+        <translation type="gpt-5-generated">LKAS 按钮</translation>
     </message>
     <message>
-        <source>Nothing</source>
-        <translation type="gpt-4o-generated">无</translation>
+        <source>&lt;b&gt;Action performed when the "LKAS" button is pressed.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;按下“LKAS”按钮时执行的操作。&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Pause Lateral</source>
-        <translation type="gpt-4o-generated">暂停横向控制</translation>
+        <source>No Action</source>
+        <translation type="gpt-5-generated">无操作</translation>
+    </message>
+    <message>
+        <source>Pause Steering</source>
+        <translation type="gpt-5-generated">暂停转向</translation>
     </message>
     <message>
         <source>Change "Personality Profile"</source>
-        <translation type="gpt-4o-generated">更改“个性配置文件”</translation>
+        <translation type="gpt-5-generated">更改“个性档案”</translation>
     </message>
     <message>
         <source>Force openpilot to Coast</source>
-        <translation type="gpt-4o-generated">强制 openpilot 滑行</translation>
+        <translation type="gpt-5-generated">强制 openpilot 进入滑行</translation>
     </message>
     <message>
-        <source>Pause Longitudinal</source>
-        <translation type="gpt-4o-generated">暂停纵向控制</translation>
+        <source>Pause Acceleration/Braking</source>
+        <translation type="gpt-5-generated">暂停加速/制动</translation>
     </message>
     <message>
         <source>Toggle "Experimental Mode" On/Off</source>
-        <translation type="gpt-4o-generated">切换“实验模式”开/关</translation>
+        <translation type="gpt-5-generated">切换“实验模式”开/关</translation>
     </message>
     <message>
         <source>Toggle "Traffic Mode" On/Off</source>
-        <translation type="gpt-4o-generated">切换“交通模式”开/关</translation>
+        <translation type="gpt-5-generated">切换“交通模式”开/关</translation>
     </message>
     <message>
         <source>SELECT</source>
-        <translation type="gpt-4o-generated">选择</translation>
+        <translation type="gpt-5-generated">选择</translation>
     </message>
     <message>
         <source>Select a function to assign to this button</source>
-        <translation type="gpt-4o-generated">选择一个功能分配给此按钮</translation>
-    </message>
-    <message>
-        <source>The action for pressing the &lt;b&gt;LKAS&lt;/b&gt; button.</source>
-        <translation type="gpt-4o-generated">按下&lt;b&gt;LKAS&lt;/b&gt;按钮的操作。</translation>
+        <translation type="gpt-5-generated">选择要分配给此按钮的功能</translation>
     </message>
 </context>
 <context>
@@ -3549,7 +4372,7 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
     </message>
     <message>
         <source>Characters: %1/%2</source>
-        <translation type="gpt-4o-generated">字符数：%1/%2</translation>
+        <translation type="gpt-5-generated">字符数：%1/%2</translation>
     </message>
 </context>
 <context>
@@ -3581,12 +4404,8 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>导航</translation>
     </message>
     <message>
-        <source>Manage at connect.comma.ai</source>
-        <translation>请在 connect.comma.ai 上管理</translation>
-    </message>
-    <message>
         <source>Manage at %1</source>
-        <translation type="gpt-4o-generated">在 %1 管理</translation>
+        <translation type="gpt-5-generated">在 %1 管理</translation>
     </message>
 </context>
 <context>
@@ -3725,35 +4544,35 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>重启设备</translation>
     </message>
     <message>
-        <source>openpilot crashed 💩</source>
-        <translation type="gpt-4o-generated">openpilot 崩溃了 💩</translation>
-    </message>
-    <message>
-        <source>Please post the 'Error Log' in the FrogPilot Discord!</source>
-        <translation type="gpt-4o-generated">请在 FrogPilot Discord 上发布“错误日志”！</translation>
-    </message>
-    <message>
         <source>openpilot crashed</source>
-        <translation type="gpt-4o-generated">openpilot 崩溃了</translation>
+        <translation type="gpt-5-generated">openpilot 崩溃了</translation>
+    </message>
+    <message>
+        <source>Please post the "Error Log" in the FrogPilot Discord!</source>
+        <translation type="gpt-5-generated">请在 FrogPilot Discord 发布“Error Log”！</translation>
+    </message>
+    <message>
+        <source>openpilot crashed 💩</source>
+        <translation type="gpt-5-generated">openpilot 崩溃了 💩</translation>
     </message>
 </context>
 <context>
     <name>PairingPopup</name>
     <message>
-        <source>Pair your device to your comma account</source>
-        <translation>将您的设备与comma账号配对</translation>
-    </message>
-    <message>
         <source>Click "add new device" and scan the QR code on the right</source>
         <translation>点击“添加新设备”，扫描右侧二维码</translation>
     </message>
     <message>
-        <source>Go to https://connect.comma.ai on your phone</source>
-        <translation type="gpt-4o-generated">请在手机上访问 https://connect.comma.ai</translation>
+        <source>Pair your device to your %1 account</source>
+        <translation type="gpt-5-generated">将您的设备与您的%1账户配对</translation>
     </message>
     <message>
-        <source>Bookmark connect.comma.ai to your home screen to use it like an app</source>
-        <translation type="gpt-4o-generated">将 connect.comma.ai 添加到主屏幕以便像应用程序一样使用</translation>
+        <source>Go to https://%1 on your phone</source>
+        <translation type="gpt-5-generated">在手机上访问 https://%1</translation>
+    </message>
+    <message>
+        <source>Bookmark %1 to your home screen to use it like an app</source>
+        <translation type="gpt-5-generated">将 %1 书签到主屏幕，以像应用一样使用它</translation>
     </message>
 </context>
 <context>
@@ -3812,10 +4631,6 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
 <context>
     <name>QObject</name>
     <message>
-        <source>Reboot</source>
-        <translation>重启</translation>
-    </message>
-    <message>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
@@ -3858,8 +4673,12 @@ Want to submit your own animations? Share them in the "custom-themes" channel on
         <translation>现在</translation>
     </message>
     <message>
+        <source>Restore</source>
+        <translation type="gpt-5-generated">恢复</translation>
+    </message>
+    <message>
         <source>FrogPilot</source>
-        <translation type="gpt-4o-generated">FrogPilot</translation>
+        <translation type="gpt-5-generated">FrogPilot</translation>
     </message>
 </context>
 <context>
@@ -3904,6 +4723,17 @@ This may take up to a minute.</source>
     </message>
 </context>
 <context>
+    <name>ScreenRecorder</name>
+    <message>
+        <source>RECORDING</source>
+        <translation type="gpt-5-generated">录制中</translation>
+    </message>
+    <message>
+        <source>RECORD</source>
+        <translation type="gpt-5-generated">记录</translation>
+    </message>
+</context>
+<context>
     <name>SettingsWindow</name>
     <message>
         <source>Device</source>
@@ -3923,31 +4753,35 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>← Back</source>
-        <translation type="gpt-4o-generated">← 返回</translation>
+        <translation type="gpt-5-generated">← 返回</translation>
     </message>
     <message>
         <source>FrogPilot</source>
-        <translation type="gpt-4o-generated">青蛙驾驶员</translation>
+        <translation type="gpt-5-generated">FrogPilot</translation>
     </message>
     <message>
-        <source>Welcome to FrogPilot! Since you're new to FrogPilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the 'Tuning Level' button!</source>
-        <translation type="gpt-4o-generated">欢迎使用FrogPilot！由于您是FrogPilot的新用户，系统已为您应用“Minimal”切换预设，但您可以随时通过“调节等级”按钮进行更改！</translation>
+        <source>Welcome to FrogPilot! Since you're new to openpilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <translation type="gpt-5-generated">欢迎使用 FrogPilot！由于您是 openpilot 新手，已应用“最低限度”切换预设，但您可随时通过“调校级别”按钮进行更改！</translation>
     </message>
     <message>
-        <source>Since you're fairly new to FrogPilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the 'Tuning Level' button!</source>
-        <translation type="gpt-4o-generated">由于您对FrogPilot还比较陌生，已应用“最小”切换预设，但您可以随时通过“调校级别”按钮进行更改！</translation>
+        <source>Welcome to FrogPilot! Since you're new to FrogPilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <translation type="gpt-5-generated">欢迎使用FrogPilot！由于您是首次使用FrogPilot，已应用“最简”切换预设，但您可随时通过“Tuning Level”按钮进行更改！</translation>
     </message>
     <message>
-        <source>Since you're experienced with openpilot, the "Standard" toggle preset has been applied, but you can change this at any time via the 'Tuning Level' button!</source>
-        <translation type="gpt-4o-generated">由于您对openpilot很有经验，“标准”切换预设已被应用，但您可以随时通过“调节等级”按钮更改此设置！</translation>
+        <source>Since you're fairly new to FrogPilot, the "Minimal" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <translation type="gpt-5-generated">由于您对FrogPilot还不太熟悉，已应用“最简”切换预设，但您可随时通过“调校级别”按钮进行更改！</translation>
     </message>
     <message>
-        <source>Since you're experienced with FrogPilot, the "Standard" toggle preset has been applied, but you can change this at any time via the 'Tuning Level' button!</source>
-        <translation type="gpt-4o-generated">由于您对FrogPilot很熟悉，已应用“标准”切换预设，但您可以随时通过“调节级别”按钮进行更改！</translation>
+        <source>Since you're experienced with openpilot, the "Standard" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <translation type="gpt-5-generated">由于你熟悉 openpilot，已应用“标准”切换预设，但你可随时通过“调校级别”按钮进行更改！</translation>
     </message>
     <message>
-        <source>Since you're very experienced with FrogPilot, the "Advanced" toggle preset has been applied, but you can change this at any time via the 'Tuning Level' button!</source>
-        <translation type="gpt-4o-generated">由于您对FrogPilot非常熟悉，已应用“高级”切换预设，但您可以随时通过“调优级别”按钮进行更改！</translation>
+        <source>Since you're experienced with FrogPilot, the "Standard" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <translation type="gpt-5-generated">由于你熟悉FrogPilot，已应用“标准”切换预设，你可随时通过“调校级别”按钮进行更改！</translation>
+    </message>
+    <message>
+        <source>Since you're very experienced with FrogPilot, the "Advanced" toggle preset has been applied, but you can change this at any time via the "Tuning Level" button!</source>
+        <translation type="gpt-5-generated">由于你对FrogPilot非常熟悉，已应用“高级”切换预设，但你可以随时通过“Tuning Level”按钮进行更改！</translation>
     </message>
 </context>
 <context>
@@ -4059,6 +4893,10 @@ This may take up to a minute.</source>
         <source>Pair device</source>
         <translation>配对设备</translation>
     </message>
+    <message>
+        <source>Pair your device with Konik connect (stable.konik.ai).</source>
+        <translation type="gpt-5-generated">将您的设备与 Konik connect（stable.konik.ai）配对。</translation>
+    </message>
 </context>
 <context>
     <name>Sidebar</name>
@@ -4144,27 +4982,27 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>GPU</source>
-        <translation type="gpt-4o-generated">GPU</translation>
+        <translation type="gpt-5-generated">GPU</translation>
     </message>
     <message>
         <source>CPU</source>
-        <translation type="gpt-4o-generated">中央处理器</translation>
+        <translation type="gpt-5-generated">CPU</translation>
     </message>
     <message>
         <source> GB</source>
-        <translation type="gpt-4o-generated">GB</translation>
+        <translation type="gpt-5-generated">GB</translation>
     </message>
     <message>
         <source>MEMORY</source>
-        <translation type="gpt-4o-generated">内存</translation>
+        <translation type="gpt-5-generated">内存</translation>
     </message>
     <message>
         <source>LEFT</source>
-        <translation type="gpt-4o-generated">左</translation>
+        <translation type="gpt-5-generated">左</translation>
     </message>
     <message>
         <source>USED</source>
-        <translation type="gpt-4o-generated">已用</translation>
+        <translation type="gpt-5-generated">已用</translation>
     </message>
 </context>
 <context>
@@ -4239,39 +5077,39 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Updates are only downloaded while the car is off or in park.</source>
-        <translation type="gpt-4o-generated">只有在汽车关闭或处于驻车状态时才会下载更新。</translation>
+        <translation type="gpt-5-generated">仅在车辆熄火或处于驻车档时下载更新。</translation>
     </message>
     <message>
         <source>Automatically Update FrogPilot</source>
-        <translation type="gpt-4o-generated">自动更新FrogPilot</translation>
+        <translation type="gpt-5-generated">自动更新 FrogPilot</translation>
     </message>
     <message>
-        <source>FrogPilot will automatically update itself and it's assets when you're offroad and connected to Wi-Fi.</source>
-        <translation type="gpt-4o-generated">FrogPilot将在您处于离线状态且连接到Wi-Fi时自动更新自身及其资产。</translation>
-    </message>
-    <message>
-        <source>Error Log</source>
-        <translation type="gpt-4o-generated">错误日志</translation>
-    </message>
-    <message>
-        <source>VIEW</source>
-        <translation type="gpt-4o-generated">查看</translation>
-    </message>
-    <message>
-        <source>View the error log for openpilot crashes.</source>
-        <translation type="gpt-4o-generated">查看openpilot崩溃的错误日志。</translation>
-    </message>
-    <message>
-        <source>Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls.</source>
-        <translation type="gpt-4o-generated">您是否要删除深度存储的 FrogPilot 资产？这包括快速重新安装的切换设置。</translation>
-    </message>
-    <message>
-        <source>Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!</source>
-        <translation type="gpt-4o-generated">您确定吗？这将是100%不可恢复的，如果您重新安装FrogPilot，您将丢失之前的所有设置！</translation>
+        <source>FrogPilot will automatically update itself and it's assets when you're offroad and have an active internet connection.</source>
+        <translation type="gpt-5-generated">当你离线行驶且有有效的互联网连接时，FrogPilot 会自动更新自身及其资源。</translation>
     </message>
     <message>
         <source>This branch must be downloaded before switching. Would you like to download it now?</source>
-        <translation type="gpt-4o-generated">在切换之前必须下载此分支。您现在想下载吗？</translation>
+        <translation type="gpt-5-generated">必须在切换前下载此分支。现在要下载吗？</translation>
+    </message>
+    <message>
+        <source>Error Log</source>
+        <translation type="gpt-5-generated">错误日志</translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation type="gpt-5-generated">视图</translation>
+    </message>
+    <message>
+        <source>View the error log for openpilot crashes.</source>
+        <translation type="gpt-5-generated">查看 openpilot 崩溃的错误日志。</translation>
+    </message>
+    <message>
+        <source>Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!</source>
+        <translation type="gpt-5-generated">是否要执行完全出厂重置？所有已保存的资产和设置将被永久删除！</translation>
+    </message>
+    <message>
+        <source>This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?</source>
+        <translation type="gpt-5-generated">这是一次完整的出厂重置，且无法撤销。您确定要继续吗？</translation>
     </message>
 </context>
 <context>
@@ -4525,11 +5363,11 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Uploading disabled</source>
-        <translation type="gpt-4o-generated">上传已禁用</translation>
+        <translation type="gpt-5-generated">已禁用上传</translation>
     </message>
     <message>
-        <source>Toggle off the 'Turn Off Data Uploads' toggle to re-enable uploads.</source>
-        <translation type="gpt-4o-generated">关闭“关闭数据上传”开关以重新启用上传。</translation>
+        <source>Toggle off the "Turn Off Data Uploads" toggle to re-enable uploads.</source>
+        <translation type="gpt-5-generated">将“关闭数据上传”开关切换为关闭以重新启用上传。</translation>
     </message>
 </context>
 <context>

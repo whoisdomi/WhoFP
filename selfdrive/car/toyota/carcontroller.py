@@ -12,12 +12,10 @@ from openpilot.selfdrive.car.toyota import toyotacan
 from openpilot.selfdrive.car.toyota.values import CAR, STATIC_DSU_MSGS, NO_STOP_TIMER_CAR, TSS2_CAR, \
                                         MIN_ACC_SPEED, PEDAL_TRANSITION, CarControllerParams, ToyotaFlags, \
                                         UNSUPPORTED_DSU_CAR, STOP_AND_GO_CAR
-from openpilot.selfdrive.controls.lib.drive_helpers import CRUISE_LONG_PRESS
 from openpilot.selfdrive.controls.lib.pid import PIDController
 from opendbc.can.packer import CANPacker
 
-from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_acceleration import get_max_allowed_accel
-
+GearShifter = car.CarState.GearShifter
 LongCtrlState = car.CarControl.Actuators.LongControlState
 SteerControlType = car.CarParams.SteerControlType
 VisualAlert = car.CarControl.HUDControl.VisualAlert
@@ -29,6 +27,8 @@ ACCELERATION_DUE_TO_GRAVITY = 9.81  # m/s^2
 ACCEL_WINDUP_LIMIT = 4.0 * DT_CTRL * 3  # m/s^2 / frame
 ACCEL_WINDDOWN_LIMIT = -4.0 * DT_CTRL * 3  # m/s^2 / frame
 ACCEL_PID_UNWIND = 0.03 * DT_CTRL * 3  # m/s^2 / frame
+
+MAX_PITCH_COMPENSATION = 1.5  # m/s^2
 
 # LKA limits
 # EPS faults if you apply torque while the steering rate is above 100 deg/s for too long
@@ -76,7 +76,8 @@ class CarController(CarControllerBase):
     self.long_pid = get_long_tune(self.CP, self.params)
 
     self.aego = FirstOrderFilter(0.0, 0.25, DT_CTRL * 3)
-    self.pitch = FirstOrderFilter(0, 0.5, DT_CTRL)
+    self.pitch = FirstOrderFilter(0, 0.25, DT_CTRL)
+    self.pitch_slow = FirstOrderFilter(0, 1.5, DT_CTRL)
 
     self.accel = 0
     self.prev_accel = 0
@@ -84,29 +85,16 @@ class CarController(CarControllerBase):
 
     self.packer = CANPacker(dbc_name)
 
+    self.secoc_acc_message_counter = 0
     self.secoc_lka_message_counter = 0
     self.secoc_lta_message_counter = 0
-    self.secoc_acc_message_counter = 0
     self.secoc_prev_reset_counter = 0
     self.secoc_key: bytes = b"00" * 16
 
     # FrogPilot variables
-    self.stock_max_accel = self.params.ACCEL_MAX
-
     self.doors_locked = False
-    self.reverse_cruise_active = False
-
-    self.cruise_timer = 0
-    self.previous_set_speed = 0
 
   def update(self, CC, CS, now_nanos, frogpilot_toggles):
-    if frogpilot_toggles.sport_plus:
-      self.params.ACCEL_MAX = min(frogpilot_toggles.max_desired_acceleration, get_max_allowed_accel(CS.out.vEgo))
-      self.long_pid.pos_limit = self.params.ACCEL_MAX
-    else:
-      self.params.ACCEL_MAX = min(frogpilot_toggles.max_desired_acceleration, self.stock_max_accel)
-      self.long_pid.pos_limit = self.params.ACCEL_MAX
-
     actuators = CC.actuators
     stopping = actuators.longControlState == LongCtrlState.stopping
     hud_control = CC.hudControl
@@ -115,6 +103,7 @@ class CarController(CarControllerBase):
 
     if len(CC.orientationNED) == 3:
       self.pitch.update(CC.orientationNED[1])
+      self.pitch_slow.update(CC.orientationNED[1])
 
     # *** control msgs ***
     can_sends = []
@@ -122,9 +111,9 @@ class CarController(CarControllerBase):
     # *** handle secoc reset counter increase ***
     if self.CP.flags & ToyotaFlags.SECOC.value:
       if CS.secoc_synchronization['RESET_CNT'] != self.secoc_prev_reset_counter:
+        self.secoc_acc_message_counter = 0
         self.secoc_lka_message_counter = 0
         self.secoc_lta_message_counter = 0
-        self.secoc_acc_message_counter = 0
         self.secoc_prev_reset_counter = CS.secoc_synchronization['RESET_CNT']
 
         expected_mac = build_sync_mac(self.secoc_key, int(CS.secoc_synchronization['TRIP_CNT']), int(CS.secoc_synchronization['RESET_CNT']))
@@ -280,6 +269,15 @@ class CarController(CarControllerBase):
           self.long_pid.i -= ACCEL_PID_UNWIND * float(np.sign(self.long_pid.i))
 
           error_future = pcm_accel_cmd - a_ego_future
+
+          if not stopping:
+            # Toyota's PCM slowly responds to changes in pitch. On change, we amplify our
+            # acceleration request to compensate for the undershoot and following overshoot
+            high_pass_pitch = self.pitch.x - self.pitch_slow.x
+            pitch_compensation = float(np.clip(math.sin(high_pass_pitch) * ACCELERATION_DUE_TO_GRAVITY,
+                                               -MAX_PITCH_COMPENSATION, MAX_PITCH_COMPENSATION))
+            pcm_accel_cmd += pitch_compensation
+
           pcm_accel_cmd = self.long_pid.update(error_future,
                                                speed=CS.out.vEgo,
                                                feedforward=pcm_accel_cmd,
@@ -297,18 +295,23 @@ class CarController(CarControllerBase):
 
         pcm_accel_cmd = clip(pcm_accel_cmd, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
 
-        main_accel_cmd = 0. if self.CP.flags & ToyotaFlags.SECOC.value else pcm_accel_cmd
-        can_sends.append(toyotacan.create_accel_command(self.packer, main_accel_cmd, pcm_cancel_cmd, self.permit_braking, self.standstill_req, lead,
-                                                        CS.acc_type, fcw_alert, self.distance_button, self.reverse_cruise_active))
         if self.CP.flags & ToyotaFlags.SECOC.value:
+          can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, self.permit_braking, self.standstill_req, lead,
+                                                          CS.acc_type, fcw_alert, self.distance_button, frogpilot_toggles.reverse_cruise_increase))
+
           acc_cmd_2 = toyotacan.create_accel_command_2(self.packer, pcm_accel_cmd)
           acc_cmd_2 = add_mac(self.secoc_key,
                               int(CS.secoc_synchronization['TRIP_CNT']),
                               int(CS.secoc_synchronization['RESET_CNT']),
                               self.secoc_acc_message_counter,
                               acc_cmd_2)
-          self.secoc_acc_message_counter += 1
           can_sends.append(acc_cmd_2)
+
+          self.secoc_acc_message_counter += 1
+        else:
+          can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.permit_braking, self.standstill_req, lead,
+                                                          CS.acc_type, fcw_alert, self.distance_button, frogpilot_toggles.reverse_cruise_increase))
+
         self.accel = pcm_accel_cmd
 
     else:
@@ -317,7 +320,7 @@ class CarController(CarControllerBase):
         if self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
           can_sends.append(toyotacan.create_acc_cancel_command(self.packer))
         else:
-          can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, True, False, lead, CS.acc_type, False, self.distance_button, self.reverse_cruise_active))
+          can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, True, False, lead, CS.acc_type, False, self.distance_button, frogpilot_toggles.reverse_cruise_increase))
 
     # *** hud ui ***
     if self.CP.carFingerprint != CAR.TOYOTA_PRIUS_V:
@@ -354,17 +357,9 @@ class CarController(CarControllerBase):
     new_actuators.steer = apply_steer / self.params.STEER_MAX
     new_actuators.steerOutputCan = apply_steer
     new_actuators.steeringAngleDeg = self.last_angle
-    new_actuators.accel = self.accel
+    new_actuators.accel = float(self.accel)
 
     # FrogPilot Toyota carcontroller functions
-    if False: #self.previous_set_speed != CS.out.cruiseState.speedCluster:
-      self.cruise_timer = CRUISE_LONG_PRESS
-    elif self.cruise_timer > 0:
-      self.cruise_timer -= 1
-    else:
-      self.previous_set_speed = CS.out.cruiseState.speedCluster
-
-    # Lock doors when in drive / unlock doors when in park
     if not self.doors_locked and CS.out.gearShifter != PARK:
       if frogpilot_toggles.lock_doors:
         can_sends.append(make_can_msg(0x750, LOCK_CMD, 0))
@@ -373,9 +368,6 @@ class CarController(CarControllerBase):
       if frogpilot_toggles.unlock_doors:
         can_sends.append(make_can_msg(0x750, UNLOCK_CMD, 0))
       self.doors_locked = False
-
-    self.reverse_cruise_active = frogpilot_toggles.reverse_cruise_increase
-    self.reverse_cruise_active &= self.cruise_timer <= 0
 
     self.frame += 1
     return new_actuators, can_sends

@@ -37,11 +37,6 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
   .min_accel = -3500,  // -3.5 m/s2
 };
 
-const LongitudinalLimits TOYOTA_LONG_LIMITS_SPORT = {
-  .max_accel = 4000,   // 4.0 m/s2
-  .min_accel = -3500,  // -3.5 m/s2
-};
-
 // panda interceptor threshold needs to be equivalent to openpilot threshold to avoid controls mismatches
 // If thresholds are mismatched then it is possible for panda to see the gas fall and rise while openpilot is in the pre-enabled state
 // Threshold calculated from DBC gains: round((((15 + 75.555) / 0.159375) + ((15 + 151.111) / 0.159375)) / 2) = 805
@@ -289,8 +284,6 @@ static void toyota_rx_hook(const CANPacket_t *to_push) {
 }
 
 static bool toyota_tx_hook(const CANPacket_t *to_send) {
-  sport_mode = alternative_experience & ALT_EXP_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX;
-
   bool tx = true;
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
@@ -315,11 +308,7 @@ static bool toyota_tx_hook(const CANPacket_t *to_send) {
         // SecOC cars move accel to 0x183. Only allow inactive accel on 0x343 to match stock behavior
         violation = desired_accel != TOYOTA_LONG_LIMITS.inactive_accel;
       } else {
-        if (sport_mode) {
-          violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS_SPORT);
-        } else {
-          violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
-        }
+        violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
       }
 
       // only ACC messages that cancel are allowed when openpilot is not controlling longitudinal
@@ -343,11 +332,8 @@ static bool toyota_tx_hook(const CANPacket_t *to_send) {
       desired_accel = to_signed(desired_accel, 16);
 
       bool violation = false;
-      if (sport_mode) {
-        violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS_SPORT);
-      } else {
-        violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
-      }
+      violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
+
       if (violation) {
         tx = false;
       }
@@ -482,7 +468,7 @@ static safety_config toyota_init(uint16_t param) {
       SET_TX_MSGS(TOYOTA_SECOC_LONG_TX_MSGS, ret);
     } else {
       enable_gas_interceptor ? SET_TX_MSGS(TOYOTA_INTERCEPTOR_TX_MSGS, ret) : \
-                            SET_TX_MSGS(TOYOTA_LONG_TX_MSGS, ret);
+                               SET_TX_MSGS(TOYOTA_LONG_TX_MSGS, ret);
     }
   }
 
@@ -512,10 +498,11 @@ static int toyota_fwd_hook(int bus_num, int addr) {
     // block stock lkas messages and stock acc messages (if OP is doing ACC)
     // in TSS2, 0x191 is LTA which we need to block to avoid controls collision
     bool is_lkas_msg = ((addr == 0x2E4) || (addr == 0x412) || (addr == 0x191));
+    // on SecOC cars 0x131 is also LTA
+    is_lkas_msg |= toyota_secoc && (addr == 0x131);
     // in TSS2 the camera does ACC as well, so filter 0x343
     bool is_acc_msg = (addr == 0x343);
     // SecOC cars use additional (not alternate) messages for lateral and longitudinal actuation
-    is_lkas_msg |= toyota_secoc && (addr == 0x131);
     is_acc_msg |= toyota_secoc && (addr == 0x183);
     bool block_msg = is_lkas_msg || (is_acc_msg && !toyota_stock_longitudinal);
     if (!block_msg) {

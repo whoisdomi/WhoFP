@@ -35,12 +35,11 @@ signals:
   void expandToggleDescription(const QString &param);
 
   // FrogPilot signals
-  void closeMapBoxInstructions();
-  void closeMapSelection();
   void closePanel();
-  void closeParentToggle();
-  void closeSubParentToggle();
+  void closeSubPanel();
+  void closeSubSubPanel();
   void updateMetric(bool metric, bool bootRun=false);
+  void updateTuningLevel();
 
 private:
   QPushButton *sidebar_alert_widget;
@@ -49,14 +48,11 @@ private:
   QStackedWidget *panel_widget;
 
   // FrogPilot variables
-  Params params;
-  Params paramsTracking{"/cache/tracking"};
-
-  bool mapboxInstructionsOpen;
-  bool mapSelectionOpen;
   bool panelOpen;
-  bool parentToggleOpen;
-  bool subParentToggleOpen;
+  bool subPanelOpen;
+  bool subSubPanelOpen;
+
+  Params params;
 };
 
 class DevicePanel : public ListWidget {
@@ -77,9 +73,6 @@ private slots:
 private:
   Params params;
   ButtonControl *pair_device;
-
-  // FrogPilot variables
-  Params params_cache{"/cache/params"};
 };
 
 class TogglesPanel : public ListWidget {
@@ -126,7 +119,4 @@ private:
 
   Params params;
   ParamWatcher *fs_watch;
-
-  // FrogPilot variables
-  Params params_memory{"/dev/shm/params"};
 };

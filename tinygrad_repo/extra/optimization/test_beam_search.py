@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from tinygrad.helpers import BEAM, Timing, CI
+from tinygrad.helpers import BEAM, Timing, CI, Context
 from tinygrad import Variable, Tensor
 from tinygrad.nn import Conv2d
 
@@ -16,7 +16,8 @@ class TestBeamSearch(unittest.TestCase):
     BEAM.value = self.old_beam
 
   def test_variable_ast_beam(self):
-    a = rand(3, 3).reshape((Variable("a", 1, 10).bind(3), 3))
+    vi = Variable("a", 1, 10).bind(3)
+    a = rand(10, 3)[:vi]
     a = (a+1).realize()
 
   def test_big_prime_number(self):
@@ -41,10 +42,10 @@ class TestBeamSearch(unittest.TestCase):
 
   def test_variable_big_prime_number(self):
     v = Variable("v", 1, 400).bind(367)
-    a = rand(367, 367)
-    b = rand(367, 367)
-    c = (a.reshape(367, v) @ b.reshape(v, 367)).realize()
-    np.testing.assert_allclose(c.numpy(), a.numpy() @ b.numpy(), atol=1e-4, rtol=1e-4)
+    a = rand(367, 400)
+    b = rand(400, 367)
+    c = (a[:, :v] @ b[:v, :]).realize()
+    np.testing.assert_allclose(c.numpy(), a[:, :367].numpy() @ b[:367, :].numpy(), atol=1e-4, rtol=1e-4)
 
   def test_variable_shrink_prime_number(self):
     v = Variable("v", 1, 400).bind(367)

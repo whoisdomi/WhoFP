@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 from cereal import car, custom
 import cereal.messaging as messaging
+from openpilot.selfdrive.car import get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 
 # mocked car interface for dashcam mode
 class CarInterface(CarInterfaceBase):
-  def __init__(self, CP, CarController, CarState):
-    super().__init__(CP, CarController, CarState)
+  def __init__(self, CP, FPCP, CarController, CarState):
+    super().__init__(CP, FPCP, CarController, CarState)
 
     self.speed = 0.
     self.sm = messaging.SubMaster(['gpsLocation', 'gpsLocationExternal'])
 
   @staticmethod
-  def _get_params(ret, candidate, fingerprint, car_fw, disable_openpilot_long, experimental_long, docs):
+  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs, frogpilot_toggles):
     ret.carName = "mock"
     ret.mass = 1700.
     ret.wheelbase = 2.70
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 13.
     ret.dashcamOnly = True
+    ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.noOutput)]
     return ret
 
   def _update(self, c, frogpilot_toggles):

@@ -13,7 +13,7 @@ class MultiShapeTracker:
   def permute(self, arg): self.sts = [x.permute(arg) for x in self.sts]
   def expand(self, arg): self.sts = [x.expand(arg) for x in self.sts]
   def shrink(self, arg): self.sts = [x.shrink(arg) for x in self.sts]
-  def stride(self, arg): self.sts = [x.stride(arg) for x in self.sts]
+  def flip(self, arg): self.sts = [x.flip(arg) for x in self.sts]
   def pad(self, arg): self.sts = [x.pad(arg) for x in self.sts]
 
 def st_equal(st1:ShapeTracker, st2:ShapeTracker) -> bool:
@@ -75,8 +75,8 @@ class TestShapeTrackerAdd(unittest.TestCase):
     backup = st.sts[0]
     st.sts.append(ShapeTracker.from_shape(backup.shape))
     st.reshape( (45,) )
-    st.stride( (4,) )
-    st.reshape( (4, 3) )
+    st.flip( (True,) )
+    st.reshape( (15, 3) )
     assert st_equal(backup + st.sts[1], st.sts[0])
 
   def test_off_by_one(self):
@@ -87,20 +87,6 @@ class TestShapeTrackerAdd(unittest.TestCase):
     assert not (st_equal(st1, st2))
 
 class TestShapeTrackerAddVariable(unittest.TestCase):
-  def test_self_add(self):
-    j = Variable("j", 0, 20).bind(10)
-    a = ShapeTracker.from_shape((10,10))
-    x = a.reshape((10, j))
-    out = x + x
-    assert out == x
-
-  def test_self_add_reshape(self):
-    j = Variable("j", 0, 20).bind(10)
-    a = ShapeTracker.from_shape((10,10))
-    x = a.reshape((10, j))
-    out = x.reshape((5, 2, j)) + x
-    assert out == x
-
   def test_merge_symbolic_views(self):
     var_i = Variable('i', 1, 10)
     var_j = Variable('i', 1, 10)
@@ -155,21 +141,16 @@ class TestShapeTrackerInvert(unittest.TestCase):
 
   def test_can_invert_flip(self):
     a = ShapeTracker.from_shape((20, 10))
-    x = a.stride((-1,1))
+    x = a.flip((True,False))
     ap = x + x.invert(a.shape)
     assert st_equal(ap, a)
 
   def test_can_invert_flip_permute(self):
     a = ShapeTracker.from_shape((20, 10))
     x = a.permute((1,0))
-    x = x.stride((-1,1))
+    x = x.flip((True,False))
     ap = x + x.invert(a.shape)
     assert st_equal(ap, a)
-
-  def test_cant_invert_stride(self):
-    a = ShapeTracker.from_shape((10, 10))
-    x = a.stride((2,2))
-    assert x.invert(a.shape) is None
 
   def test_invert_failure(self):
     a = ShapeTracker.from_shape((2, 5))

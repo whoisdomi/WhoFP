@@ -47,7 +47,9 @@ class CarControllerParams:
 class ToyotaFlags(IntFlag):
   # Detected flags
   HYBRID = 1
+  SMART_DSU = 2
   DISABLE_RADAR = 4
+  RADAR_CAN_FILTER = 1024
 
   # Static flags
   TSS2 = 8
@@ -57,16 +59,14 @@ class ToyotaFlags(IntFlag):
   # these cars use the Lane Tracing Assist (LTA) message for lateral control
   ANGLE_CONTROL = 128
   NO_STOP_TIMER = 256
-  # these cars are speculated to allow stop and go when the DSU is unplugged
+  # these cars are speculated to allow stop and go when the DSU is unplugged or disabled with sDSU
   SNG_WITHOUT_DSU = 512
   # these cars can utilize 2.0 m/s^2
-  RAISED_ACCEL_LIMIT = 1024
-  SECOC = 2048
+  RAISED_ACCEL_LIMIT = 2048
+  SECOC = 4096
 
-  # FrogPilot Toyota flags
-  RADAR_CAN_FILTER = 4096
-  SMART_DSU = 8192
-  ZSS = 16384
+class ToyotaFrogPilotFlags(IntFlag):
+  ZSS = 1
 
 class Footnote(Enum):
   CAMRY = CarFootnote(
@@ -272,7 +272,7 @@ class CAR(Platforms):
     CarSpecs(mass=4372. * CV.LB_TO_KG, wheelbase=2.68, steerRatio=16.88, tireStiffnessFactor=0.5533),
   )
   TOYOTA_YARIS = ToyotaSecOCPlatformConfig(
-    [ToyotaCarDocs("Toyota Yaris 2023 (Non-US only)", min_enable_speed=MIN_ACC_SPEED)],
+    [ToyotaCarDocs("Toyota Yaris 2020, 2023 (Non-US only)", min_enable_speed=MIN_ACC_SPEED)],
     CarSpecs(mass=1170, wheelbase=2.55, steerRatio=14.80, tireStiffnessFactor=0.5533),
     flags=ToyotaFlags.RADAR_ACC,
   )

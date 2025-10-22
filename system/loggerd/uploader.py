@@ -21,7 +21,7 @@ from openpilot.system.hardware.hw import Paths
 from openpilot.system.loggerd.xattr_cache import getxattr, setxattr
 from openpilot.common.swaglog import cloudlog
 
-from openpilot.selfdrive.frogpilot.frogpilot_variables import get_frogpilot_toggles
+from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
 NetworkType = log.DeviceState.NetworkType
 UPLOAD_ATTR_NAME = 'user.upload'
@@ -260,7 +260,7 @@ def main(exit_event: threading.Event = None) -> None:
     sm.update(0)
     offroad = params.get_bool("IsOffroad")
     network_type = sm['deviceState'].networkType if not force_wifi else NetworkType.wifi
-    at_home = not frogpilot_toggles.no_onroad_uploads or offroad and network_type in {NetworkType.ethernet, NetworkType.wifi}
+    at_home = offroad and network_type in (NetworkType.ethernet, NetworkType.wifi) or not frogpilot_toggles.no_onroad_uploads
     if network_type == NetworkType.none or not at_home:
       if allow_sleep:
         time.sleep(60 if offroad else 5)
@@ -277,7 +277,7 @@ def main(exit_event: threading.Event = None) -> None:
     if allow_sleep:
       time.sleep(backoff + random.uniform(0, backoff))
 
-    # Update FrogPilot parameters
+    # Update FrogPilot variables
     if sm['frogpilotPlan'].togglesUpdated:
       frogpilot_toggles = get_frogpilot_toggles()
 

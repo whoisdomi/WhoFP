@@ -31,8 +31,8 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
 
   // automatic updates toggle
   ParamControl *automaticUpdatesToggle = new ParamControl("AutomaticUpdates", tr("Automatically Update FrogPilot"),
-                                                       tr("FrogPilot will automatically update itself and it's assets when you're offroad and connected to Wi-Fi."), "");
-  connect(automaticUpdatesToggle, &ToggleControl::toggleFlipped, this, &updateFrogPilotToggles);
+                                                       tr("FrogPilot will automatically update itself and it's assets when you're offroad and have an active internet connection."), "");
+  automaticUpdatesToggle->setVisible(params.getBool("IsReleaseBranch"));
   addItem(automaticUpdatesToggle);
 
   // download update btn
@@ -44,7 +44,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     } else {
       std::system("pkill -SIGHUP -f system.updated.updated");
     }
-    params_memory.putBool("ManualUpdateInitiated", true);
+    frogpilotUIState()->params_memory.putBool("ManualUpdateInitiated", true);
   });
   addItem(downloadBtn);
 
@@ -61,12 +61,15 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   connect(targetBranchBtn, &ButtonControl::clicked, [=]() {
     auto current = params.get("GitBranch");
     QStringList branches = QString::fromStdString(params.get("UpdaterAvailableBranches")).split(",");
-    if (!uiState()->scene.frogs_go_moo) {
-      branches.removeAll("FrogPilot-Development");
-      branches.removeAll("FrogPilot-Vetting");
-      branches.removeAll("FrogPilot-Test");
-      branches.removeAll("MAKE-PRS-HERE");
+    if (!frogpilotUIState()->frogpilot_scene.frogpilot_toggles.value("frogs_go_moo").toBool()) {
+      for (int i = branches.size() - 1; i >= 0; --i) {
+        if (branches[i].startsWith("FrogPilot-Development", Qt::CaseInsensitive)) {
+          branches.removeAt(i);
+        }
+      }
     }
+    branches.removeAll("FrogPilot-Vetting");
+    branches.removeAll("MAKE-PRS-HERE");
     for (QString b : {current.c_str(), "devel-staging", "devel", "nightly", "master-ci", "master"}) {
       auto i = branches.indexOf(b);
       if (i >= 0) {
@@ -86,7 +89,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
         if (FrogPilotConfirmationDialog::yesorno(tr("This branch must be downloaded before switching. Would you like to download it now?"), this)) {
           std::system("pkill -SIGHUP -f system.updated.updated");
 
-          params_memory.putBool("ManualUpdateInitiated", true);
+          frogpilotUIState()->params_memory.putBool("ManualUpdateInitiated", true);
         }
       }
     }
@@ -97,9 +100,9 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   auto uninstallBtn = new ButtonControl(tr("Uninstall %1").arg(getBrand()), tr("UNINSTALL"));
   connect(uninstallBtn, &ButtonControl::clicked, [&]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to uninstall?"), tr("Uninstall"), this)) {
-      if (FrogPilotConfirmationDialog::yesorno(tr("Do you want to delete deep storage FrogPilot assets? This includes your toggle settings for quick reinstalls."), this)) {
-        if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure? This is 100% unrecoverable and if you reinstall FrogPilot you'll lose all your previous settings!"), this)) {
-          std::system("rm -rf /cache/params");
+      if (FrogPilotConfirmationDialog::yesorno(tr("Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!"), this)) {
+        if (FrogPilotConfirmationDialog::yesorno(tr("This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?"), this)) {
+          std::system("rm -rf /cache/params/d");
         }
       }
       params.putBool("DoUninstall", true);
@@ -133,11 +136,19 @@ void SoftwarePanel::showEvent(QShowEvent *event) {
   installBtn->setEnabled(true);
 
   updateLabels();
+
+  // FrogPilot variables
+  FrogPilotUIState &fs = *frogpilotUIState();
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+
+  if (frogpilot_scene.online && params.get("UpdaterState") == "idle") {
+    checkForUpdates();
+  }
 }
 
 void SoftwarePanel::updateLabels() {
-  UIState *s = uiState();
-  UIScene &scene = s->scene;
+  FrogPilotUIState &fs = *frogpilotUIState();
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
 
   // add these back in case the files got removed
   fs_watch->addParam("LastUpdateTime");
@@ -146,12 +157,12 @@ void SoftwarePanel::updateLabels() {
   fs_watch->addParam("UpdateAvailable");
 
   if (!isVisible()) {
-    scene.downloading_update = false;
+    frogpilot_scene.downloading_update = false;
     return;
   }
 
   // updater only runs offroad or when parked
-  bool parked = scene.parked || scene.frogs_go_moo;
+  bool parked = frogpilot_scene.parked || frogpilot_scene.frogpilot_toggles.value("frogs_go_moo").toBool();
 
   onroadLbl->setVisible(is_onroad && !parked);
   downloadBtn->setVisible(!is_onroad || parked);
@@ -162,9 +173,9 @@ void SoftwarePanel::updateLabels() {
   if (updater_state != "idle") {
     downloadBtn->setEnabled(false);
     downloadBtn->setValue(updater_state);
-    scene.downloading_update = true;
+    frogpilot_scene.downloading_update = true;
   } else {
-    scene.downloading_update = false;
+    frogpilot_scene.downloading_update = false;
     if (failed) {
       downloadBtn->setText(tr("CHECK"));
       downloadBtn->setValue(tr("failed to check for update"));

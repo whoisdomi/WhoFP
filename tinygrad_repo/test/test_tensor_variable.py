@@ -23,21 +23,21 @@ class TestTensorVariable(unittest.TestCase):
 
   def test_symbolic_mean(self):
     vv = Variable("a", 1, 10).bind(2)
-    t = Tensor.ones(2, 2).contiguous().reshape(2, vv)
+    t = Tensor.ones(2, 10).contiguous()[:, :vv]
     ret = t.mean().item()
     assert ret == 1
 
   def test_symbolic_mean_2d(self):
     vv = Variable("a", 1, 10).bind(2)
     vv2 = Variable("b", 1, 10).bind(2)
-    t = Tensor.ones(2, 2).contiguous().reshape(vv2, vv)
+    t = Tensor.ones(10, 10).contiguous()[:vv2, :vv]
     ret = t.mean().item()
     assert ret == 1
 
   def test_symbolic_mean_2d_axis_1(self):
     vv = Variable("a", 1, 10).bind(2)
     vv2 = Variable("b", 1, 10).bind(2)
-    t = Tensor.ones(2, 2).contiguous().reshape(vv2, vv)
+    t = Tensor.ones(10, 10).contiguous()[:vv2, :vv]
     ret = t.mean(axis=1).reshape(2, 1).numpy()
     assert np.all(ret == 1)
 
@@ -45,13 +45,13 @@ class TestTensorVariable(unittest.TestCase):
     add_term = Variable("c", 0, 10).bind(1)
     vv = Variable("a", 1, 10).bind(1)
     vv2 = Variable("b", 1, 10).bind(1)
-    t = Tensor.ones(2, 2).contiguous().reshape(vv2+add_term, vv+add_term)
+    t = Tensor.ones(20, 20).contiguous()[:vv2+add_term, :vv+add_term]
     ret = t.mean().item()
     assert ret == 1
 
   def test_symbolic_var(self):
     vv = Variable("a", 1, 10).bind(2)
-    t = Tensor.ones(2, 2).contiguous().reshape(2, vv)
+    t = Tensor.ones(2, 10).contiguous()[:, :vv]
     ret = t.var().item()
     assert ret == 0
 
@@ -85,6 +85,16 @@ class TestTensorVariable(unittest.TestCase):
     end = Variable("e", 6, 10)
     ret = Tensor.arange(begin.bind(4), end.bind(7))
     self.assertListEqual(ret.reshape(3).tolist(), [4,5,6])
+
+  def test_variable_empty(self):
+    v = Variable("i", 1, 10)
+    # TODO: Tensor creation from unbound variable should assert
+    # with self.assertRaises(AssertionError): t = Tensor.empty(3, v)
+    vb = v.bind(3)
+    t = Tensor.empty(3, vb)
+    assert t.uop.base.buffer.size == 30
+    assert t.uop.st.shape == (3, vb)
+
 
 if __name__ == '__main__':
   unittest.main()
