@@ -77,10 +77,8 @@ class CarController(CarControllerBase):
         apply_curvature = apply_ford_curvature_limits(actuators.curvature, self.apply_curvature_last, current_curvature, CS.out.vEgoRaw)
       else:
         apply_curvature = 0.
-      
-      steeringPressed = CS.out.steeringPressed
-      steeringAngleDeg = CS.out.steeringAngleDeg
-      if steeringPressed and abs(steeringAngleDeg) > 60:
+
+      if CS.out.steeringPressed and abs(CS.out.steeringAngleDeg) > 60:
         apply_curvature = 0
         ramp_type = 3
       else:
