@@ -1,50 +1,20 @@
 #include "safety_hyundai_common.h"
 
-// Default CANFD limits (non-taco-tune)
-const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS_DEFAULT = {
-  .max_steer = 384,                   //
+const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
+  .max_steer = 720,
   .max_rt_delta = 90,
   .max_rt_interval = 250000,
-  .max_rate_up = 4,                   //
-  .max_rate_down = 10,                  //
-  .driver_torque_allowance = 250,     //
+  .max_rate_up = 10,
+  .max_rate_down = 10,
+  .driver_torque_allowance = 250,
   .driver_torque_factor = 2,
   .type = TorqueDriverLimited,
-  .min_valid_request_frames = 89,
-  .max_invalid_request_frames = 2,
-  .min_valid_request_rt_interval = 810000,
-  .has_steer_req_tolerance = true,
-};
 
-// Taco Tune low speed limits (< 14 m/s)
-const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS_TACO_TUNE_LOW = {
-  .max_steer = 720,                   //
-  .max_rt_delta = 90,
-  .max_rt_interval = 250000,
-  .max_rate_up = 2000,                   //
-  .max_rate_down = 2000,                  //
-  .driver_torque_allowance = 250,     //
-  .driver_torque_factor = 2,
-  .type = TorqueDriverLimited,
+  // the EPS faults when the steering angle is above a certain threshold for too long. to prevent this,
+  // we allow setting torque actuation bit to 0 while maintaining the requested torque value for two consecutive frames
   .min_valid_request_frames = 89,
   .max_invalid_request_frames = 2,
-  .min_valid_request_rt_interval = 810000,
-  .has_steer_req_tolerance = true,
-};
-
-// Taco Tune high speed limits (>= 14 m/s)
-const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS_TACO_TUNE_HIGH = {
-  .max_steer = 400,                   //
-  .max_rt_delta = 90,
-  .max_rt_interval = 250000,
-  .max_rate_up = 3,                   //
-  .max_rate_down = 3,                   //
-  .driver_torque_allowance = 250,     //
-  .driver_torque_factor = 2,
-  .type = TorqueDriverLimited,
-  .min_valid_request_frames = 89,
-  .max_invalid_request_frames = 2,
-  .min_valid_request_rt_interval = 810000,
+  .min_valid_request_rt_interval = 810000,  // 810ms; a ~10% buffer on cutting every 90 frames
   .has_steer_req_tolerance = true,
 };
 
@@ -271,28 +241,51 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
   bool tx = true;
   int addr = GET_ADDR(to_send);
 
-const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? hyundai_canfd_hda2_get_lkas_addr() : 0x12a;
+  // steering
+  const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? hyundai_canfd_hda2_get_lkas_addr() : 0x12a;
   if (addr == steer_addr) {
     int desired_torque = (((GET_BYTE(to_send, 6) & 0xFU) << 7U) | (GET_BYTE(to_send, 5) >> 1U)) - 1024U;
     bool steer_req = GET_BIT(to_send, 52U);
 
-    // Select the correct steering limits
-    const SteeringLimits *limits;
-    if (true) {
-      // 2m/s margin on the 14 m/s threshold from controller
-      bool low_speed = (hyundai_canfd_front_left_vego < (14.f + 2.f)) && (hyundai_canfd_rear_right_vego < (14.f + 2.f));
-      if (low_speed) {
-        limits = &HYUNDAI_CANFD_STEERING_LIMITS_TACO_TUNE_LOW;
-      } else {
-        limits = &HYUNDAI_CANFD_STEERING_LIMITS_TACO_TUNE_HIGH;
+    // 2m/s margin
+    if ((hyundai_canfd_front_left_vego < (14.f + 2.f) && hyundai_canfd_rear_right_vego < (14.f + 2.f)) && hyundai_canfd_taco_tune_hack) {
+      bool aol_active = (alternative_experience & ALT_EXP_ALWAYS_ON_LATERAL) && lkas_on;
+
+      bool violation = false;
+      uint32_t ts = microsecond_timer_get();
+
+      if (controls_allowed || aol_active) {
+        // *** global torque limit check ***
+        violation |= max_limit_check(desired_torque, 720, -720);
+
+        // ready to blend in limits
+        desired_torque_last = MAX(-680, MIN(desired_torque, 680));
+        rt_torque_last = desired_torque;
+        ts_torque_check_last = ts;
+      }
+
+      // no torque if controls is not allowed
+      if (!(controls_allowed || aol_active) && (desired_torque != 0)) {
+        violation = true;
+      }
+
+      // reset to 0 if either controls is not allowed or there's a violation
+      if (violation || !(controls_allowed || aol_active)) {
+        valid_steer_req_count = 0;
+        invalid_steer_req_count = 0;
+        desired_torque_last = 0;
+        rt_torque_last = 0;
+        ts_torque_check_last = ts;
+        ts_steer_req_mismatch_last = ts;
+      }
+
+      if (violation) {
+        tx = 0;
       }
     } else {
-      limits = &HYUNDAI_CANFD_STEERING_LIMITS_DEFAULT;
-    }
-
-    // Run all safety checks with the selected limits
-    if (steer_torque_cmd_checks(desired_torque, steer_req, *limits)) {
-      tx = false;
+      if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
+        tx = false;
+      }
     }
   }
 
