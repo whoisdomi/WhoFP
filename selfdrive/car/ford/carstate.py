@@ -154,9 +154,9 @@ class CarState(CarStateBase):
 
     if CP.flags & FordFlags.ALT_STEER_ANGLE:
       messages += [
-        ("SteeringPinion_Data_Alt", 100),
         ("ParkAid_Data", 50),
-        ("TransGearData",10),
+        ("SteeringPinion_Data_Alt", 100),
+        ("TransGearData", 10),
       ]
     else:
       messages += [
