@@ -74,7 +74,7 @@ class CarInterface(CarInterfaceBase):
         ret.flags |= HyundaiFlags.USE_FCA.value
 
     ret.steerActuatorDelay = 0.1  # Default delay
-    ret.steerLimitTimer = 0.4
+    ret.steerLimitTimer = 3.0
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     if candidate == CAR.KIA_OPTIMA_G4_FL:
