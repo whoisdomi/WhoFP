@@ -149,6 +149,7 @@ def send_stats():
     max_count = most_common[0][1]
     selected_theme = random.choice([item for item, count in most_common if count == max_count]).replace("-user_created", "").replace("_", " ")
 
+    dongle_id = params.get("FrogPilotDongleId", encoding="utf-8")
     now = datetime.now(timezone.utc)
 
     user_point = (
@@ -186,11 +187,29 @@ def send_stats():
       .field("using_default_model", params.get("Model", encoding="utf-8").endswith("_default"))
       .field("using_stock_acc", not (frogpilot_toggles.has_cc_long or frogpilot_toggles.openpilot_longitudinal))
       .tag("branch", build_metadata.channel)
-      .tag("dongle_id", params.get("FrogPilotDongleId", encoding="utf-8"))
+      .tag("dongle_id", dongle_id)
       .time(now)
     )
 
-    all_points = [user_point] + update_branch_commits(now)
+    model_scores = json.loads(params.get("ModelDrivesAndScores") or "{}")
+
+    model_points = []
+    for model_name, data in model_scores.items():
+      drives = data.get("Drives", 0)
+      score = data.get("Score", 0)
+
+      if drives > 0:
+        point = (
+          Point("model_scores")
+          .field("drives", int(drives))
+          .field("score", int(score))
+          .tag("dongle_id", dongle_id)
+          .tag("model_name", clean_model_name(model_name))
+          .time(now)
+        )
+        model_points.append(point)
+
+    all_points = [user_point] + update_branch_commits(now) + model_points
 
     client = InfluxDBClient(org=org_ID, token=token, url=url)
     client.write_api(write_options=SYNCHRONOUS).write(bucket=bucket, org=org_ID, record=all_points)

@@ -3,9 +3,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QDirIterator>
-#include <QLocale>
 
-#include "selfdrive/ui/ui.h"
 #include "frogpilot/ui/qt/widgets/frogpilot_controls.h"
 
 inline QMap<QString, QString> midwestMap = {
@@ -132,7 +130,7 @@ inline QString calculateDirectorySize(const QDir &directory) {
   constexpr double GB = 1024.0 * MB;
 
   if (!directory.exists()) {
-    return QObject::tr("0 MB");
+    return QStringLiteral("0 MB");
   }
 
   double totalSize = 0;
@@ -143,9 +141,9 @@ inline QString calculateDirectorySize(const QDir &directory) {
   }
 
   if (totalSize >= GB) {
-    return QString::number(totalSize / GB, 'f', 2) + QObject::tr(" GB");
+    return QString::number(totalSize / GB, 'f', 2) + QStringLiteral(" GB");
   }
-  return QString::number(totalSize / MB, 'f', 2) + QObject::tr(" MB");
+  return QString::number(totalSize / MB, 'f', 2) + QStringLiteral(" MB");
 }
 
 inline QString daySuffix(int day) {
@@ -156,9 +154,8 @@ inline QString daySuffix(int day) {
 }
 
 inline QString formatCurrentDate() {
-  QLocale locale(uiState()->language.mid(5));
   QDate currentDate = QDate::currentDate();
-  return locale.toString(currentDate, "d MMMM yyyy");
+  return currentDate.toString("MMMM d'") + daySuffix(currentDate.day()) + QString(", %1").arg(currentDate.year());
 }
 
 inline QString formatElapsedTime(float elapsedMilliseconds) {
@@ -169,12 +166,12 @@ inline QString formatElapsedTime(float elapsedMilliseconds) {
 
   QString formattedTime;
   if (hours > 0) {
-    formattedTime += QString::number(hours) + (hours == 1 ? QObject::tr(" hour ") : QObject::tr(" hours "));
+    formattedTime += QString::number(hours) + (hours == 1 ? " hour " : " hours ");
   }
   if (minutes > 0) {
-    formattedTime += QString::number(minutes) + (minutes == 1 ? QObject::tr(" minute ") : QObject::tr(" minutes "));
+    formattedTime += QString::number(minutes) + (minutes == 1 ? " minute " : " minutes ");
   }
-  formattedTime += QString::number(seconds) + (seconds == 1 ? QObject::tr(" second") : QObject::tr(" seconds"));
+  formattedTime += QString::number(seconds) + (seconds == 1 ? " second" : " seconds");
 
   return formattedTime.trimmed();
 }
@@ -193,7 +190,7 @@ inline QString formatETA(float elapsedTime, int downloadedFiles, int previousDow
 
   int remainingTime = QDateTime::currentDateTime().secsTo(estimatedFinishTime);
 
-  QString estimatedFinishTimeStr = estimatedFinishTime.toString("HH:mm");
+  QString estimatedFinishTimeStr = estimatedFinishTime.toString("h:mm AP");
   QString remainingTimeStr = formatElapsedTime(remainingTime * 1000);
 
   return QString("%1 (%2)").arg(remainingTimeStr).arg(estimatedFinishTimeStr);
