@@ -206,7 +206,7 @@ class Controls:
 
     self.frogpilot_toggles = get_frogpilot_toggles()
 
-    if self.frogpilot_toggles.nnff or self.frogpilot_toggles.nnff_lite:
+    if self.CP.lateralTuning.which() == "torque" and (self.frogpilot_toggles.nnff or self.frogpilot_toggles.nnff_lite):
       self.LaC = LatControlNNFF(self.CP, self.CI, DT_CTRL)
 
   def set_initial_state(self):

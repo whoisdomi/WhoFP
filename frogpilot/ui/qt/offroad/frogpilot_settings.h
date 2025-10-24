@@ -32,6 +32,8 @@ public:
   bool isGM = true;
   bool isHKG = true;
   bool isHKGCanFd = true;
+  bool isHonda = true;
+  bool isHondaNidec = true;
   bool isSubaru = false;
   bool isTorqueCar = false;
   bool isToyota = true;
@@ -59,9 +61,11 @@ public:
 signals:
   void closeSubPanel();
   void closeSubSubPanel();
+  void closeSubSubSubPanel();
   void openPanel();
   void openSubPanel();
   void openSubSubPanel();
+  void openSubSubSubPanel();
   void updateMetric(bool metric, bool bootRun=false);
 
 private:

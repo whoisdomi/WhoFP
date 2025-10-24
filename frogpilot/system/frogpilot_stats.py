@@ -2,9 +2,6 @@ import json
 import os
 import random
 import requests
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "third_party"))
 
 from collections import Counter
 from datetime import datetime, timezone
@@ -182,6 +179,7 @@ def send_stats():
       .field("total_aol_seconds", float(frogpilot_stats.get("AOLTime", 0)))
       .field("total_lateral_seconds", float(frogpilot_stats.get("LateralTime", 0)))
       .field("total_longitudinal_seconds", float(frogpilot_stats.get("LongitudinalTime", 0)))
+      .field("total_stopped_seconds", float(frogpilot_stats.get("StandstillTime", 0)))
       .field("total_tracked_seconds", float(frogpilot_stats.get("TrackedTime", 0)))
       .field("tuning_level", params.get_int("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
       .field("using_default_model", params.get("Model", encoding="utf-8").endswith("_default"))
