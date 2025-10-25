@@ -24,10 +24,10 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weather_clear_day, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weather_clear_night, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weather_rain, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weather_snow, QSize(btn_size / 2, btn_size / 2), this);
+  loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(btn_size / 2, btn_size / 2), this);
+  loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(btn_size / 2, btn_size / 2), this);
+  loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(btn_size / 2, btn_size / 2), this);
+  loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(btn_size / 2, btn_size / 2), this);
 
   QObject::connect(animationTimer, &QTimer::timeout, [this] {
     animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
@@ -1011,13 +1011,13 @@ void FrogPilotAnnotatedCameraWidget::paintWeather(QPainter &p, const cereal::Fro
   p.setPen(QPen(blackColor(), 10));
   p.drawRoundedRect(weatherRect, 24, 24);
 
-  QSharedPointer<QMovie> icon = weather_clear_day;
+  QSharedPointer<QMovie> icon = weatherClearDay;
   if ((weatherId >= 200 && weatherId <= 232) || (weatherId >= 300 && weatherId <= 321) || (weatherId >= 500 && weatherId <= 531)) {
-    icon = weather_rain;
+    icon = weatherRain;
   } else if (weatherId >= 600 && weatherId <= 622) {
-    icon = weather_snow;
+    icon = weatherSnow;
   } else if (weatherId == 800) {
-    icon = frogpilotPlan.getWeatherDaytime() ? weather_clear_day : weather_clear_night;
+    icon = frogpilotPlan.getWeatherDaytime() ? weatherClearDay : weatherClearNight;
   }
 
   p.drawPixmap(weatherRect, icon->currentPixmap());

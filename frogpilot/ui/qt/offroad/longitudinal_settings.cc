@@ -1,6 +1,8 @@
 #include "frogpilot/ui/qt/offroad/longitudinal_settings.h"
 
 FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
+  networkManager = new QNetworkAccessManager(this);
+
   QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
   QString className = this->metaObject()->className();
 
@@ -185,6 +187,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
     {"IncreasedStoppedDistanceSnow", tr("Increase Stopped Distance by:"), tr("<b>Add extra buffer when stopped behind vehicles in snow.</b> Increase for more room; decrease for shorter gaps."), ""},
     {"ReduceAccelerationSnow", tr("Reduce Acceleration by:"), tr("<b>Lower the maximum acceleration in snow.</b> Increase for softer takeoffs; decrease for quicker but less stable takeoffs."), ""},
     {"ReduceLateralAccelerationSnow", tr("Reduce Speed in Curves by:"), tr("<b>Lower the desired speed while driving through curves in snow.</b> Increase for safer, gentler turns; decrease for more aggressive driving in curves."), ""},
+
+    {"SetWeatherKey", tr("Set Your Own Key"), tr("<b>Set your own \"OpenWeatherMap\" key to increase the weather update rate.</b><br><br><i>Personal keys grant 1,000 free calls per day, allowing for updates every minute. The default key is shared and only updates every 15 minutes.</i>"), ""},
 
     {"SpeedLimitController", tr("Speed Limit Controller"), tr("<b>Limit openpilot's maximum driving speed to the current speed limit</b> obtained from downloaded maps, Mapbox, Navigate on openpilot, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota)."), "../../frogpilot/assets/toggle_icons/icon_speed_limit.png"},
     {"SLCFallback", tr("Fallback Speed"), tr("<b>The speed used by \"Speed Limit Controller\" when no speed limit is found.</b><br><br>- <b>Set Speed</b>: Use the cruise set speed<br>- <b>Experimental Mode</b>: Estimate the limit using the driving model<br>- <b>Previous Limit</b>: Keep using the last confirmed limit"), ""},
@@ -413,6 +417,54 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
         qolOpen = true;
       });
       longitudinalToggle = weatherToggle;
+    } else if (param == "SetWeatherKey") {
+      weatherKeyControl = new FrogPilotButtonsControl(title, desc, icon, {tr("ADD"), tr("TEST")});
+      QObject::connect(weatherKeyControl, &FrogPilotButtonsControl::buttonClicked, [this](int id) {
+        if (id == 0) {
+          if (!params.get("WeatherToken").empty()) {
+            if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to remove your key?"), this)) {
+              params.remove("WeatherToken");
+              params_cache.remove("WeatherToken");
+
+              weatherKeyControl->setText(0, tr("ADD"));
+              weatherKeyControl->setVisibleButton(1, false);
+            }
+          } else {
+            QString key = InputDialog::getText(tr("Enter your \"OpenWeatherMap\" key"), this).trimmed();
+            if (key.length() == 32) {
+              params.put("WeatherToken", key.toStdString());
+
+              weatherKeyControl->setText(0, tr("REMOVE"));
+              weatherKeyControl->setVisibleButton(1, true);
+            } else if (!key.isEmpty()) {
+              ConfirmationDialog::alert(tr("Invalid key!"), this);
+            }
+          }
+        } else {
+          weatherKeyControl->setValue(tr("Testing..."));
+
+          QString key = QString::fromStdString(params.get("WeatherToken"));
+          QString url = QString("https://api.openweathermap.org/data/2.5/weather?lat=42.4293&lon=-83.9850&appid=%1").arg(key);
+
+          QNetworkRequest request(url);
+          QNetworkReply *reply = networkManager->get(request);
+          connect(reply, &QNetworkReply::finished, [=]() {
+            weatherKeyControl->setValue("");
+
+            QString message;
+            if (reply->error() == QNetworkReply::NoError) {
+              message = tr("Key is valid!");
+            } else if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 401) {
+              message = tr("Invalid key!");
+            } else {
+              message = tr("An error occurred: %1").arg(reply->errorString());
+            }
+            ConfirmationDialog::alert(message, this);
+            reply->deleteLater();
+          });
+        }
+      });
+      longitudinalToggle = weatherKeyControl;
     } else if (param == "LowVisibilityOffsets") {
       ButtonControl *manageLowVisibilitOffsetsButton = new ButtonControl(title, tr("MANAGE"), desc);
       QObject::connect(manageLowVisibilitOffsetsButton, &ButtonControl::clicked, [longitudinalLayout, weatherLowVisibilityPanel, this]() {
@@ -781,6 +833,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
 }
 
 void FrogPilotLongitudinalPanel::showEvent(QShowEvent *event) {
+  FrogPilotUIState &fs = *frogpilotUIState();
+
   frogpilotToggleLevels = parent->frogpilotToggleLevels;
 
   calibratedLateralAccelerationLabel->setText(QString::number(params.getFloat("CalibratedLateralAcceleration"), 'f', 2) + tr(" m/s²"));
@@ -792,6 +846,10 @@ void FrogPilotLongitudinalPanel::showEvent(QShowEvent *event) {
   stoppingDecelRateToggle->setTitle(QString(tr("Stopping Rate (Default: %1)")).arg(QString::number(parent->stoppingDecelRate, 'f', 2)));
   vEgoStartingToggle->setTitle(QString(tr("Start Speed (Default: %1)")).arg(QString::number(parent->vEgoStarting, 'f', 2)));
   vEgoStoppingToggle->setTitle(QString(tr("Stop Speed (Default: %1)")).arg(QString::number(parent->vEgoStopping, 'f', 2)));
+
+  bool keyExists = !params.get("WeatherToken").empty();
+  weatherKeyControl->setText(0, keyExists ? tr("REMOVE") : tr("ADD"));
+  weatherKeyControl->setVisibleButton(1, keyExists && fs.frogpilot_scene.online);
 
   updateToggles();
 }

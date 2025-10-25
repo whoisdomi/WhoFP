@@ -2562,6 +2562,50 @@
         <source>&lt;b&gt;Force openpilot to stop whenever the driving model "detects" a red light or stop sign.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;Disclaimer&lt;/b&gt;: openpilot does not explicitly detect traffic lights or stop signs. In "Experimental Mode", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason!&lt;/i&gt;</source>
         <translation type="gpt-5-generated">&lt;b&gt;บังคับให้ openpilot หยุดทุกครั้งที่แบบจำลองการขับขี่ “ตรวจพบ” ไฟแดงหรือป้ายหยุด&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;&lt;b&gt;ข้อจำกัดความรับผิดชอบ&lt;/b&gt;: openpilot ไม่ได้ตรวจจับสัญญาณไฟจราจรหรือป้ายหยุดโดยตรง ใน “โหมดทดลอง” openpilot ตัดสินใจขับขี่แบบ end-to-end จากภาพกล้อง ซึ่งหมายความว่ามันอาจหยุดแม้ไม่มีเหตุผลชัดเจน!&lt;/i&gt;</translation>
     </message>
+    <message>
+        <source>Set Your Own Key</source>
+        <translation type="gpt-5-generated">ตั้งคีย์ของคุณเอง</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Set your own "OpenWeatherMap" key to increase the weather update rate.&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Personal keys grant 1,000 free calls per day, allowing for updates every minute. The default key is shared and only updates every 15 minutes.&lt;/i&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;ตั้งค่า "OpenWeatherMap" คีย์ของคุณเองเพื่อเพิ่มความถี่ในการอัปเดตสภาพอากาศ&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;คีย์ส่วนบุคคลให้สิทธิ์ใช้งานฟรี 1,000 ครั้งต่อวัน อนุญาตให้อัปเดตได้ทุกนาที คีย์เริ่มต้นถูกใช้งานร่วมกันและอัปเดตทุก 15 นาทีเท่านั้น&lt;/i&gt;</translation>
+    </message>
+    <message>
+        <source>ADD</source>
+        <translation type="gpt-5-generated">เพิ่ม</translation>
+    </message>
+    <message>
+        <source>Enter your "OpenWeatherMap" key</source>
+        <translation type="gpt-5-generated">ป้อนคีย์ "OpenWeatherMap" ของคุณ</translation>
+    </message>
+    <message>
+        <source>REMOVE</source>
+        <translation type="gpt-5-generated">เอาออก</translation>
+    </message>
+    <message>
+        <source>Invalid key!</source>
+        <translation type="gpt-5-generated">คีย์ไม่ถูกต้อง!</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove your key?</source>
+        <translation type="gpt-5-generated">คุณแน่ใจหรือไม่ว่าต้องการลบกุญแจของคุณ?</translation>
+    </message>
+    <message>
+        <source>TEST</source>
+        <translation type="gpt-5-generated">ทดสอบ</translation>
+    </message>
+    <message>
+        <source>Testing...</source>
+        <translation type="gpt-5-generated">กำลังทดสอบ...</translation>
+    </message>
+    <message>
+        <source>Key is valid!</source>
+        <translation type="gpt-5-generated">คีย์ถูกต้อง!</translation>
+    </message>
+    <message>
+        <source>An error occurred: %1</source>
+        <translation type="gpt-5-generated">เกิดข้อผิดพลาด: %1</translation>
+    </message>
 </context>
 <context>
     <name>FrogPilotManageControl</name>
@@ -3188,6 +3232,50 @@ It will reset in %1 hours and %2 minutes.</source>
     <message>
         <source>Completed!</source>
         <translation type="gpt-5-generated">เสร็จสิ้น!</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manage your Public Mapbox Key.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;จัดการคีย์ Mapbox สาธารณะของคุณ&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>TEST</source>
+        <translation type="gpt-5-generated">ทดสอบ</translation>
+    </message>
+    <message>
+        <source>Remove your Public Mapbox Key?</source>
+        <translation type="gpt-5-generated">ลบคีย์ Mapbox สาธารณะของคุณหรือไม่?</translation>
+    </message>
+    <message>
+        <source>Enter your Public Mapbox Key</source>
+        <translation type="gpt-5-generated">ป้อนคีย์ Mapbox สาธารณะของคุณ</translation>
+    </message>
+    <message>
+        <source>Testing...</source>
+        <translation type="gpt-5-generated">กำลังทดสอบ...</translation>
+    </message>
+    <message>
+        <source>Key is valid!</source>
+        <translation type="gpt-5-generated">คีย์ถูกต้อง!</translation>
+    </message>
+    <message>
+        <source>Key is invalid!</source>
+        <translation type="gpt-5-generated">กุญแจไม่ถูกต้อง!</translation>
+    </message>
+    <message>
+        <source>An error occurred: %1</source>
+        <translation type="gpt-5-generated">เกิดข้อผิดพลาด: %1</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Manage your Secret Mapbox Key.&lt;/b&gt;</source>
+        <translation type="gpt-5-generated">&lt;b&gt;จัดการคีย์ลับ Mapbox ของคุณ&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Remove your Secret Mapbox Key?</source>
+        <translation type="gpt-5-generated">ลบ Secret Mapbox Key ของคุณหรือไม่?</translation>
+    </message>
+    <message>
+        <source>Enter your Secret Mapbox Key</source>
+        <translation type="gpt-5-generated">ป้อน Secret Mapbox Key ของคุณ</translation>
     </message>
 </context>
 <context>

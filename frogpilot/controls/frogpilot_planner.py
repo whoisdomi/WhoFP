@@ -145,8 +145,6 @@ class FrogPilotPlanner:
 
     frogpilotPlan.desiredFollowDistance = self.frogpilot_following.desired_follow_distance
 
-    frogpilotPlan.disableThrottle = self.frogpilot_following.disable_throttle
-
     frogpilotPlan.experimentalMode = self.cem.experimental_mode or self.frogpilot_vcruise.slc.experimental_mode
 
     frogpilotPlan.forcingStop = self.frogpilot_vcruise.forcing_stop

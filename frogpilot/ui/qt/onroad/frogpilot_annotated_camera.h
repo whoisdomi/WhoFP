@@ -124,10 +124,10 @@ private:
   QSharedPointer<QMovie> cemTurnIcon;
   QSharedPointer<QMovie> chillModeIcon;
   QSharedPointer<QMovie> experimentalModeIcon;
-  QSharedPointer<QMovie> weather_clear_day;
-  QSharedPointer<QMovie> weather_clear_night;
-  QSharedPointer<QMovie> weather_rain;
-  QSharedPointer<QMovie> weather_snow;
+  QSharedPointer<QMovie> weatherClearDay;
+  QSharedPointer<QMovie> weatherClearNight;
+  QSharedPointer<QMovie> weatherRain;
+  QSharedPointer<QMovie> weatherSnow;
 
   QString cscSpeedStr;
 

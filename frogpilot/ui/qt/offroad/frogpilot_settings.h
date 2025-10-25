@@ -1,7 +1,13 @@
 #pragma once
 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+
 #include "selfdrive/ui/qt/offroad/settings.h"
 #include "selfdrive/ui/qt/widgets/scrollview.h"
+
+class QNetworkAccessManager;
 
 class FrogPilotSettingsWindow : public QFrame {
   Q_OBJECT

@@ -144,7 +144,6 @@ class LongitudinalPlanner:
     x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'], v_ego, frogpilot_toggles.taco_tune)
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
-    self.allow_throttle &= not sm['frogpilotPlan'].disableThrottle
 
     if not self.allow_throttle:
       clipped_accel_coast = max(accel_coast, accel_clip[0])

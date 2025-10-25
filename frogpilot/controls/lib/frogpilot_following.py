@@ -11,7 +11,6 @@ class FrogPilotFollowing:
   def __init__(self, FrogPilotPlanner):
     self.frogpilot_planner = FrogPilotPlanner
 
-    self.disable_throttle = False
     self.following_lead = False
     self.slower_lead = False
 
@@ -68,11 +67,6 @@ class FrogPilotFollowing:
 
     if self.frogpilot_planner.frogpilot_weather.weather_id != 0:
       self.t_follow = min(self.t_follow + self.frogpilot_planner.frogpilot_weather.increase_following_distance, MAX_T_FOLLOW)
-
-    self.disable_throttle = self.frogpilot_planner.tracking_lead and not self.following_lead
-    self.disable_throttle &= self.frogpilot_planner.lead_one.dRel + STOP_DISTANCE < (self.t_follow * 2 * 2) * v_ego
-    self.disable_throttle &= self.frogpilot_planner.lead_one.vLead < v_ego * 0.75
-    self.disable_throttle &= frogpilot_toggles.human_following
 
     if sm["controlsState"].enabled and self.frogpilot_planner.tracking_lead:
       if not sm["frogpilotCarState"].trafficModeEnabled:
