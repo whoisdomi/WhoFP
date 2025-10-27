@@ -174,6 +174,7 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent) 
     {"HKGToggles", tr("Hyundai/Kia/Genesis Settings"), tr("<b>FrogPilot features for Genesis, Hyundai, and Kia vehicles.</b>"), ""},
     {"NewLongAPI", tr("comma's New Longitudinal API"), tr("<b>comma's new gas and brake control system</b> that improves acceleration and braking but may cause issues on some Genesis/Hyundai/Kia vehicles."), ""},
     {"TacoTuneHacks", tr("\"Taco Bell Run\" Torque Hack"), tr("<b>The steering torque hack from comma's 2022 \"Taco Bell Run\".</b> Designed to increase steering torque at low speeds for left and right turns."), ""},
+    {"DampFactor", tr("Steering Damp Factor"), tr("<b>Adjust the steering damping factor</b> for better steering feel. Lower values = lighter steering, Higher values = firmer steering. Default: 100"), ""},
 
     {"ToyotaToggles", tr("Toyota/Lexus Settings"), tr("<b>FrogPilot features for Lexus and Toyota vehicles.</b>"), ""},
     {"ToyotaDoors", tr("Automatically Lock/Unlock Doors"), tr("<b>Automatically lock/unlock doors</b> when shifting in and out of drive."), ""},
@@ -236,6 +237,14 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent) 
         clusterOffsetToggle->refresh();
       });
       vehicleToggle = clusterOffsetToggle;
+    } else if (param == "DampFactor") {
+      std::map<float, QString> dampFactorLabels;
+      dampFactorLabels[3] = tr("Lightest");
+      dampFactorLabels[50] = tr("Light");
+      dampFactorLabels[100] = tr("Default");
+      dampFactorLabels[150] = tr("Firm");
+      dampFactorLabels[200] = tr("Firmest");
+      vehicleToggle = new FrogPilotParamValueControl(param, title, desc, icon, 3, 200, "", dampFactorLabels, 1);
 
     } else if (param == "VehicleInfo") {
       ButtonControl *VehicleInfoButton = new ButtonControl(title, tr("VIEW"), desc);

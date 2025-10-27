@@ -1,4 +1,5 @@
 from openpilot.common.numpy_fast import clip
+from openpilot.common.params import Params
 from openpilot.selfdrive.car import CanBusBase
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags
 
@@ -38,6 +39,12 @@ class CanBus(CanBusBase):
 def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_steer):
 
   ret = []
+  
+  # Get damp factor from FrogPilot settings, default to 100 if not set
+  params = Params()
+  damp_factor = params.get_int("DampFactor")
+  if damp_factor is None:
+    damp_factor = 100
 
   values = {
     "LKA_MODE": 2,
@@ -49,7 +56,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_steer):
     "HAS_LANE_SAFETY": 0,  # hide LKAS settings
     "NEW_SIGNAL_1": 0,
     "NEW_SIGNAL_2": 0,
-    "DAMP_FACTOR": 100,  # can potentially tuned for better perf [3, 200]
+    "DAMP_FACTOR": damp_factor,  # Now using the tunable parameter [3, 200]
   }
 
   if CP.flags & HyundaiFlags.CANFD_HDA2:

@@ -976,6 +976,8 @@ class FrogPilotVariables:
     toggle.startup_alert_bottom = params.get("StartupMessageBottom", encoding="utf-8") if tuning_level >= level["StartupMessageBottom"] else default.get("StartupMessageBottom", encoding="utf-8")
 
     toggle.taco_tune_hacks = taco_hacks_allowed and (params.get_bool("TacoTuneHacks") if tuning_level >= level["TacoTuneHacks"] else default.get_bool("TacoTuneHacks"))
+    
+    toggle.damp_factor = params.get_int("DampFactor") if toggle.car_make == "hyundai" and tuning_level >= level.get("DampFactor", 1) else default.get_int("DampFactor")
 
     toggle.tethering_config = params.get_int("TetheringEnabled")
 
