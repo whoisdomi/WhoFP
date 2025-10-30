@@ -12,7 +12,7 @@ from openpilot.common.conversions import Conversions as CV
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
-from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name, run_cmd
+from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles, params
 
 BASE_URL = "https://nominatim.openstreetmap.org"
@@ -90,7 +90,7 @@ def get_city_center(latitude, longitude):
       print(f"Falling back to (0, 0) for {latitude}, {longitude}")
       return float(0.0), float(0.0), "N/A", "N/A", "N/A"
 
-  except Exception as exception:
+  except Exception:
     print(f"Falling back to (0, 0) for {latitude}, {longitude}")
     return float(0.0), float(0.0), "N/A", "N/A", "N/A"
 
@@ -104,17 +104,12 @@ def update_branch_commits(now):
       points.append(Point("branch_commits").field("commit", sha).tag("branch", branch).time(now))
     except Exception as e:
       print(f"Failed to fetch commit for {branch}: {e}")
-
   return points
-
 
 def send_stats():
   try:
     build_metadata = get_build_metadata()
     frogpilot_toggles = get_frogpilot_toggles()
-
-    if frogpilot_toggles.frogs_go_moo:
-      return
 
     if frogpilot_toggles.car_make == "mock":
       return
@@ -127,84 +122,43 @@ def send_stats():
     frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
 
     location = json.loads(params.get("LastGPSPosition") or "{}")
-    if not (location.get("latitude") and location.get("longitude")):
-      return
-    original_latitude = location.get("latitude")
-    original_longitude = location.get("longitude")
+    original_latitude = location.get("latitude", 0.0)
+    original_longitude = location.get("longitude", 0.0)
     latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
 
-    theme_sources = [
-      frogpilot_toggles.icon_pack.replace("-animated", ""),
-      frogpilot_toggles.color_scheme,
-      frogpilot_toggles.distance_icons.replace("-animated", ""),
-      frogpilot_toggles.signal_icons.replace("-animated", ""),
-      frogpilot_toggles.sound_pack
-    ]
-
-    theme_counter = Counter(theme_sources)
-    most_common = theme_counter.most_common()
-    max_count = most_common[0][1]
-    selected_theme = random.choice([item for item, count in most_common if count == max_count]).replace("-user_created", "").replace("_", " ")
+    theme_attributes = sorted(["color_scheme", "distance_icons", "icon_pack", "signal_icons", "sound_pack"])
+    theme_counts = Counter(getattr(frogpilot_toggles, attribute).replace("-animated", "") for attribute in theme_attributes)
+    winners = [theme for theme, count in theme_counts.items() if count == max(theme_counts.values(), default=0)]
+    if len(winners) > 1 and "stock" in winners:
+      winners.remove("stock")
+    selected_theme = random.choice(winners).replace("-user_created", "").replace("_", " ") if winners else "stock"
 
     dongle_id = params.get("FrogPilotDongleId", encoding="utf-8")
     now = datetime.now(timezone.utc)
 
     user_point = (
       Point("user_stats")
-      .field("blocked_user", frogpilot_toggles.block_user)
-      .field("car_make", "GM" if frogpilot_toggles.car_make == "gm" else frogpilot_toggles.car_make.title())
-      .field("car_model", frogpilot_toggles.car_model)
       .field("city", city)
       .field("commit", build_metadata.openpilot.git_commit)
       .field("country", country)
-      .field("current_months_kilometers", int(frogpilot_stats.get("CurrentMonthsKilometers", 0)))
       .field("device", HARDWARE.get_device_type())
-      .field("driving_model", clean_model_name(frogpilot_toggles.model_name))
       .field("event", 1)
-      .field("frog_chirps", int(frogpilot_stats.get("FrogChirps", 0)))
-      .field("frog_hops", int(frogpilot_stats.get("FrogHops", 0)))
-      .field("frog_squeaks", int(frogpilot_stats.get("FrogSqueaks", 0)))
-      .field("frogpilot_drives", int(frogpilot_stats.get("FrogPilotDrives", 0)))
-      .field("frogpilot_hours", float(frogpilot_stats.get("FrogPilotSeconds", 0)) / (60 * 60))
-      .field("frogpilot_miles", float(frogpilot_stats.get("FrogPilotMeters", 0)) * CV.METER_TO_MILE)
-      .field("goat_scream", frogpilot_toggles.goat_scream_alert)
-      .field("goat_screams", int(frogpilot_stats.get("GoatScreams", 0)))
-      .field("has_cc_long", frogpilot_toggles.has_cc_long)
-      .field("has_openpilot_longitudinal", frogpilot_toggles.openpilot_longitudinal)
-      .field("has_pedal", frogpilot_toggles.has_pedal)
-      .field("has_sdsu", frogpilot_toggles.has_sdsu)
-      .field("has_zss", frogpilot_toggles.has_zss)
       .field("latitude", latitude)
       .field("longitude", longitude)
-      .field("rainbow_path", frogpilot_toggles.rainbow_path)
-      .field("random_events", frogpilot_toggles.random_events)
       .field("state", state)
+      .field("stats", json.dumps(frogpilot_stats))
       .field("theme", selected_theme.title())
-      .field("total_aeb_events", int(frogpilot_stats.get("AEBEvents", 0)))
-      .field("total_aol_seconds", float(frogpilot_stats.get("AOLTime", 0)))
-      .field("total_disengagements", int(frogpilot_stats.get("Disengages", 0)))
-      .field("total_engagements", int(frogpilot_stats.get("Engages", 0)))
-      .field("total_experimental_mode_seconds", float(frogpilot_stats.get("ExperimentalModeTime", 0)))
-      .field("total_lateral_seconds", float(frogpilot_stats.get("LateralTime", 0)))
-      .field("total_longitudinal_seconds", float(frogpilot_stats.get("LongitudinalTime", 0)))
-      .field("total_stop_light_seconds", float(frogpilot_stats.get("StopLightTime", 0)))
-      .field("total_stopped_seconds", float(frogpilot_stats.get("StandstillTime", 0)))
-      .field("total_tracked_seconds", float(frogpilot_stats.get("TrackedTime", 0)))
+      .field("toggles", json.dumps(frogpilot_toggles.__dict__))
       .field("tuning_level", params.get_int("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
       .field("using_default_model", params.get("Model", encoding="utf-8").endswith("_default"))
-      .field("using_stock_acc", not (frogpilot_toggles.has_cc_long or frogpilot_toggles.openpilot_longitudinal))
       .tag("branch", build_metadata.channel)
       .tag("dongle_id", dongle_id)
       .time(now)
     )
 
-    random_events_stats = frogpilot_stats.get("RandomEvents", {})
-    for event, count in random_events_stats.items():
-      user_point = user_point.field(f"random_event_{event}", int(count))
-
     model_scores = json.loads(params.get("ModelDrivesAndScores") or "{}")
     model_points = []
-    for model_name, data in model_scores.items():
+    for model_name, data in sorted(model_scores.items()):
       drives = data.get("Drives", 0)
       score = data.get("Score", 0)
 
@@ -219,7 +173,7 @@ def send_stats():
         )
         model_points.append(point)
 
-    all_points = [user_point] + update_branch_commits(now) + model_points
+    all_points = model_points + [user_point] + update_branch_commits(now)
 
     client = InfluxDBClient(org=org_ID, token=token, url=url)
     client.write_api(write_options=SYNCHRONOUS).write(bucket=bucket, org=org_ID, record=all_points)
