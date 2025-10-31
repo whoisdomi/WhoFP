@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+from cereal import car
 from openpilot.common.conversions import Conversions as CV
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
@@ -119,12 +120,23 @@ def send_stats():
     token = os.environ.get("STATS_TOKEN", "")
     url = os.environ.get("STATS_URL", "")
 
+    car_params = "{}"
+    msg_bytes = params.get("CarParamsPersistent")
+    if msg_bytes:
+      with car.CarParams.from_bytes(msg_bytes) as CP:
+        cp_dict = CP.to_dict()
+        cp_dict.pop("carFw", None)
+        car_params = json.dumps(cp_dict)
+
+    dongle_id = params.get("FrogPilotDongleId", encoding="utf-8")
     frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
 
     location = json.loads(params.get("LastGPSPosition") or "{}")
     original_latitude = location.get("latitude", 0.0)
     original_longitude = location.get("longitude", 0.0)
     latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
+
+    now = datetime.now(timezone.utc)
 
     theme_attributes = sorted(["color_scheme", "distance_icons", "icon_pack", "signal_icons", "sound_pack"])
     theme_counts = Counter(getattr(frogpilot_toggles, attribute).replace("-animated", "") for attribute in theme_attributes)
@@ -133,11 +145,11 @@ def send_stats():
       winners.remove("stock")
     selected_theme = random.choice(winners).replace("-user_created", "").replace("_", " ") if winners else "stock"
 
-    dongle_id = params.get("FrogPilotDongleId", encoding="utf-8")
-    now = datetime.now(timezone.utc)
-
     user_point = (
       Point("user_stats")
+      .field("calibrated_lateral_acceleration", params.get_float("CalibratedLateralAcceleration"))
+      .field("calibration_progress", params.get_float("CalibrationProgress"))
+      .field("car_params", car_params)
       .field("city", city)
       .field("commit", build_metadata.openpilot.git_commit)
       .field("country", country)

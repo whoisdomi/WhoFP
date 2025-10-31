@@ -210,12 +210,13 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     connect(uiState(), &UIState::offroadTransition, [=](bool offroad) {
       static bool previouslyOnroad = false;
       if (offroad && previouslyOnroad) {
-        left_widget->setCurrentIndex(2);
+        if (frogpilotUIState()->frogpilot_scene.started_timer > 15 * 60 * UI_FREQ && frogpilotUIState()->frogpilot_toggles.value("model_randomizer").toBool()) {
+          left_widget->setCurrentIndex(3);
+        } else {
+          left_widget->setCurrentIndex(2);
+        }
       }
       previouslyOnroad = !offroad;
-    });
-    connect(frogpilotUIState(), &FrogPilotUIState::reviewModel, [=]() {
-      left_widget->setCurrentIndex(3);
     });
 
     home_layout->addWidget(left_widget, 1);
