@@ -649,7 +649,7 @@ class FrogPilotVariables:
     toggle.steerRatio = np.clip(params.get_float("SteerRatio"), steerRatio * 0.5, steerRatio * 1.5) if advanced_lateral_tuning and tuning_level >= level["SteerRatio"] else steerRatio
     toggle.use_custom_steerRatio = bool(round(toggle.steerRatio, 2) != round(steerRatio, 2)) and not toggle.force_auto_tune or toggle.force_auto_tune_off
 
-    advanced_longitudinal_tuning = params.get_bool("AdvancedLongitudinalTune") if tuning_level >= level["AdvancedLongitudinalTune"] else default.get_bool("AdvancedLongitudinalTune")
+    advanced_longitudinal_tuning = toggle.openpilot_longitudinal and (params.get_bool("AdvancedLongitudinalTune") if tuning_level >= level["AdvancedLongitudinalTune"] else default.get_bool("AdvancedLongitudinalTune"))
     toggle.longitudinalActuatorDelay = np.clip(params.get_float("LongitudinalActuatorDelay"), 0, 1) if advanced_longitudinal_tuning and tuning_level >= level["LongitudinalActuatorDelay"] else longitudinalActuatorDelay
     toggle.max_desired_acceleration = np.clip(params.get_float("MaxDesiredAcceleration"), 0.1, 4.0) if advanced_longitudinal_tuning and tuning_level >= level["MaxDesiredAcceleration"] else default.get_float("MaxDesiredAcceleration")
     toggle.startAccel = np.clip(params.get_float("StartAccel"), 0, 4) if advanced_longitudinal_tuning and tuning_level >= level["StartAccel"] else startAccel
@@ -832,9 +832,9 @@ class FrogPilotVariables:
     toggle.holiday_themes = params.get_bool("HolidayThemes") if tuning_level >= level["HolidayThemes"] else default.get_bool("HolidayThemes")
     toggle.current_holiday_theme = holiday_theme if toggle.holiday_themes else "stock"
 
-    toggle.honda_alt_Tune = toggle.car_make == "honda" and honda_nidec and (params.get_bool("HondaAltTune") if tuning_level >= level["HondaAltTune"] else default.get_bool("HondaAltTune"))
-    toggle.honda_low_speed_pedal = toggle.car_make == "honda" and toggle.has_pedal and (params.get_bool("HondaLowSpeedPedal") if tuning_level >= level["HondaLowSpeedPedal"] else default.get_bool("HondaLowSpeedPedal"))
-    toggle.honda_nidec_max_brake = toggle.car_make == "honda" and honda_nidec and (params.get_bool("HondaMaxBrake") if tuning_level >= level["HondaMaxBrake"] else default.get_bool("HondaMaxBrake"))
+    toggle.honda_alt_Tune = toggle.openpilot_longitudinal and toggle.car_make == "honda" and honda_nidec and (params.get_bool("HondaAltTune") if tuning_level >= level["HondaAltTune"] else default.get_bool("HondaAltTune"))
+    toggle.honda_low_speed_pedal = toggle.openpilot_longitudinal and toggle.car_make == "honda" and toggle.has_pedal and (params.get_bool("HondaLowSpeedPedal") if tuning_level >= level["HondaLowSpeedPedal"] else default.get_bool("HondaLowSpeedPedal"))
+    toggle.honda_nidec_max_brake = toggle.openpilot_longitudinal and toggle.car_make == "honda" and honda_nidec and (params.get_bool("HondaMaxBrake") if tuning_level >= level["HondaMaxBrake"] else default.get_bool("HondaMaxBrake"))
 
     toggle.lane_changes = params.get_bool("LaneChanges") if tuning_level >= level["LaneChanges"] else default.get_bool("LaneChanges")
     toggle.lane_change_delay = params.get_float("LaneChangeTime") if toggle.lane_changes and tuning_level >= level["LaneChangeTime"] else default.get_float("LaneChangeTime")
@@ -934,7 +934,7 @@ class FrogPilotVariables:
     toggle.pause_lateral_below_speed = params.get_int("PauseLateralSpeed") * speed_conversion if quality_of_life_lateral and tuning_level >= level["PauseLateralSpeed"] else default.get_int("PauseLateralSpeed") * CV.MPH_TO_MS
     toggle.pause_lateral_below_signal = toggle.pause_lateral_below_speed != 0 and (params.get_bool("PauseLateralOnSignal") if tuning_level >= level["PauseLateralOnSignal"] else default.get_bool("PauseLateralOnSignal"))
 
-    quality_of_life_longitudinal = params.get_bool("QOLLongitudinal") if tuning_level >= level["QOLLongitudinal"] else default.get_bool("QOLLongitudinal")
+    quality_of_life_longitudinal = toggle.openpilot_longitudinal and (params.get_bool("QOLLongitudinal") if tuning_level >= level["QOLLongitudinal"] else default.get_bool("QOLLongitudinal"))
     toggle.cruise_increase = params.get_int("CustomCruise") if quality_of_life_longitudinal and not pcm_cruise and tuning_level >= level["CustomCruise"] else default.get_int("CustomCruise")
     toggle.cruise_increase_long = params.get_int("CustomCruiseLong") if quality_of_life_longitudinal and not pcm_cruise and tuning_level >= level["CustomCruiseLong"] else default.get_int("CustomCruiseLong")
     toggle.force_stops = quality_of_life_longitudinal and (params.get_bool("ForceStops") if tuning_level >= level["ForceStops"] else default.get_bool("ForceStops"))
@@ -1018,7 +1018,7 @@ class FrogPilotVariables:
     toggle.startup_alert_top = params.get("StartupMessageTop", encoding="utf-8") if tuning_level >= level["StartupMessageTop"] else default.get("StartupMessageTop", encoding="utf-8")
     toggle.startup_alert_bottom = params.get("StartupMessageBottom", encoding="utf-8") if tuning_level >= level["StartupMessageBottom"] else default.get("StartupMessageBottom", encoding="utf-8")
 
-    toggle.subaru_sng = toggle.car_make == "subaru" and not (CP.flags & SubaruFlags.GLOBAL_GEN2 or CP.flags & SubaruFlags.HYBRID) and (params.get_bool("SubaruSNG") if tuning_level >= level["SubaruSNG"] else default.get_bool("SubaruSNG"))
+    toggle.subaru_sng = toggle.openpilot_longitudinal and toggle.car_make == "subaru" and not (CP.flags & SubaruFlags.GLOBAL_GEN2 or CP.flags & SubaruFlags.HYBRID) and (params.get_bool("SubaruSNG") if tuning_level >= level["SubaruSNG"] else default.get_bool("SubaruSNG"))
 
     toggle.taco_tune_hacks = taco_hacks_allowed and (params.get_bool("TacoTuneHacks") if tuning_level >= level["TacoTuneHacks"] else default.get_bool("TacoTuneHacks"))
 
