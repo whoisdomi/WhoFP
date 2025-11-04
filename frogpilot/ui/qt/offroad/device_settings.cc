@@ -49,6 +49,7 @@ FrogPilotDevicePanel::FrogPilotDevicePanel(FrogPilotSettingsWindow *parent) : Fr
     {"ScreenTimeout", tr("Screen Timeout (Offroad)"), tr("<b>How long the screen stays on after being tapped while not driving.</b>"), ""},
     {"ScreenTimeoutOnroad", tr("Screen Timeout (Onroad)"), tr("<b>How long the screen stays on after being tapped while driving.</b>"), ""},
     {"StandbyMode", tr("Standby Mode"), tr("<b>Turn the screen off while driving and automatically wake it up for alerts or engagement state changes.</b>"), ""},
+    {"StandbyModeTimeout", tr("Standby Mode Timeout"), tr("<b>How long the screen stays on after waking up in Standby Mode before turning off again.</b>"), ""},
 
     {"IgnoreMe", "Ignore Me", "This is simply used to fix the layout when the user opens the descriptions and the menu gets wonky. No idea why it happens, but I can't be asked to properly fix it so whatever. Sue me.", ""},
     {"IgnoreMe2", "Ignore Me", "This is simply used to fix the layout when the user opens the descriptions and the menu gets wonky. No idea why it happens, but I can't be asked to properly fix it so whatever. Sue me.", ""},
@@ -115,7 +116,17 @@ FrogPilotDevicePanel::FrogPilotDevicePanel(FrogPilotSettingsWindow *parent) : Fr
       recorderToggle->setVisibleButton(1, false);
       deviceToggle = recorderToggle;
     } else if (param == "ScreenTimeout" || param == "ScreenTimeoutOnroad") {
-      deviceToggle = new FrogPilotParamValueControl(param, title, desc, icon, 5, 60, tr(" seconds"));
+      std::map<float, QString> timeoutLabels;
+      for (int i = 10; i <= 600; i += 10) {
+        timeoutLabels[i] = QString::number(i) + tr(" seconds");
+      }
+      deviceToggle = new FrogPilotParamValueControl(param, title, desc, icon, 10, 600, QString(), timeoutLabels, 10, true);
+    } else if (param == "StandbyModeTimeout") {
+      std::map<float, QString> timeoutLabels;
+      for (int i = 10; i <= 600; i += 10) {
+        timeoutLabels[i] = QString::number(i) + tr(" seconds");
+      }
+      deviceToggle = new FrogPilotParamValueControl(param, title, desc, icon, 10, 600, QString(), timeoutLabels, 10, true);
 
     } else {
       deviceToggle = new ParamControl(param, title, desc, icon);
@@ -164,7 +175,7 @@ FrogPilotDevicePanel::FrogPilotDevicePanel(FrogPilotSettingsWindow *parent) : Fr
     });
   }
 
-  QSet<QString> forceUpdateKeys = {"NoUploads"};
+  QSet<QString> forceUpdateKeys = {"NoUploads", "StandbyMode"};
   for (const QString &key : forceUpdateKeys) {
     QObject::connect(static_cast<FrogPilotButtonToggleControl*>(toggles[key]), &FrogPilotButtonToggleControl::buttonClicked, this, &FrogPilotDevicePanel::updateToggles);
     QObject::connect(static_cast<ToggleControl*>(toggles[key]), &ToggleControl::toggleFlipped, this, &FrogPilotDevicePanel::updateToggles);
@@ -240,6 +251,10 @@ void FrogPilotDevicePanel::updateToggles() {
 
     if (key == "HigherBitrate") {
       setVisible &= params.getBool("DeviceManagement") && params.getBool("NoUploads") && !params.getBool("DisableOnroadUploads");
+    }
+
+    else if (key == "StandbyModeTimeout") {
+      setVisible &= params.getBool("StandbyMode");
     }
 
     else if (key == "UseKonikServer" && QFile("/data/not_vetted").exists()) {

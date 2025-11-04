@@ -338,8 +338,8 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("ScreenBrightnessOnroad", "101", 2, "101"),
   ("ScreenManagement", "1", 2, "0"),
   ("ScreenRecorder", "1", 2, "0"),
-  ("ScreenTimeout", "30", 2, "30"),
-  ("ScreenTimeoutOnroad", "30", 2, "10"),
+  ("ScreenTimeout", "600", 2, "600"),
+  ("ScreenTimeoutOnroad", "600", 2, "600"),
   ("SearchInput", "0", 0, "0"),
   ("SecOCKey", "", 0, ""),
   ("SecOCKeys", "", 0, ""),
@@ -388,6 +388,7 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("StandardJerkSpeedDecrease", "50", 3, "50"),
   ("StandardPersonalityProfile", "1", 2, "0"),
   ("StandbyMode", "0", 2, "0"),
+  ("StandbyModeTimeout", "60", 2, "60"),
   ("StartAccel", "", 3, ""),
   ("StartAccelStock", "", 3, ""),
   ("StaticPedalsOnUI", "0", 2, "0"),
@@ -937,6 +938,7 @@ class FrogPilotVariables:
     toggle.screen_timeout = params.get_int("ScreenTimeout") if screen_management and tuning_level >= level["ScreenTimeout"] else default.get_int("ScreenTimeout")
     toggle.screen_timeout_onroad = params.get_int("ScreenTimeoutOnroad") if screen_management and tuning_level >= level["ScreenTimeoutOnroad"] else default.get_int("ScreenTimeoutOnroad")
     toggle.standby_mode = screen_management and (params.get_bool("StandbyMode") if tuning_level >= level["StandbyMode"] else default.get_bool("StandbyMode"))
+    toggle.standby_mode_timeout = params.get_int("StandbyModeTimeout") if toggle.standby_mode and tuning_level >= level.get("StandbyModeTimeout", 0) else default.get_int("StandbyModeTimeout")
     toggle.sng_hack = toggle.openpilot_longitudinal and toggle.car_make == "toyota" and not toggle.has_pedal and not has_sng and (params.get_bool("SNGHack") if tuning_level >= level["SNGHack"] else default.get_bool("SNGHack"))
 
     toggle.speed_limit_controller = toggle.openpilot_longitudinal and (params.get_bool("SpeedLimitController") if tuning_level >= level["SpeedLimitController"] else default.get_bool("SpeedLimitController"))

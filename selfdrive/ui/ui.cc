@@ -459,7 +459,7 @@ void Device::updateWakefulness(const UIState &s, const FrogPilotUIState &fs) {
 
   if (ignition_on && frogpilot_toggles.value("standby_mode").toBool()) {
     if (frogpilot_scene.wake_up_screen) {
-      resetInteractiveTimeout(frogpilot_toggles.value("screen_timeout").toInt(), frogpilot_toggles.value("screen_timeout_onroad").toInt());
+      resetInteractiveTimeout(frogpilot_toggles.value("standby_mode_timeout").toInt(), frogpilot_toggles.value("standby_mode_timeout").toInt());
     }
   }
 
