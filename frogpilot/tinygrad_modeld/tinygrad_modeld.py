@@ -136,16 +136,16 @@ class AdvancedTurnDesires:
         # === ACTIVATION ===
         speed_ok = v_ego < self.config['SPEED_MAX']
         
-        # Check left (index 0): steering must be negative
+        # Check left (index 0): steering must be positive
         if self._should_activate(blinkers[0], self.timers[0], speed_ok, 
-                                 steering_angle < -self.config['STEERING_MIN'], 
+                                 steering_angle < self.config['STEERING_MIN'], 
                                  self.bias_active[0]):
             self.bias_active[0] = True
             self._log_activation("LEFT", self.timers[0], v_ego, steering_angle)
         
-        # Check right (index 1): steering must be positive
+        # Check right (index 1): steering must be nagative
         if self._should_activate(blinkers[1], self.timers[1], speed_ok,
-                                 steering_angle > self.config['STEERING_MIN'],
+                                 steering_angle > -self.config['STEERING_MIN'],
                                  self.bias_active[1]):
             self.bias_active[1] = True
             self._log_activation("RIGHT", self.timers[1], v_ego, steering_angle)
