@@ -136,16 +136,16 @@ class AdvancedTurnDesires:
         # === ACTIVATION ===
         speed_ok = v_ego < self.config['SPEED_MAX']
         
-        # Check left (index 0): steering must be positive
+        # Check left (index 0): steering must be negative
         if self._should_activate(blinkers[0], self.timers[0], speed_ok, 
-                                 steering_angle < self.config['STEERING_MIN'], 
+                                 steering_angle < -self.config['STEERING_MIN'], 
                                  self.bias_active[0]):
             self.bias_active[0] = True
             self._log_activation("LEFT", self.timers[0], v_ego, steering_angle)
         
-        # Check right (index 1): steering must be nagative
+        # Check right (index 1): steering must be positive
         if self._should_activate(blinkers[1], self.timers[1], speed_ok,
-                                 steering_angle > -self.config['STEERING_MIN'],
+                                 steering_angle > self.config['STEERING_MIN'],
                                  self.bias_active[1]):
             self.bias_active[1] = True
             self._log_activation("RIGHT", self.timers[1], v_ego, steering_angle)
@@ -235,9 +235,17 @@ class AdvancedTurnDesires:
         
         # Use whichever is stronger
         if bias_percent < 0:  # Left turn (negative bias)
-            return min(bias_from_percent, bias_min)  # More negative wins
+            result = min(bias_from_percent, bias_min)  # More negative wins
         else:  # Right turn (positive bias)
-            return max(bias_from_percent, bias_min)  # More positive wins
+            result = max(bias_from_percent, bias_min)  # More positive wins
+        
+        # DEBUG: Show calculation details
+        if self.config['DEBUG_ENABLED']:
+            used_min = "YES" if abs(result - bias_min) < 0.0001 else "NO"
+            print(f"BIAS_CALC: desired_curve={desired_curvature:.6f}, bias_from_%={bias_from_percent:.6f}, "
+                  f"bias_min={bias_min:.6f}, result={result:.6f}, using_min={used_min}")
+        
+        return result
     
     def _reset_all(self):
         """Reset all state (used for hazard lights)."""
@@ -253,7 +261,9 @@ class AdvancedTurnDesires:
     def _log_deactivation(self, side, reason, steering_angle):
         """Log deactivation event."""
         if self.config['DEBUG_ENABLED']:
-            print(f"ATD: {side} BIAS DEACTIVATED ({reason}, steer={abs(steering_angle):.1f})")
+            print(f"ATD: {side} BIAS DEACTIVATED ({reason}, steer={abs(steering_angle):.1f}°)")
+            print(f"DEACTIVATION_DETAIL: side={side}, reason={reason}, steering_angle={steering_angle:.2f}°, "
+                  f"abs_steering={abs(steering_angle):.2f}°")
     
     def _log_state(self, curvature_bias, lat_smooth_factor, steering_angle, v_ego, blinkers):
         """Log state for debugging."""
@@ -326,12 +336,25 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     if not hasattr(get_action_from_model, 'atd'):
         get_action_from_model.atd = AdvancedTurnDesires(ATD_CONFIG)
     
+    # Store original curvature for debug
+    original_curvature = desired_curvature
+    
     curvature_bias, lat_smooth_factor = get_action_from_model.atd.update(
         car_state, desired_curvature, v_ego, steering_angle
     )
     
-    desired_curvature += curvature_bias
-    desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth_factor)
+    # Add bias to curvature
+    curvature_before_smooth = desired_curvature + curvature_bias
+    desired_curvature = curvature_before_smooth
+    
+    # Apply smoothing
+    curvature_after_smooth = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth_factor)
+    desired_curvature = curvature_after_smooth
+    
+    # DEBUG: Print curvature progression if ATD is active
+    if ATD_CONFIG['DEBUG_ENABLED'] and (get_action_from_model.atd.bias_active[0] or get_action_from_model.atd.bias_active[1]):
+        print(f"CURVATURE_FLOW: original={original_curvature:.6f}, +bias={curvature_before_smooth:.6f}, "
+              f"after_smooth={curvature_after_smooth:.6f}, prev={prev_action.desiredCurvature:.6f}")
 
     # Construct and return action
     action = log.ModelDataV2.Action()
