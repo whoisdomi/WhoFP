@@ -66,7 +66,6 @@ MIN_LAT_CONTROL_SPEED = 0.3
 ATD_CONFIG = {
     # === ACTIVATION PARAMETERS ===
     'SPEED_MAX': 14,                    # Maximum speed for ATD activation (m/s, ~31 mph)
-    'BLINKER_TIMER_FRAMES': 50,         # Blinker must be on for 50 frames (2.5s at 20Hz)
     'STEERING_MIN': 15,                 # Minimum steering angle for activation (degrees)
     
     # === TURN BIAS PARAMETERS ===
@@ -78,10 +77,10 @@ ATD_CONFIG = {
     'TURN_LAT_SMOOTH': 0.07,            # Fast smoothing during active turns (seconds)
     'POST_TURN_FRAMES': 40,             # Maintain fast smoothing after turn (frames, 2s at 20Hz)
     
-    # === DEACTIVATION PARAMETERS ===
-    'DEACTIVATION_STEERING_EXTREME': 160,   # Deactivate if steering exceeds this (degrees)
-    'DEACTIVATION_STEERING_EARLY': 90,      # Early deactivation threshold (degrees)
-    'STEERING_DECREASE_RATIO': 0.85,        # Ratio indicating steering is straightening
+    # === DEACTIVATION PARAMETERS - FIXED! ===
+    'DEACTIVATION_STEERING_EXTREME': 450,   # INCREASED from 160° - only truly extreme angles
+    'DEACTIVATION_STEERING_EARLY': 120,     # INCREASED from 90° - allow tighter turns
+    'STEERING_DECREASE_RATIO': 0.75,        # DECREASED from 0.85 - more lenient straightening
     
     # === DEBUG ===
     'DEBUG_ENABLED': True,              # Enable debug output
@@ -136,15 +135,15 @@ class AdvancedTurnDesires:
         # === ACTIVATION ===
         speed_ok = v_ego < self.config['SPEED_MAX']
         
-        # Check left (index 0): steering must be negative
-        if self._should_activate(blinkers[0], self.timers[0], speed_ok, 
+        # Check left (index 0): steering must be positive
+        if self._should_activate(blinkers[0], speed_ok, 
                                  steering_angle > self.config['STEERING_MIN'], 
                                  self.bias_active[0]):
             self.bias_active[0] = True
             self._log_activation("LEFT", self.timers[0], v_ego, steering_angle)
         
-        # Check right (index 1): steering must be positive
-        if self._should_activate(blinkers[1], self.timers[1], speed_ok,
+        # Check right (index 1): steering must be negative
+        if self._should_activate(blinkers[1], speed_ok,
                                  steering_angle < -self.config['STEERING_MIN'],
                                  self.bias_active[1]):
             self.bias_active[1] = True
@@ -200,10 +199,16 @@ class AdvancedTurnDesires:
             return 0
         return timer + 1 if blinker_on else 0
     
-    def _should_activate(self, blinker_on, timer, speed_ok, steering_ok, already_active):
-        """Check if bias should activate."""
+    def _should_activate(self, blinker_on, speed_ok, steering_ok, already_active):
+        """
+        FIXED: Check if bias should activate IMMEDIATELY when steering > 15°.
+        
+        No timer delay! Activates as soon as:
+        - Blinker is on
+        - Speed < 14 m/s
+        - Steering > 15° in correct direction
+        """
         return (blinker_on and 
-                timer >= self.config['BLINKER_TIMER_FRAMES'] and
                 speed_ok and 
                 steering_ok and 
                 not already_active)
