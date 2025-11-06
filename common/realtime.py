@@ -97,9 +97,9 @@ class Ratekeeper:
     lagged = False
     remaining = self._next_frame_time - time.monotonic()
     self._next_frame_time += self._interval
-    if self._print_delay_threshold is not None and remaining < -self._print_delay_threshold:
-      print(f"{self._process_name} lagging by {-remaining * 1000:.2f} ms")
-      lagged = True
+    # if self._print_delay_threshold is not None and remaining < -self._print_delay_threshold:
+    #   print(f"{self._process_name} lagging by {-remaining * 1000:.2f} ms")  # Muted - too verbose
+    lagged = remaining < -self._print_delay_threshold if self._print_delay_threshold is not None else False
     self._frame += 1
     self._remaining = remaining
     return lagged
