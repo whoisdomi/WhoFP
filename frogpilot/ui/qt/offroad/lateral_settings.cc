@@ -590,6 +590,8 @@ void FrogPilotLateralPanel::updateToggles() {
     if (setVisible) {
       if (advancedLateralTuneKeys.contains(key)) {
         toggles["AdvancedLateralTune"]->setVisible(true);
+      } else if (advancedTurnDesiresKeys.contains(key)) {
+        toggles["AdvancedTurnDesires"]->setVisible(true);
       } else if (aolKeys.contains(key)) {
         toggles["AlwaysOnLateral"]->setVisible(true);
       } else if (laneChangeKeys.contains(key)) {
