@@ -239,11 +239,9 @@ class AdvancedTurnDesires:
         else:  # Right turn (positive bias)
             result = max(bias_from_percent, bias_min)  # More positive wins
         
-        # DEBUG: Show calculation details
+        # DEBUG: Only show model curvature and final bias
         if self.config['DEBUG_ENABLED']:
-            used_min = "YES" if abs(result - bias_min) < 0.0001 else "NO"
-            print(f"BIAS_CALC: desired_curve={desired_curvature:.6f}, bias_from_%={bias_from_percent:.6f}, "
-                  f"bias_min={bias_min:.6f}, result={result:.6f}, using_min={used_min}")
+            print(f"BC: curve={desired_curvature:.5f} bias={result:.5f}")
         
         return result
     
@@ -256,14 +254,12 @@ class AdvancedTurnDesires:
     def _log_activation(self, side, timer, v_ego, steering_angle):
         """Log activation event."""
         if self.config['DEBUG_ENABLED']:
-            print(f"ATD: {side} BIAS ACTIVATED (timer={timer}, speed={v_ego:.1f}, steer={steering_angle:.1f})")
+            print(f"ATD: {side} ON (t={timer} v={v_ego:.1f} s={steering_angle:.1f}°)")
     
     def _log_deactivation(self, side, reason, steering_angle):
         """Log deactivation event."""
         if self.config['DEBUG_ENABLED']:
-            print(f"ATD: {side} BIAS DEACTIVATED ({reason}, steer={abs(steering_angle):.1f}°)")
-            print(f"DEACTIVATION_DETAIL: side={side}, reason={reason}, steering_angle={steering_angle:.2f}°, "
-                  f"abs_steering={abs(steering_angle):.2f}°")
+            print(f"ATD: {side} OFF ({reason}, steer={steering_angle:.1f}°)")
     
     def _log_state(self, curvature_bias, lat_smooth_factor, steering_angle, v_ego, blinkers):
         """Log state for debugging."""
@@ -351,10 +347,10 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     curvature_after_smooth = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth_factor)
     desired_curvature = curvature_after_smooth
     
-    # DEBUG: Print curvature progression if ATD is active
+    # DEBUG: Only print if bias is active and show the delta from smoothing
     if ATD_CONFIG['DEBUG_ENABLED'] and (get_action_from_model.atd.bias_active[0] or get_action_from_model.atd.bias_active[1]):
-        print(f"CURVATURE_FLOW: original={original_curvature:.6f}, +bias={curvature_before_smooth:.6f}, "
-              f"after_smooth={curvature_after_smooth:.6f}, prev={prev_action.desiredCurvature:.6f}")
+        smooth_delta = curvature_after_smooth - curvature_before_smooth
+        print(f"CF: orig={original_curvature:.5f} +b={curvature_before_smooth:.5f} smooth_chg={smooth_delta:.5f}")
 
     # Construct and return action
     action = log.ModelDataV2.Action()
