@@ -54,7 +54,7 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent) : 
     {"ForceAutoTuneOff", tr("Force Auto-Tune Off"), tr("<b>Force-disable openpilot's live auto-tuning for \"Friction\" and \"Lateral Acceleration\" and use the set value instead.</b>"), ""},
     {"ForceTorqueController", tr("Force Torque Controller"), tr("<b>Use torque-based steering control instead of angle-based control for smoother lane keeping, especially in curves.</b>"), ""},
 
-    {"AdvancedTurnDesires", tr("Advanced Turn Desires"), tr("<b>Enhanced turn handling with curvature bias and faster steering response for sharper turns at low speeds.</b>"), "../../frogpilot/assets/toggle_icons/icon_lateral_tune.png"},
+    {"AdvancedTurnDesires", tr("Advanced Turn Desires"), tr("<b>Enhanced turn handling with curvature bias and faster steering response for sharper turns at low speeds.</b>"), "../../frogpilot/assets/toggle_icons/icon_advanced_lateral_tune.png"},
     {"ATDSpeedMax", tr("Speed Max"), tr("<b>Maximum speed ATD will operate at.</b> Higher speed = ATD activates at higher speeds. Lower speed = ATD only works at lower speeds."), ""},
     {"ATDSteeringMin", tr("Steering Min"), tr("<b>Minimum steering angle needed for ATD to operate.</b> Higher angle = ATD requires sharper turns. Lower angle = ATD activates on gentler turns."), ""},
     {"ATDLeftTurnBiasPercent", tr("Left Turn Bias Percent"), tr("<b>Percent of additional left curvature to pull turns inward.</b> More negative = tighter left turns. Less negative = gentler left turns."), ""},
