@@ -42,6 +42,7 @@ private:
   std::map<QString, AbstractControl*> toggles;
 
   QSet<QString> advancedLateralTuneKeys = {"ForceAutoTune", "ForceAutoTuneOff", "ForceTorqueController", "SteerDelay", "SteerFriction", "SteerLatAccel", "SteerKP", "SteerKI", "SteerKF", "SteerKD", "SteerRatio"};
+  QSet<QString> advancedTurnDesiresKeys = {"ATDSpeedMax", "ATDSteeringMin", "ATDLeftTurnBiasPercent", "ATDRightTurnBiasPercent", "ATDMinBiasAbsolute", "ATDTurnLatSmooth", "ATDPostTurnFrames", "ATDDeactivationSteeringExtreme", "ATDDeactivationSteeringEarly", "ATDSteeringDecreaseRatio", "ATDDebugEnabled"};
   QSet<QString> aolKeys = {"AlwaysOnLateralLKAS", "AlwaysOnLateralMain", "PauseAOLOnBrake"};
   QSet<QString> laneChangeKeys = {"LaneChangeTime", "LaneDetectionWidth", "MinimumLaneChangeSpeed", "NudgelessLaneChange", "OneLaneChange"};
   QSet<QString> lateralTuneKeys = {"NNFF", "NNFFLite", "TurnDesires"};

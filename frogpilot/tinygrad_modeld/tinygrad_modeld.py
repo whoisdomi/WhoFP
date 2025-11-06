@@ -63,28 +63,30 @@ MIN_LAT_CONTROL_SPEED = 0.3
 # ADVANCED TURN DESIRES (ATD) CONFIGURATION
 # ============================================================================
 
-ATD_CONFIG = {
-    # === ACTIVATION PARAMETERS ===
-    'SPEED_MAX': 14,                    # Maximum speed for ATD activation (m/s, ~31 mph)
-    'STEERING_MIN': 15,                 # Minimum steering angle for activation (degrees)
-    
-    # === TURN BIAS PARAMETERS ===
-    'LEFT_TURN_BIAS_PERCENT': -2.0,     # Percentage to pull left turns inward (negative)
-    'RIGHT_TURN_BIAS_PERCENT': 3.5,     # Percentage to pull right turns inward (positive)
-    'MIN_BIAS_ABSOLUTE': 0.003,         # Minimum absolute bias for gentle curves
-    
-    # === STEERING RESPONSE PARAMETERS ===
-    'TURN_LAT_SMOOTH': 0.07,            # Fast smoothing during active turns (seconds)
-    'POST_TURN_FRAMES': 40,             # Maintain fast smoothing after turn (frames, 2s at 20Hz)
-    
-    # === DEACTIVATION PARAMETERS - FIXED! ===
-    'DEACTIVATION_STEERING_EXTREME': 450,   # INCREASED from 160° - only truly extreme angles
-    'DEACTIVATION_STEERING_EARLY': 120,     # INCREASED from 90° - allow tighter turns
-    'STEERING_DECREASE_RATIO': 0.75,        # DECREASED from 0.85 - more lenient straightening
-    
-    # === DEBUG ===
-    'DEBUG_ENABLED': True,              # Enable debug output
-}
+def load_atd_config(params):
+    """Load ATD configuration from params with fallback to defaults."""
+    return {
+        # === ACTIVATION PARAMETERS ===
+        'SPEED_MAX': params.get_int("ATDSpeedMax") if params.get("ATDSpeedMax") else 14,
+        'STEERING_MIN': params.get_int("ATDSteeringMin") if params.get("ATDSteeringMin") else 15,
+
+        # === TURN BIAS PARAMETERS ===
+        'LEFT_TURN_BIAS_PERCENT': params.get_int("ATDLeftTurnBiasPercent") if params.get("ATDLeftTurnBiasPercent") else -2,
+        'RIGHT_TURN_BIAS_PERCENT': params.get_int("ATDRightTurnBiasPercent") if params.get("ATDRightTurnBiasPercent") else 4,
+        'MIN_BIAS_ABSOLUTE': params.get_float("ATDMinBiasAbsolute") if params.get("ATDMinBiasAbsolute") else 0.003,
+
+        # === STEERING RESPONSE PARAMETERS ===
+        'TURN_LAT_SMOOTH': params.get_float("ATDTurnLatSmooth") if params.get("ATDTurnLatSmooth") else 0.07,
+        'POST_TURN_FRAMES': params.get_int("ATDPostTurnFrames") if params.get("ATDPostTurnFrames") else 40,
+
+        # === DEACTIVATION PARAMETERS - FIXED! ===
+        'DEACTIVATION_STEERING_EXTREME': params.get_int("ATDDeactivationSteeringExtreme") if params.get("ATDDeactivationSteeringExtreme") else 450,
+        'DEACTIVATION_STEERING_EARLY': params.get_int("ATDDeactivationSteeringEarly") if params.get("ATDDeactivationSteeringEarly") else 120,
+        'STEERING_DECREASE_RATIO': params.get_float("ATDSteeringDecreaseRatio") if params.get("ATDSteeringDecreaseRatio") else 0.75,
+
+        # === DEBUG ===
+        'DEBUG_ENABLED': params.get_bool("ATDDebugEnabled"),
+    }
 
 
 class AdvancedTurnDesires:
@@ -334,28 +336,42 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
       desired_curvature = get_curvature_from_output(model_output, v_ego, lat_action_t, mlsim=mlsim)
 
     # === ADVANCED TURN DESIRES ===
+    # Initialize params and ATD if not already set
+    if not hasattr(get_action_from_model, 'params'):
+        get_action_from_model.params = Params()
+
     if not hasattr(get_action_from_model, 'atd'):
-        get_action_from_model.atd = AdvancedTurnDesires(ATD_CONFIG)
-    
+        atd_config = load_atd_config(get_action_from_model.params)
+        get_action_from_model.atd = AdvancedTurnDesires(atd_config)
+        get_action_from_model.atd_config = atd_config
+
+    # Check if ATD is enabled
+    atd_enabled = get_action_from_model.params.get_bool("AdvancedTurnDesires")
+
     # Store original curvature for debug
     original_curvature = desired_curvature
-    
-    curvature_bias, lat_smooth_factor = get_action_from_model.atd.update(
-        car_state, desired_curvature, v_ego, steering_angle
-    )
-    
-    # Add bias to curvature
-    curvature_before_smooth = desired_curvature + curvature_bias
-    desired_curvature = curvature_before_smooth
-    
-    # Apply smoothing
-    curvature_after_smooth = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth_factor)
-    desired_curvature = curvature_after_smooth
-    
-    # DEBUG: Only print if bias is active and show the delta from smoothing
-    if ATD_CONFIG['DEBUG_ENABLED'] and (get_action_from_model.atd.bias_active[0] or get_action_from_model.atd.bias_active[1]):
-        smooth_delta = curvature_after_smooth - curvature_before_smooth
-        print(f"CF: orig={original_curvature:.5f} +b={curvature_before_smooth:.5f} smooth_chg={smooth_delta:.5f}")
+
+    # Only apply ATD if enabled
+    if atd_enabled:
+        curvature_bias, lat_smooth_factor = get_action_from_model.atd.update(
+            car_state, desired_curvature, v_ego, steering_angle
+        )
+
+        # Add bias to curvature
+        curvature_before_smooth = desired_curvature + curvature_bias
+        desired_curvature = curvature_before_smooth
+
+        # Apply smoothing
+        curvature_after_smooth = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth_factor)
+        desired_curvature = curvature_after_smooth
+
+        # DEBUG: Only print if bias is active and show the delta from smoothing
+        if get_action_from_model.atd_config['DEBUG_ENABLED'] and (get_action_from_model.atd.bias_active[0] or get_action_from_model.atd.bias_active[1]):
+            smooth_delta = curvature_after_smooth - curvature_before_smooth
+            print(f"CF: orig={original_curvature:.5f} +b={curvature_before_smooth:.5f} smooth_chg={smooth_delta:.5f}")
+    else:
+        # ATD disabled - use standard smoothing
+        desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
 
     # Construct and return action
     action = log.ModelDataV2.Action()
