@@ -114,37 +114,11 @@ def add_file_handler(log):
   log.addHandler(handler)
 
 
-class CommIssueFilter(logging.Filter):
-  """Filter out noisy events from console output."""
-  def filter(self, record):
-    # Allow all non-dict messages
-    if not isinstance(record.msg, dict):
-      # Block string messages containing specific noisy patterns
-      if isinstance(record.msg, str):
-        noisy_patterns = [
-          'slow frame rate',
-          'Dropping model',
-          'Dropped',
-          'lagging by',
-          'selfdrive/ui/qt/onroad/annotated_camera.cc'
-        ]
-        msg_lower = record.msg.lower()
-        for pattern in noisy_patterns:
-          if pattern.lower() in msg_lower:
-            return False
-      return True
-
-    # Block commIssue events
-    if record.msg.get('event') == 'commIssue':
-      return False
-    return True
-
 cloudlog = log = SwagLogger()
 log.setLevel(logging.DEBUG)
 
 
 outhandler = logging.StreamHandler()
-outhandler.addFilter(CommIssueFilter())  # Filter out commIssue events
 
 print_level = os.environ.get('LOGPRINT', 'warning')
 if print_level == 'debug':
