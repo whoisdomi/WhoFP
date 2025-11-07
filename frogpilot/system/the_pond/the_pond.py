@@ -1633,6 +1633,7 @@ def setup(app):
     return {"error": "Video not found"}, 404
 
 def main():
+  import logging
   app = Flask(__name__, static_folder="assets", static_url_path="/assets")
   setup(app)
 
@@ -1641,6 +1642,10 @@ def main():
 
   if debug:
     print("\"The Pond\" is not running on a comma device, enabling debug mode")
+
+  # Mute Flask/Werkzeug HTTP access logs
+  log = logging.getLogger('werkzeug')
+  log.setLevel(logging.ERROR)
 
   app.secret_key = secrets.token_hex(32)
   app.run(host="0.0.0.0", port=port, debug=debug)
