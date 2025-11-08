@@ -89,6 +89,26 @@ BUTTON_FUNCTIONS = {
   "TRAFFIC_MODE": 6
 }
 
+DEVELOPER_SIDEBAR_METRICS = {
+  "NONE": 0,
+  "ACCELERATION_CURRENT": 1,
+  "ACCELERATION_MAX": 2,
+  "AUTOTUNE_ACTUATOR_DELAY": 3,
+  "AUTOTUNE_FRICTION": 4,
+  "AUTOTUNE_LATERAL_ACCELERATION": 5,
+  "AUTOTUNE_STEER_RATIO": 6,
+  "AUTOTUNE_STIFFNESS_FACTOR": 7,
+  "ENGAGEMENT_LATERAL": 8,
+  "ENGAGEMENT_LONGITUDINAL": 9,
+  "LATERAL_STEERING_ANGLE": 10,
+  "LATERAL_TORQUE_USED": 11,
+  "LONGITUDINAL_ACTUATOR_ACCELERATION": 12,
+  "LONGITUDINAL_MPC_DANGER_FACTOR": 13,
+  "LONGITUDINAL_MPC_JERK_ACCELERATION": 14,
+  "LONGITUDINAL_MPC_JERK_DANGER_ZONE": 15,
+  "LONGITUDINAL_MPC_JERK_SPEED_CONTROL": 16
+}
+
 EXCLUDED_KEYS = {
   "AvailableModels", "AvailableModelNames", "CalibratedLateralAcceleration", "CalibrationProgress", "CarParamsPersistent",
   "CurvatureData", "ExperimentalLongitudinalEnabled", "KonikMinutes", "MapBoxRequests", "ModelDrivesAndScores", "ModelVersions",
@@ -767,13 +787,13 @@ class FrogPilotVariables:
     toggle.storage_used_metrics = developer_metrics and (params.get_bool("ShowStorageUsed") if tuning_level >= level["ShowStorageUsed"] else default.get_bool("ShowStorageUsed")) and not toggle.debug_mode
     toggle.use_si_metrics = developer_metrics and (params.get_bool("UseSI") if tuning_level >= level["UseSI"] else default.get_bool("UseSI")) or toggle.debug_mode
     toggle.developer_sidebar = toggle.developer_ui and (params.get_bool("DeveloperSidebar") if tuning_level >= level["DeveloperSidebar"] else default.get_bool("DeveloperSidebar")) or toggle.debug_mode
-    toggle.developer_sidebar_metric1 = params.get_int("DeveloperSidebarMetric1") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric1"] else 1 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric1")
-    toggle.developer_sidebar_metric2 = params.get_int("DeveloperSidebarMetric2") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric2"] else 3 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric2")
-    toggle.developer_sidebar_metric3 = params.get_int("DeveloperSidebarMetric3") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric3"] else 4 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric3")
-    toggle.developer_sidebar_metric4 = params.get_int("DeveloperSidebarMetric4") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric4"] else 5 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric4")
-    toggle.developer_sidebar_metric5 = params.get_int("DeveloperSidebarMetric5") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric5"] else 6 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric5")
-    toggle.developer_sidebar_metric6 = params.get_int("DeveloperSidebarMetric6") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric6"] else 7 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric6")
-    toggle.developer_sidebar_metric7 = params.get_int("DeveloperSidebarMetric7") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric7"] else 11 if toggle.debug_mode else default.get_int("DeveloperSidebarMetric7")
+    toggle.developer_sidebar_metric1 = params.get_int("DeveloperSidebarMetric1") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric1"] else DEVELOPER_SIDEBAR_METRICS["ACCELERATION_CURRENT"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric1")
+    toggle.developer_sidebar_metric2 = params.get_int("DeveloperSidebarMetric2") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric2"] else DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_ACTUATOR_DELAY"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric2")
+    toggle.developer_sidebar_metric3 = params.get_int("DeveloperSidebarMetric3") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric3"] else DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_FRICTION"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric3")
+    toggle.developer_sidebar_metric4 = params.get_int("DeveloperSidebarMetric4") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric4"] else DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_LATERAL_ACCELERATION"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric4")
+    toggle.developer_sidebar_metric5 = params.get_int("DeveloperSidebarMetric5") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric5"] else DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_STEER_RATIO"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric5")
+    toggle.developer_sidebar_metric6 = params.get_int("DeveloperSidebarMetric6") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric6"] else DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_STIFFNESS_FACTOR"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric6")
+    toggle.developer_sidebar_metric7 = params.get_int("DeveloperSidebarMetric7") if toggle.developer_sidebar and tuning_level >= level["DeveloperSidebarMetric7"] else DEVELOPER_SIDEBAR_METRICS["LATERAL_TORQUE_USED"] if toggle.debug_mode else default.get_int("DeveloperSidebarMetric7")
     developer_widgets = toggle.developer_ui and params.get_bool("DeveloperWidgets") if tuning_level >= level["DeveloperWidgets"] else default.get_bool("DeveloperWidgets")
     toggle.adjacent_lead_tracking = has_radar and ((developer_widgets and params.get_bool("AdjacentLeadsUI") if tuning_level >= level["AdjacentLeadsUI"] else default.get_bool("AdjacentLeadsUI")) or toggle.debug_mode)
     toggle.radar_tracks = has_radar and ((developer_widgets and params.get_bool("RadarTracksUI") if tuning_level >= level["RadarTracksUI"] else default.get_bool("RadarTracksUI")) or toggle.debug_mode)

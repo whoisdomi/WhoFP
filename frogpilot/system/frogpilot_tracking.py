@@ -6,6 +6,7 @@ from openpilot.common.conversions import Conversions as CV
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.controls.controlsd import ACTIVE_STATES, EventName, FrogPilotEventName, State
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
+from openpilot.selfdrive.controls.lib.events import EVENT_NAME
 from openpilot.selfdrive.ui.soundd import FrogPilotAudibleAlert
 
 from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name
@@ -56,11 +57,11 @@ class FrogPilotTracking:
     self.distance_since_override = 0
     self.tracked_time = 0
 
-    self.previous_events = set()
     self.previous_random_events = set()
 
     self.personality_map = {v: k.capitalize() for k, v in log.LongitudinalPersonality.schema.enumerants.items()}
 
+    self.previous_alert_type = ""
     self.previous_state = State.disabled
     self.sound = FrogPilotAudibleAlert.none
 
@@ -135,15 +136,13 @@ class FrogPilotTracking:
 
       self.previous_state = sm["controlsState"].state
 
-    current_events = {event for event in self.frogpilot_events.event_names}
-    if len(current_events) > 0:
-      new_events = current_events - self.previous_events
+    if sm["controlsState"].alertType not in (self.previous_alert_type, ""):
+      alert_name = sm["controlsState"].alertType.split('/')[0]
+      total_events = self.frogpilot_stats.get("TotalEvents", {})
+      total_events[alert_name] = total_events.get(alert_name, 0) + 1
+      self.frogpilot_stats["TotalEvents"] = total_events
 
-      if new_events:
-        if (EventName.fcw in self.frogpilot_events.event_names or EventName.stockAeb in self.frogpilot_events.event_names):
-          self.frogpilot_stats["AEBEvents"] = self.frogpilot_stats.get("AEBEvents", 0) + 1
-
-    self.previous_events = current_events
+    self.previous_alert_type = sm["controlsState"].alertType
 
     current_random_events = {event for event in self.frogpilot_events.events.names if event in RANDOM_EVENTS}
     if len(current_random_events) > 0:
