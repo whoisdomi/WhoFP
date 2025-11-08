@@ -809,6 +809,10 @@ void FrogPilotDataPanel::updateStatsLabels(FrogPilotListWidget *labelsList) {
       });
 
       for (const QString &subkey : subkeys) {
+        if (subkey == "Unknown") {
+          continue;
+        }
+
         QString display_subkey;
         if (key == "ModelTimes") {
           display_subkey = processModelName(subkey);

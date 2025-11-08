@@ -39,7 +39,14 @@ class FrogPilotTracking:
     self.frogpilot_stats.setdefault("LongitudinalTime", self.frogpilot_stats.get("TotalLongitudinalTime", 0))
     self.frogpilot_stats.setdefault("TrackedTime", self.frogpilot_stats.get("TotalTrackedTime", 0))
 
-    self.frogpilot_stats = {key: value for key, value in self.frogpilot_stats.items() if not key.startswith("Total")}
+    self.frogpilot_stats = {
+      key: (
+        {sub_key: sub_value for sub_key, sub_value in value.items() if sub_key.lower() != "unknown"}
+        if isinstance(value, dict) else value
+      )
+      for key, value in self.frogpilot_stats.items()
+      if not key.startswith("Total") and key.lower() != "unknown"
+    }
 
     if "ResetStats" not in self.frogpilot_stats:
       self.frogpilot_stats["Disengages"] = 0
@@ -59,7 +66,7 @@ class FrogPilotTracking:
 
     self.previous_random_events = set()
 
-    self.personality_map = {v: k.capitalize() for k, v in log.LongitudinalPersonality.schema.enumerants.items()}
+    self.personality_map = {key: key.capitalize() for key in log.LongitudinalPersonality.schema.enumerants.keys()}
 
     self.previous_alert_type = ""
     self.previous_state = State.disabled
@@ -98,7 +105,7 @@ class FrogPilotTracking:
     if sm["carControl"].longActive:
       self.frogpilot_stats["LongitudinalTime"] = self.frogpilot_stats.get("LongitudinalTime", 0) + DT_MDL
 
-      personality_name = self.personality_map.get(sm["controlsState"].personality, "Unknown")
+      personality_name = self.personality_map.get(str(sm["controlsState"].personality), "Unknown")
       total_personality_times = self.frogpilot_stats.get("PersonalityTimes", {})
       total_personality_times[personality_name] = total_personality_times.get(personality_name, 0) + DT_MDL
       self.frogpilot_stats["PersonalityTimes"] = total_personality_times
@@ -171,7 +178,7 @@ class FrogPilotTracking:
     self.frogpilot_weather.api_25_calls = 0
     self.frogpilot_weather.api_3_calls = 0
 
-    suffix = "unknown"
+    suffix = "Unknown"
     for category in WEATHER_CATEGORIES.values():
       if any(start <= self.frogpilot_weather.weather_id <= end for start, end in category["ranges"]):
         suffix = category["suffix"]
