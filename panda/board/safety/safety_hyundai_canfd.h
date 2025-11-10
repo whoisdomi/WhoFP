@@ -6,8 +6,8 @@ const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
   .max_rt_interval = 250000,
   .max_rate_up = 10,
   .max_rate_down = 10,
-  .driver_torque_allowance = 250,
-  .driver_torque_factor = 2,
+  .driver_torque_allowance = 400,
+  .driver_torque_factor = 3,
   .type = TorqueDriverLimited,
 
   // the EPS faults when the steering angle is above a certain threshold for too long. to prevent this,

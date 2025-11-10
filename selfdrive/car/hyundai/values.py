@@ -27,9 +27,9 @@ class CarControllerParams:
 
     if CP.carFingerprint in CANFD_CAR and frogpilot_toggles and frogpilot_toggles.taco_tune_hacks:
       self.STEER_MAX = 720 if vEgoRaw < 14. else 400
-      self.STEER_DRIVER_ALLOWANCE = 250
-      self.STEER_DRIVER_MULTIPLIER = 2
-      self.STEER_THRESHOLD = 250
+      self.STEER_DRIVER_ALLOWANCE = 400
+      self.STEER_DRIVER_MULTIPLIER = 3
+      self.STEER_THRESHOLD = 180
       self.STEER_DELTA_UP = 5 if vEgoRaw < 11. else 3
       self.STEER_DELTA_DOWN = 10 if vEgoRaw < 11. else 3
     elif CP.carFingerprint in CANFD_CAR:

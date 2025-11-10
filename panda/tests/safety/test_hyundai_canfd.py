@@ -22,8 +22,8 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.PandaCarSafetyTest, common.
   MAX_RT_DELTA = 90
   RT_INTERVAL = 250000
 
-  DRIVER_TORQUE_ALLOWANCE = 250
-  DRIVER_TORQUE_FACTOR = 2
+  DRIVER_TORQUE_ALLOWANCE = 400
+  DRIVER_TORQUE_FACTOR = 3
 
   # Safety around steering req bit
   MIN_VALID_STEERING_FRAMES = 89
