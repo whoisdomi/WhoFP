@@ -717,7 +717,7 @@ class Controls:
       clipped_speed = max(CS.vEgo, 0.3)
       actual_lateral_accel = self.curvature * (clipped_speed**2)
       desired_lateral_accel = model_v2.action.desiredCurvature * (clipped_speed**2)
-      undershooting = abs(desired_lateral_accel) / abs(1e-3 + actual_lateral_accel) > 1.2
+      undershooting = abs(desired_lateral_accel) / abs(1e-3 + actual_lateral_accel) > 1.5
       turning = abs(desired_lateral_accel) > 1.0
       commanded_torque_at_max = abs(lac_log.output) > 0.99
       if undershooting and turning and (lac_log.saturated or commanded_torque_at_max):
