@@ -26,20 +26,20 @@ segment = int(sys.argv[2])
 frame = int(sys.argv[3])
 camera = cameras[sys.argv[4]] if len(sys.argv) > 4 and sys.argv[4] in cameras else "cameras"
 
-url = f'https://api.{"konik.ai" if use_konik_server() else "commadotai.com"}/v1/route/{route}/files'
+url = f'https://api.{'konik.ai' if use_konik_server() else 'commadotai.com'}/v1/route/{route}/files'
 r = requests.get(url, headers={"Authorization": f"JWT {jwt}"}, timeout=10)
 assert r.status_code == 200
 print("got api response")
 
 segments = r.json()[camera]
 if segment >= len(segments):
-  raise Exception("segment %d not found, got %d segments" % (segment, len(segments)))
+  raise Exception(f"segment {segment} not found, got {len(segments)} segments")
 
 fr = FrameReader(segments[segment])
 if frame >= fr.frame_count:
-  raise Exception("frame %d not found, got %d frames" % (frame, fr.frame_count))
+  raise Exception("frame {frame} not found, got {fr.frame_count} frames")
 
-im = Image.fromarray(fr.get(frame, count=1, pix_fmt="rgb24")[0])
+im = Image.fromarray(fr.get(frame))
 fn = f"uxxx_{route.replace('|', '_')}_{segment}_{frame}.png"
 im.save(fn)
 print(f"saved {fn}")

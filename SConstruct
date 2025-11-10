@@ -17,7 +17,7 @@ AGNOS = TICI
 
 Decider('MD5-timestamp')
 
-SetOption('num_jobs', int(os.cpu_count()/2))
+SetOption('num_jobs', max(1, int(os.cpu_count()/2)))
 
 AddOption('--kaitai',
           action='store_true',
@@ -39,19 +39,11 @@ AddOption('--clazy',
           action='store_true',
           help='build with clazy')
 
-AddOption('--compile_db',
-          action='store_true',
-          help='build clang compilation database')
-
 AddOption('--ccflags',
           action='store',
           type='string',
           default='',
           help='pass arbitrary flags over the command line')
-
-AddOption('--snpe',
-          action='store_true',
-          help='use SNPE on PC')
 
 AddOption('--external-sconscript',
           action='store',
@@ -59,10 +51,9 @@ AddOption('--external-sconscript',
           dest='external_sconscript',
           help='add an external SConscript to the build')
 
-AddOption('--pc-thneed',
+AddOption('--mutation',
           action='store_true',
-          dest='pc_thneed',
-          help='use thneed on pc')
+          help='generate mutation-ready code')
 
 AddOption('--minimal',
           action='store_false',
@@ -85,7 +76,6 @@ assert arch in ["larch64", "aarch64", "x86_64", "Darwin"]
 
 lenv = {
   "PATH": os.environ['PATH'],
-  "LD_LIBRARY_PATH": [Dir(f"#third_party/acados/{arch}/lib").abspath],
   "PYTHONPATH": Dir("#").abspath + ':' + Dir(f"#third_party/acados").abspath,
 
   "ACADOS_SOURCE_DIR": Dir("#third_party/acados").abspath,
@@ -93,7 +83,7 @@ lenv = {
   "TERA_PATH": Dir("#").abspath + f"/third_party/acados/{arch}/t_renderer"
 }
 
-rpath = lenv["LD_LIBRARY_PATH"].copy()
+rpath = []
 
 if arch == "larch64":
   cpppath = [
@@ -102,13 +92,11 @@ if arch == "larch64":
 
   libpath = [
     "/usr/local/lib",
-    "/usr/lib",
     "/system/vendor/lib64",
     f"#third_party/acados/{arch}/lib",
   ]
 
   libpath += [
-    "#third_party/snpe/larch64",
     "#third_party/libyuv/larch64/lib",
     "/usr/lib/aarch64-linux-gnu"
   ]
@@ -137,7 +125,6 @@ else:
       f"{brew_prefix}/include",
       f"{brew_prefix}/opt/openssl@3.0/include",
     ]
-    lenv["DYLD_LIBRARY_PATH"] = lenv["LD_LIBRARY_PATH"]
   # Linux
   else:
     libpath = [
@@ -146,14 +133,6 @@ else:
       "/usr/lib",
       "/usr/local/lib",
     ]
-
-    if arch == "x86_64":
-      libpath += [
-        f"#third_party/snpe/{arch}"
-      ]
-      rpath += [
-        Dir(f"#third_party/snpe/{arch}").abspath,
-      ]
 
 if GetOption('asan'):
   ccflags = ["-fsanitize=address", "-fno-omit-frame-pointer"]
@@ -169,10 +148,6 @@ else:
 if arch != "Darwin":
   ldflags += ["-Wl,--as-needed", "-Wl,--no-undefined"]
 
-# Enable swaglog include in submodules
-cflags += ['-DSWAGLOG="\\"common/swaglog.h\\""']
-cxxflags += ['-DSWAGLOG="\\"common/swaglog.h\\""']
-
 ccflags_option = GetOption('ccflags')
 if ccflags_option:
   ccflags += ccflags_option.split(' ')
@@ -187,12 +162,9 @@ env = Environment(
     "-Werror",
     "-Wshadow",
     "-Wno-unknown-warning-option",
-    "-Wno-deprecated-register",
-    "-Wno-register",
     "-Wno-inconsistent-missing-override",
     "-Wno-c99-designator",
     "-Wno-reorder-init-list",
-    "-Wno-error=unused-but-set-variable",
     "-Wno-vla-cxx-extension",
   ] + cflags + ccflags,
 
@@ -205,14 +177,8 @@ env = Environment(
     "#third_party/libyuv/include",
     "#third_party/json11",
     "#third_party/linux/include",
-    "#third_party/snpe/include",
-    "#third_party/qrcode",
     "#third_party",
-    "#cereal",
     "#msgq",
-    "#opendbc/can",
-    "#third_party/maplibre-native-qt/include",
-    f"#third_party/maplibre-native-qt/{arch}/include"
   ],
 
   CC='clang',
@@ -234,7 +200,7 @@ env = Environment(
   COMPILATIONDB_USE_ABSPATH=True,
   REDNOSE_ROOT="#",
   tools=["default", "cython", "compilation_db", "rednose_filter"],
-  toolpath=["#rednose_repo/site_scons/site_tools"],
+  toolpath=["#site_scons/site_tools", "#rednose_repo/site_scons/site_tools"],
 )
 
 if arch == "Darwin":
@@ -242,8 +208,7 @@ if arch == "Darwin":
   darwin_rpath_link_flags = [f"-Wl,-rpath,{path}" for path in env["RPATH"]]
   env["LINKFLAGS"] += darwin_rpath_link_flags
 
-if GetOption('compile_db'):
-  env.CompilationDatabase('compile_commands.json')
+env.CompilationDatabase('compile_commands.json')
 
 # Setup cache dir
 cache_dir = '/data/scons_cache' if AGNOS else '/tmp/scons_cache'
@@ -273,11 +238,12 @@ if arch == "Darwin":
 else:
   envCython["LINKFLAGS"] = ["-pthread", "-shared"]
 
-Export('envCython')
+np_version = SCons.Script.Value(np.__version__)
+Export('envCython', 'np_version')
 
 # Qt build environment
 qt_env = env.Clone()
-qt_modules = ["Widgets", "Gui", "Core", "Network", "Concurrent", "Multimedia", "Quick", "Qml", "QuickWidgets", "Location", "Positioning", "DBus", "Xml"]
+qt_modules = ["Widgets", "Gui", "Core", "Network", "Concurrent", "DBus", "Xml"]
 
 qt_libs = []
 if arch == "Darwin":
@@ -310,28 +276,19 @@ else:
   elif arch != "Darwin":
     qt_libs += ["GL"]
 qt_env['QT3DIR'] = qt_env['QTDIR']
+qt_env.Tool('qt3')
 
-# compatibility for older SCons versions
-try:
-  qt_env.Tool('qt3')
-except SCons.Errors.UserError:
-  qt_env.Tool('qt')
-
-qt_env['CPPPATH'] += qt_dirs# + ["#selfdrive/ui/qt/"]
+qt_env['CPPPATH'] += qt_dirs + ["#third_party/qrcode"]
 qt_flags = [
   "-D_REENTRANT",
   "-DQT_NO_DEBUG",
   "-DQT_WIDGETS_LIB",
   "-DQT_GUI_LIB",
-  "-DQT_QUICK_LIB",
-  "-DQT_QUICKWIDGETS_LIB",
-  "-DQT_QML_LIB",
   "-DQT_CORE_LIB",
   "-DQT_MESSAGELOGCONTEXT",
 ]
 qt_env['CXXFLAGS'] += qt_flags
-qt_env['LIBPATH'] += ['#selfdrive/ui', f"#third_party/maplibre-native-qt/{arch}/lib"]
-qt_env['RPATH'] += [Dir(f"#third_party/maplibre-native-qt/{arch}/lib").srcnode().abspath]
+qt_env['LIBPATH'] += ['#selfdrive/ui', ]
 qt_env['LIBS'] = qt_libs
 
 if GetOption("clazy"):
@@ -351,39 +308,40 @@ Export('env', 'qt_env', 'arch', 'real_arch')
 SConscript(['common/SConscript'])
 Import('_common', '_gpucommon')
 
-common = [_common, 'json11']
+common = [_common, 'json11', 'zmq']
 gpucommon = [_gpucommon]
 
 Export('common', 'gpucommon')
 
 # Build messaging (cereal + msgq + socketmaster + their dependencies)
-SConscript(['msgq_repo/SConscript'])
+# Enable swaglog include in submodules
+env_swaglog = env.Clone()
+env_swaglog['CXXFLAGS'].append('-DSWAGLOG="\\"common/swaglog.h\\""')
+SConscript(['msgq_repo/SConscript'], exports={'env': env_swaglog})
+SConscript(['opendbc_repo/SConscript'], exports={'env': env_swaglog})
+
 SConscript(['cereal/SConscript'])
+
 Import('socketmaster', 'msgq')
-messaging = [socketmaster, msgq, 'zmq', 'capnp', 'kj',]
+messaging = [socketmaster, msgq, 'capnp', 'kj',]
 Export('messaging')
 
 
 # Build other submodules
-SConscript([
-  'body/board/SConscript',
-  'opendbc/can/SConscript',
-  'panda/SConscript',
-])
+SConscript(['panda/SConscript'])
 
 # Build rednose library
 SConscript(['rednose/SConscript'])
 
 # Build system services
 SConscript([
-  'system/proclogd/SConscript',
   'system/ubloxd/SConscript',
   'system/loggerd/SConscript',
 ])
 if arch != "Darwin":
   SConscript([
-    'system/sensord/SConscript',
     'system/logcatd/SConscript',
+    'system/proclogd/SConscript',
   ])
 
 if arch == "larch64":

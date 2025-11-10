@@ -17,36 +17,49 @@ bool useKonikServer() {
   return use_konik;
 }
 
-void loadGif(const QString &gifPath, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent) {
-  if (!movie.isNull()) {
-    QObject::disconnect(movie.data(), nullptr, parent, nullptr);
+void clearMovie(QSharedPointer<QMovie> &movie, QWidget *parent) {
+  if (movie) {
+    QObject::disconnect(movie.data(), &QMovie::frameChanged, parent, nullptr);
     movie->stop();
     movie.clear();
   }
+}
+
+void loadGif(const QString &gifPath, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent) {
+  clearMovie(movie, parent);
 
   if (QFileInfo::exists(gifPath)) {
     movie = QSharedPointer<QMovie>::create(gifPath, QByteArray(), parent);
     movie->setCacheMode(QMovie::CacheAll);
     movie->setScaledSize(size);
-    QObject::connect(movie.data(), &QMovie::frameChanged, parent, [parent](int) { parent->update(); }, Qt::UniqueConnection);
+
+    QObject::connect(movie.data(), &QMovie::frameChanged, parent, [parent](int) {
+      if (parent) {
+        parent->update();
+      }
+    }, Qt::UniqueConnection);
+
     movie->start();
   }
 
-  parent->update();
+  if (parent) {
+    parent->update();
+  }
 }
 
-void loadImage(const QString &basePath, QPixmap &pixmap, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent, Qt::AspectRatioMode aspectRatioMode) {
-  QString gifPath = basePath + ".gif";
+void loadImage(const QString &basePath, QPixmap &pixmap, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent) {
+  const QString gifPath = basePath + ".gif";
+
   if (QFileInfo::exists(gifPath)) {
+    pixmap = QPixmap();
     loadGif(gifPath, movie, size, parent);
   } else {
-    if (!movie.isNull()) {
-      QObject::disconnect(movie.data(), nullptr, parent, nullptr);
-      movie->stop();
-      movie.clear();
+    clearMovie(movie, parent);
+    pixmap = QPixmap(basePath + ".png").scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    if (parent) {
+      parent->update();
     }
-    pixmap = QPixmap(basePath + ".png").scaled(size, aspectRatioMode, Qt::SmoothTransformation);
-    parent->update();
   }
 }
 
@@ -61,7 +74,7 @@ void openDescriptions(bool forceOpenDescriptions, std::map<QString, AbstractCont
 }
 
 void updateFrogPilotToggles() {
-  static Params params_memory{"/dev/shm/params"};
+  static Params params_memory{"", false, true};
   params_memory.putBool("FrogPilotTogglesUpdated", true);
 }
 
@@ -95,9 +108,6 @@ QColor loadThemeColors(const QString &colorKey, bool clearCache) {
   );
 }
 
-QString processModelName(const QString &modelName) {
-  QString modelCleaned = modelName;
-  modelCleaned = modelCleaned.remove(QRegularExpression("[🗺️👀📡]")).simplified();
-  modelCleaned = modelCleaned.replace("(Default)", "");
-  return modelCleaned;
+QString cleanModelName(QString modelName) {
+  return modelName.remove("_default").remove("(Default)");
 }

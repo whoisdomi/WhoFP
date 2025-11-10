@@ -1,38 +1,73 @@
 # distutils: language = c++
 # cython: language_level = 3
+import builtins
+import datetime
+import json
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from libcpp.optional cimport optional
+
+from openpilot.common.swaglog import cloudlog
 
 cdef extern from "common/params.h":
-  cpdef enum ParamKeyType:
+  cpdef enum ParamKeyFlag:
     PERSISTENT
     CLEAR_ON_MANAGER_START
     CLEAR_ON_ONROAD_TRANSITION
     CLEAR_ON_OFFROAD_TRANSITION
     DEVELOPMENT_ONLY
+    CLEAR_ON_IGNITION_ON
     ALL
 
+  cpdef enum ParamKeyType:
+    STRING
+    BOOL
+    INT
+    FLOAT
+    TIME
+    JSON
+    BYTES
+
   cdef cppclass c_Params "Params":
-    c_Params(string) except + nogil
+    c_Params(string, bool, bool) except + nogil
     string get(string, bool) nogil
     bool getBool(string, bool) nogil
-    int getInt(string, bool) nogil
-    float getFloat(string, bool) nogil
     int remove(string) nogil
     int put(string, string) nogil
     void putNonBlocking(string, string) nogil
     void putBoolNonBlocking(string, bool) nogil
-    void putIntNonBlocking(string, int) nogil
-    void putFloatNonBlocking(string, float) nogil
     int putBool(string, bool) nogil
-    int putInt(string, int) nogil
-    int putFloat(string, float) nogil
     bool checkKey(string) nogil
+    ParamKeyType getKeyType(string) nogil
+    optional[string] getKeyDefaultValue(string) nogil
     string getParamPath(string) nogil
-    void clearAll(ParamKeyType)
+    void clearAll(ParamKeyFlag)
     vector[string] allKeys()
 
+    # FrogPilot variables
+    optional[string] getStockValue(string) nogil
+    int getTuningLevel(string) nogil
+
+PYTHON_2_CPP = {
+  (str, STRING): lambda v: v,
+  (builtins.bool, BOOL): lambda v: "1" if v else "0",
+  (int, INT): str,
+  (float, FLOAT): str,
+  (datetime.datetime, TIME): lambda v: v.isoformat(),
+  (dict, JSON): json.dumps,
+  (list, JSON): json.dumps,
+  (bytes, BYTES): lambda v: v,
+}
+CPP_2_PYTHON = {
+  STRING: lambda v: v.decode("utf-8"),
+  BOOL: lambda v: v == b"1",
+  INT: int,
+  FLOAT: float,
+  TIME: lambda v: datetime.datetime.fromisoformat(v.decode("utf-8")),
+  JSON: json.loads,
+  BYTES: lambda v: v,
+}
 
 def ensure_bytes(v):
   return v.encode() if isinstance(v, str) else v
@@ -42,17 +77,37 @@ class UnknownKeyName(Exception):
 
 cdef class Params:
   cdef c_Params* p
+  cdef str d
 
-  def __cinit__(self, d=""):
+  # FrogPilot variables
+  cdef bool c
+  cdef bool m
+  cdef bool return_defaults
+
+  def __cinit__(self, d="", *, cache=False, memory=False, return_defaults=False):
     cdef string path = <string>d.encode()
+
+    # FrogPilot variables
+    cdef bool c_cache = cache
+    cdef bool c_memory = memory
+
     with nogil:
-      self.p = new c_Params(path)
+      self.p = new c_Params(path, c_cache, c_memory)
+    self.d = d
+
+    # FrogPilot variables
+    self.c = cache
+    self.m = memory
+    self.return_defaults = return_defaults
+
+  def __reduce__(self):
+    return (type(self), (self.d, self.c, self.m, self.return_defaults))
 
   def __dealloc__(self):
     del self.p
 
-  def clear_all(self, tx_type=ParamKeyType.ALL):
-    self.p.clearAll(tx_type)
+  def clear_all(self, tx_flag=ParamKeyFlag.ALL):
+    self.p.clearAll(tx_flag)
 
   def check_key(self, key):
     key = ensure_bytes(key)
@@ -60,21 +115,38 @@ cdef class Params:
       raise UnknownKeyName(key)
     return key
 
-  def get(self, key, bool block=False, encoding=None):
+  def python2cpp(self, proposed_type, expected_type, value, key):
+    cast = PYTHON_2_CPP.get((proposed_type, expected_type))
+    if cast:
+      return cast(value)
+    raise TypeError(f"Type mismatch while writing param {key}: {proposed_type=} {expected_type=} {value=}")
+
+  def _cpp2python(self, t, value, default, key):
+    if value is None:
+      return None
+    try:
+      return CPP_2_PYTHON[t](value)
+    except (KeyError, TypeError, ValueError):
+      cloudlog.warning(f"Failed to cast param {key} with {value=} from type {t=}")
+      return self._cpp2python(t, default, None, key)
+
+  def get(self, key, bool block=False, bool return_default=False):
     cdef string k = self.check_key(key)
+    cdef ParamKeyType t = self.p.getKeyType(k)
+    cdef optional[string] default = self.p.getKeyDefaultValue(k)
     cdef string val
     with nogil:
       val = self.p.get(k, block)
 
+    default_val = (default.value() if default.has_value() else None) if (return_default or self.return_defaults and not block) else None
     if val == b"":
       if block:
         # If we got no value while running in blocked mode
         # it means we got an interrupt while waiting
         raise KeyboardInterrupt
       else:
-        return None
-
-    return val if encoding is None else val.decode(encoding)
+        return self._cpp2python(t, default_val, None, key)
+    return self._cpp2python(t, val, default_val, key)
 
   def get_bool(self, key, bool block=False):
     cdef string k = self.check_key(key)
@@ -83,19 +155,10 @@ cdef class Params:
       r = self.p.getBool(k, block)
     return r
 
-  def get_int(self, key, bool block=False):
+  def _put_cast(self, key, dat):
     cdef string k = self.check_key(key)
-    cdef int r
-    with nogil:
-      r = self.p.getInt(k, block)
-    return r
-
-  def get_float(self, key, bool block=False):
-    cdef string k = self.check_key(key)
-    cdef float r
-    with nogil:
-      r = self.p.getFloat(k, block)
-    return r
+    cdef ParamKeyType t = self.p.getKeyType(k)
+    return ensure_bytes(self.python2cpp(type(dat), t, dat, key))
 
   def put(self, key, dat):
     """
@@ -105,7 +168,7 @@ cdef class Params:
     in general try to avoid writing params as much as possible.
     """
     cdef string k = self.check_key(key)
-    cdef string dat_bytes = ensure_bytes(dat)
+    cdef string dat_bytes = self._put_cast(key, dat)
     with nogil:
       self.p.put(k, dat_bytes)
 
@@ -114,19 +177,9 @@ cdef class Params:
     with nogil:
       self.p.putBool(k, val)
 
-  def put_int(self, key, int val):
-    cdef string k = self.check_key(key)
-    with nogil:
-      self.p.putInt(k, val)
-
-  def put_float(self, key, float val):
-    cdef string k = self.check_key(key)
-    with nogil:
-      self.p.putFloat(k, val)
-
   def put_nonblocking(self, key, dat):
     cdef string k = self.check_key(key)
-    cdef string dat_bytes = ensure_bytes(dat)
+    cdef string dat_bytes = self._put_cast(key, dat)
     with nogil:
       self.p.putNonBlocking(k, dat_bytes)
 
@@ -134,16 +187,6 @@ cdef class Params:
     cdef string k = self.check_key(key)
     with nogil:
       self.p.putBoolNonBlocking(k, val)
-
-  def put_int_nonblocking(self, key, int val):
-    cdef string k = self.check_key(key)
-    with nogil:
-      self.p.putIntNonBlocking(k, val)
-
-  def put_float_nonblocking(self, key, float val):
-    cdef string k = self.check_key(key)
-    with nogil:
-      self.p.putFloatNonBlocking(k, val)
 
   def remove(self, key):
     cdef string k = self.check_key(key)
@@ -154,5 +197,33 @@ cdef class Params:
     cdef string key_bytes = ensure_bytes(key)
     return self.p.getParamPath(key_bytes).decode("utf-8")
 
+  def get_type(self, key):
+    return self.p.getKeyType(self.check_key(key))
+
   def all_keys(self):
     return self.p.allKeys()
+
+  def get_default_value(self, key):
+    cdef string k = self.check_key(key)
+    cdef ParamKeyType t = self.p.getKeyType(k)
+    cdef optional[string] default = self.p.getKeyDefaultValue(k)
+    return self._cpp2python(t, default.value(), None, key) if default.has_value() else None
+
+  def cpp2python(self, key, value):
+    cdef string k = self.check_key(key)
+    cdef ParamKeyType t = self.p.getKeyType(k)
+    return self._cpp2python(t, value, None, key)
+
+  # FrogPilot variables
+  def get_stock_value(self, key):
+    cdef string k = self.check_key(key)
+    cdef ParamKeyType t = self.p.getKeyType(k)
+    cdef optional[string] stock = self.p.getStockValue(k)
+    return self._cpp2python(t, stock.value(), None, key) if stock.has_value() else None
+
+  def get_tuning_level(self, key):
+    cdef string k = self.check_key(key)
+    cdef int level
+    with nogil:
+      level = self.p.getTuningLevel(k)
+    return level

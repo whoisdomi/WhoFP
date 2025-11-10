@@ -7,62 +7,61 @@ from collections import defaultdict
 from tqdm import tqdm
 from typing import Any
 
+from opendbc.car.car_helpers import interface_names
 from openpilot.common.git import get_commit
-from openpilot.selfdrive.car.car_helpers import interface_names
 from openpilot.tools.lib.openpilotci import get_url, upload_file
 from openpilot.selfdrive.test.process_replay.compare_logs import compare_logs, format_diff
 from openpilot.selfdrive.test.process_replay.process_replay import CONFIGS, PROC_REPLAY_DIR, FAKEDATA, replay_process, \
-                                                                   check_openpilot_enabled, check_most_messages_valid
+                                                                   check_most_messages_valid
 from openpilot.tools.lib.filereader import FileReader
-from openpilot.tools.lib.logreader import LogReader
-from openpilot.tools.lib.helpers import save_log
+from openpilot.tools.lib.logreader import LogReader, save_log
 
 source_segments = [
-  ("BODY", "937ccb7243511b65|2022-05-24--16-03-09--1"),        # COMMA.COMMA_BODY
   ("HYUNDAI", "02c45f73a2e5c6e9|2021-01-01--19-08-22--1"),     # HYUNDAI.HYUNDAI_SONATA
   ("HYUNDAI2", "d545129f3ca90f28|2022-11-07--20-43-08--3"),    # HYUNDAI.HYUNDAI_KIA_EV6 (+ QCOM GPS)
   ("TOYOTA", "0982d79ebb0de295|2021-01-04--17-13-21--13"),     # TOYOTA.TOYOTA_PRIUS
   ("TOYOTA2", "0982d79ebb0de295|2021-01-03--20-03-36--6"),     # TOYOTA.TOYOTA_RAV4
-  ("TOYOTA3", "f7d7e3538cda1a2a|2021-08-16--08-55-34--6"),     # TOYOTA.TOYOTA_COROLLA_TSS2
+  ("TOYOTA3", "8011d605be1cbb77|000000cc--8e8d8ec716--6"),     # TOYOTA.TOYOTA_COROLLA_TSS2
   ("HONDA", "eb140f119469d9ab|2021-06-12--10-46-24--27"),      # HONDA.HONDA_CIVIC (NIDEC)
   ("HONDA2", "7d2244f34d1bbcda|2021-06-25--12-25-37--26"),     # HONDA.HONDA_ACCORD (BOSCH)
   ("CHRYSLER", "4deb27de11bee626|2021-02-20--11-28-55--8"),    # CHRYSLER.CHRYSLER_PACIFICA_2018_HYBRID
   ("RAM", "17fc16d840fe9d21|2023-04-26--13-28-44--5"),         # CHRYSLER.RAM_1500_5TH_GEN
   ("SUBARU", "341dccd5359e3c97|2022-09-12--10-35-33--3"),      # SUBARU.SUBARU_OUTBACK
-  ("GM", "0c58b6a25109da2b|2021-02-23--16-35-50--11"),         # GM.CHEVROLET_VOLT
-  ("GM2", "376bf99325883932|2022-10-27--13-41-22--1"),         # GM.CHEVROLET_BOLT_EUV
+  ("GM", "376bf99325883932|2022-10-27--13-41-22--1"),         # GM.CHEVROLET_BOLT_EUV
   ("NISSAN", "35336926920f3571|2021-02-12--18-38-48--46"),     # NISSAN.NISSAN_XTRAIL
   ("VOLKSWAGEN", "de9592456ad7d144|2021-06-29--11-00-15--6"),  # VOLKSWAGEN.VOLKSWAGEN_GOLF
+  # FIXME the sensor timings are bad in mazda segment, we're not fully testing it, but it should be replaced
   ("MAZDA", "bd6a637565e91581|2021-10-30--15-14-53--4"),       # MAZDA.MAZDA_CX9_2021
   ("FORD", "54827bf84c38b14f|2023-01-26--21-59-07--4"),        # FORD.FORD_BRONCO_SPORT_MK1
+  ("RIVIAN", "bc095dc92e101734|000000db--ee9fe46e57--1"),      # RIVIAN.RIVIAN_R1_GEN1
+  ("TESLA", "2c912ca5de3b1ee9|0000025d--6eb6bcbca4--4"),       # TESLA.TESLA_MODEL_Y
 
   # Enable when port is tested and dashcamOnly is no longer set
-  #("TESLA", "bb50caf5f0945ab1|2021-06-19--17-20-18--3"),      # TESLA.TESLA_AP2_MODELS
   #("VOLKSWAGEN2", "3cfdec54aa035f3f|2022-07-19--23-45-10--2"),  # VOLKSWAGEN.VOLKSWAGEN_PASSAT_NMS
 ]
 
 segments = [
-  ("BODY", "regen29FD9FF7760|2024-05-21--06-58-51--0"),
-  ("HYUNDAI", "regen0B1B76A1C27|2024-05-21--06-57-53--0"),
-  ("HYUNDAI2", "regen3BB55FA5E20|2024-05-21--06-59-03--0"),
-  ("TOYOTA", "regenF6FB954C1E2|2024-05-21--06-57-53--0"),
-  ("TOYOTA2", "regen0AC637CE7BA|2024-05-21--06-57-54--0"),
-  ("TOYOTA3", "regenC7BE3FAE496|2024-05-21--06-59-01--0"),
-  ("HONDA", "regen58E9F8B695A|2024-05-21--06-57-55--0"),
-  ("HONDA2", "regen8695608EB15|2024-05-21--06-57-55--0"),
-  ("CHRYSLER", "regenB0F8C25C902|2024-05-21--06-59-47--0"),
-  ("RAM", "regenB3B2C7A105B|2024-05-21--07-00-47--0"),
-  ("SUBARU", "regen860FD736DCC|2024-05-21--07-00-50--0"),
-  ("GM", "regen8CB3048DEB9|2024-05-21--06-59-49--0"),
-  ("GM2", "regen379D446541D|2024-05-21--07-00-51--0"),
-  ("NISSAN", "regen24871108F80|2024-05-21--07-00-38--0"),
-  ("VOLKSWAGEN", "regenF390392F275|2024-05-21--07-00-52--0"),
-  ("MAZDA", "regenE5A36020581|2024-05-21--07-01-51--0"),
-  ("FORD", "regenDC288ED0D78|2024-05-21--07-02-18--0"),
+  ("HYUNDAI", "regenAA0FC4ED71E|2025-04-08--22-57-50--0"),
+  ("HYUNDAI2", "regenAFB9780D823|2025-04-08--23-00-34--0"),
+  ("TOYOTA", "regen218A4DCFAA1|2025-04-08--22-57-51--0"),
+  ("TOYOTA2", "regen107352E20EB|2025-04-08--22-57-46--0"),
+  ("TOYOTA3", "regen1455E3B4BDF|2025-04-09--03-26-06--0"),
+  ("HONDA", "regenB328FF8BA0A|2025-04-08--22-57-45--0"),
+  ("HONDA2", "regen6170C8C9A35|2025-04-08--22-57-46--0"),
+  ("CHRYSLER", "regen5B28FC2A437|2025-04-08--23-04-24--0"),
+  ("RAM", "regenBF81EA96E08|2025-04-08--23-06-54--0"),
+  ("SUBARU", "regen7366F13F6A1|2025-04-08--23-07-07--0"),
+  ("GM", "regen1271097D038|2025-04-09--03-26-00--0"),
+  ("NISSAN", "regen15D60604EAB|2025-04-08--23-06-59--0"),
+  ("VOLKSWAGEN", "regen0F2F06C9539|2025-04-08--23-06-56--0"),
+  ("MAZDA", "regenACF84CCF482|2024-08-30--03-21-55--0"),
+  ("FORD", "regen755D8CB1E1F|2025-04-08--23-13-43--0"),
+  ("RIVIAN", "regen5FCAC896BBE|2025-04-08--23-13-35--0"),
+  ("TESLA", "2c912ca5de3b1ee9|0000025d--6eb6bcbca4--4"),
 ]
 
 # dashcamOnly makes don't need to be tested until a full port is done
-excluded_interfaces = ["mock", "tesla"]
+excluded_interfaces = ["mock", "body", "psa"]
 
 BASE_URL = "https://commadataci.blob.core.windows.net/openpilotci/"
 REF_COMMIT_FN = os.path.join(PROC_REPLAY_DIR, "ref_commit")
@@ -88,7 +87,7 @@ def run_test_process(data):
 
 def get_log_data(segment):
   r, n = segment.rsplit("--", 1)
-  with FileReader(get_url(r, n)) as f:
+  with FileReader(get_url(r, n, "rlog.zst")) as f:
     return (segment, f.read())
 
 
@@ -105,14 +104,11 @@ def test_process(cfg, lr, segment, ref_log_path, new_log_path, ignore_fields=Non
   except Exception as e:
     raise Exception("failed on segment: " + segment) from e
 
-  # check to make sure openpilot is engaged in the route
-  if cfg.proc_name == "controlsd":
-    if not check_openpilot_enabled(log_msgs):
-      return f"Route did not enable at all or for long enough: {new_log_path}", log_msgs
   if not check_most_messages_valid(log_msgs):
     return f"Route did not have enough valid messages: {new_log_path}", log_msgs
 
-  if cfg.proc_name != 'ubloxd' or segment != 'regen3BB55FA5E20|2024-05-21--06-59-03--0':
+  # skip this check if the segment is using qcom gps
+  if cfg.proc_name != 'ubloxd' or any(m.which() in cfg.pubs for m in lr):
     seen_msgs = {m.which() for m in log_msgs}
     expected_msgs = set(cfg.subs)
     if seen_msgs != expected_msgs:
@@ -140,7 +136,7 @@ if __name__ == "__main__":
   parser.add_argument("--blacklist-cars", type=str, nargs="*", default=[],
                       help="Blacklist given cars from the test (e.g. HONDA)")
   parser.add_argument("--ignore-fields", type=str, nargs="*", default=[],
-                      help="Extra fields or msgs to ignore (e.g. carState.events)")
+                      help="Extra fields or msgs to ignore (e.g. driverMonitoringState.events)")
   parser.add_argument("--ignore-msgs", type=str, nargs="*", default=[],
                       help="Msgs to ignore (e.g. carEvents)")
   parser.add_argument("--update-refs", action="store_true",
@@ -198,11 +194,15 @@ if __name__ == "__main__":
         if cfg.proc_name not in tested_procs:
           continue
 
-        cur_log_fn = os.path.join(FAKEDATA, f"{segment}_{cfg.proc_name}_{cur_commit}.bz2")
+        # to speed things up, we only test all segments on card
+        if cfg.proc_name not in ('card', 'controlsd', 'lagd') and car_brand not in ('HYUNDAI', 'TOYOTA'):
+          continue
+
+        cur_log_fn = os.path.join(FAKEDATA, f"{segment}_{cfg.proc_name}_{cur_commit}.zst")
         if args.update_refs:  # reference logs will not exist if routes were just regenerated
-          ref_log_path = get_url(*segment.rsplit("--", 1))
+          ref_log_path = get_url(*segment.rsplit("--", 1,), "rlog.zst")
         else:
-          ref_log_fn = os.path.join(FAKEDATA, f"{segment}_{cfg.proc_name}_{ref_commit}.bz2")
+          ref_log_fn = os.path.join(FAKEDATA, f"{segment}_{cfg.proc_name}_{ref_commit}.zst")
           ref_log_path = ref_log_fn if os.path.exists(ref_log_fn) else BASE_URL + os.path.basename(ref_log_fn)
 
         dat = None if args.upload_only else log_data[segment]

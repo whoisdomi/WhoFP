@@ -4,7 +4,6 @@ import numpy as np
 import capnp
 from collections import deque
 from functools import partial
-from types import SimpleNamespace
 
 import cereal.messaging as messaging
 from cereal import car, log
@@ -201,7 +200,7 @@ class LateralLagEstimator:
     self.points = Points(window_len)
     self.block_avg = BlockAverage(self.block_count, self.block_size, valid_blocks, initial_lag)
 
-  def get_msg(self, valid: bool, debug: bool = False, frogpilot_toggles: SimpleNamespace = None) -> capnp._DynamicStructBuilder:
+  def get_msg(self, valid: bool, debug: bool = False) -> capnp._DynamicStructBuilder:
     msg = messaging.new_message('liveDelay')
 
     msg.valid = valid
@@ -217,8 +216,8 @@ class LateralLagEstimator:
     else:
       liveDelay.status = log.LiveDelayData.Status.unestimated
 
-    if frogpilot_toggles.use_custom_steerActuatorDelay:
-      liveDelay.lateralDelay = frogpilot_toggles.steerActuatorDelay
+    if self.frogpilot_toggles.use_custom_steerActuatorDelay:
+      liveDelay.lateralDelay = self.frogpilot_toggles.steerActuatorDelay
     elif liveDelay.status == log.LiveDelayData.Status.estimated:
       liveDelay.lateralDelay = valid_mean_lag
     else:
@@ -232,6 +231,8 @@ class LateralLagEstimator:
       liveDelay.lateralDelayEstimateStd = 0.0
 
     liveDelay.validBlocks = self.block_avg.valid_blocks
+    liveDelay.calPerc = min(100 * (self.block_avg.valid_blocks * self.block_size + self.block_avg.idx) //
+                            (self.min_valid_block_count * self.block_size), 100)
     if debug:
       liveDelay.points = self.block_avg.values.flatten().tolist()
 
@@ -308,7 +309,8 @@ class LateralLagEstimator:
     self.block_avg.update(delay)
     self.last_estimate_t = self.t
 
-  def actuator_delay(self, expected_sig: np.ndarray, actual_sig: np.ndarray, mask: np.ndarray, dt: float, max_lag: float) -> tuple[float, float, float]:
+  @staticmethod
+  def actuator_delay(expected_sig: np.ndarray, actual_sig: np.ndarray, mask: np.ndarray, dt: float, max_lag: float) -> tuple[float, float, float]:
     assert len(expected_sig) == len(actual_sig)
     max_lag_samples = int(max_lag / dt)
     padded_size = fft_next_good_size(len(expected_sig) + max_lag_samples)
@@ -338,9 +340,9 @@ class LateralLagEstimator:
     return lag, corr, confidence
 
 
-def retrieve_initial_lag(params_reader: Params, CP: car.CarParams):
-  last_lag_data = params_reader.get("LiveDelay")
-  last_carparams_data = params_reader.get("CarParamsPrevRoute")
+def retrieve_initial_lag(params: Params, CP: car.CarParams):
+  last_lag_data = params.get("LiveDelay")
+  last_carparams_data = params.get("CarParamsPrevRoute")
 
   if last_lag_data is not None:
     try:
@@ -355,6 +357,7 @@ def retrieve_initial_lag(params_reader: Params, CP: car.CarParams):
         return lag, valid_blocks
     except Exception as e:
       cloudlog.error(f"Failed to retrieve initial lag: {e}")
+      params.remove("LiveDelay")
 
   return None
 
@@ -365,19 +368,20 @@ def main():
   DEBUG = bool(int(os.getenv("DEBUG", "0")))
 
   pm = messaging.PubMaster(['liveDelay'])
-  sm = messaging.SubMaster(['livePose', 'liveCalibration', 'carState', 'controlsState', 'carControl', 'frogpilotPlan'], poll='livePose')
+  sm = messaging.SubMaster(['livePose', 'liveCalibration', 'carState', 'controlsState', 'carControl'], poll='livePose')
 
-  params_reader = Params()
-  with car.CarParams.from_bytes(params_reader.get("CarParams", block=True)) as msg:
-    CP = msg
+  params = Params()
+  CP = messaging.log_from_bytes(params.get("CarParams", block=True), car.CarParams)
 
   lag_learner = LateralLagEstimator(CP, 1. / SERVICE_LIST['livePose'].frequency)
-  if (initial_lag_params := retrieve_initial_lag(params_reader, CP)) is not None:
+  if (initial_lag_params := retrieve_initial_lag(params, CP)) is not None:
     lag, valid_blocks = initial_lag_params
     lag_learner.reset(lag, valid_blocks)
 
   # FrogPilot variables
-  frogpilot_toggles = get_frogpilot_toggles()
+  sm = sm.extend(['frogpilotPlan'])
+
+  lag_learner.frogpilot_toggles = get_frogpilot_toggles()
 
   while True:
     sm.update()
@@ -391,13 +395,13 @@ def main():
     # 4Hz driven by livePose
     if sm.frame % 5 == 0:
       lag_learner.update_estimate()
-      lag_msg = lag_learner.get_msg(sm.all_checks(), DEBUG, frogpilot_toggles)
+      lag_msg = lag_learner.get_msg(sm.all_checks(), DEBUG)
       lag_msg_dat = lag_msg.to_bytes()
       pm.send('liveDelay', lag_msg_dat)
 
       if sm.frame % 1200 == 0: # cache every 60 seconds
-        params_reader.put_nonblocking("LiveDelay", lag_msg_dat)
+        params.put_nonblocking("LiveDelay", lag_msg_dat)
 
-    # Update FrogPilot variables
+    # FrogPilot variables
     if sm['frogpilotPlan'].togglesUpdated:
-      frogpilot_toggles = get_frogpilot_toggles()
+      lag_learner.frogpilot_toggles = get_frogpilot_toggles()

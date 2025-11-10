@@ -11,7 +11,8 @@ from openpilot.system.hardware import HARDWARE, PC
 from openpilot.common.swaglog import cloudlog
 from openpilot.system.version import get_build_metadata, get_version
 
-from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, params
+from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH
+
 
 class SentryProject(Enum):
   # python project
@@ -30,7 +31,7 @@ def report_tombstone(fn: str, message: str, contents: str) -> None:
     sentry_sdk.flush()
 
 
-def capture_block():
+def capture_block() -> None:
   with sentry_sdk.push_scope() as scope:
     sentry_sdk.capture_message("Blocked user from using the development branch", level='info')
     sentry_sdk.flush()
@@ -39,12 +40,10 @@ def capture_block():
 def capture_exception(*args, crash_log=True, **kwargs) -> None:
   exc_text = traceback.format_exc()
 
-  phrases_to_check = [
-    "already exists. To overwrite it, set 'overwrite' to True",
-    "failed after retry",
+  errors_to_ignore = [
   ]
 
-  if any(phrase in exc_text for phrase in phrases_to_check):
+  if any(error in exc_text for error in errors_to_ignore):
     return
 
   save_exception(exc_text, crash_log)
@@ -77,6 +76,7 @@ def save_exception(exc_text: str, crash_log) -> None:
 
 def init(project: SentryProject) -> bool:
   build_metadata = get_build_metadata()
+  # forks like to mess with this, so double check
   FrogPilot = "frogai" in build_metadata.openpilot.git_origin.lower()
   if not FrogPilot or PC:
     return False
@@ -96,10 +96,6 @@ def init(project: SentryProject) -> bool:
   else:
     env = short_branch
 
-  dongle_id = params.get("DongleId", encoding="utf-8")
-  installed = params.get("InstallDate", encoding="utf-8")
-  updated = params.get("Updated", encoding="utf-8")
-
   integrations = []
   if project == SentryProject.SELFDRIVE:
     integrations.append(ThreadingIntegration(propagate_hub=True))
@@ -112,14 +108,12 @@ def init(project: SentryProject) -> bool:
                   max_value_length=8192,
                   environment=env)
 
-  sentry_sdk.set_user({"id": dongle_id})
+  params = Params()
+
+  sentry_sdk.set_user({"id": params.get("DongleId")})
   sentry_sdk.set_tag("origin", build_metadata.openpilot.git_origin)
   sentry_sdk.set_tag("branch", short_branch)
   sentry_sdk.set_tag("commit", build_metadata.openpilot.git_commit)
-  sentry_sdk.set_tag("updated", updated)
-  sentry_sdk.set_tag("installed", installed)
-
-  if project == SentryProject.SELFDRIVE:
-    sentry_sdk.Hub.current.start_session()
+  sentry_sdk.set_tag("updated", params.get("Updated"))
 
   return True

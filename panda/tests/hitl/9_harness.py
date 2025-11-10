@@ -2,13 +2,12 @@ import time
 import pytest
 import itertools
 
+from opendbc.car.structs import CarParams
 from panda import Panda
-from panda.tests.hitl.conftest import PandaGroup
 
 # TODO: test relay
 
 @pytest.mark.panda_expect_can_error
-@pytest.mark.test_panda_types(PandaGroup.GEN2)
 def test_harness_status(p, panda_jungle):
   # map from jungle orientations to panda orientations
   orientation_map = {
@@ -19,7 +18,7 @@ def test_harness_status(p, panda_jungle):
   # between the tests.
   for ignition, orientation in itertools.product([True, False], [Panda.HARNESS_STATUS_NC, Panda.HARNESS_STATUS_NORMAL, Panda.HARNESS_STATUS_FLIPPED]):
     print()
-    p.set_safety_mode(Panda.SAFETY_ELM327)
+    p.set_safety_mode(CarParams.SafetyModel.elm327)
     panda_jungle.set_harness_orientation(orientation)
     panda_jungle.set_ignition(ignition)
 
@@ -51,7 +50,7 @@ def test_harness_status(p, panda_jungle):
       time.sleep(0.5)
 
       msgs = p.can_recv()
-      buses = {int(dat): bus for _, _, dat, bus in msgs if bus <= 3}
+      buses = {int(dat): bus for _, dat, bus in msgs if bus <= 3}
       print(msgs)
 
       # jungle doesn't actually switch buses when switching orientation
@@ -60,7 +59,7 @@ def test_harness_status(p, panda_jungle):
       assert buses[2] == (0 if flipped else 2)
 
     # SBU voltages
-    supply_voltage_mV = 1800 if p.get_type() in [Panda.HW_TYPE_TRES, ] else 3300
+    supply_voltage_mV = 1800 if p.get_type() in [Panda.HW_TYPE_TRES, Panda.HW_TYPE_CUATRO] else 3300
 
     if orientation == Panda.HARNESS_STATUS_NC:
       assert health['sbu1_voltage_mV'] > 0.9 * supply_voltage_mV

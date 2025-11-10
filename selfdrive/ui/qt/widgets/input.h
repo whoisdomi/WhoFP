@@ -34,7 +34,7 @@ public:
   void setMinLength(int length);
   void show();
 
-  // FrogPilot widgets
+  // FrogPilot variables
   void setMaxLength(int length);
 
 private:
@@ -46,10 +46,9 @@ private:
   QVBoxLayout *main_layout;
   QPushButton *eye_btn;
 
-  // FrogPilot widgets
+  // FrogPilot variables
   void updateMaxLengthSublabel(const QString &text);
 
-  // FrogPilot variables
   int maxLength;
 
 private slots:

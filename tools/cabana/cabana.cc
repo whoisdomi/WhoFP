@@ -23,41 +23,37 @@ int main(int argc, char *argv[]) {
   cmd_parser.addHelpOption();
   cmd_parser.addPositionalArgument("route", "the drive to replay. find your drives at connect.comma.ai");
   cmd_parser.addOption({"demo", "use a demo route instead of providing your own"});
+  cmd_parser.addOption({"auto", "Auto load the route from the best available source (no video): internal, openpilotci, comma_api, car_segments, testing_closet"});
   cmd_parser.addOption({"qcam", "load qcamera"});
   cmd_parser.addOption({"ecam", "load wide road camera"});
   cmd_parser.addOption({"dcam", "load driver camera"});
-  cmd_parser.addOption({"stream", "read can messages from live streaming"});
+  cmd_parser.addOption({"msgq", "read can messages from the msgq"});
   cmd_parser.addOption({"panda", "read can messages from panda"});
   cmd_parser.addOption({"panda-serial", "read can messages from panda with given serial", "panda-serial"});
   if (SocketCanStream::available()) {
     cmd_parser.addOption({"socketcan", "read can messages from given SocketCAN device", "socketcan"});
   }
-  cmd_parser.addOption({"zmq", "the ip address on which to receive zmq messages", "zmq"});
+  cmd_parser.addOption({"zmq", "read can messages from zmq at the specified ip-address", "ip-address"});
   cmd_parser.addOption({"data_dir", "local directory with routes", "data_dir"});
   cmd_parser.addOption({"no-vipc", "do not output video"});
   cmd_parser.addOption({"dbc", "dbc file to open", "dbc"});
   cmd_parser.process(app);
 
-  QString dbc_file = cmd_parser.isSet("dbc") ? cmd_parser.value("dbc") : "";
-
   AbstractStream *stream = nullptr;
-  if (cmd_parser.isSet("stream")) {
+
+  if (cmd_parser.isSet("msgq")) {
+    stream = new DeviceStream(&app);
+  } else if (cmd_parser.isSet("zmq")) {
     stream = new DeviceStream(&app, cmd_parser.value("zmq"));
   } else if (cmd_parser.isSet("panda") || cmd_parser.isSet("panda-serial")) {
-    PandaStreamConfig config = {};
-    if (cmd_parser.isSet("panda-serial")) {
-      config.serial = cmd_parser.value("panda-serial");
-    }
     try {
-      stream = new PandaStream(&app, config);
+      stream = new PandaStream(&app, {.serial = cmd_parser.value("panda-serial")});
     } catch (std::exception &e) {
       qWarning() << e.what();
       return 0;
     }
-  } else if (cmd_parser.isSet("socketcan")) {
-    SocketCanStreamConfig config = {};
-    config.device = cmd_parser.value("socketcan");
-    stream = new SocketCanStream(&app, config);
+  } else if (SocketCanStream::available() && cmd_parser.isSet("socketcan")) {
+    stream = new SocketCanStream(&app, {.device = cmd_parser.value("socketcan")});
   } else {
     uint32_t replay_flags = REPLAY_FLAG_NONE;
     if (cmd_parser.isSet("ecam")) replay_flags |= REPLAY_FLAG_ECAM;
@@ -73,24 +69,15 @@ int main(int argc, char *argv[]) {
       route = DEMO_ROUTE;
     }
     if (!route.isEmpty()) {
-      auto replay_stream = new ReplayStream(&app);
-      if (!replay_stream->loadRoute(route, cmd_parser.value("data_dir"), replay_flags)) {
+      auto replay_stream = std::make_unique<ReplayStream>(&app);
+      bool auto_source = cmd_parser.isSet("auto");
+      if (!replay_stream->loadRoute(route, cmd_parser.value("data_dir"), replay_flags, auto_source)) {
         return 0;
       }
-      stream = replay_stream;
+      stream = replay_stream.release();
     }
   }
 
-  MainWindow w;
-  if (stream) {
-    stream->start();
-    if (!dbc_file.isEmpty()) {
-      w.loadFile(dbc_file);
-    }
-  } else {
-    w.openStream();
-  }
-  w.show();
-
+  MainWindow w(stream, cmd_parser.value("dbc"));
   return app.exec();
 }

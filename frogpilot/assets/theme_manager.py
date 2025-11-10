@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import glob
-import json
-import random
 import requests
 import shutil
 
@@ -12,7 +10,7 @@ from urllib.parse import quote_plus
 
 from openpilot.frogpilot.assets.download_functions import GITLAB_URL, download_file, get_repository_url, handle_error, handle_request_error, verify_download
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, extract_zip, load_json_file, update_json_file
-from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, RANDOM_EVENTS_PATH, RESOURCES_REPO, THEME_SAVE_PATH, params, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, RESOURCES_REPO, THEME_SAVE_PATH
 
 CANCEL_DOWNLOAD_PARAM = "CancelThemeDownload"
 DOWNLOAD_PROGRESS_PARAM = "ThemeDownloadProgress"
@@ -46,7 +44,10 @@ THEME_COMPONENT_PARAMS = {
 }
 
 class ThemeManager:
-  def __init__(self, boot_run=False):
+  def __init__(self, params, params_memory, boot_run=False):
+    self.params = params
+    self.params_memory = params_memory
+
     self.downloading_theme = False
     self.theme_updated = False
 
@@ -98,7 +99,7 @@ class ThemeManager:
 
     repo_url = get_repository_url(self.session)
     if not repo_url:
-      handle_error(None, "GitHub and GitLab are offline...", "Repository unavailable", asset_param, DOWNLOAD_PROGRESS_PARAM)
+      handle_error(None, "GitHub and GitLab are offline...", "Repository unavailable", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
       self.downloading_theme = False
       return
 
@@ -122,25 +123,25 @@ class ThemeManager:
       delete_file(theme_path)
 
       print(f"Downloading theme from GitHub: {theme_name}")
-      download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session)
+      download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session, self.params_memory)
 
-      if params_memory.get_bool(CANCEL_DOWNLOAD_PARAM):
+      if self.params_memory.get_bool(CANCEL_DOWNLOAD_PARAM):
         delete_file(theme_path)
-        handle_error(None, "Download cancelled...", "Download cancelled...", asset_param, DOWNLOAD_PROGRESS_PARAM)
+        handle_error(None, "Download cancelled...", "Download cancelled...", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
 
         self.downloading_theme = False
         return
 
-      if verify_download(theme_path, theme_url, self.session):
+      if verify_download(theme_path, theme_url, self.session, self.params_memory):
         print(f"Theme {theme_name} downloaded and verified successfully from GitHub!")
         self.update_theme_size(theme_component, theme_name, theme_path.stat().st_size)
 
         if extension == ".zip":
-          params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Unpacking theme...")
+          self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Unpacking theme...")
           extract_zip(theme_path, download_path)
 
-        params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Downloaded!")
-        params_memory.remove(asset_param)
+        self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Downloaded!")
+        self.params_memory.remove(asset_param)
 
         self.downloading_theme = False
 
@@ -149,7 +150,7 @@ class ThemeManager:
       elif self.handle_verification_failure(extension, theme_component, theme_name, asset_param, theme_path, download_path, frogpilot_toggles):
         return
 
-    handle_error(download_path, "Download failed...", "Download failed...", asset_param, DOWNLOAD_PROGRESS_PARAM)
+    handle_error(download_path, "Download failed...", "Download failed...", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
     self.downloading_theme = False
 
   def fetch_assets(self, repo_url, frogpilot_toggles):
@@ -252,7 +253,7 @@ class ThemeManager:
 
     except requests.exceptions.RequestException as error:
       print(f"Request failed: {error}")
-      handle_request_error(f"Failed to fetch theme sizes from {'GitHub' if is_github else 'GitLab'}: {error}", None, None, None)
+      handle_request_error(f"Failed to fetch theme sizes from {'GitHub' if is_github else 'GitLab'}: {error}", None, None, None, self.params_memory)
       return {}
 
   @staticmethod
@@ -332,25 +333,25 @@ class ThemeManager:
 
     theme_url = download_link + extension
     print(f"Downloading theme from GitLab: {theme_name}")
-    download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session)
+    download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session, self.params_memory)
 
-    if verify_download(theme_path, theme_url, self.session):
+    if verify_download(theme_path, theme_url, self.session, self.params_memory):
       print(f"Theme {theme_name} downloaded and verified successfully from GitLab!")
       self.update_theme_size(theme_component, theme_name, theme_path.stat().st_size)
 
       if extension == ".zip":
-        params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Unpacking theme...")
+        self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Unpacking theme...")
         extract_zip(theme_path, download_path)
 
-      params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Downloaded!")
-      params_memory.remove(asset_param)
+      self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Downloaded!")
+      self.params_memory.remove(asset_param)
 
       self.downloading_theme = False
 
       self.update_themes(frogpilot_toggles)
       return True
 
-    handle_error(None, "Download failed...", "Download failed...", asset_param, DOWNLOAD_PROGRESS_PARAM)
+    handle_error(None, "Download failed...", "Download failed...", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
     self.downloading_theme = False
     return False
 
@@ -358,61 +359,6 @@ class ThemeManager:
   def is_within_week_of(target_date, current_date):
     start_of_week = target_date - timedelta(days=target_date.weekday())
     return start_of_week <= current_date < target_date
-
-  @staticmethod
-  def randomize_distance_icons(available_themes, selected_theme):
-    theme_packs_path = THEME_SAVE_PATH / "theme_packs"
-    if not theme_packs_path.exists():
-      return "stock"
-
-    candidates = []
-    for theme_pack in theme_packs_path.iterdir():
-      if not theme_pack.is_dir():
-        continue
-
-      distance_icons_dir = theme_pack / "distance_icons"
-      if not distance_icons_dir.is_dir():
-        continue
-
-      icon_name = theme_pack.name.lower()
-
-      theme_association = [theme for theme in available_themes if theme.replace("-animated", "") in icon_name]
-      if theme_association and selected_theme not in icon_name:
-        continue
-
-      weight = 5 if selected_theme in icon_name else 1
-      candidates.extend([theme_pack.name] * weight)
-
-    return random.choice(candidates) if candidates else "stock"
-
-  @staticmethod
-  def randomize_theme_asset(available_themes):
-    if not available_themes:
-      return "stock"
-
-    return random.choice(available_themes)
-
-  @staticmethod
-  def randomize_wheel_image(available_themes, selected_theme):
-    steering_wheels_path = THEME_SAVE_PATH / "steering_wheels"
-    if not steering_wheels_path.exists():
-      return "stock"
-
-    candidates = []
-    for wheel_file in steering_wheels_path.iterdir():
-      if not wheel_file.is_file():
-        continue
-
-      name = wheel_file.stem.lower()
-
-      theme_association = [theme for theme in available_themes if theme.replace("-animated", "") in name]
-      if theme_association and selected_theme not in name:
-        continue
-
-      weight = 5 if selected_theme in name else 1
-      candidates.extend([wheel_file.stem] * weight)
-
-    return random.choice(candidates) if candidates else "stock"
 
   def update_active_theme(self, time_validated, frogpilot_toggles, boot_run=False, randomize_theme=False):
     if time_validated and frogpilot_toggles.holiday_themes:
@@ -429,7 +375,7 @@ class ThemeManager:
         "turn_signal_pack": ("signals", self.holiday_theme),
         "wheel_image": ("wheel_image", self.holiday_theme)
       }
-    elif (boot_run or randomize_theme) and frogpilot_toggles.random_themes:
+    elif (boot_run or randomize_theme) and False:
       available_themes = self.get_full_themes()
       selected_theme = self.randomize_theme_asset(available_themes)
 
@@ -441,8 +387,7 @@ class ThemeManager:
         "turn_signal_pack": ("signals", selected_theme.replace("-animated", "")),
         "wheel_image": ("wheel_image", self.randomize_wheel_image(available_themes, selected_theme.replace("-animated", "")))
       }
-
-    elif not frogpilot_toggles.random_themes:
+    elif not False:
       asset_mappings = {
         "color_scheme": ("colors", frogpilot_toggles.color_scheme),
         "distance_icons": ("distance_icons", frogpilot_toggles.distance_icons),
@@ -508,7 +453,7 @@ class ThemeManager:
         themes_path = THEME_SAVE_PATH / "theme_packs"
         existing_assets = {self.format_name(item.parent.name, subfolder) for item in themes_path.glob(f"*/{subfolder}") if item.is_dir()}
 
-      params.put(key, ",".join(sorted(set(assets) - existing_assets)))
+      self.params.put(key, ",".join(sorted(set(assets) - existing_assets)))
       print(f"{key} updated successfully")
 
     update_param("DownloadableColors", downloadable_colors, "colors")
@@ -534,10 +479,10 @@ class ThemeManager:
       if wheel_file.is_file():
         downloaded_wheels.append(self.format_name(wheel_file.name, "steering_wheels"))
 
-    params.put("ThemesDownloaded", json.dumps({
+    self.params.put("ThemesDownloaded", {
       "themes": {key: downloaded_themes[key] for key in sorted(downloaded_themes)},
       "steering_wheels": sorted(downloaded_wheels)
-    }))
+    })
 
     print("ThemesDownloaded updated successfully")
 
@@ -607,13 +552,11 @@ class ThemeManager:
 
     self.update_theme_params(downloadable_colors, downloadable_distance_icons, downloadable_icons, downloadable_signals, downloadable_sounds, downloadable_wheels)
 
-  def update_wheel_image(self, image, boot_run=False, random_event=False):
+  def update_wheel_image(self, image, boot_run=False):
     wheel_save_location = ACTIVE_THEME_PATH / "steering_wheel"
 
     if self.holiday_theme != "stock":
       wheel_location = HOLIDAY_THEME_PATH / self.holiday_theme / "steering_wheel"
-    elif random_event:
-      wheel_location = RANDOM_EVENTS_PATH / "steering_wheels"
     elif image == "stock":
       wheel_location = STOCKOP_THEME_PATH / "steering_wheel"
     elif image in HOLIDAY_SLUGS:
@@ -639,7 +582,7 @@ class ThemeManager:
       print(f"Linked {destination_file} to {source_file}")
 
   def validate_themes(self, downloadable_colors, downloadable_distance_icons, downloadable_icons, downloadable_signals, downloadable_sounds, downloadable_wheels, frogpilot_toggles):
-    downloaded_data = json.loads(params.get("ThemesDownloaded") or "{}")
+    downloaded_data = self.params.get("ThemesDownloaded")
 
     for display_name, components in downloaded_data.get("themes", {}).items():
       raw_name = display_name.lower().replace(" ", "_").replace("(", "").replace(")", "")

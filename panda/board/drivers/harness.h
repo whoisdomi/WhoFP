@@ -1,57 +1,32 @@
-#define HARNESS_STATUS_NC 0U
-#define HARNESS_STATUS_NORMAL 1U
-#define HARNESS_STATUS_FLIPPED 2U
+#include "harness_declarations.h"
 
-struct harness_t {
-  uint8_t status;
-  uint16_t sbu1_voltage_mV;
-  uint16_t sbu2_voltage_mV;
-  bool relay_driven;
-  bool sbu_adc_lock;
-};
 struct harness_t harness;
-
-struct harness_configuration {
-  const bool has_harness;
-  GPIO_TypeDef * const GPIO_SBU1;
-  GPIO_TypeDef * const GPIO_SBU2;
-  GPIO_TypeDef * const GPIO_relay_SBU1;
-  GPIO_TypeDef * const GPIO_relay_SBU2;
-  const uint8_t pin_SBU1;
-  const uint8_t pin_SBU2;
-  const uint8_t pin_relay_SBU1;
-  const uint8_t pin_relay_SBU2;
-  const uint8_t adc_channel_SBU1;
-  const uint8_t adc_channel_SBU2;
-};
 
 // The ignition relay is only used for testing purposes
 void set_intercept_relay(bool intercept, bool ignition_relay) {
-  if (current_board->harness_config->has_harness) {
-    bool drive_relay = intercept;
-    if (harness.status == HARNESS_STATUS_NC) {
-      // no harness, no relay to drive
-      drive_relay = false;
-    }
+  bool drive_relay = intercept;
+  if (harness.status == HARNESS_STATUS_NC) {
+    // no harness, no relay to drive
+    drive_relay = false;
+  }
 
-    if (drive_relay || ignition_relay) {
-      harness.relay_driven = true;
-    }
+  if (drive_relay || ignition_relay) {
+    harness.relay_driven = true;
+  }
 
-    // wait until we're not reading the analog voltages anymore
-    while (harness.sbu_adc_lock) {}
+  // wait until we're not reading the analog voltages anymore
+  while (harness.sbu_adc_lock) {}
 
-    if (harness.status == HARNESS_STATUS_NORMAL) {
-      set_gpio_output(current_board->harness_config->GPIO_relay_SBU1, current_board->harness_config->pin_relay_SBU1, !ignition_relay);
-      set_gpio_output(current_board->harness_config->GPIO_relay_SBU2, current_board->harness_config->pin_relay_SBU2, !drive_relay);
-    } else {
-      set_gpio_output(current_board->harness_config->GPIO_relay_SBU1, current_board->harness_config->pin_relay_SBU1, !drive_relay);
-      set_gpio_output(current_board->harness_config->GPIO_relay_SBU2, current_board->harness_config->pin_relay_SBU2, !ignition_relay);
-    }
+  if (harness.status == HARNESS_STATUS_NORMAL) {
+    set_gpio_output(current_board->harness_config->GPIO_relay_SBU1, current_board->harness_config->pin_relay_SBU1, !ignition_relay);
+    set_gpio_output(current_board->harness_config->GPIO_relay_SBU2, current_board->harness_config->pin_relay_SBU2, !drive_relay);
+  } else {
+    set_gpio_output(current_board->harness_config->GPIO_relay_SBU1, current_board->harness_config->pin_relay_SBU1, !drive_relay);
+    set_gpio_output(current_board->harness_config->GPIO_relay_SBU2, current_board->harness_config->pin_relay_SBU2, !ignition_relay);
+  }
 
-    if (!(drive_relay || ignition_relay)) {
-      harness.relay_driven = false;
-    }
+  if (!(drive_relay || ignition_relay)) {
+    harness.relay_driven = false;
   }
 }
 
@@ -74,18 +49,18 @@ bool harness_check_ignition(void) {
   return ret;
 }
 
-uint8_t harness_detect_orientation(void) {
+static uint8_t harness_detect_orientation(void) {
   uint8_t ret = harness.status;
 
   #ifndef BOOTSTUB
   // We can't detect orientation if the relay is being driven
-  if (!harness.relay_driven && current_board->harness_config->has_harness) {
+  if (!harness.relay_driven) {
     harness.sbu_adc_lock = true;
     set_gpio_mode(current_board->harness_config->GPIO_SBU1, current_board->harness_config->pin_SBU1, MODE_ANALOG);
     set_gpio_mode(current_board->harness_config->GPIO_SBU2, current_board->harness_config->pin_SBU2, MODE_ANALOG);
 
-    harness.sbu1_voltage_mV = adc_get_mV(current_board->harness_config->adc_channel_SBU1);
-    harness.sbu2_voltage_mV = adc_get_mV(current_board->harness_config->adc_channel_SBU2);
+    harness.sbu1_voltage_mV = adc_get_mV(&current_board->harness_config->adc_signal_SBU1);
+    harness.sbu2_voltage_mV = adc_get_mV(&current_board->harness_config->adc_signal_SBU2);
     uint16_t detection_threshold = current_board->avdd_mV / 2U;
 
     // Detect connection and orientation
@@ -117,13 +92,14 @@ void harness_tick(void) {
 }
 
 void harness_init(void) {
-  // try to detect orientation
+  // init OBD_SBUx_RELAY
+  set_gpio_output_type(current_board->harness_config->GPIO_relay_SBU1, current_board->harness_config->pin_relay_SBU1, OUTPUT_TYPE_OPEN_DRAIN);
+  set_gpio_output_type(current_board->harness_config->GPIO_relay_SBU2, current_board->harness_config->pin_relay_SBU2, OUTPUT_TYPE_OPEN_DRAIN);
+  set_gpio_output(current_board->harness_config->GPIO_relay_SBU1, current_board->harness_config->pin_relay_SBU1, 1);
+  set_gpio_output(current_board->harness_config->GPIO_relay_SBU2, current_board->harness_config->pin_relay_SBU2, 1);
+
+  // detect initial orientation
   harness.status = harness_detect_orientation();
-  if (harness.status != HARNESS_STATUS_NC) {
-    print("detected car harness with orientation "); puth2(harness.status); print("\n");
-  } else {
-    print("failed to detect car harness!\n");
-  }
 
   // keep buses connected by default
   set_intercept_relay(false, false);

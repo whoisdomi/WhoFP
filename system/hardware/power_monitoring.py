@@ -1,6 +1,8 @@
 import time
 import threading
 
+from types import SimpleNamespace
+
 from openpilot.common.params import Params
 from openpilot.system.hardware import HARDWARE
 from openpilot.common.swaglog import cloudlog
@@ -29,12 +31,10 @@ class PowerMonitoring:
     self.car_voltage_instant_mV = 12e3          # Last value of peripheralState voltage
     self.integration_lock = threading.Lock()
 
-    car_battery_capacity_uWh = self.params.get("CarBatteryCapacity")
-    if car_battery_capacity_uWh is None:
-      car_battery_capacity_uWh = 0
+    car_battery_capacity_uWh = self.params.get("CarBatteryCapacity") or 0
 
     # Reset capacity if it's low
-    self.car_battery_capacity_uWh = max((CAR_BATTERY_CAPACITY_uWh / 10), int(car_battery_capacity_uWh))
+    self.car_battery_capacity_uWh = max((CAR_BATTERY_CAPACITY_uWh / 10), car_battery_capacity_uWh)
 
   # Calculation tick
   def calculate(self, voltage: int | None, ignition: bool):
@@ -58,7 +58,7 @@ class PowerMonitoring:
       self.car_battery_capacity_uWh = max(self.car_battery_capacity_uWh, 0)
       self.car_battery_capacity_uWh = min(self.car_battery_capacity_uWh, CAR_BATTERY_CAPACITY_uWh)
       if now - self.last_save_time >= 10:
-        self.params.put_nonblocking("CarBatteryCapacity", str(int(self.car_battery_capacity_uWh)))
+        self.params.put_nonblocking("CarBatteryCapacity", int(self.car_battery_capacity_uWh))
         self.last_save_time = now
 
       # First measurement, set integration time
@@ -107,7 +107,7 @@ class PowerMonitoring:
     return int(self.car_battery_capacity_uWh)
 
   # See if we need to shutdown
-  def should_shutdown(self, ignition: bool, in_car: bool, offroad_timestamp: float | None, started_seen: bool, frogpilot_toggles):
+  def should_shutdown(self, ignition: bool, in_car: bool, offroad_timestamp: float | None, started_seen: bool, frogpilot_toggles: SimpleNamespace):
     if offroad_timestamp is None:
       return False
 

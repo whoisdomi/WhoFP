@@ -4,34 +4,36 @@ import time
 import wave
 
 from pathlib import Path
-from typing import Any
 
 from cereal import car, custom, messaging
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.params import Params
 from openpilot.common.realtime import Ratekeeper
 from openpilot.common.retry import retry
 from openpilot.common.swaglog import cloudlog
 
 from openpilot.system import micd
 
-from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, ERROR_LOGS_PATH, RANDOM_EVENTS_PATH, get_frogpilot_toggles, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, ERROR_LOGS_PATH, RANDOM_EVENTS_PATH, get_frogpilot_toggles
 
 SAMPLE_RATE = 48000
 SAMPLE_BUFFER = 4096 # (approx 100ms)
 MAX_VOLUME = 1.0
 MIN_VOLUME = 0.1
-CONTROLS_TIMEOUT = 5 # 5 seconds
+SELFDRIVE_STATE_TIMEOUT = 5 # 5 seconds
 FILTER_DT = 1. / (micd.SAMPLE_RATE / micd.FFT_SAMPLES)
 
 AMBIENT_DB = 30 # DB where MIN_VOLUME is applied
 DB_SCALE = 30 # AMBIENT_DB + DB_SCALE is where MAX_VOLUME is applied
 
 AudibleAlert = car.CarControl.HUDControl.AudibleAlert
+
+# FrogPilot variables
 FrogPilotAudibleAlert = custom.FrogPilotCarControl.HUDControl.AudibleAlert
 
 
-sound_list: dict[Any, tuple[str, int | None, float]] = {
+sound_list: dict[int, tuple[str, int | None, float]] = {
   # AudibleAlert, file name, play count (none for infinite)
   AudibleAlert.engage: ("engage.wav", 1, MAX_VOLUME),
   AudibleAlert.disengage: ("disengage.wav", 1, MAX_VOLUME),
@@ -44,28 +46,15 @@ sound_list: dict[Any, tuple[str, int | None, float]] = {
   AudibleAlert.warningSoft: ("warning_soft.wav", None, MAX_VOLUME),
   AudibleAlert.warningImmediate: ("warning_immediate.wav", None, MAX_VOLUME),
 
-  # FrogPilot sounds
-  FrogPilotAudibleAlert.angry: ("angry.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.continued: ("continued.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.dejaVu: ("dejaVu.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.doc: ("doc.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.fart: ("fart.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.firefox: ("firefox.wav", 1, MAX_VOLUME),
+  # FrogPilot variables
   FrogPilotAudibleAlert.goat: ("goat.wav", None, MAX_VOLUME),
-  FrogPilotAudibleAlert.hal9000: ("hal9000.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.mail: ("mail.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.nessie: ("nessie.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.noice: ("noice.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.startup: ("startup.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.thisIsFine: ("this_is_fine.wav", 1, MAX_VOLUME),
-  FrogPilotAudibleAlert.uwu: ("uwu.wav", 1, MAX_VOLUME),
 }
 
-def check_controls_timeout_alert(sm):
-  controls_missing = time.monotonic() - sm.recv_time['controlsState']
+def check_selfdrive_timeout_alert(sm):
+  ss_missing = time.monotonic() - sm.recv_time['selfdriveState']
 
-  if controls_missing > CONTROLS_TIMEOUT:
-    if sm['controlsState'].enabled and (controls_missing - CONTROLS_TIMEOUT) < 10:
+  if ss_missing > SELFDRIVE_STATE_TIMEOUT:
+    if sm['selfdriveState'].enabled and (ss_missing - SELFDRIVE_STATE_TIMEOUT) < 10:
       return True
 
   return False
@@ -77,13 +66,16 @@ class Soundd:
     self.current_volume = MIN_VOLUME
     self.current_sound_frame = 0
 
-    self.controls_timeout_alert = False
+    self.selfdrive_timeout_alert = False
 
     self.spl_filter_weighted = FirstOrderFilter(0, 2.5, FILTER_DT, initialized=False)
 
     # FrogPilot variables
+    self.params_memory = Params(memory=True)
+
+    self.frogpilot_toggles = get_frogpilot_toggles()
+
     self.openpilot_crashed_played = False
-    self.restart_stream = False
 
     self.auto_volume = 0
 
@@ -91,8 +83,6 @@ class Soundd:
 
     self.error_log = ERROR_LOGS_PATH / "error.txt"
     self.random_events_directory = RANDOM_EVENTS_PATH / "sounds"
-
-    self.frogpilot_toggles = get_frogpilot_toggles()
 
     self.update_frogpilot_sounds()
 
@@ -155,31 +145,27 @@ class Soundd:
       self.current_sound_frame = 0
 
   def get_audible_alert(self, sm):
-    if params_memory.get("TestAlert", encoding="utf-8"):
-      self.update_alert(getattr(AudibleAlert, params_memory.get("TestAlert", encoding="utf-8")))
-
-      params_memory.remove("TestAlert")
+    if self.params_memory.get("TestAlert"):
+      self.update_alert(getattr(AudibleAlert, self.params_memory.get("TestAlert")))
+      self.params_memory.remove("TestAlert")
     elif not self.openpilot_crashed_played and self.error_log.is_file():
-      if self.frogpilot_toggles.random_events:
-        self.update_alert(FrogPilotAudibleAlert.fart)
-      else:
-        self.update_alert(AudibleAlert.prompt)
-
+      self.update_alert(AudibleAlert.prompt)
       self.openpilot_crashed_played = True
-    elif sm.updated['controlsState']:
-      new_alert = sm['controlsState'].alertSound.raw
-      new_frogpilot_alert = sm['frogpilotControlsState'].alertSound.raw
+    elif sm.updated['selfdriveState']:
+      new_alert = sm['selfdriveState'].alertSound.raw
 
+      # FrogPilot variables
+      new_frogpilot_alert = sm['frogpilotSelfdriveState'].alertSound.raw
       if new_alert == AudibleAlert.none and new_frogpilot_alert != FrogPilotAudibleAlert.none:
         new_alert = new_frogpilot_alert
 
       self.update_alert(new_alert)
-    elif check_controls_timeout_alert(sm):
+    elif check_selfdrive_timeout_alert(sm):
       self.update_alert(AudibleAlert.warningImmediate)
-      self.controls_timeout_alert = True
-    elif self.controls_timeout_alert:
+      self.selfdrive_timeout_alert = True
+    elif self.selfdrive_timeout_alert:
       self.update_alert(AudibleAlert.none)
-      self.controls_timeout_alert = False
+      self.selfdrive_timeout_alert = False
 
   def calculate_volume(self, weighted_db):
     volume = ((weighted_db - AMBIENT_DB) / DB_SCALE) * (MAX_VOLUME - MIN_VOLUME) + MIN_VOLUME
@@ -196,7 +182,10 @@ class Soundd:
     # sounddevice must be imported after forking processes
     import sounddevice as sd
 
-    sm = messaging.SubMaster(['controlsState', 'microphone', 'frogpilotControlsState', 'frogpilotPlan'])
+    sm = messaging.SubMaster(['selfdriveState', 'soundPressure'])
+
+    # FrogPilot variables
+    sm = sm.extend(['frogpilotSelfdriveState', 'frogpilotPlan'])
 
     with self.get_stream(sd) as stream:
       rk = Ratekeeper(20)
@@ -205,16 +194,15 @@ class Soundd:
       while True:
         sm.update(0)
 
-        if sm.updated['microphone'] and self.current_alert == AudibleAlert.none: # only update volume filter when not playing alert
-          self.spl_filter_weighted.update(sm["microphone"].soundPressureWeightedDb)
+        if sm.updated['soundPressure'] and self.current_alert == AudibleAlert.none: # only update volume filter when not playing alert
+          self.spl_filter_weighted.update(sm["soundPressure"].soundPressureWeightedDb)
+          self.current_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
 
           if self.frogpilot_toggles.alert_volume_controller:
-            self.auto_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
+            self.auto_volume = self.current_volume
             self.current_volume = 0.0
-          else:
-            self.current_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
 
-        elif self.frogpilot_toggles.alert_volume_controller and self.current_alert in self.volume_map:
+        elif self.current_alert in self.volume_map and self.frogpilot_toggles.alert_volume_controller:
           self.current_volume = self.volume_map[self.current_alert]
           if self.current_volume == 1.01:
             self.current_volume = self.auto_volume
@@ -225,20 +213,13 @@ class Soundd:
 
         assert stream.active
 
-        # Update FrogPilot variables
+        # FrogPilot variables
         if sm['frogpilotPlan'].togglesUpdated:
           self.frogpilot_toggles = get_frogpilot_toggles()
 
-          self.update_frogpilot_sounds()
+          self.update_frogpilot_sounds(sd, stream)
 
-          if self.restart_stream:
-            stream.close()
-            stream = self.get_stream(sd)
-            stream.start()
-
-            self.restart_stream = False
-
-  def update_frogpilot_sounds(self):
+  def update_frogpilot_sounds(self, sd=None, stream=None):
     self.volume_map = {
       AudibleAlert.engage: self.frogpilot_toggles.engage_volume / 100.0,
       AudibleAlert.disengage: self.frogpilot_toggles.disengage_volume / 100.0,
@@ -266,8 +247,14 @@ class Soundd:
 
     if self.frogpilot_toggles.sound_pack != self.previous_sound_pack:
       self.load_sounds()
+
       self.previous_sound_pack = self.frogpilot_toggles.sound_pack
-      self.restart_stream = True
+
+      if stream is not None:
+        stream.close()
+        stream = self.get_stream(sd)
+        stream.start()
+
 
 def main():
   s = Soundd()

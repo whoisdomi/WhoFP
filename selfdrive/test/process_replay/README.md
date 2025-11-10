@@ -30,7 +30,7 @@ optional arguments:
   --whitelist-cars WHITELIST_CARS       Whitelist given cars from the test (e.g. HONDA)
   --blacklist-procs BLACKLIST_PROCS     Blacklist given processes from the test (e.g. controlsd)
   --blacklist-cars BLACKLIST_CARS       Blacklist given cars from the test (e.g. HONDA)
-  --ignore-fields IGNORE_FIELDS         Extra fields or msgs to ignore (e.g. carState.events)
+  --ignore-fields IGNORE_FIELDS         Extra fields or msgs to ignore (e.g. driverMonitoringState.events)
   --ignore-msgs IGNORE_MSGS             Msgs to ignore (e.g. onroadEvents)
   --update-refs                         Updates reference logs using current commit
   --upload-only                         Skips testing processes and uploads logs from previous test run
@@ -38,7 +38,7 @@ optional arguments:
 
 ## Forks
 
-openpilot forks can use this test with their own reference logs, by default `test_proccess.py` saves logs locally.
+openpilot forks can use this test with their own reference logs, by default `test_proccesses.py` saves logs locally.
 
 To generate new logs:
 
@@ -48,13 +48,13 @@ Then, check in the new logs using git-lfs. Make sure to also update the `ref_com
 
 ## API
 
-Process replay test suite exposes programmatic APIs for simultaneously running processes or groups of processes on provided logs. 
+Process replay test suite exposes programmatic APIs for simultaneously running processes or groups of processes on provided logs.
 
 ```py
 def replay_process_with_name(name: Union[str, Iterable[str]], lr: LogIterable, *args, **kwargs) -> List[capnp._DynamicStructReader]:
 
 def replay_process(
-  cfg: Union[ProcessConfig, Iterable[ProcessConfig]], lr: LogIterable, frs: Optional[Dict[str, Any]] = None, 
+  cfg: Union[ProcessConfig, Iterable[ProcessConfig]], lr: LogIterable, frs: Optional[Dict[str, Any]] = None,
   fingerprint: Optional[str] = None, return_all_logs: bool = False, custom_params: Optional[Dict[str, Any]] = None, disable_progress: bool = False
 ) -> List[capnp._DynamicStructReader]:
 ```
@@ -73,14 +73,14 @@ output_logs = replay_process_with_name('locationd', lr)
 output_logs = replay_process_with_name(['ubloxd', 'locationd'], lr)
 ```
 
-Supported processes: 
+Supported processes:
 * controlsd
 * radard
 * plannerd
 * calibrationd
 * dmonitoringd
 * locationd
-* paramsd 
+* paramsd
 * ubloxd
 * torqued
 * modeld

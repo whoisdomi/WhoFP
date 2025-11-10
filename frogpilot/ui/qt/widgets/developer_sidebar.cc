@@ -37,7 +37,7 @@ void DeveloperSidebar::showEvent(QShowEvent *event) {
 void DeveloperSidebar::updateTheme() {
   FrogPilotUIState &fs = *frogpilotUIState();
   FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
-  QJsonObject &frogpilot_toggles = fs.frogpilot_toggles;
+  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
   metricAssignments.clear();
   for (int i = 1; i <= 7; ++i) {
@@ -61,18 +61,20 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
     return;
   }
 
+  const SubMaster &sm = *(s.sm);
+
   const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
   const SubMaster &fpsm = *(fs.sm);
 
   const cereal::CarControl::Reader &carControl = fpsm["carControl"].getCarControl();
-  const cereal::CarState::Reader &carState = fpsm["carState"].getCarState();
+  const cereal::CarState::Reader &carState = sm["carState"].getCarState();
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
   const cereal::LiveDelayData::Reader &liveDelay = fpsm["liveDelay"].getLiveDelay();
   const cereal::LiveParametersData::Reader &liveParameters = fpsm["liveParameters"].getLiveParameters();
   const cereal::LiveTorqueParametersData::Reader &liveTorqueParameters = fpsm["liveTorqueParameters"].getLiveTorqueParameters();
 
   const bool is_metric = s.scene.is_metric;
-  const bool use_si = fs.frogpilot_toggles.value("use_si_metrics").toBool();
+  const bool use_si = frogpilot_scene.frogpilot_toggles.value("use_si_metrics").toBool();
 
   const QString accelerationUnit = (is_metric || use_si) ? tr(" m/s²") : tr(" ft/s²");
   const float accelerationConversion = (is_metric || use_si) ? 1.0f : METER_TO_FOOT;
@@ -90,7 +92,7 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
   int currentSteerAngle = fabs(carState.getSteeringAngleDeg());
 
   static int maxTorque = 0;
-  int currentTorque = fabs(carControl.getActuators().getSteer() * 100);
+  int currentTorque = fabs(carControl.getActuators().getTorque() * 100);
 
   static QElapsedTimer torqueTimer;
 

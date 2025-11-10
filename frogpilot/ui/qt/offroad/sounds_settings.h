@@ -30,8 +30,6 @@ private:
 
   FrogPilotSettingsWindow *parent;
 
-  QJsonObject frogpilotToggleLevels;
-
   Params params;
-  Params params_memory{"/dev/shm/params"};
+  Params params_memory{"", false, true};
 };

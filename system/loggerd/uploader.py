@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import bz2
-import io
 import json
 import os
 import random
@@ -9,12 +7,12 @@ import threading
 import time
 import traceback
 import datetime
-from typing import BinaryIO
 from collections.abc import Iterator
 
 from cereal import log
 import cereal.messaging as messaging
 from openpilot.common.api import Api
+from openpilot.common.file_helpers import get_upload_stream
 from openpilot.common.params import Params
 from openpilot.common.realtime import set_core_affinity
 from openpilot.system.hardware.hw import Paths
@@ -89,11 +87,11 @@ class Uploader:
     self.last_filename = ""
 
     self.immediate_folders = ["crash/", "boot/"]
-    self.immediate_priority = {"qlog": 0, "qlog.bz2": 0, "qcamera.ts": 1}
+    self.immediate_priority = {"qlog": 0, "qlog.zst": 0, "qcamera.ts": 1}
 
   def list_upload_files(self, metered: bool) -> Iterator[tuple[str, str, str]]:
-    r = self.params.get("AthenadRecentlyViewedRoutes", encoding="utf8")
-    requested_routes = [] if r is None else r.split(",")
+    r = self.params.get("AthenadRecentlyViewedRoutes")
+    requested_routes = [] if r is None else [route for route in r.split(",") if route]
 
     for logdir in listdir_by_creation(self.root):
       path = os.path.join(self.root, logdir)
@@ -156,15 +154,15 @@ class Uploader:
     if fake_upload:
       return FakeResponse()
 
-    with open(fn, "rb") as f:
-      data: BinaryIO
-      if key.endswith('.bz2') and not fn.endswith('.bz2'):
-        compressed = bz2.compress(f.read())
-        data = io.BytesIO(compressed)
-      else:
-        data = f
-
-      return requests.put(url, data=data, headers=headers, timeout=10)
+    stream = None
+    try:
+      compress = key.endswith('.zst') and not fn.endswith('.zst')
+      stream, _ = get_upload_stream(fn, compress)
+      response = requests.put(url, data=stream, headers=headers, timeout=10)
+      return response
+    finally:
+      if stream:
+        stream.close()
 
   def upload(self, name: str, key: str, fn: str, network_type: int, metered: bool) -> bool:
     try:
@@ -224,8 +222,8 @@ class Uploader:
     name, key, fn = d
 
     # qlogs and bootlogs need to be compressed before uploading
-    if key.endswith(('qlog', 'rlog')) or (key.startswith('boot/') and not key.endswith('.bz2')):
-      key += ".bz2"
+    if key.endswith(('qlog', 'rlog')) or (key.startswith('boot/') and not key.endswith('.zst')):
+      key += ".zst"
 
     return self.upload(name, key, fn, network_type, metered)
 
@@ -242,18 +240,20 @@ def main(exit_event: threading.Event = None) -> None:
   clear_locks(Paths.log_root())
 
   params = Params()
-  dongle_id = params.get("DongleId", encoding='utf8')
+  dongle_id = params.get("DongleId")
 
   if dongle_id is None:
     cloudlog.info("uploader missing dongle_id")
     raise Exception("uploader can't start without dongle id")
 
-  sm = messaging.SubMaster(['deviceState', 'frogpilotPlan'])
+  sm = messaging.SubMaster(['deviceState'])
   uploader = Uploader(dongle_id, Paths.log_root())
 
   backoff = 0.1
 
   # FrogPilot variables
+  sm = sm.extend(['frogpilotPlan'])
+
   frogpilot_toggles = get_frogpilot_toggles()
 
   while not exit_event.is_set():
@@ -277,9 +277,10 @@ def main(exit_event: threading.Event = None) -> None:
     if allow_sleep:
       time.sleep(backoff + random.uniform(0, backoff))
 
-    # Update FrogPilot variables
+    # FrogPilot variables
     if sm['frogpilotPlan'].togglesUpdated:
       frogpilot_toggles = get_frogpilot_toggles()
+
 
 if __name__ == "__main__":
   main()

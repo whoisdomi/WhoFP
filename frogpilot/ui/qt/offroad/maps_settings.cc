@@ -167,14 +167,17 @@ void FrogPilotMapsPanel::showEvent(QShowEvent *event) {
     selectMaps->showDescription();
   }
 
-  FrogPilotUIState &fs = *frogpilotUIState();
   UIState &s = *uiState();
+  UIScene &scene = s.scene;
+
+  FrogPilotUIState &fs = *frogpilotUIState();
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
 
   std::string mapsSelected = params.get("MapsSelected");
   hasMapsSelected = !QJsonDocument::fromJson(QByteArray::fromStdString(mapsSelected)).object().value("nations").toArray().isEmpty();
   hasMapsSelected |= !QJsonDocument::fromJson(QByteArray::fromStdString(mapsSelected)).object().value("states").toArray().isEmpty();
 
-  bool parked = !s.scene.started || fs.frogpilot_scene.parked || fs.frogpilot_toggles.value("frogs_go_moo").toBool();
+  bool parked = !scene.started || frogpilot_scene.parked || parent->isFrogsGoMoo;
 
   removeMapsButton->setVisible(mapsFolderPath.exists());
 
@@ -191,8 +194,8 @@ void FrogPilotMapsPanel::showEvent(QShowEvent *event) {
 
     updateDownloadLabels(osmDownloadProgress);
   } else {
-    downloadMapsButton->setEnabled(!cancellingDownload && hasMapsSelected && fs.frogpilot_scene.online && parked);
-    downloadMapsButton->setValue(fs.frogpilot_scene.online ? (parked ? "" : tr("Not parked")) : tr("Offline..."));
+    downloadMapsButton->setEnabled(!cancellingDownload && hasMapsSelected && frogpilot_scene.online && parked);
+    downloadMapsButton->setValue(frogpilot_scene.online ? (parked ? "" : tr("Not parked")) : tr("Offline..."));
   }
 }
 
@@ -202,14 +205,17 @@ void FrogPilotMapsPanel::updateState(const UIState &s, const FrogPilotUIState &f
     return;
   }
 
-  bool parked = !s.scene.started || fs.frogpilot_scene.parked || fs.frogpilot_toggles.value("frogs_go_moo").toBool();
+  const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  const UIScene &scene = s.scene;
+
+  bool parked = !scene.started || frogpilot_scene.parked || parent->isFrogsGoMoo;
 
   std::string osmDownloadProgress = params.get("OSMDownloadProgress");
   if (!osmDownloadProgress.empty() && !cancellingDownload) {
     updateDownloadLabels(osmDownloadProgress);
   } else {
-    downloadMapsButton->setEnabled(!cancellingDownload && hasMapsSelected && fs.frogpilot_scene.online && parked);
-    downloadMapsButton->setValue(fs.frogpilot_scene.online ? (parked ? "" : tr("Not parked")) : tr("Offline..."));
+    downloadMapsButton->setEnabled(!cancellingDownload && hasMapsSelected && frogpilot_scene.online && parked);
+    downloadMapsButton->setValue(frogpilot_scene.online ? (parked ? "" : tr("Not parked")) : tr("Offline..."));
   }
 
   parent->keepScreenOn = !osmDownloadProgress.empty();

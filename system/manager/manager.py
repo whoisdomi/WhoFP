@@ -3,23 +3,25 @@ import datetime
 import os
 import signal
 import sys
+import time
 import traceback
 
 from cereal import log
 import cereal.messaging as messaging
 import openpilot.system.sentry as sentry
-from openpilot.common.params import Params, ParamKeyType
+from openpilot.common.params import Params, ParamKeyFlag
 from openpilot.common.text_window import TextWindow
-from openpilot.system.hardware import HARDWARE, PC
+from openpilot.system.hardware import HARDWARE
 from openpilot.system.manager.helpers import unblock_stdout, write_onroad_params, save_bootlog
 from openpilot.system.manager.process import ensure_running
 from openpilot.system.manager.process_config import managed_processes
 from openpilot.system.athena.registration import register, UNREGISTERED_DONGLE_ID
 from openpilot.common.swaglog import cloudlog, add_file_handler
 from openpilot.system.version import get_build_metadata, terms_version, training_version
+from openpilot.system.hardware.hw import Paths
 
-from openpilot.frogpilot.common.frogpilot_functions import convert_params, frogpilot_boot_functions, setup_frogpilot, uninstall_frogpilot
-from openpilot.frogpilot.common.frogpilot_variables import EXCLUDED_KEYS, frogpilot_default_params, get_frogpilot_toggles, params_cache, params_memory
+from openpilot.frogpilot.common.frogpilot_functions import frogpilot_boot_functions, install_frogpilot, uninstall_frogpilot
+from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
 
 def manager_init() -> None:
@@ -28,60 +30,49 @@ def manager_init() -> None:
   build_metadata = get_build_metadata()
 
   params = Params()
-  params.clear_all(ParamKeyType.CLEAR_ON_MANAGER_START)
-  params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
-  params.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
+  params.clear_all(ParamKeyFlag.CLEAR_ON_MANAGER_START)
+  params.clear_all(ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION)
+  params.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
+  params.clear_all(ParamKeyFlag.CLEAR_ON_IGNITION_ON)
   if build_metadata.release_channel:
-    params.clear_all(ParamKeyType.DEVELOPMENT_ONLY)
-
-  # FrogPilot variables
-  setup_frogpilot(build_metadata)
-  convert_params(params_cache)
-
-  default_params: list[tuple[str, str | bytes]] = [
-    ("CompletedTrainingVersion", "0"),
-    ("DisengageOnAccelerator", "0"),
-    ("GsmMetered", "1"),
-    ("HasAcceptedTerms", "0"),
-    ("LanguageSetting", "main_en"),
-    ("OpenpilotEnabledToggle", "1"),
-    ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),
-  ]
-  if not PC:
-    default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
+    params.clear_all(ParamKeyFlag.DEVELOPMENT_ONLY)
 
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)
 
-  # set unset params
-  reset_toggles = params.get_bool("DoToggleReset")
-  reset_toggles_stock = params.get_bool("DoToggleResetStock")
-  for k, v, stock in [(k, v, v) for k, v in default_params] + [(k, v, stock) for k, v, _, stock in frogpilot_default_params]:
-    if (reset_toggles or reset_toggles_stock) and k in EXCLUDED_KEYS:
+  # FrogPilot variables
+  params_cache = Params(cache=True)
+  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_MANAGER_START)
+  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION)
+  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
+  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_IGNITION_ON)
+
+  # set unset params to their default value
+  for k in params.all_keys():
+    default_value = params.get_default_value(k)
+    if default_value is None:
       continue
 
-    if params.get(k) is None or reset_toggles or reset_toggles_stock:
-      if params_cache.get(k) is None or reset_toggles or reset_toggles_stock:
-        params.put(k, v if not reset_toggles_stock else stock)
-        params_cache.remove(k)
+    current_value = params.get(k)
+    if current_value is None:
+      cached_value = params_cache.get(k)
+      if cached_value is None:
+        params.put(k, default_value)
       else:
-        params.put(k, params_cache.get(k))
+        params.put(k, cached_value)
     else:
-      params_cache.put(k, params.get(k))
-  params.remove("DoToggleReset")
-  params.remove("DoToggleResetStock")
-
-  frogpilot_boot_functions(build_metadata, params_cache)
+      params_cache.put(k, current_value)
 
   # Create folders needed for msgq
   try:
-    os.mkdir("/dev/shm")
+    os.mkdir(Paths.shm_path())
   except FileExistsError:
     pass
   except PermissionError:
-    print("WARNING: failed to make /dev/shm")
+    print(f"WARNING: failed to make {Paths.shm_path()}")
 
-  # set version params
+  # set params
+  serial = HARDWARE.get_serial()
   params.put("Version", build_metadata.openpilot.version)
   params.put("TermsVersion", terms_version)
   params.put("TrainingVersion", training_version)
@@ -91,13 +82,13 @@ def manager_init() -> None:
   params.put("GitRemote", build_metadata.openpilot.git_origin)
   params.put_bool("IsTestedBranch", build_metadata.tested_channel)
   params.put_bool("IsReleaseBranch", build_metadata.release_channel)
+  params.put("HardwareSerial", serial)
 
   # set dongle id
   reg_res = register(show_spinner=True)
   if reg_res:
     dongle_id = reg_res
   else:
-    serial = params.get("HardwareSerial")
     raise Exception(f"Registration failed for device {serial}")
   os.environ['DONGLE_ID'] = dongle_id  # Needed for swaglog
   os.environ['GIT_ORIGIN'] = build_metadata.openpilot.git_normalized_origin # Needed for swaglog
@@ -121,6 +112,10 @@ def manager_init() -> None:
   for p in managed_processes.values():
     p.prepare()
 
+  # FrogPilot variables
+  install_frogpilot(build_metadata)
+  frogpilot_boot_functions(build_metadata, params, params_cache)
+
 
 def manager_cleanup() -> None:
   # send signals to kill all procs
@@ -142,52 +137,58 @@ def manager_thread() -> None:
   params = Params()
 
   ignore: list[str] = []
-  if params.get("DongleId", encoding='utf8') in (None, UNREGISTERED_DONGLE_ID):
+  if params.get("DongleId") in (None, UNREGISTERED_DONGLE_ID):
     ignore += ["manage_athenad", "uploader"]
   if os.getenv("NOBOARD") is not None:
     ignore.append("pandad")
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams', 'frogpilotPlan'], poll='deviceState')
+  sm = messaging.SubMaster(['deviceState', 'carParams', 'pandaStates'], poll='deviceState')
   pm = messaging.PubMaster(['managerState'])
 
   write_onroad_params(False, params)
-  ensure_running(managed_processes.values(), False, params=params, CP=sm['carParams'], not_run=ignore, classic_model=False, tinygrad_model=False, frogpilot_toggles=get_frogpilot_toggles())
+  ensure_running(managed_processes.values(), False, params=params, CP=sm['carParams'], not_run=ignore, frogpilot_toggles=get_frogpilot_toggles())
 
   started_prev = False
+  ignition_prev = False
 
   # FrogPilot variables
-  frogpilot_toggles = get_frogpilot_toggles()
+  sm = sm.extend(['frogpilotPlan'])
 
-  classic_model = frogpilot_toggles.classic_model
-  tinygrad_model = frogpilot_toggles.tinygrad_model
+  params_memory = Params(memory=True)
+
+  frogpilot_toggles = get_frogpilot_toggles()
 
   while True:
     sm.update(1000)
 
     started = sm['deviceState'].started
 
-    if started and not started_prev:
-      if not frogpilot_toggles.force_onroad:
-        params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
+    if started and not started_prev and not frogpilot_toggles.force_onroad:
+      params.clear_all(ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION)
 
       # FrogPilot variables
       frogpilot_toggles = get_frogpilot_toggles()
 
-      classic_model = frogpilot_toggles.classic_model
-      tinygrad_model = frogpilot_toggles.tinygrad_model
-
+      params_memory.clear_all(ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION)
     elif not started and started_prev:
-      params.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
-      params_memory.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
+      params.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
+
+      # FrogPilot variables
+      params_memory.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
+
+    ignition = any(ps.ignitionLine or ps.ignitionCan for ps in sm['pandaStates'] if ps.pandaType != log.PandaState.PandaType.unknown)
+    if ignition and not ignition_prev:
+      params.clear_all(ParamKeyFlag.CLEAR_ON_IGNITION_ON)
 
     # update onroad params, which drives pandad's safety setter thread
     if started != started_prev:
       write_onroad_params(started, params)
 
     started_prev = started
+    ignition_prev = ignition
 
-    ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore, classic_model=classic_model, tinygrad_model=tinygrad_model, frogpilot_toggles=frogpilot_toggles)
+    ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore, frogpilot_toggles=frogpilot_toggles)
 
     running = ' '.join("{}{}\u001b[0m".format("\u001b[32m" if p.proc.is_alive() else "\u001b[31m", p.name)
                        for p in managed_processes.values() if p.proc)
@@ -198,6 +199,14 @@ def manager_thread() -> None:
     msg = messaging.new_message('managerState', valid=True)
     msg.managerState.processes = [p.get_process_state_msg() for p in managed_processes.values()]
     pm.send('managerState', msg)
+
+    # kick AGNOS power monitoring watchdog
+    try:
+      if sm.all_checks(['deviceState']):
+        with open("/var/tmp/power_watchdog", "w") as f:
+          f.write(str(time.monotonic()))
+    except Exception:
+      pass
 
     # Exit main loop when uninstall/shutdown/reboot is needed
     shutdown = False
@@ -210,9 +219,10 @@ def manager_thread() -> None:
     if shutdown:
       break
 
-    # Update FrogPilot variables
+    # FrogPilot variables
     if sm['frogpilotPlan'].togglesUpdated:
       frogpilot_toggles = get_frogpilot_toggles()
+
 
 def main() -> None:
   manager_init()

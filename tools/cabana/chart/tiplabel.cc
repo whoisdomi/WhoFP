@@ -7,24 +7,27 @@
 #include <QToolTip>
 
 #include "tools/cabana/settings.h"
+#include "tools/cabana/utils/util.h"
 
 TipLabel::TipLabel(QWidget *parent) : QLabel(parent, Qt::ToolTip | Qt::FramelessWindowHint) {
+  setAttribute(Qt::WA_ShowWithoutActivating);
+  setAttribute(Qt::WA_TransparentForMouseEvents);
+
   setForegroundRole(QPalette::ToolTipText);
   setBackgroundRole(QPalette::ToolTipBase);
+
   QFont font;
   font.setPointSizeF(8.34563465);
   setFont(font);
   auto palette = QToolTip::palette();
-  if (settings.theme != DARK_THEME) {
+  if (!utils::isDarkTheme()) {
     palette.setColor(QPalette::ToolTipBase, QApplication::palette().color(QPalette::Base));
     palette.setColor(QPalette::ToolTipText, QRgb(0x404044));  // same color as chart label brush
   }
   setPalette(palette);
   ensurePolished();
   setMargin(1 + style()->pixelMetric(QStyle::PM_ToolTipLabelFrameWidth, nullptr, this));
-  setAttribute(Qt::WA_ShowWithoutActivating);
   setTextFormat(Qt::RichText);
-  setVisible(false);
 }
 
 void TipLabel::showText(const QPoint &pt, const QString &text, QWidget *w, const QRect &rect) {

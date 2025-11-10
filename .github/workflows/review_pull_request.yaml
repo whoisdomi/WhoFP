@@ -31,4 +31,4 @@ jobs:
         if: ${{ github.base_ref == 'MAKE-PRS-HERE' }}
         run: |
           gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-            -f body="Thank you for your PR! If you're not already in the FrogPilot Discord, [feel free to join](https://discord.FrogPilot.download) and let me know you've opened a PR!"
+            -f body="Thank you for your PR! If you're not already in the FrogPilot Discord, [feel free to join](https://discord.FrogPilot.com) and let me know you've opened a PR!"

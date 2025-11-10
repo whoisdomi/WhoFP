@@ -74,19 +74,15 @@ void MainWindow::closeSettings() {
   main_layout->setCurrentWidget(homeWindow);
 
   if (uiState()->scene.started) {
-    // Map is always shown when using navigate on openpilot
-    if (uiState()->scene.navigate_on_openpilot) {
-      homeWindow->showMapPanel(true);
-    } else {
-      homeWindow->showSidebar(params.getBool("Sidebar") || frogpilotUIState()->frogpilot_toggles.value("debug_mode").toBool());
-    }
+    homeWindow->showSidebar(params.getBool("SidebarOpen") || frogpilotUIState()->frogpilot_scene.frogpilot_toggles.value("debug_mode").toBool());
   }
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+  // FrogPilot variables
   FrogPilotUIState &fs = *frogpilotUIState();
   FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
-  QJsonObject &frogpilot_toggles = fs.frogpilot_toggles;
+  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
   bool ignore = false;
   switch (event->type()) {
@@ -96,7 +92,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     case QEvent::MouseButtonPress:
     case QEvent::MouseMove: {
       // ignore events when device is awakened by resetInteractiveTimeout
-      ignore = !device()->isAwake() || frogpilot_scene.driver_camera_timer >= UI_FREQ / 2;
+      ignore = !device()->isAwake();
       device()->resetInteractiveTimeout(frogpilot_toggles.value("screen_timeout").toInt(), frogpilot_toggles.value("screen_timeout_onroad").toInt());
       break;
     }

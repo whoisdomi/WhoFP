@@ -4,13 +4,10 @@ import json
 import math
 import numpy as np
 import requests
-import shutil
 import subprocess
 import tarfile
 import threading
 import time
-import urllib.error
-import urllib.request
 import zipfile
 
 from functools import cache
@@ -20,26 +17,23 @@ import openpilot.system.sentry as sentry
 
 from cereal import log, messaging
 from opendbc.can.parser import CANParser
+from opendbc.car.toyota.carcontroller import LOCK_CMD
 from openpilot.common.realtime import DT_DMON, DT_HW
-from openpilot.selfdrive.car.toyota.carcontroller import LOCK_CMD
 from openpilot.system.hardware import HARDWARE
 from panda import Panda
 
-from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH, params, params_cache, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
 
 running_threads = {}
 
 locks = {
   "backup_toggles": threading.Lock(),
-  "download_all_models": threading.Lock(),
-  "download_model": threading.Lock(),
   "download_theme": threading.Lock(),
   "flash_panda": threading.Lock(),
   "lock_doors": threading.Lock(),
   "update_checks": threading.Lock(),
   "update_maps": threading.Lock(),
   "update_openpilot": threading.Lock(),
-  "update_tinygrad": threading.Lock()
 }
 
 def run_thread_with_lock(name, target, args=(), report=True):
@@ -48,28 +42,14 @@ def run_thread_with_lock(name, target, args=(), report=True):
       def wrapped_target(*t_args):
         try:
           target(*t_args)
-        except urllib.error.HTTPError as error:
-          print(f"HTTP error: {error}")
-        except subprocess.CalledProcessError as error:
-          print(f"CalledProcessError in thread '{name}': {error}")
         except Exception as exception:
           print(f"Error in thread '{name}': {exception}")
           if report:
             sentry.capture_exception(exception)
-      thread = threading.Thread(target=wrapped_target, args=args, daemon=True)
+      thread = threading.Thread(args=args, daemon=True, target=wrapped_target)
       thread.start()
       running_threads[name] = thread
 
-def calculate_bearing_offset(latitude, longitude, current_bearing, distance):
-  bearing = math.radians(current_bearing)
-  lat_rad = math.radians(latitude)
-  lon_rad = math.radians(longitude)
-
-  delta = distance / EARTH_RADIUS
-
-  new_latitude = math.asin(math.sin(lat_rad) * math.cos(delta) + math.cos(lat_rad) * math.sin(delta) * math.cos(bearing))
-  new_longitude = lon_rad + math.atan2(math.sin(bearing) * math.sin(delta) * math.cos(lat_rad),  math.cos(delta) - math.sin(lat_rad) * math.sin(new_latitude))
-  return math.degrees(new_latitude), math.degrees(new_longitude)
 
 def calculate_distance_to_point(lat1, lon1, lat2, lon2):
   delta_lat = lat2 - lat1
@@ -79,6 +59,7 @@ def calculate_distance_to_point(lat1, lon1, lat2, lon2):
   c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
   return EARTH_RADIUS * c
+
 
 def calculate_lane_width(lane, current_lane, road_edge=None):
   current_x = np.asarray(current_lane.x)
@@ -98,6 +79,7 @@ def calculate_lane_width(lane, current_lane, road_edge=None):
 
   return float(distance_to_lane)
 
+
 # Credit goes to Pfeiferj!
 def calculate_road_curvature(modelData, v_ego):
   orientation_rate = np.array(modelData.orientationRate.z)
@@ -110,6 +92,7 @@ def calculate_road_curvature(modelData, v_ego):
   time_to_curve = float(timebase[index])
 
   return predicted_lateral_acc / max(v_ego, 1)**2, max(time_to_curve, 1)
+
 
 def capture_report(discord_user, report, frogpilot_toggles):
   if not DISCORD_WEBHOOK_URL_REPORT:
@@ -151,14 +134,14 @@ def capture_report(discord_user, report, frogpilot_toggles):
   except Exception as exception:
     print(f"Error sending Discord message: {exception}")
 
+
 def clean_model_name(name):
-  return (
-    name.replace("🗺️", "")
-    .replace("📡", "")
-    .replace("👀", "")
-    .replace("(Default)", "")
-    .strip()
-  )
+  return name.replace("(Default)", "").strip()
+
+
+def contains_event_type(events, frogpilot_events, *event_types):
+  return any(events.contains(event_type) or frogpilot_events.contains(event_type) for event_type in event_types)
+
 
 def delete_file(path, print_error=True, report=True):
   path = Path(path)
@@ -169,29 +152,26 @@ def delete_file(path, print_error=True, report=True):
   elif print_error:
     print(f"File not found: {path}")
 
-def extract_tar(tar_file, extract_path):
-  tar_file = Path(tar_file)
-  extract_path = Path(extract_path)
-  print(f"Extracting {tar_file} to {extract_path}")
 
+def extract_tar(tar_file, extract_path):
   with tarfile.open(tar_file, "r:gz") as tar:
+    print(f"Extracting {tar_file} to {extract_path}")
     tar.extractall(path=extract_path)
 
   tar_file.unlink()
-  print(f"Extraction completed: {tar_file} has been removed")
+  print(f"Extraction completed!")
+
 
 def extract_zip(zip_file, extract_path):
-  zip_file = Path(zip_file)
-  extract_path = Path(extract_path)
-  print(f"Extracting {zip_file} to {extract_path}")
-
-  with zipfile.ZipFile(zip_file, "r") as zip_ref:
-    zip_ref.extractall(extract_path)
+  with zipfile.ZipFile(zip_file, "r") as zip:
+    print(f"Extracting {zip_file} to {extract_path}")
+    zip.extractall(extract_path)
 
   zip_file.unlink()
-  print(f"Extraction completed: {zip_file} has been removed")
+  print(f"Extraction completed!")
 
-def flash_panda():
+
+def flash_panda(params_memory):
   for serial in Panda.list():
     try:
       panda = Panda(serial)
@@ -204,17 +184,22 @@ def flash_panda():
 
   params_memory.remove("FlashPanda")
 
+
 def get_lock_status(can_parser, can_sock):
   can_msgs = messaging.drain_sock_raw(can_sock, wait_for_one=True)
   can_parser.update_strings(can_msgs)
   return can_parser.vl["DOOR_LOCKS"]["LOCK_STATUS"]
 
+
 def is_url_pingable(url):
-  headers = {"User-Agent": "frogpilot-ping-test/1.0 (https://github.com/FrogAi/FrogPilot)"}
+  if not hasattr(is_url_pingable, "session"):
+    is_url_pingable.session = requests.Session()
+    is_url_pingable.session.headers.update({"User-Agent": "frogpilot-ping-test/1.0 (https://github.com/FrogAi/FrogPilot)"})
+
   try:
-    response = requests.head(url, headers=headers, timeout=10, allow_redirects=True)
+    response = is_url_pingable.session.head(url, timeout=10, allow_redirects=True)
     if response.status_code in (405, 501):
-      response = requests.get(url, headers=headers, timeout=10, allow_redirects=True, stream=True)
+      response = is_url_pingable.session.get(url, timeout=10, allow_redirects=True, stream=True)
     return response.ok
   except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
     return False
@@ -225,14 +210,16 @@ def is_url_pingable(url):
     print(f"Unexpected error while pinging {url}: {exception}")
     return False
 
+
 def load_json_file(path):
   if path.is_file():
     with open(path) as file:
       return json.load(file)
   return {}
 
-def lock_doors(lock_doors_timer, sm):
-  wait_for_no_driver(sm, door_checks=True, time_threshold=lock_doors_timer)
+
+def lock_doors(params, lock_doors_timer, sm):
+  wait_for_no_driver(params, sm, door_checks=True, time_threshold=lock_doors_timer)
 
   can_parser = CANParser("toyota_nodsu_pt_generated", [("DOOR_LOCKS", 3)], bus=0)
   can_sock = messaging.sub_sock("can", timeout=100)
@@ -253,18 +240,12 @@ def lock_doors(lock_doors_timer, sm):
     if lock_status == 0:
       break
 
-def run_cmd(cmd, success_message, fail_message, report=True, env=None):
+
+def run_cmd(cmd, success_message, fail_message, env=None, report=True):
   try:
     result = subprocess.run(cmd, capture_output=True, check=True, env=env, text=True)
     print(success_message)
     return result.stdout.strip()
-  except subprocess.CalledProcessError as error:
-    print(f"Command failed with return code {error.returncode}")
-    if error.stderr:
-      print(f"Error Output: {error.stderr.strip()}")
-    if report:
-      sentry.capture_exception(error)
-    return None
   except Exception as exception:
     print(f"Unexpected error occurred: {exception}")
     print(fail_message)
@@ -272,61 +253,58 @@ def run_cmd(cmd, success_message, fail_message, report=True, env=None):
       sentry.capture_exception(exception)
     return None
 
+
 def update_json_file(path, data):
   with open(path, "w") as file:
     json.dump(data, file, indent=2, sort_keys=True)
 
-def update_maps(now):
+
+def update_maps(now, params, params_memory):
   while not MAPD_PATH.exists():
     time.sleep(60)
 
-  maps_selected = json.loads(params.get("MapsSelected", encoding="utf-8") or "{}")
-
-  if isinstance(maps_selected, int):
-    params.remove("MapsSelected")
-    params_cache.remove("MapsSelected")
-    return
-
-  if not (maps_selected.get("nations") or maps_selected.get("states")):
+  maps_selected = params.get("MapsSelected")
+  if not maps_selected or not (maps_selected.get("nations") or maps_selected.get("states")):
     return
 
   day = now.day
   is_first = day == 1
-  is_Sunday = now.weekday() == 6
-  schedule = params.get_int("PreferredSchedule")
+  is_sunday = now.weekday() == 6
+  schedule = params.get("PreferredSchedule")
 
   maps_downloaded = MAPS_PATH.exists()
-  if maps_downloaded and (schedule == 0 or (schedule == 1 and not is_Sunday) or (schedule == 2 and not is_first)):
+  if maps_downloaded and (schedule == 0 or (schedule == 1 and not is_sunday) or (schedule == 2 and not is_first)):
     return
 
   suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
   todays_date = now.strftime(f"%B {day}{suffix}, %Y")
 
-  if maps_downloaded and params.get("LastMapsUpdate", encoding="utf-8") == todays_date:
+  if maps_downloaded and params.get("LastMapsUpdate") == todays_date:
     return
 
-  if params.get("OSMDownloadProgress", encoding="utf-8") is None:
-    params_memory.put("OSMDownloadLocations", json.dumps(maps_selected))
+  if params.get("OSMDownloadProgress") is None:
+    params_memory.put("OSMDownloadLocations", maps_selected)
 
-  while params.get("OSMDownloadProgress", encoding="utf-8") is not None:
+  while params.get("OSMDownloadProgress") is not None:
     time.sleep(60)
 
   params.put("LastMapsUpdate", todays_date)
 
-def update_openpilot():
+
+def update_openpilot(params, params_memory):
   def update_available():
     run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Updater check signal sent", "Failed to send updater check signal", report=False)
 
-    while params.get("UpdaterState", encoding="utf-8") != "checking...":
+    while params.get("UpdaterState") != "checking...":
       time.sleep(1)
 
-    while params.get("UpdaterState", encoding="utf-8") == "checking...":
+    while params.get("UpdaterState") == "checking...":
       time.sleep(1)
 
     if not params.get_bool("UpdaterFetchAvailable"):
       return False
 
-    while params.get("UpdaterState", encoding="utf-8") != "idle":
+    while params.get("UpdaterState") != "idle":
       time.sleep(60)
 
     run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Updater refresh signal sent", "Failed to send updater refresh signal", report=False)
@@ -336,7 +314,7 @@ def update_openpilot():
 
     return True
 
-  if params.get("UpdaterState", encoding="utf-8") != "idle":
+  if params.get("UpdaterState") != "idle":
     return
 
   if not update_available():
@@ -351,11 +329,13 @@ def update_openpilot():
 
   HARDWARE.reboot()
 
+
 @cache
 def use_konik_server():
   return KONIK_PATH.is_file()
 
-def wait_for_no_driver(sm, door_checks=False, time_threshold=60):
+
+def wait_for_no_driver(params, sm, door_checks=False, time_threshold=60):
   can_parser = CANParser("toyota_nodsu_pt_generated", [("BODY_CONTROL_STATE", 3)], bus=0)
   can_sock = messaging.sub_sock("can", timeout=100)
 

@@ -2,11 +2,22 @@ import contextlib
 import gc
 import os
 import pytest
-import random
 
 from openpilot.common.prefix import OpenpilotPrefix
 from openpilot.system.manager import manager
 from openpilot.system.hardware import TICI, HARDWARE
+
+# TODO: pytest-cpp doesn't support FAIL, and we need to create test translations in sessionstart
+# pending https://github.com/pytest-dev/pytest-cpp/pull/147
+collect_ignore = [
+  "selfdrive/ui/tests/test_translations",
+  "selfdrive/test/process_replay/test_processes.py",
+  "selfdrive/test/process_replay/test_regen.py",
+]
+collect_ignore_glob = [
+  "selfdrive/debug/*.py",
+  "selfdrive/modeld/*.py",
+]
 
 
 def pytest_sessionstart(session):
@@ -36,8 +47,6 @@ def clean_env():
 
 @pytest.fixture(scope="function", autouse=True)
 def openpilot_function_fixture(request):
-  random.seed(0)
-
   with clean_env():
     # setup a clean environment for each test
     with OpenpilotPrefix(shared_download_cache=request.node.get_closest_marker("shared_download_cache") is not None) as prefix:
@@ -65,8 +74,10 @@ def openpilot_class_fixture():
 
 
 @pytest.fixture(scope="function")
-def tici_setup_fixture(openpilot_function_fixture):
+def tici_setup_fixture(request, openpilot_function_fixture):
   """Ensure a consistent state for tests on-device. Needs the openpilot function fixture to run first."""
+  if 'skip_tici_setup' in request.keywords:
+    return
   HARDWARE.initialize_hardware()
   HARDWARE.set_power_save(False)
   os.system("pkill -9 -f athena")

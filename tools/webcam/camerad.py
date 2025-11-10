@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import threading
 import os
+import platform
 from collections import namedtuple
 
 from msgq.visionipc import VisionIpcServer, VisionStreamType
@@ -9,14 +10,19 @@ from cereal import messaging
 from openpilot.tools.webcam.camera import Camera
 from openpilot.common.realtime import Ratekeeper
 
-DUAL_CAM = os.getenv("DUAL_CAMERA")
+ROAD_CAM = os.getenv("ROAD_CAM", "0")
+WIDE_CAM = os.getenv("WIDE_CAM")
+DRIVER_CAM = os.getenv("DRIVER_CAM")
+
 CameraType = namedtuple("CameraType", ["msg_name", "stream_type", "cam_id"])
+
 CAMERAS = [
-  CameraType("roadCameraState", VisionStreamType.VISION_STREAM_ROAD, os.getenv("CAMERA_ROAD_ID", "0")),
-  CameraType("driverCameraState", VisionStreamType.VISION_STREAM_DRIVER, os.getenv("CAMERA_DRIVER_ID", "1")),
+  CameraType("roadCameraState", VisionStreamType.VISION_STREAM_ROAD, ROAD_CAM)
 ]
-if DUAL_CAM:
-  CAMERAS.append(CameraType("wideRoadCameraState", VisionStreamType.VISION_STREAM_WIDE_ROAD, DUAL_CAM))
+if WIDE_CAM:
+  CAMERAS.append(CameraType("wideRoadCameraState", VisionStreamType.VISION_STREAM_WIDE_ROAD, WIDE_CAM))
+if DRIVER_CAM:
+  CAMERAS.append(CameraType("driverCameraState", VisionStreamType.VISION_STREAM_DRIVER, DRIVER_CAM))
 
 class Camerad:
   def __init__(self):
@@ -25,10 +31,10 @@ class Camerad:
 
     self.cameras = []
     for c in CAMERAS:
-      cam = Camera(c.msg_name, c.stream_type, c.cam_id)
-      assert cam.cap.isOpened(), f"Can't find camera {c}"
+      cam_device = f"/dev/video{c.cam_id}" if platform.system() != "Darwin" else c.cam_id
+      cam = Camera(c.msg_name, c.stream_type, cam_device)
       self.cameras.append(cam)
-      self.vipc_server.create_buffers(c.stream_type, 20, False, cam.W, cam.H)
+      self.vipc_server.create_buffers(c.stream_type, 20, cam.W, cam.H)
 
     self.vipc_server.start_listener()
 
@@ -47,11 +53,10 @@ class Camerad:
 
   def camera_runner(self, cam):
     rk = Ratekeeper(20, None)
-    while cam.cap.isOpened():
-      for yuv in cam.read_frames():
-        self._send_yuv(yuv, cam.cur_frame_id, cam.cam_type_state, cam.stream_type)
-        cam.cur_frame_id += 1
-        rk.keep_time()
+    for yuv in cam.read_frames():
+      self._send_yuv(yuv, cam.cur_frame_id, cam.cam_type_state, cam.stream_type)
+      cam.cur_frame_id += 1
+      rk.keep_time()
 
   def run(self):
     threads = []

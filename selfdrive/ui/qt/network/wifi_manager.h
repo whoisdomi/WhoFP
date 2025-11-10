@@ -22,6 +22,11 @@ enum class NetworkType {
   CELL,
   ETHERNET
 };
+enum class MeteredType {
+  UNKNOWN,
+  YES,
+  NO
+};
 
 typedef QMap<QString, QVariantMap> Connection;
 typedef QVector<QVariantMap> IpConfig;
@@ -42,6 +47,8 @@ public:
   QMap<QString, Network> seenNetworks;
   QMap<QDBusObjectPath, QString> knownConnections;
   QString ipv4_address;
+  bool tethering_on = false;
+  bool ipv4_forward = false;
 
   explicit WifiManager(QObject* parent);
   void start();
@@ -51,6 +58,8 @@ public:
   bool isKnownConnection(const QString &ssid);
   std::optional<QDBusPendingCall> activateWifiConnection(const QString &ssid);
   NetworkType currentNetworkType();
+  MeteredType currentNetworkMetered();
+  std::optional<QDBusPendingCall> setCurrentNetworkMetered(MeteredType metered);
   void updateGsmSettings(bool roaming, QString apn, bool metered);
   void connect(const Network &ssid, const bool is_hidden = false, const QString &password = {}, const QString &username = {});
 
@@ -58,8 +67,10 @@ public:
   void setTetheringEnabled(bool enabled);
   bool isTetheringEnabled();
   void changeTetheringPassword(const QString &newPassword);
-  QString getIp4Address();
   QString getTetheringPassword();
+
+  // FrogPilot variables
+  QString getIp4Address();
 
 private:
   QString adapter;  // Path to network manager wifi-device

@@ -38,15 +38,15 @@ private:
 
   std::map<QString, AbstractControl*> toggles;
 
-  QSet<QString> customThemeKeys = {"CustomColors", "CustomDistanceIcons", "CustomIcons", "CustomSignals", "CustomSounds", "DownloadStatusLabel", "WheelIcon"};
+  QSet<QString> customThemeKeys = {"ColorScheme", "DistanceIconPack", "DownloadStatusLabel", "IconPack", "SignalAnimation", "SoundPack", "WheelIcon"};
 
   QSet<QString> parentKeys;
 
-  FrogPilotButtonsControl *manageCustomColorsButton;
-  FrogPilotButtonsControl *manageCustomIconsButton;
-  FrogPilotButtonsControl *manageCustomSignalsButton;
-  FrogPilotButtonsControl *manageCustomSoundsButton;
-  FrogPilotButtonsControl *manageDistanceIconsButton;
+  FrogPilotButtonsControl *manageColorSchemeButton;
+  FrogPilotButtonsControl *manageDistanceIconPackButton;
+  FrogPilotButtonsControl *manageIconPackButton;
+  FrogPilotButtonsControl *manageSignalAnimationButton;
+  FrogPilotButtonsControl *manageSoundPackButton;
   FrogPilotButtonsControl *manageWheelIconsButton;
 
   FrogPilotSettingsWindow *parent;
@@ -56,8 +56,6 @@ private:
   QDir themePacksDirectory{"/data/themes/theme_packs/"};
   QDir wheelsDirectory{"/data/themes/steering_wheels/"};
 
-  QJsonObject frogpilotToggleLevels;
-
   QString colorSchemeToDownload;
   QString distanceIconPackToDownload;
   QString iconPackToDownload;
@@ -66,5 +64,5 @@ private:
   QString wheelToDownload;
 
   Params params;
-  Params params_memory{"/dev/shm/params"};
+  Params params_memory{"", false, true};
 };

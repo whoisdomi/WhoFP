@@ -1,10 +1,9 @@
 from cereal import log
-from openpilot.common.conversions import Conversions as CV
+from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_MDL
 
 LaneChangeState = log.LaneChangeState
 LaneChangeDirection = log.LaneChangeDirection
-TurnDirection = log.Desire
 
 LANE_CHANGE_SPEED_MIN = 20 * CV.MPH_TO_MS
 LANE_CHANGE_TIME_MAX = 10.
@@ -30,11 +29,15 @@ DESIRES = {
   },
 }
 
+# FrogPilot variables
+TurnDirection = log.Desire
+
 TURN_DESIRES = {
   TurnDirection.none: log.Desire.none,
   TurnDirection.turnLeft: log.Desire.turnLeft,
   TurnDirection.turnRight: log.Desire.turnRight,
 }
+
 
 class DesireHelper:
   def __init__(self):
@@ -64,12 +67,12 @@ class DesireHelper:
       if self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed:
         self.lane_change_state = LaneChangeState.preLaneChange
         self.lane_change_ll_prob = 1.0
+
+        # FrogPilot variables
         self.lane_change_wait_timer = 0.0
 
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
-        self.lane_change_wait_timer += DT_MDL
-
         # Set lane change direction
         self.lane_change_direction = LaneChangeDirection.left if \
           carstate.leftBlinker else LaneChangeDirection.right
@@ -78,6 +81,10 @@ class DesireHelper:
                          ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
                           (carstate.steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
 
+        blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
+                              (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
+
+        # FrogPilot variables
         if torque_applied:
           self.lane_change_wait_timer = frogpilot_toggles.lane_change_delay
         else:
@@ -85,16 +92,19 @@ class DesireHelper:
           lane_available = desired_lane_width >= frogpilot_toggles.lane_detection_width or not frogpilot_toggles.lane_detection
           torque_applied = lane_available and self.lane_change_wait_timer >= frogpilot_toggles.lane_change_delay and frogpilot_toggles.nudgeless
 
-        blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
-                              (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
-
         if not one_blinker or below_lane_change_speed or self.lane_change_completed:
           self.lane_change_state = LaneChangeState.off
           self.lane_change_direction = LaneChangeDirection.none
         elif torque_applied and not blindspot_detected:
           self.lane_change_state = LaneChangeState.laneChangeStarting
+
+          # FrogPilot variables
           self.lane_change_completed = frogpilot_toggles.one_lane_change
+
           self.lane_change_wait_timer = 0.0
+
+        # FrogPilot variables
+        self.lane_change_wait_timer += DT_MDL
 
       # LaneChangeState.laneChangeStarting
       elif self.lane_change_state == LaneChangeState.laneChangeStarting:
@@ -122,10 +132,9 @@ class DesireHelper:
     else:
       self.lane_change_timer += DT_MDL
 
-    self.lane_change_completed &= one_blinker
     self.prev_one_blinker = one_blinker
 
-    if one_blinker and below_lane_change_speed and not carstate.standstill and frogpilot_toggles.use_turn_desires:
+    if lateral_active and one_blinker and below_lane_change_speed and not carstate.standstill and frogpilot_toggles.use_turn_desires:
       self.turn_direction = TurnDirection.turnLeft if carstate.leftBlinker else TurnDirection.turnRight
       self.desire = TURN_DESIRES[self.turn_direction]
     else:
@@ -141,3 +150,6 @@ class DesireHelper:
         self.keep_pulse_timer = 0.0
       elif self.desire in (log.Desire.keepLeft, log.Desire.keepRight):
         self.desire = log.Desire.none
+
+    # FrogPilot variables
+    self.lane_change_completed &= one_blinker

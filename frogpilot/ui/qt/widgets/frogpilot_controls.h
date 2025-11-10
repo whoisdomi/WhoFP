@@ -1,13 +1,23 @@
 #pragma once
 
 #include <cmath>
+#include <iostream>
 
+#include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QFileInfoList>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMovie>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QObject>
 #include <QRegularExpression>
+#include <QTextStream>
 #include <QTimer>
 
 #include "selfdrive/ui/qt/util.h"
@@ -16,13 +26,13 @@
 bool useKonikServer();
 
 void loadGif(const QString &gifPath, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent);
-void loadImage(const QString &basePath, QPixmap &pixmap, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent, Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio);
+void loadImage(const QString &basePath, QPixmap &pixmap, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent);
 void openDescriptions(bool forceOpenDescriptions, std::map<QString, AbstractControl*> toggles);
 void updateFrogPilotToggles();
 
 QColor loadThemeColors(const QString &colorKey, bool clearCache = false);
 
-QString processModelName(const QString &modelName);
+QString cleanModelName(QString modelName);
 
 const QString buttonStyle = R"(
   QPushButton {

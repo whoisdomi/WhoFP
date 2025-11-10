@@ -28,7 +28,7 @@ class TestAthenadPing:
   exit_event: threading.Event
 
   def _get_ping_time(self) -> str | None:
-    return cast(str | None, self.params.get("LastAthenaPingTime", encoding="utf-8"))
+    return cast(str | None, self.params.get("LastAthenaPingTime"))
 
   def _clear_ping_time(self) -> None:
     self.params.remove("LastAthenaPingTime")
@@ -42,7 +42,7 @@ class TestAthenadPing:
 
   def setup_method(self) -> None:
     self.params = Params()
-    self.dongle_id = self.params.get("DongleId", encoding="utf-8")
+    self.dongle_id = self.params.get("DongleId")
 
     wifi_radio(True)
     self._clear_ping_time()
@@ -65,7 +65,7 @@ class TestAthenadPing:
     mock_create_connection.assert_called_once()
     mock_create_connection.reset_mock()
 
-    # check normal behaviour, server pings on connection
+    # check normal behavior, server pings on connection
     with subtests.test("Wi-Fi: receives ping"), Timeout(70, "no ping received"):
       while not self._received_ping():
         time.sleep(0.1)

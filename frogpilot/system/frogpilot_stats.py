@@ -9,12 +9,12 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from cereal import car
-from openpilot.common.conversions import Conversions as CV
+from openpilot.common.constants import CV
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
 from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name
-from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles, params
+from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
 BASE_URL = "https://nominatim.openstreetmap.org"
 MINIMUM_POPULATION = 100_000
@@ -107,7 +107,7 @@ def update_branch_commits(now):
       print(f"Failed to fetch commit for {branch}: {e}")
   return points
 
-def send_stats():
+def send_stats(params):
   try:
     build_metadata = get_build_metadata()
     frogpilot_toggles = get_frogpilot_toggles()
@@ -128,10 +128,10 @@ def send_stats():
         cp_dict.pop("carFw", None)
         car_params = json.dumps(cp_dict)
 
-    dongle_id = params.get("FrogPilotDongleId", encoding="utf-8")
-    frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
+    dongle_id = params.get("FrogPilotDongleId")
+    frogpilot_stats = params.get("FrogPilotStats") or {}
 
-    location = json.loads(params.get("LastGPSPosition") or "{}")
+    location = params.get("LastGPSPosition") or {}
     original_latitude = location.get("latitude", 0.0)
     original_longitude = location.get("longitude", 0.0)
     latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
@@ -147,8 +147,8 @@ def send_stats():
 
     user_point = (
       Point("user_stats")
-      .field("calibrated_lateral_acceleration", params.get_float("CalibratedLateralAcceleration"))
-      .field("calibration_progress", params.get_float("CalibrationProgress"))
+      .field("calibrated_lateral_acceleration", params.get("CalibratedLateralAcceleration"))
+      .field("calibration_progress", params.get("CalibrationProgress"))
       .field("car_params", car_params)
       .field("city", city)
       .field("commit", build_metadata.openpilot.git_commit)
@@ -161,14 +161,14 @@ def send_stats():
       .field("stats", json.dumps(frogpilot_stats))
       .field("theme", selected_theme.title())
       .field("toggles", json.dumps(frogpilot_toggles.__dict__))
-      .field("tuning_level", params.get_int("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
-      .field("using_default_model", params.get("Model", encoding="utf-8").endswith("_default"))
+      .field("tuning_level", params.get("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
+      .field("using_default_model", params.get("DrivingModel").endswith("_default"))
       .tag("branch", build_metadata.channel)
       .tag("dongle_id", dongle_id)
       .time(now)
     )
 
-    model_scores = json.loads(params.get("ModelDrivesAndScores") or "{}")
+    model_scores = params.get("ModelDrivesAndScores") or {}
     model_points = []
     for model_name, data in sorted(model_scores.items()):
       drives = data.get("Drives", 0)

@@ -96,7 +96,6 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
     {"CECurves", tr("Curve Detected Ahead"), tr("<b>Switch to \"Experimental Mode\" when a curve is detected</b> to allow the model to set an appropriate speed for the curve."), ""},
     {"CEStopLights", tr("\"Detected\" Stop Lights/Signs"), tr("<b>Switch to \"Experimental Mode\" whenever the driving model \"detects\" a red light or stop sign.</b><br><br><i><b>Disclaimer</b>: openpilot does not explicitly detect traffic lights or stop signs. In \"Experimental Mode\", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason!</i>"), ""},
     {"CELead", tr("Lead Detected Ahead"), tr("<b>Switch to \"Experimental Mode\" when a slower or stopped vehicle is detected.</b> Can make braking smoother and more reliable on some vehicles."), ""},
-    {"CENavigation", tr("Navigation-Based"), tr("<b>Switch to \"Experimental Mode\" when approaching intersections or turns on the active route</b> while using \"Navigate on openpilot\" (NOO) to allow the model to set an appropriate speed for upcoming maneuvers."), ""},
     {"CEModelStopTime", tr("Predicted Stop In"), tr("<b>Switch to \"Experimental Mode\" when openpilot predicts a stop within the set time.</b> This is usually triggered when the model \"sees\" a red light or stop sign ahead.<br><br><i><b>Disclaimer</b>: openpilot does not explicitly detect traffic lights or stop signs. In \"Experimental Mode\", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason!</i>"), ""},
     {"CESignalSpeed", tr("Turn Signal Below"), tr("<b>Switch to \"Experimental Mode\" when using a turn signal below the set speed</b> to allow the model to choose an appropriate speed for smoother left and right turns."), ""},
     {"ShowCEMStatus", tr("Status Widget"), tr("<b>Show which condition triggered \"Experimental Mode\"</b> on the driving screen."), ""},
@@ -190,7 +189,7 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
 
     {"SetWeatherKey", tr("Set Your Own Key"), tr("<b>Set your own \"OpenWeatherMap\" key to increase the weather update rate.</b><br><br><i>Personal keys grant 1,000 free calls per day, allowing for updates every minute. The default key is shared and only updates every 15 minutes.</i>"), ""},
 
-    {"SpeedLimitController", tr("Speed Limit Controller"), tr("<b>Limit openpilot's maximum driving speed to the current speed limit</b> obtained from downloaded maps, Mapbox, Navigate on openpilot, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota)."), "../../frogpilot/assets/toggle_icons/icon_speed_limit.png"},
+    {"SpeedLimitController", tr("Speed Limit Controller"), tr("<b>Limit openpilot's maximum driving speed to the current speed limit</b> obtained from downloaded maps, Mapbox, or the dashboard for supported vehicles (Ford, Genesis, Hyundai, Kia, Lexus, Toyota)."), "../../frogpilot/assets/toggle_icons/icon_speed_limit.png"},
     {"SLCFallback", tr("Fallback Speed"), tr("<b>The speed used by \"Speed Limit Controller\" when no speed limit is found.</b><br><br>- <b>Set Speed</b>: Use the cruise set speed<br>- <b>Experimental Mode</b>: Estimate the limit using the driving model<br>- <b>Previous Limit</b>: Keep using the last confirmed limit"), ""},
     {"SLCOverride", tr("Override Speed"), tr("<b>The speed used by \"Speed Limit Controller\" after you manually drive faster than the posted limit.</b><br><br>- <b>Set with Gas Pedal</b>: Use the highest speed reached while pressing the gas<br>- <b>Max Set Speed</b>: Use the cruise set speed<br><br>Overrides clear when openpilot disengages."), ""},
     {"SLCQOL", tr("Quality of Life"), tr("<b>Miscellaneous \"Speed Limit Controller\" changes</b> to fine-tune how openpilot drives."), ""},
@@ -263,10 +262,6 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       std::vector<QString> leadToggles{"CESlowerLead", "CEStoppedLead"};
       std::vector<QString> leadToggleNames{tr("Slower Lead"), tr("Stopped Lead")};
       longitudinalToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, leadToggles, leadToggleNames);
-    } else if (param == "CENavigation") {
-      std::vector<QString> navigationToggles{"CENavigationIntersections", "CENavigationTurns", "CENavigationLead"};
-      std::vector<QString> navigationToggleNames{tr("Intersections"), tr("Turns"), tr("With Lead")};
-      longitudinalToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, navigationToggles, navigationToggleNames);
     } else if (param == "CEModelStopTime") {
       std::map<float, QString> stopTimeLabels;
       for (int i = 0; i <= 10; ++i) {
@@ -318,8 +313,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       ButtonControl *resetButton = new ButtonControl(title, tr("RESET"), desc);
       longitudinalToggle = resetButton;
     } else if (param == "TrafficPersonalityProfile") {
-      FrogPilotManageControl *trafficPersonalityToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(trafficPersonalityToggle, &FrogPilotManageControl::manageButtonClicked, [longitudinalLayout, trafficPersonalityPanel, this]() {
+      FrogPilotButtonsControl *trafficPersonalityToggle = new FrogPilotButtonsControl(title, desc, icon, {tr("MANAGE")});
+      QObject::connect(trafficPersonalityToggle, &FrogPilotButtonsControl::buttonClicked, [longitudinalLayout, trafficPersonalityPanel, this](int id) {
         openSubSubPanel();
 
         longitudinalLayout->setCurrentWidget(trafficPersonalityPanel);
@@ -328,8 +323,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       });
       longitudinalToggle = trafficPersonalityToggle;
     } else if (param == "AggressivePersonalityProfile") {
-      FrogPilotManageControl *aggressivePersonalityToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(aggressivePersonalityToggle, &FrogPilotManageControl::manageButtonClicked, [longitudinalLayout, aggressivePersonalityPanel, this]() {
+      FrogPilotButtonsControl *aggressivePersonalityToggle = new FrogPilotButtonsControl(title, desc, icon, {tr("MANAGE")});
+      QObject::connect(aggressivePersonalityToggle, &FrogPilotButtonsControl::buttonClicked, [longitudinalLayout, aggressivePersonalityPanel, this](int id) {
         openSubSubPanel();
 
         longitudinalLayout->setCurrentWidget(aggressivePersonalityPanel);
@@ -338,8 +333,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       });
       longitudinalToggle = aggressivePersonalityToggle;
     } else if (param == "StandardPersonalityProfile") {
-      FrogPilotManageControl *standardPersonalityToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(standardPersonalityToggle, &FrogPilotManageControl::manageButtonClicked, [longitudinalLayout, standardPersonalityPanel, this]() {
+      FrogPilotButtonsControl *standardPersonalityToggle = new FrogPilotButtonsControl(title, desc, icon, {tr("MANAGE")});
+      QObject::connect(standardPersonalityToggle, &FrogPilotButtonsControl::buttonClicked, [longitudinalLayout, standardPersonalityPanel, this](int id) {
         openSubSubPanel();
 
         longitudinalLayout->setCurrentWidget(standardPersonalityPanel);
@@ -348,8 +343,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       });
       longitudinalToggle = standardPersonalityToggle;
     } else if (param == "RelaxedPersonalityProfile") {
-      FrogPilotManageControl *relaxedPersonalityToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(relaxedPersonalityToggle, &FrogPilotManageControl::manageButtonClicked, [longitudinalLayout, relaxedPersonalityPanel, this]() {
+      FrogPilotButtonsControl *relaxedPersonalityToggle = new FrogPilotButtonsControl(title, desc, icon, {tr("MANAGE")});
+      QObject::connect(relaxedPersonalityToggle, &FrogPilotButtonsControl::buttonClicked, [longitudinalLayout, relaxedPersonalityPanel, this](int id) {
         openSubSubPanel();
 
         longitudinalLayout->setCurrentWidget(relaxedPersonalityPanel);
@@ -534,14 +529,14 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       longitudinalToggle = overrideSelection;
     } else if (param == "SLCPriority") {
       ButtonControl *slcPriorityButton = new ButtonControl(title, tr("SELECT"), desc);
-      QStringList primaryPriorities = {tr("Dashboard"), tr("Map Data"), tr("Navigation"), tr("Highest"), tr("Lowest")};
-      QStringList otherPriorities = {tr("None"), tr("Dashboard"), tr("Map Data"), tr("Navigation")};
-      QStringList priorityPrompts = {tr("Select your primary priority"), tr("Select your secondary priority"), tr("Select your tertiary priority")};
+      QStringList primaryPriorities = {tr("Dashboard"), tr("Map Data"), tr("Highest"), tr("Lowest")};
+      QStringList otherPriorities = {tr("None"), tr("Dashboard"), tr("Map Data")};
+      QStringList priorityPrompts = {tr("Select your primary priority"), tr("Select your secondary priority")};
 
       QObject::connect(slcPriorityButton, &ButtonControl::clicked, [=]() {
         QStringList selectedPriorities;
 
-        for (int i = 1; i <= 3; ++i) {
+        for (int i = 1; i <= 2; ++i) {
           QStringList availablePriorities = i == 1 ? primaryPriorities : otherPriorities;
           availablePriorities = availablePriorities.toSet().subtract(selectedPriorities.toSet()).toList();
 
@@ -579,7 +574,7 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       });
 
       QStringList selectedPriorities;
-      for (int i = 1; i <= 3; ++i) {
+      for (int i = 1; i <= 2; ++i) {
         QString priority = QString::fromStdString(params.get(QString("SLCPriority%1").arg(i).toStdString()));
         if (primaryPriorities.contains(priority)) {
           selectedPriorities.append(priority);
@@ -706,12 +701,12 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
   FrogPilotButtonsControl *trafficResetButton = static_cast<FrogPilotButtonsControl*>(toggles["ResetTrafficPersonality"]);
   QObject::connect(trafficResetButton, &FrogPilotButtonsControl::buttonClicked, [=]() {
     if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to completely reset your settings for <b>Traffic Mode</b>?"), this)) {
-      params.putFloat("TrafficFollow", params_default.getFloat("TrafficFollow"));
-      params.putFloat("TrafficJerkAcceleration", params_default.getFloat("TrafficJerkAcceleration"));
-      params.putFloat("TrafficJerkDeceleration", params_default.getFloat("TrafficJerkDeceleration"));
-      params.putFloat("TrafficJerkDanger", params_default.getFloat("TrafficJerkDanger"));
-      params.putFloat("TrafficJerkSpeed", params_default.getFloat("TrafficJerkSpeed"));
-      params.putFloat("TrafficJerkSpeedDecrease", params_default.getFloat("TrafficJerkSpeedDecrease"));
+      params.putFloat("TrafficFollow", std::stof(params.getKeyDefaultValue("TrafficFollow").value()));
+      params.putFloat("TrafficJerkAcceleration", std::stof(params.getKeyDefaultValue("TrafficJerkAcceleration").value()));
+      params.putFloat("TrafficJerkDeceleration", std::stof(params.getKeyDefaultValue("TrafficJerkDeceleration").value()));
+      params.putFloat("TrafficJerkDanger", std::stof(params.getKeyDefaultValue("TrafficJerkDanger").value()));
+      params.putFloat("TrafficJerkSpeed", std::stof(params.getKeyDefaultValue("TrafficJerkSpeed").value()));
+      params.putFloat("TrafficJerkSpeedDecrease", std::stof(params.getKeyDefaultValue("TrafficJerkSpeedDecrease").value()));
 
       trafficFollowToggle->refresh();
       trafficAccelerationToggle->refresh();
@@ -731,12 +726,12 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
   FrogPilotButtonsControl *aggressiveResetButton = static_cast<FrogPilotButtonsControl*>(toggles["ResetAggressivePersonality"]);
   QObject::connect(aggressiveResetButton, &FrogPilotButtonsControl::buttonClicked, [=]() {
     if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to completely reset your settings for the <b>Aggressive</b> personality?"), this)) {
-      params.putFloat("AggressiveFollow", params_default.getFloat("AggressiveFollow"));
-      params.putFloat("AggressiveJerkAcceleration", params_default.getFloat("AggressiveJerkAcceleration"));
-      params.putFloat("AggressiveJerkDeceleration", params_default.getFloat("AggressiveJerkDeceleration"));
-      params.putFloat("AggressiveJerkDanger", params_default.getFloat("AggressiveJerkDanger"));
-      params.putFloat("AggressiveJerkSpeed", params_default.getFloat("AggressiveJerkSpeed"));
-      params.putFloat("AggressiveJerkSpeedDecrease", params_default.getFloat("AggressiveJerkSpeedDecrease"));
+      params.putFloat("AggressiveFollow", std::stof(params.getKeyDefaultValue("AggressiveFollow").value()));
+      params.putFloat("AggressiveJerkAcceleration", std::stof(params.getKeyDefaultValue("AggressiveJerkAcceleration").value()));
+      params.putFloat("AggressiveJerkDeceleration", std::stof(params.getKeyDefaultValue("AggressiveJerkDeceleration").value()));
+      params.putFloat("AggressiveJerkDanger", std::stof(params.getKeyDefaultValue("AggressiveJerkDanger").value()));
+      params.putFloat("AggressiveJerkSpeed", std::stof(params.getKeyDefaultValue("AggressiveJerkSpeed").value()));
+      params.putFloat("AggressiveJerkSpeedDecrease", std::stof(params.getKeyDefaultValue("AggressiveJerkSpeedDecrease").value()));
 
       aggressiveFollowToggle->refresh();
       aggressiveAccelerationToggle->refresh();
@@ -756,12 +751,12 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
   FrogPilotButtonsControl *standardResetButton = static_cast<FrogPilotButtonsControl*>(toggles["ResetStandardPersonality"]);
   QObject::connect(standardResetButton, &FrogPilotButtonsControl::buttonClicked, [=]() {
     if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to completely reset your settings for the <b>Standard</b> personality?"), this)) {
-      params.putFloat("StandardFollow", params_default.getFloat("StandardFollow"));
-      params.putFloat("StandardJerkAcceleration", params_default.getFloat("StandardJerkAcceleration"));
-      params.putFloat("StandardJerkDeceleration", params_default.getFloat("StandardJerkDeceleration"));
-      params.putFloat("StandardJerkDanger", params_default.getFloat("StandardJerkDanger"));
-      params.putFloat("StandardJerkSpeed", params_default.getFloat("StandardJerkSpeed"));
-      params.putFloat("StandardJerkSpeedDecrease", params_default.getFloat("StandardJerkSpeedDecrease"));
+      params.putFloat("StandardFollow", std::stof(params.getKeyDefaultValue("StandardFollow").value()));
+      params.putFloat("StandardJerkAcceleration", std::stof(params.getKeyDefaultValue("StandardJerkAcceleration").value()));
+      params.putFloat("StandardJerkDeceleration", std::stof(params.getKeyDefaultValue("StandardJerkDeceleration").value()));
+      params.putFloat("StandardJerkDanger", std::stof(params.getKeyDefaultValue("StandardJerkDanger").value()));
+      params.putFloat("StandardJerkSpeed", std::stof(params.getKeyDefaultValue("StandardJerkSpeed").value()));
+      params.putFloat("StandardJerkSpeedDecrease", std::stof(params.getKeyDefaultValue("StandardJerkSpeedDecrease").value()));
 
       standardFollowToggle->refresh();
       standardAccelerationToggle->refresh();
@@ -781,12 +776,12 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
   FrogPilotButtonsControl *relaxedResetButton = static_cast<FrogPilotButtonsControl*>(toggles["ResetRelaxedPersonality"]);
   QObject::connect(relaxedResetButton, &FrogPilotButtonsControl::buttonClicked, [=]() {
     if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to completely reset your settings for the <b>Relaxed</b> personality?"), this)) {
-      params.putFloat("RelaxedFollow", params_default.getFloat("RelaxedFollow"));
-      params.putFloat("RelaxedJerkAcceleration", params_default.getFloat("RelaxedJerkAcceleration"));
-      params.putFloat("RelaxedJerkDeceleration", params_default.getFloat("RelaxedJerkDeceleration"));
-      params.putFloat("RelaxedJerkDanger", params_default.getFloat("RelaxedJerkDanger"));
-      params.putFloat("RelaxedJerkSpeed", params_default.getFloat("RelaxedJerkSpeed"));
-      params.putFloat("RelaxedJerkSpeedDecrease", params_default.getFloat("RelaxedJerkSpeedDecrease"));
+      params.putFloat("RelaxedFollow", std::stof(params.getKeyDefaultValue("RelaxedFollow").value()));
+      params.putFloat("RelaxedJerkAcceleration", std::stof(params.getKeyDefaultValue("RelaxedJerkAcceleration").value()));
+      params.putFloat("RelaxedJerkDeceleration", std::stof(params.getKeyDefaultValue("RelaxedJerkDeceleration").value()));
+      params.putFloat("RelaxedJerkDanger", std::stof(params.getKeyDefaultValue("RelaxedJerkDanger").value()));
+      params.putFloat("RelaxedJerkSpeed", std::stof(params.getKeyDefaultValue("RelaxedJerkSpeed").value()));
+      params.putFloat("RelaxedJerkSpeedDecrease", std::stof(params.getKeyDefaultValue("RelaxedJerkSpeedDecrease").value()));
 
       relaxedFollowToggle->refresh();
       relaxedAccelerationToggle->refresh();
@@ -834,8 +829,6 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
 
 void FrogPilotLongitudinalPanel::showEvent(QShowEvent *event) {
   FrogPilotUIState &fs = *frogpilotUIState();
-
-  frogpilotToggleLevels = parent->frogpilotToggleLevels;
 
   calibratedLateralAccelerationLabel->setText(QString::number(params.getFloat("CalibratedLateralAcceleration"), 'f', 2) + tr(" m/s²"));
   calibrationProgressLabel->setText(QString::number(params.getFloat("CalibrationProgress"), 'f', 2) + "%");
@@ -1011,7 +1004,7 @@ void FrogPilotLongitudinalPanel::updateToggles() {
       continue;
     }
 
-    bool setVisible = parent->tuningLevel >= frogpilotToggleLevels[key].toDouble();
+    bool setVisible = parent->tuningLevel >= parent->frogpilotToggleLevels[key].toDouble();
 
     if (key == "CEStopLights") {
       setVisible &= !toggles["CEModelStopTime"]->isVisible();

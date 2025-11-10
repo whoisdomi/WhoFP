@@ -134,6 +134,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setSpeed(msg->g_speed() * 1e-03);
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
+  gpsLoc.setSatelliteCount(msg->num_sv());
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
   timeinfo.tm_mon = msg->month() - 1;
@@ -174,7 +175,7 @@ kj::Array<capnp::word> UbloxMsgParser::parse_gps_ephemeris(ubx_t::rxm_sfrbx_t *m
 
     int subframe_id = subframe.how()->subframe_id();
     if (subframe_id > 3 || subframe_id < 1) {
-      // dont parse almanac subframes
+      // don't parse almanac subframes
       return kj::Array<capnp::word>();
     }
     gps_subframes[msg->sv_id()][subframe_id] = subframe_data;
@@ -286,7 +287,7 @@ kj::Array<capnp::word> UbloxMsgParser::parse_glonass_ephemeris(ubx_t::rxm_sfrbx_
     glonass_t gl_string(&stream);
     int string_number = gl_string.string_number();
     if (string_number < 1 || string_number > 5 || gl_string.idle_chip()) {
-      // dont parse non immediate data, idle_chip == 0
+      // don't parse non immediate data, idle_chip == 0
       return kj::Array<capnp::word>();
     }
 
@@ -475,6 +476,10 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_sat(ubx_t::nav_sat_t *msg) {
     svs[i].setSvId(svs_data[i]->sv_id());
     svs[i].setGnssId(svs_data[i]->gnss_id());
     svs[i].setFlagsBitfield(svs_data[i]->flags());
+    svs[i].setCno(svs_data[i]->cno());
+    svs[i].setElevationDeg(svs_data[i]->elev());
+    svs[i].setAzimuthDeg(svs_data[i]->azim());
+    svs[i].setPseudorangeResidual(svs_data[i]->pr_res() * 0.1);
   }
 
   return capnp::messageToFlatArray(msg_builder);

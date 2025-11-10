@@ -88,7 +88,7 @@ void FrogPilotSettingsWindow::createPanelButtons(FrogPilotListWidget *list) {
   std::vector<std::tuple<QString, QString, QString>> panelInfo = {
     {tr("Alerts and Sounds"), tr("<b>Adjust alert volumes and enable custom notifications.</b>"), "../../frogpilot/assets/toggle_icons/icon_sound.png"},
     {tr("Driving Controls"), tr("<b>Fine-tune custom FrogPilot acceleration, braking, and steering controls.</b>"), "../../frogpilot/assets/toggle_icons/icon_steering.png"},
-    {tr("Navigation"), tr("<b>Download map data for the \"Speed Limit Controller\" and configure \"Navigate on openpilot\" (NOO).</b>"), "../../frogpilot/assets/toggle_icons/icon_map.png"},
+    {tr("Navigation"), tr("<b>Download map data for the \"Speed Limit Controller\".</b>"), "../../frogpilot/assets/toggle_icons/icon_navigate.png"},
     {tr("System Settings"), tr("<b>Manage backups, device settings, screen options, storage, and tools to keep FrogPilot running smoothly.</b>"), "../../frogpilot/assets/toggle_icons/icon_system.png"},
     {tr("Theme and Appearance"), tr("<b>Customize the look of the driving screen and interface, including themes!</b>"), "../../frogpilot/assets/toggle_icons/icon_display.png"},
     {tr("Vehicle Settings"), tr("<b>Configure car-specific options and steering wheel button mappings.</b>"), "../../frogpilot/assets/toggle_icons/icon_vehicle.png"}
@@ -215,7 +215,11 @@ FrogPilotSettingsWindow::FrogPilotSettingsWindow(SettingsWindow *parent) : QFram
   QObject::connect(uiState(), &UIState::offroadTransition, this, &FrogPilotSettingsWindow::updateVariables);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &FrogPilotSettingsWindow::updateState);
 
-  frogpilotToggleLevels = QJsonDocument::fromJson(params_memory.get("FrogPilotTuningLevels", true).c_str()).object();
+  std::vector<std::string> keys = params.allKeys();
+  for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
+    const std::string &key = *it;
+    frogpilotToggleLevels[QString::fromStdString(key)] = params.getTuningLevel(key);
+  }
   tuningLevel = params.getInt("TuningLevel");
 
   closeSubPanel();
@@ -269,8 +273,6 @@ void FrogPilotSettingsWindow::closePanel() {
   mainLayout->setCurrentWidget(frogpilotPanel);
 
   panelOpen = false;
-
-  updateFrogPilotToggles();
 }
 
 void FrogPilotSettingsWindow::updateState() {
@@ -282,7 +284,10 @@ void FrogPilotSettingsWindow::updateState() {
 
 void FrogPilotSettingsWindow::updateVariables() {
   FrogPilotUIState &fs = *frogpilotUIState();
-  QJsonObject &frogpilot_toggles = fs.frogpilot_toggles;
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
+
+  isFrogsGoMoo = frogpilot_toggles.value("frogs_go_moo").toBool();
 
   std::string carParams = params.get("CarParamsPersistent");
   if (!carParams.empty()) {
@@ -292,16 +297,16 @@ void FrogPilotSettingsWindow::updateVariables() {
     cereal::CarParams::SafetyModel safetyModel = CP.getSafetyConfigs()[0].getSafetyModel();
 
     std::string carFingerprint = CP.getCarFingerprint();
-    carMake = CP.getCarName();
+    carMake = CP.getBrand();
 
     friction = CP.getLateralTuning().getTorque().getFriction();
     hasBSM = CP.getEnableBsm();
     hasDashSpeedLimits = carMake == "ford" || carMake == "hyundai" || carMake == "toyota";
-    hasExperimentalOpenpilotLongitudinal = CP.getExperimentalLongitudinalAvailable();
+    hasExperimentalOpenpilotLongitudinal = CP.getAlphaLongitudinalAvailable();
     hasNNFFLog = nnffLogFileExists(QString::fromStdString(carFingerprint));
     hasOpenpilotLongitudinal = hasLongitudinalControl(CP);
     hasPCMCruise = CP.getPcmCruise();
-    hasPedal = CP.getEnableGasInterceptor();
+    hasPedal = CP.getEnableGasInterceptorDEPRECATED();
     hasRadar = !CP.getRadarUnavailable();
     hasSDSU = frogpilot_toggles.value("has_sdsu").toBool();
     hasSNG = CP.getAutoResumeSng();
@@ -311,8 +316,6 @@ void FrogPilotSettingsWindow::updateVariables() {
     isGM = carMake == "gm";
     isHKG = carMake == "hyundai";
     isHKGCanFd = isHKG && safetyModel == cereal::CarParams::SafetyModel::HYUNDAI_CANFD;
-    isHonda = carMake == "honda";
-    isHondaNidec = isHonda && safetyModel == cereal::CarParams::SafetyModel::HONDA_NIDEC;
     isSubaru = carMake == "subaru";
     isTorqueCar = CP.getLateralTuning().which() == cereal::CarParams::LateralTuning::TORQUE;
     isToyota = carMake == "toyota";
@@ -322,7 +325,7 @@ void FrogPilotSettingsWindow::updateVariables() {
     longitudinalActuatorDelay = CP.getLongitudinalActuatorDelay();
     startAccel = CP.getStartAccel();
     steerActuatorDelay = CP.getSteerActuatorDelay();
-    steerKp = 1.0;
+    steerKp = CP.getLateralTuning().getTorque().getKp();
     steerRatio = CP.getSteerRatio();
     stopAccel = CP.getStopAccel();
     stoppingDecelRate = CP.getStoppingDecelRate();
@@ -442,7 +445,7 @@ void FrogPilotSettingsWindow::updateVariables() {
 
   isC3 = util::read_file("/sys/firmware/devicetree/base/model").find("tici") != std::string::npos;
 
-  drivingPanelButtons->setVisibleButton(0, tuningLevel >= frogpilotToggleLevels.value("Model").toDouble());
+  drivingPanelButtons->setVisibleButton(0, tuningLevel >= frogpilotToggleLevels.value("DrivingModel").toDouble());
   drivingPanelButtons->setVisibleButton(1, hasOpenpilotLongitudinal);
 
   systemPanelButtons->setVisibleButton(1, tuningLevel >= frogpilotToggleLevels.value("DeviceManagement").toDouble() || tuningLevel >= frogpilotToggleLevels.value("ScreenManagement").toDouble());

@@ -17,7 +17,6 @@ protected:
   void showEvent(QShowEvent *event) override;
 
 private:
-  void createKeyControl(ButtonControl *&control, const QString &label, const std::string &paramKey, const QString &prefix, const int &minLength, FrogPilotListWidget *list);
   void mousePressEvent(QMouseEvent *event);
   void updateButtons();
   void updateState(const UIState &s, const FrogPilotUIState &fs);
@@ -26,26 +25,21 @@ private:
   bool forceOpenDescriptions;
   bool mapboxPublicKeySet;
   bool mapboxSecretKeySet;
-  bool setupCompleted;
   bool updatingLimits;
 
-  ButtonControl *amapKeyControl1;
-  ButtonControl *amapKeyControl2;
   FrogPilotButtonsControl *publicMapboxKeyControl;
   FrogPilotButtonsControl *secretMapboxKeyControl;
   ButtonControl *setupButton;
 
   FrogPilotButtonControl *updateSpeedLimitsToggle;
 
-  FrogPilotButtonsControl *searchInput;
-
   FrogPilotSettingsWindow *parent;
 
   LabelControl *ipLabel;
 
   Params params;
-  Params params_cache{"/cache/params"};
-  Params params_memory{"/dev/shm/params"};
+  Params params_cache{"", true};
+  Params params_memory{"", false, true};
 
   QLabel *imageLabel;
 

@@ -1,43 +1,27 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-
-#include <QObject>
-
 #include "cereal/messaging/messaging.h"
 #include "selfdrive/ui/qt/network/wifi_manager.h"
 
 #include "frogpilot/ui/qt/widgets/frogpilot_controls.h"
-
-struct RadarTrackData {
-  QPointF calibrated_point;
-};
 
 struct FrogPilotUIScene {
   bool always_on_lateral_active;
   bool downloading_update;
   bool enabled;
   bool frogpilot_panel_active;
-  bool map_open;
   bool online;
   bool parked;
   bool reverse;
   bool sidebars_open;
   bool standstill;
-  bool traffic_mode_enabled;
   bool use_stock_colors;
-  bool wake_up_screen;
 
   float lane_width_left;
   float lane_width_right;
 
   int conditional_status;
-  int driver_camera_timer;
-  int model_length;
   int started_timer;
-
-  std::vector<RadarTrackData> live_radar_tracks;
 
   QColor lane_lines_color;
   QColor lead_marker_color;
@@ -50,9 +34,6 @@ struct FrogPilotUIScene {
   QJsonObject frogpilot_toggles;
 
   QPointF lead_vertices[2];
-
-  QPolygonF track_adjacent_vertices[2];
-  QPolygonF track_edge_vertices;
 };
 
 class FrogPilotUIState : public QObject {
@@ -67,9 +48,7 @@ public:
 
   FrogPilotUIScene frogpilot_scene;
 
-  Params params_memory{"/dev/shm/params"};
-
-  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
+  Params params_memory{"", false, true};
 
   WifiManager *wifi;
 
@@ -79,4 +58,4 @@ signals:
 
 FrogPilotUIState *frogpilotUIState();
 
-void update_theme(FrogPilotUIState *fs);
+void update_theme(FrogPilotUIScene &frogpilot_scene);

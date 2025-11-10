@@ -58,9 +58,8 @@ signals:
 
 public slots:
   void offroadTransition(bool offroad);
-  void showDriverView(bool show, bool started=false);
+  void showDriverView(bool show);
   void showSidebar(bool show);
-  void showMapPanel(bool show);
 
 protected:
   void mousePressEvent(QMouseEvent* e) override;
@@ -75,9 +74,9 @@ private:
   QStackedLayout *slayout;
 
   // FrogPilot variables
-  Params params;
-
   DeveloperSidebar *developer_sidebar;
+
+  Params params;
 
 private slots:
   void updateState(const UIState &s, const FrogPilotUIState &fs);

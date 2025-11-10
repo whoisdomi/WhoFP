@@ -1,11 +1,10 @@
 #pragma once
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-
 #include "selfdrive/ui/qt/offroad/settings.h"
 #include "selfdrive/ui/qt/widgets/scrollview.h"
+
+#include "frogpilot/ui/frogpilot_ui.h"
+#include "frogpilot/ui/qt/widgets/frogpilot_controls.h"
 
 class QNetworkAccessManager;
 
@@ -35,11 +34,10 @@ public:
   bool isAngleCar = false;
   bool isBolt = false;
   bool isC3 = false;
+  bool isFrogsGoMoo = false;
   bool isGM = true;
   bool isHKG = true;
   bool isHKGCanFd = true;
-  bool isHonda = true;
-  bool isHondaNidec = true;
   bool isSubaru = false;
   bool isTorqueCar = false;
   bool isToyota = true;
@@ -95,7 +93,7 @@ private:
   FrogPilotButtonsControl *vehiclePanelButtons;
 
   Params params;
-  Params params_memory{"/dev/shm/params"};
+  Params params_memory{"", false, true};
 
   QStackedLayout *mainLayout;
 

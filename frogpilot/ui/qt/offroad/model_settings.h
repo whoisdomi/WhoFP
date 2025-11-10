@@ -43,9 +43,8 @@ private:
   FrogPilotSettingsWindow *parent;
 
   Params params;
-  Params params_cache{"/cache/params"};
-  Params params_default{"/dev/shm/params_default"};
-  Params params_memory{"/dev/shm/params"};
+  Params params_cache{"", true};
+  Params params_memory{"", false, true};
 
   QDir modelDir{"/data/models/"};
 
@@ -53,6 +52,7 @@ private:
   QMap<QString, QString> modelFileToNameMapProcessed;
 
   QString currentModel;
+  QString defaultModel;
 
   QStringList availableModelNames;
 };

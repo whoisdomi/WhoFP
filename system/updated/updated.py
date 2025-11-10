@@ -11,18 +11,17 @@ import time
 import threading
 from collections import defaultdict
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
-from openpilot.common.time import system_time_valid
+from openpilot.common.time_helpers import system_time_valid
 from openpilot.common.markdown import parse_markdown
 from openpilot.common.swaglog import cloudlog
-from openpilot.selfdrive.controls.lib.alertmanager import set_offroad_alert
+from openpilot.selfdrive.selfdrived.alertmanager import set_offroad_alert
 from openpilot.system.hardware import AGNOS, HARDWARE
 from openpilot.system.version import get_build_metadata
 
-from openpilot.frogpilot.common.frogpilot_variables import BACKUP_PATH, get_frogpilot_toggles, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import BACKUP_PATH, get_frogpilot_toggles
 
 LOCK_FILE = os.getenv("UPDATER_LOCK_FILE", "/tmp/safe_staging_overlay.lock")
 STAGING_ROOT = os.getenv("UPDATER_STAGING_ROOT", "/data/safe_staging")
@@ -34,8 +33,13 @@ FINALIZED = os.path.join(STAGING_ROOT, "finalized")
 
 OVERLAY_INIT = Path(os.path.join(BASEDIR, ".overlay_init"))
 
-DAYS_NO_CONNECTIVITY_MAX = 14     # do not allow to engage after this many days
-DAYS_NO_CONNECTIVITY_PROMPT = 10  # send an offroad prompt after this many days
+# do not allow to engage after this many hours onroad and this many routes
+HOURS_NO_CONNECTIVITY_MAX = 27
+ROUTES_NO_CONNECTIVITY_MAX = 84
+# send an offroad prompt after this many hours onroad and this many routes
+HOURS_NO_CONNECTIVITY_PROMPT = 23
+ROUTES_NO_CONNECTIVITY_PROMPT = 80
+
 
 class UserRequest:
   NONE = 0
@@ -63,16 +67,8 @@ class WaitTimeHelper:
     self.ready_event.wait(timeout=t)
 
 def write_time_to_param(params, param) -> None:
-  t = datetime.datetime.utcnow()
-  params.put(param, t.isoformat().encode('utf8'))
-
-def read_time_from_param(params, param) -> datetime.datetime | None:
-  t = params.get(param, encoding='utf8')
-  try:
-    return datetime.datetime.fromisoformat(t)
-  except (TypeError, ValueError):
-    pass
-  return None
+  t = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+  params.put(param, t)
 
 def run(cmd: list[str], cwd: str = None) -> str:
   return subprocess.check_output(cmd, cwd=cwd, stderr=subprocess.STDOUT, encoding='utf8')
@@ -175,7 +171,7 @@ def init_overlay() -> None:
   run(["sudo"] + mount_cmd)
   run(["sudo", "chmod", "755", os.path.join(OVERLAY_METADATA, "work")])
 
-  git_diff = run(["git", "diff"], OVERLAY_MERGED)
+  git_diff = run(["git", "diff", "--submodule=diff"], OVERLAY_MERGED)
   params.put("GitDiff", git_diff)
   cloudlog.info(f"git diff output:\n{git_diff}")
 
@@ -206,11 +202,12 @@ def finalize_update(params) -> None:
     except subprocess.CalledProcessError:
       cloudlog.exception(f"Failed git cleanup, took {time.monotonic() - t:.3f} s")
 
-  if os.path.isfile(BACKUP_PATH):
-    os.remove(BACKUP_PATH)
-
   set_consistent_flag(True)
   cloudlog.info("done finalizing overlay")
+
+  # FrogPilot variables
+  if os.path.isfile(BACKUP_PATH):
+    os.remove(BACKUP_PATH)
 
 
 def handle_agnos_update() -> None:
@@ -249,9 +246,12 @@ class Updater:
 
   @property
   def target_branch(self) -> str:
-    b: str | None = self.params.get("UpdaterTargetBranch", encoding='utf-8')
+    b: str | None = self.params.get("UpdaterTargetBranch")
     if b is None:
       b = self.get_branch(BASEDIR)
+    b = {
+      ("tici", "release3"): "release-tici"
+    }.get((HARDWARE.get_device_type(), b), b)
     return b
 
   @property
@@ -279,20 +279,22 @@ class Updater:
     return run(["git", "rev-parse", "HEAD"], path).rstrip()
 
   def set_params(self, update_success: bool, failed_count: int, exception: str | None) -> None:
-    self.params.put("UpdateFailedCount", str(failed_count))
+    self.params.put("UpdateFailedCount", failed_count)
     self.params.put("UpdaterTargetBranch", self.target_branch)
 
     self.params.put_bool("UpdaterFetchAvailable", self.update_available)
     if len(self.branches):
       self.params.put("UpdaterAvailableBranches", ','.join(self.branches.keys()))
 
-    last_update = datetime.datetime.utcnow()
+    last_uptime_onroad = self.params.get("UptimeOnroad", return_default=True)
+    last_route_count = self.params.get("RouteCount", return_default=True)
     if update_success:
-      write_time_to_param(self.params, "LastUpdateTime")
+      self.params.put("LastUpdateTime", datetime.datetime.now(datetime.UTC).replace(tzinfo=None))
+      self.params.put("LastUpdateUptimeOnroad", last_uptime_onroad)
+      self.params.put("LastUpdateRouteCount", last_route_count)
     else:
-      t = read_time_from_param(self.params, "LastUpdateTime")
-      if t is not None:
-        last_update = t
+      last_uptime_onroad = self.params.get("LastUpdateUptimeOnroad", return_default=True)
+      last_route_count = self.params.get("LastUpdateRouteCount", return_default=True)
 
     if exception is None:
       self.params.remove("LastUpdateException")
@@ -314,7 +316,7 @@ class Updater:
         with open(os.path.join(basedir, "common", "version.h")) as f:
           version = f.read().split('"')[1]
 
-        commit_unix_ts = run(["git", "show", "-s", "--format=%ct", "HEAD"], basedir).split()[0]
+        commit_unix_ts = run(["git", "show", "-s", "--format=%ct", "HEAD"], basedir).rstrip()
         dt = datetime.datetime.fromtimestamp(int(commit_unix_ts))
         commit_date = dt.strftime("%b %d")
       except Exception:
@@ -330,9 +332,8 @@ class Updater:
     for alert in ("Offroad_UpdateFailed", "Offroad_ConnectivityNeeded", "Offroad_ConnectivityNeededPrompt"):
       set_offroad_alert(alert, False)
 
-    now = datetime.datetime.utcnow()
-    last_update = now
-    dt = now - last_update
+    dt_uptime_onroad = (self.params.get("UptimeOnroad", return_default=True) - last_uptime_onroad) / (60*60)
+    dt_route_count = self.params.get("RouteCount", return_default=True) - last_route_count
     build_metadata = get_build_metadata()
     if failed_count > 15 and exception is not None and self.has_internet:
       if build_metadata.tested_channel:
@@ -340,12 +341,6 @@ class Updater:
       else:
         extra_text = exception
       set_offroad_alert("Offroad_UpdateFailed", True, extra_text=extra_text)
-    elif failed_count > 0:
-      if dt.days > DAYS_NO_CONNECTIVITY_MAX:
-        set_offroad_alert("Offroad_ConnectivityNeeded", True)
-      elif dt.days > DAYS_NO_CONNECTIVITY_PROMPT:
-        remaining = max(DAYS_NO_CONNECTIVITY_MAX - dt.days, 1)
-        set_offroad_alert("Offroad_ConnectivityNeededPrompt", True, extra_text=f"{remaining} day{'' if remaining == 1 else 's'}.")
 
   def check_for_update(self) -> None:
     cloudlog.info("checking for updates")
@@ -413,7 +408,8 @@ class Updater:
     finalize_update(self.params)
     cloudlog.info("finalize success!")
 
-    self.params.put("Updated", datetime.datetime.now().astimezone(ZoneInfo('America/Phoenix')).strftime("%B %d, %Y - %I:%M%p"))
+    # FrogPilot variables
+    self.params.put("Updated", datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p"))
 
 def main() -> None:
   params = Params()
@@ -433,6 +429,10 @@ def main() -> None:
     if Path(os.path.join(STAGING_ROOT, "old_openpilot")).is_dir():
       cloudlog.event("update installed")
 
+    if not params.get("InstallDate"):
+      t = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+      params.put("InstallDate", t)
+
     updater = Updater()
     update_failed_count = 0 # TODO: Load from param?
     wait_helper = WaitTimeHelper()
@@ -447,13 +447,14 @@ def main() -> None:
     first_run = True
 
     # FrogPilot variables
-    install_date_set = params.get("InstallDate", encoding='utf-8') is not None and params.get("Updated", encoding='utf-8') is not None
+    params_memory = Params(memory=True)
 
     frogpilot_toggles = get_frogpilot_toggles()
 
     while True:
       wait_helper.ready_event.clear()
 
+      # FrogPilot variables
       frogpilot_toggles = get_frogpilot_toggles()
 
       manual_update_requested = params_memory.get_bool("ManualUpdateInitiated")
@@ -473,10 +474,7 @@ def main() -> None:
           wait_helper.sleep(60)
           continue
 
-        # Format "InstallDate" to Phoenix time zone
-        if not install_date_set:
-          params.put("InstallDate", datetime.datetime.now().astimezone(ZoneInfo('America/Phoenix')).strftime("%B %d, %Y - %I:%M%p"))
-          install_date_set = True
+        # FrogPilot variables
 
         update_failed_count += 1
 
@@ -485,8 +483,8 @@ def main() -> None:
         updater.check_for_update()
 
         # download update
-        last_fetch = read_time_from_param(params, "UpdaterLastFetchTime")
-        timed_out = last_fetch is None or (datetime.datetime.utcnow() - last_fetch > datetime.timedelta(days=3))
+        last_fetch = params.get("UpdaterLastFetchTime")
+        timed_out = last_fetch is None or (datetime.datetime.now(datetime.UTC).replace(tzinfo=None) - last_fetch > datetime.timedelta(days=3))
         user_requested_fetch = wait_helper.user_request == UserRequest.FETCH
         if manual_update_requested or frogpilot_toggles.automatic_updates:
           if params.get_bool("NetworkMetered") and not timed_out and not user_requested_fetch:
@@ -521,12 +519,12 @@ def main() -> None:
       # infrequent attempts if we successfully updated recently
       wait_helper.user_request = UserRequest.NONE
       if not frogpilot_toggles.automatic_updates:
-        delay = 60 * 60 * 24 * 365 * 100
+        delay = 60*60*24*365*100
       else:
         if update_failed_count > 0 and updater.has_internet:
-          delay = 5 * 60
+          delay = 5*60
         else:
-          delay = 1.5 * 60 * 60
+          delay = 1.5*60*60
       wait_helper.sleep(delay)
 
 

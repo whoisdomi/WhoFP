@@ -94,17 +94,15 @@ PairingPopup::PairingPopup(QWidget *parent) : DialogBase(parent) {
     title->setWordWrap(true);
     vlayout->addWidget(title);
 
-    QString serverUrl = useKonikServer() ? "stable.konik.ai" : "connect.comma.ai";
-
     QLabel *instructions = new QLabel(QString(R"(
       <ol type='1' style='margin-left: 15px;'>
         <li style='margin-bottom: 50px;'>%1</li>
         <li style='margin-bottom: 50px;'>%2</li>
         <li style='margin-bottom: 50px;'>%3</li>
       </ol>
-    )").arg(tr("Go to https://%1 on your phone").arg(serverUrl))
+    )").arg(tr("Go to https://%1 on your phone").arg(useKonikServer() ? "stable.konik.ai" : "connect.comma.ai"))
     .arg(tr("Click \"add new device\" and scan the QR code on the right"))
-    .arg(tr("Bookmark %1 to your home screen to use it like an app").arg(serverUrl)), this);
+    .arg(tr("Bookmark %1 to your home screen to use it like an app").arg(useKonikServer() ? "stable.konik.ai" : "connect.comma.ai")), this);
 
     instructions->setStyleSheet("font-size: 47px; font-weight: bold; color: black;");
     instructions->setWordWrap(true);
@@ -116,6 +114,14 @@ PairingPopup::PairingPopup(QWidget *parent) : DialogBase(parent) {
   // QR code
   PairingQRWidget *qr = new PairingQRWidget(this);
   hlayout->addWidget(qr, 1);
+}
+
+int PairingPopup::exec() {
+  if (!util::system_time_valid()) {
+    ConfirmationDialog::alert(tr("Please connect to Wi-Fi to complete initial pairing"), parentWidget());
+    return QDialog::Rejected;
+  }
+  return DialogBase::exec();
 }
 
 
@@ -157,7 +163,7 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QFrame(parent) {
   main_layout->addWidget(features, 0, Qt::AlignBottom);
   main_layout->addSpacing(30);
 
-  QVector<QString> bullets = {tr("Remote access"), tr("24/7 LTE connectivity"), tr("1 year of drive storage"), tr("Turn-by-turn navigation")};
+  QVector<QString> bullets = {tr("Remote access"), tr("24/7 LTE connectivity"), tr("1 year of drive storage"), tr("Remote snapshots")};
   for (auto &b : bullets) {
     const QString check = "<b><font color='#465BEA'>✓</font></b> ";
     QLabel *l = new QLabel(check + b);
@@ -182,20 +188,20 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
 
   QFrame* finishRegistration = new QFrame;
   finishRegistration->setObjectName("primeWidget");
-  QVBoxLayout* finishRegistationLayout = new QVBoxLayout(finishRegistration);
-  finishRegistationLayout->setSpacing(38);
-  finishRegistationLayout->setContentsMargins(64, 48, 64, 48);
+  QVBoxLayout* finishRegistrationLayout = new QVBoxLayout(finishRegistration);
+  finishRegistrationLayout->setSpacing(38);
+  finishRegistrationLayout->setContentsMargins(64, 48, 64, 48);
 
   QLabel* registrationTitle = new QLabel(tr("Finish Setup"));
   registrationTitle->setStyleSheet("font-size: 75px; font-weight: bold;");
-  finishRegistationLayout->addWidget(registrationTitle);
+  finishRegistrationLayout->addWidget(registrationTitle);
 
   QLabel* registrationDescription = new QLabel(useKonikServer() ? tr("Pair your device with Konik connect (stable.konik.ai).") : tr("Pair your device with comma connect (connect.comma.ai) and claim your comma prime offer."));
   registrationDescription->setWordWrap(true);
   registrationDescription->setStyleSheet("font-size: 50px; font-weight: light;");
-  finishRegistationLayout->addWidget(registrationDescription);
+  finishRegistrationLayout->addWidget(registrationDescription);
 
-  finishRegistationLayout->addStretch();
+  finishRegistrationLayout->addStretch();
 
   QPushButton* pair = new QPushButton(tr("Pair device"));
   pair->setStyleSheet(R"(
@@ -210,7 +216,7 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
       background-color: #3049F4;
     }
   )");
-  finishRegistationLayout->addWidget(pair);
+  finishRegistrationLayout->addWidget(pair);
 
   popup = new PairingPopup(this);
   QObject::connect(pair, &QPushButton::clicked, popup, &PairingPopup::exec);
@@ -227,9 +233,6 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
   content_layout->setContentsMargins(0, 0, 0, 0);
   content_layout->setSpacing(30);
 
-  primeUser = new PrimeUserWidget;
-  content_layout->addWidget(primeUser);
-
   WiFiPromptWidget *wifi_prompt = new WiFiPromptWidget;
   QObject::connect(wifi_prompt, &WiFiPromptWidget::openSettings, this, &SetupWidget::openSettings);
   content_layout->addWidget(wifi_prompt);
@@ -237,7 +240,6 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
 
   mainLayout->addWidget(content);
 
-  primeUser->setVisible(uiState()->hasPrime());
   mainLayout->setCurrentIndex(1);
 
   setStyleSheet(R"(
@@ -252,35 +254,12 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
   sp_retain.setRetainSizeWhenHidden(true);
   setSizePolicy(sp_retain);
 
-  // set up API requests
-  if (auto dongleId = getDongleId()) {
-    QString url = CommaApi::BASE_URL + "/v1.1/devices/" + *dongleId + "/";
-    RequestRepeater* repeater = new RequestRepeater(this, url, "ApiCache_Device", 5);
-
-    QObject::connect(repeater, &RequestRepeater::requestDone, this, &SetupWidget::replyFinished);
-  }
-}
-
-void SetupWidget::replyFinished(const QString &response, bool success) {
-  if (!success) return;
-
-  QJsonDocument doc = QJsonDocument::fromJson(response.toUtf8());
-  if (doc.isNull()) {
-    qDebug() << "JSON Parse failed on getting pairing and prime status";
-    return;
-  }
-
-  QJsonObject json = doc.object();
-  bool is_paired = json["is_paired"].toBool();
-  PrimeType prime_type = static_cast<PrimeType>(json["prime_type"].toInt());
-  uiState()->setPrimeType(is_paired ? prime_type : PrimeType::UNPAIRED);
-
-  if (!is_paired) {
-    mainLayout->setCurrentIndex(0);
-  } else {
-    popup->reject();
-
-    primeUser->setVisible(uiState()->hasPrime());
-    mainLayout->setCurrentIndex(1);
-  }
+  QObject::connect(uiState()->prime_state, &PrimeState::changed, [this](PrimeState::Type type) {
+    if (type == PrimeState::PRIME_TYPE_UNPAIRED) {
+      mainLayout->setCurrentIndex(0);  // Display "Pair your device" widget
+    } else {
+      popup->reject();
+      mainLayout->setCurrentIndex(1);  // Display Wi-Fi prompt widget
+    }
+  });
 }

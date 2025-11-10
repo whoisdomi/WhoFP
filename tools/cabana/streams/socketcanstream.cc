@@ -27,6 +27,7 @@ bool SocketCanStream::connect() {
   // These are expected and can be ignored, we don't need the advanced features of libsocketcan
   QString errorString;
   device.reset(QCanBus::instance()->createDevice("socketcan", config.device, &errorString));
+  device->setConfigurationParameter(QCanBusDevice::CanFdKey, true);
 
   if (!device) {
     qDebug() << "Failed to create SocketCAN device" << errorString;
@@ -66,11 +67,7 @@ void SocketCanStream::streamThread() {
   }
 }
 
-AbstractOpenStreamWidget *SocketCanStream::widget(AbstractStream **stream) {
-  return new OpenSocketCanWidget(stream);
-}
-
-OpenSocketCanWidget::OpenSocketCanWidget(AbstractStream **stream) : AbstractOpenStreamWidget(stream) {
+OpenSocketCanWidget::OpenSocketCanWidget(QWidget *parent) : AbstractOpenStreamWidget(parent) {
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   main_layout->addStretch(1);
 
@@ -104,12 +101,11 @@ void OpenSocketCanWidget::refreshDevices() {
 }
 
 
-bool OpenSocketCanWidget::open() {
+AbstractStream *OpenSocketCanWidget::open() {
   try {
-    *stream = new SocketCanStream(qApp, config);
+    return new SocketCanStream(qApp, config);
   } catch (std::exception &e) {
     QMessageBox::warning(nullptr, tr("Warning"), tr("Failed to connect to SocketCAN device: '%1'").arg(e.what()));
-    return false;
+    return nullptr;
   }
-  return true;
 }

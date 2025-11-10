@@ -6,38 +6,19 @@ from datetime import datetime
 from pathlib import Path
 
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, is_url_pingable
-from openpilot.frogpilot.common.frogpilot_variables import RESOURCES_REPO, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import RESOURCES_REPO
 
 GITHUB_URL = f"https://raw.githubusercontent.com/{RESOURCES_REPO}"
 GITLAB_URL = f"https://gitlab.com/{RESOURCES_REPO}/-/raw"
 
-def check_github_rate_limit(session):
-  try:
-    response = session.get("https://api.github.com/rate_limit", timeout=10)
-    response.raise_for_status()
-    rate_limit_info = response.json()
-
-    remaining = rate_limit_info["rate"]["remaining"]
-    print(f"GitHub API Requests Remaining: {remaining}")
-    if remaining > 0:
-      return True
-
-    reset_time = datetime.utcfromtimestamp(rate_limit_info["rate"]["reset"]).strftime("%Y-%m-%d %H:%M:%S")
-    print("GitHub rate limit reached")
-    print(f"GitHub Rate Limit Resets At (UTC): {reset_time}")
-    return False
-  except requests.exceptions.RequestException as exception:
-    print(f"Error checking GitHub rate limit: {exception}")
-    return False
-
-def download_file(cancel_param, destination, progress_param, url, download_param, session, offset_bytes=0, total_bytes=0):
+def download_file(cancel_param, destination, progress_param, url, download_param, session, params_memory, offset_bytes=0, total_bytes=0):
   try:
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    total_size = get_remote_file_size(url, session)
+    total_size = get_remote_file_size(url, session, params_memory)
     if total_size == 0:
       if not url.endswith(".gif"):
-        handle_error(None, "Download invalid...", "Download invalid...", download_param, progress_param)
+        handle_error(None, "Download invalid...", "Download invalid...", download_param, progress_param, params_memory)
       return
 
     with session.get(url, stream=True, timeout=10) as response:
@@ -50,7 +31,7 @@ def download_file(cancel_param, destination, progress_param, url, download_param
         for chunk in response.iter_content(chunk_size=16384):
           if params_memory.get_bool(cancel_param):
             temp_file_path.unlink(missing_ok=True)
-            handle_error(None, "Download cancelled...", "Download cancelled...", download_param, progress_param)
+            handle_error(None, "Download cancelled...", "Download cancelled...", download_param, progress_param, params_memory)
             return
 
           if chunk:
@@ -70,26 +51,49 @@ def download_file(cancel_param, destination, progress_param, url, download_param
         temp_file_path.rename(destination)
 
   except Exception as exception:
-    handle_request_error(exception, destination, download_param, progress_param)
+    handle_request_error(exception, destination, download_param, progress_param, params_memory)
 
-def get_remote_file_size(url, session):
+
+def get_remote_file_size(url, session, params_memory):
   try:
     response = session.head(url, headers={"Accept-Encoding": "identity"}, timeout=10)
     response.raise_for_status()
     return int(response.headers.get("Content-Length", 0))
   except Exception as exception:
-    handle_request_error(exception, None, None, None)
+    handle_request_error(exception, None, None, None, params_memory)
     return 0
+
 
 def get_repository_url(session):
   if is_url_pingable("https://github.com"):
-    if check_github_rate_limit(session):
+    if not github_rate_limited(session):
       return GITHUB_URL
   if is_url_pingable("https://gitlab.com"):
     return GITLAB_URL
   return None
 
-def handle_error(destination, error_message, error, download_param, progress_param):
+
+def github_rate_limited(session):
+  try:
+    response = session.get("https://api.github.com/rate_limit", timeout=10)
+    response.raise_for_status()
+    rate_limit_info = response.json()
+
+    remaining = rate_limit_info["rate"]["remaining"]
+    print(f"GitHub API Requests Remaining: {remaining}")
+    if remaining > 0:
+      return False
+
+    reset_time = datetime.utcfromtimestamp(rate_limit_info["rate"]["reset"]).strftime("%Y-%m-%d %H:%M:%S")
+    print("GitHub rate limit reached")
+    print(f"GitHub Rate Limit Resets At (UTC): {reset_time}")
+    return True
+  except requests.exceptions.RequestException as exception:
+    print(f"Error checking GitHub rate limit: {exception}")
+    return True
+
+
+def handle_error(destination, error_message, error, download_param, progress_param, params_memory):
   if destination:
     delete_file(destination)
 
@@ -98,19 +102,23 @@ def handle_error(destination, error_message, error, download_param, progress_par
     params_memory.put(progress_param, error_message)
     params_memory.remove(download_param)
 
-def handle_request_error(error, destination, download_param, progress_param):
-  error_map = {
-    requests.exceptions.ConnectionError: "Connection dropped",
-    requests.exceptions.HTTPError: lambda error: f"Server error ({error.response.status_code})" if error and getattr(error, "response", None) else "Server error",
-    requests.exceptions.RequestException: "Network request error. Check connection",
-    requests.exceptions.Timeout: "Download timed out",
-  }
 
-  error_message = error_map.get(type(error), "Unexpected error")
-  handle_error(destination, f"Failed: {error_message}", error, download_param, progress_param)
+def handle_request_error(error, destination, download_param, progress_param, params_memory):
+  if isinstance(error, requests.exceptions.HTTPError) and error.response is not None:
+    error_message = f"Server error ({error.response.status_code})"
+  else:
+    error_map = {
+      requests.exceptions.ConnectionError: "Connection dropped",
+      requests.exceptions.RequestException: "Network request error. Check connection",
+      requests.exceptions.Timeout: "Download timed out",
+    }
+    error_message = error_map.get(type(error), "Unexpected error")
 
-def verify_download(file_path, url, session):
-  remote_file_size = get_remote_file_size(url, session)
+  handle_error(destination, f"Failed: {error_message}", error, download_param, progress_param, params_memory)
+
+
+def verify_download(file_path, url, session, params_memory):
+  remote_file_size = get_remote_file_size(url, session, params_memory)
 
   if remote_file_size == 0:
     print(f"Error fetching remote size for {file_path}")

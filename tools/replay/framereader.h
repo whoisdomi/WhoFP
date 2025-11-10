@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "msgq/visionipc/visionbuf.h"
-#include "system/camerad/cameras/camera_common.h"
 #include "tools/replay/filereader.h"
+#include "tools/replay/util.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -28,6 +28,7 @@ public:
 
   VideoDecoder *decoder_ = nullptr;
   AVFormatContext *input_ctx = nullptr;
+  int video_stream_idx_ = -1;
   int prev_idx = -1;
   struct PacketInfo {
     int flags;

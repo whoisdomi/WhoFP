@@ -4,13 +4,8 @@ void playSound(const QString &alert, int volume) {
   QString stockPath = "../../selfdrive/assets/sounds/" + alert + ".wav";
   QString themePath = "../../frogpilot/assets/active_theme/sounds/" + alert + ".wav";
 
-  QString filePath = QFile::exists(themePath) ? themePath : stockPath;
-
   QProcess::execute("pkill", {"-f", "ffplay"});
-
-  int clampedVolume = std::clamp(volume, 0, 100);
-
-  QProcess::startDetached("ffplay", {"-nodisp", "-autoexit", "-volume", QString::number(clampedVolume), filePath});
+  QProcess::startDetached("ffplay", {"-nodisp", "-autoexit", "-volume", QString::number(std::clamp(volume, 0, 100)), QFile::exists(themePath) ? themePath : stockPath});
 }
 
 FrogPilotSoundsPanel::FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
@@ -127,19 +122,16 @@ FrogPilotSoundsPanel::FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent) : Fr
 
       util::sleep_for(UI_FREQ);
 
-      QString keyWithoutVolume = key;
-      keyWithoutVolume.remove("Volume");
-
-      QString camelCaseAlert = keyWithoutVolume;
-      camelCaseAlert[0] = camelCaseAlert[0].toLower();
+      QString keyWithoutVolume = QString(key).remove("Volume");
+      QString camelCaseAlert = keyWithoutVolume.mid(0, 1).toLower() + keyWithoutVolume.mid(1);
 
       QString snakeCaseAlert;
       for (int i = 0; i < keyWithoutVolume.size(); ++i) {
-        QChar c = keyWithoutVolume[i];
-        if (c.isUpper() && i > 0) {
+        QChar currentChar = keyWithoutVolume[i];
+        if (currentChar.isUpper() && i > 0) {
           snakeCaseAlert += '_';
         }
-        snakeCaseAlert += c.toLower();
+        snakeCaseAlert += currentChar.toLower();
       }
 
       if (started) {
@@ -168,8 +160,6 @@ FrogPilotSoundsPanel::FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent) : Fr
 }
 
 void FrogPilotSoundsPanel::showEvent(QShowEvent *event) {
-  frogpilotToggleLevels = parent->frogpilotToggleLevels;
-
   updateToggles();
 }
 
@@ -193,7 +183,7 @@ void FrogPilotSoundsPanel::updateToggles() {
       continue;
     }
 
-    bool setVisible = parent->tuningLevel >= frogpilotToggleLevels[key].toDouble();
+    bool setVisible = parent->tuningLevel >= parent->frogpilotToggleLevels[key].toDouble();
 
     if (key == "LoudBlindspotAlert") {
       setVisible &= parent->hasBSM;

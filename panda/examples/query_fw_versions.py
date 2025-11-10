@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 import argparse
 from tqdm import tqdm
+from opendbc.car.carlog import carlog
+from opendbc.car.uds import UdsClient, MessageTimeoutError, NegativeResponseError, InvalidSubAddressError, \
+                            SESSION_TYPE, DATA_IDENTIFIER_TYPE
+from opendbc.car.structs import CarParams
 from panda import Panda
-from panda.python.uds import UdsClient, MessageTimeoutError, NegativeResponseError, InvalidSubAddressError, \
-                             SESSION_TYPE, DATA_IDENTIFIER_TYPE
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("--rxoffset", default="")
   parser.add_argument("--nonstandard", action="store_true")
   parser.add_argument("--no-obd", action="store_true", help="Bus 1 will not be multiplexed to the OBD-II port")
+  parser.add_argument("--no-29bit", action="store_true", help="29 bit addresses will not be queried")
   parser.add_argument("--debug", action="store_true")
   parser.add_argument("--addr")
   parser.add_argument("--sub_addr", "--subaddr", help="A hex sub-address or `scan` to scan the full sub-address range")
@@ -17,11 +20,15 @@ if __name__ == "__main__":
   parser.add_argument('-s', '--serial', help="Serial number of panda to use")
   args = parser.parse_args()
 
+  if args.debug:
+    carlog.setLevel('DEBUG')
+
   if args.addr:
     addrs = [int(args.addr, base=16)]
   else:
     addrs = [0x700 + i for i in range(256)]
-    addrs += [0x18da0000 + (i << 8) + 0xf1 for i in range(256)]
+    if not args.no_29bit:
+      addrs += [0x18da0000 + (i << 8) + 0xf1 for i in range(256)]
   results = {}
 
   sub_addrs: list[int | None] = [None]
@@ -57,7 +64,7 @@ if __name__ == "__main__":
     exit()
 
   panda = Panda(serial=args.serial)
-  panda.set_safety_mode(Panda.SAFETY_ELM327, 1 if args.no_obd else 0)
+  panda.set_safety_mode(CarParams.SafetyModel.elm327, 1 if args.no_obd else 0)
   print("querying addresses ...")
   with tqdm(addrs) as t:
     for addr in t:
@@ -68,14 +75,14 @@ if __name__ == "__main__":
       if args.bus:
         bus = int(args.bus)
       else:
-        bus = 1 if panda.has_obd() else 0
+        bus = 1
       rx_addr = addr + int(args.rxoffset, base=16) if args.rxoffset else None
 
       # Try all sub-addresses for addr. By default, this is None
       for sub_addr in sub_addrs:
         sub_addr_str = hex(sub_addr) if sub_addr is not None else None
         t.set_description(f"{hex(addr)}, {sub_addr_str}")
-        uds_client = UdsClient(panda, addr, rx_addr, bus, sub_addr=sub_addr, timeout=0.2, debug=args.debug)
+        uds_client = UdsClient(panda, addr, rx_addr, bus, sub_addr=sub_addr, timeout=0.2)
         # Check for anything alive at this address, and switch to the highest
         # available diagnostic session without security access
         try:
@@ -95,7 +102,7 @@ if __name__ == "__main__":
         resp = {}
         for uds_data_id in sorted(uds_data_ids):
           try:
-            data = uds_client.read_data_by_identifier(uds_data_id)  # type: ignore
+            data = uds_client.read_data_by_identifier(DATA_IDENTIFIER_TYPE(uds_data_id))
             if data:
               resp[uds_data_id] = data
           except (NegativeResponseError, MessageTimeoutError, InvalidSubAddressError):

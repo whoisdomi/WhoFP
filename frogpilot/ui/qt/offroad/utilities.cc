@@ -147,23 +147,30 @@ FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent
   ButtonControl *resetTogglesButton = new ButtonControl(tr("Reset Toggles to Default"), tr("RESET"), tr("<b>Reset all toggles to their default values.</b>"));
   QObject::connect(resetTogglesButton, &ButtonControl::clicked, [parent, resetTogglesButton, this]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to reset all toggles to their default values?"), tr("Reset"), this)) {
-      std::thread([parent, resetTogglesButton, this]() mutable {
+      std::thread([parent, resetTogglesButton, this]() {
         parent->keepScreenOn = true;
 
         resetTogglesButton->setEnabled(false);
         resetTogglesButton->setValue(tr("Resetting..."));
 
-        params.putBool("DoToggleReset", true);
+        std::vector<std::string> all_keys = params.allKeys();
+        for (const std::string &key : all_keys) {
+          if (key == "FrogPilotStats") {
+            continue;
+          }
+          std::optional<std::string> default_value = params.getKeyDefaultValue(key);
+          if (default_value.has_value()) {
+            params.put(key, default_value.value());
+          }
+        }
+
+        updateFrogPilotToggles();
 
         resetTogglesButton->setValue(tr("Reset!"));
 
         util::sleep_for(2500);
 
-        resetTogglesButton->setValue(tr("Rebooting..."));
-
-        util::sleep_for(2500);
-
-        Hardware::reboot();
+        resetTogglesButton->setValue("");
       }).detach();
     }
   });
@@ -175,23 +182,30 @@ FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent
   ButtonControl *resetTogglesButtonStock = new ButtonControl(tr("Reset Toggles to Stock openpilot"), tr("RESET"), tr("<b>Reset all toggles to match stock openpilot.</b>"));
   QObject::connect(resetTogglesButtonStock, &ButtonControl::clicked, [parent, resetTogglesButtonStock, this]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to reset all toggles to match stock openpilot?"), tr("Reset"), this)) {
-      std::thread([parent, resetTogglesButtonStock, this]() mutable {
+      std::thread([parent, resetTogglesButtonStock, this]() {
         parent->keepScreenOn = true;
 
         resetTogglesButtonStock->setEnabled(false);
         resetTogglesButtonStock->setValue(tr("Resetting..."));
 
-        params.putBool("DoToggleResetStock", true);
+        std::vector<std::string> all_keys = params.allKeys();
+        for (const std::string &key : all_keys) {
+          if (key == "FrogPilotStats") {
+            continue;
+          }
+          std::optional<std::string> stock_value = params.getStockValue(key);
+          if (stock_value.has_value()) {
+            params.put(key, stock_value.value());
+          }
+        }
+
+        updateFrogPilotToggles();
 
         resetTogglesButtonStock->setValue(tr("Reset!"));
 
         util::sleep_for(2500);
 
-        resetTogglesButtonStock->setValue(tr("Rebooting..."));
-
-        util::sleep_for(2500);
-
-        Hardware::reboot();
+        resetTogglesButtonStock->setValue("");
       }).detach();
     }
   });

@@ -11,8 +11,10 @@ import urllib.request
 
 from pathlib import Path
 
+from openpilot.common.params import Params
+
 from openpilot.frogpilot.common.frogpilot_utilities import is_url_pingable
-from openpilot.frogpilot.common.frogpilot_variables import MAPD_PATH, RESOURCES_REPO, params_memory
+from openpilot.frogpilot.common.frogpilot_variables import MAPD_PATH, RESOURCES_REPO
 
 VERSION = "v2"
 
@@ -121,6 +123,10 @@ def update_mapd():
   return True
 
 def mapd_thread():
+  params_memory = Params(memory=True)
+
+  params_memory.put("MapdLogLevel", "disabled")
+
   while True:
     try:
       cleanup_temp_files()
@@ -141,8 +147,6 @@ def mapd_thread():
       download()
 
 def main():
-  params_memory.put("MapdLogLevel", "disabled")
-
   mapd_thread()
 
 if __name__ == "__main__":

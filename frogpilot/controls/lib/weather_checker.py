@@ -5,7 +5,7 @@ import time
 
 from concurrent.futures import ThreadPoolExecutor
 
-from openpilot.common.conversions import Conversions as CV
+from openpilot.common.constants import CV
 from openpilot.common.params import Params
 
 from openpilot.frogpilot.common.frogpilot_utilities import calculate_distance_to_point, is_url_pingable
@@ -56,7 +56,7 @@ class WeatherChecker:
     self.last_gps_position = None
     self.last_updated = None
 
-    user_api_key = Params().get("WeatherToken", encoding="utf-8")
+    user_api_key = Params().get("WeatherToken")
     self.api_key = user_api_key or os.environ.get("WEATHER_TOKEN", "")
 
     if user_api_key:

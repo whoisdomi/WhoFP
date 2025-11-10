@@ -1,8 +1,12 @@
+#pragma once
+
+#include "board_declarations.h"
+
 // ///////////////////////////// //
 // Red Panda (STM32H7) + Harness //
 // ///////////////////////////// //
 
-void red_enable_can_transceiver(uint8_t transceiver, bool enabled) {
+static void red_enable_can_transceiver(uint8_t transceiver, bool enabled) {
   switch (transceiver) {
     case 1U:
       set_gpio_output(GPIOG, 11, !enabled);
@@ -21,35 +25,7 @@ void red_enable_can_transceiver(uint8_t transceiver, bool enabled) {
   }
 }
 
-void red_enable_can_transceivers(bool enabled) {
-  uint8_t main_bus = (harness.status == HARNESS_STATUS_FLIPPED) ? 3U : 1U;
-  for (uint8_t i=1U; i<=4U; i++) {
-    // Leave main CAN always on for CAN-based ignition detection
-    if (i == main_bus) {
-      red_enable_can_transceiver(i, true);
-    } else {
-      red_enable_can_transceiver(i, enabled);
-    }
-  }
-}
-
-void red_set_led(uint8_t color, bool enabled) {
-  switch (color) {
-    case LED_RED:
-      set_gpio_output(GPIOE, 4, !enabled);
-      break;
-     case LED_GREEN:
-      set_gpio_output(GPIOE, 3, !enabled);
-      break;
-    case LED_BLUE:
-      set_gpio_output(GPIOE, 2, !enabled);
-      break;
-    default:
-      break;
-  }
-}
-
-void red_set_can_mode(uint8_t mode) {
+static void red_set_can_mode(uint8_t mode) {
   red_enable_can_transceiver(2U, false);
   red_enable_can_transceiver(4U, false);
   switch (mode) {
@@ -91,28 +67,12 @@ void red_set_can_mode(uint8_t mode) {
   }
 }
 
-bool red_check_ignition(void) {
-  // ignition is checked through harness
-  return harness_check_ignition();
+static uint32_t red_read_voltage_mV(void){
+  return adc_get_mV(&(const adc_signal_t) ADC_CHANNEL_DEFAULT(ADC1, 2)) * 11U;
 }
 
-uint32_t red_read_voltage_mV(void){
-  return adc_get_mV(2) * 11U; // TODO: is this correct?
-}
-
-void red_init(void) {
+static void red_init(void) {
   common_init_gpio();
-
-  //C10,C11 : OBD_SBU1_RELAY, OBD_SBU2_RELAY
-  set_gpio_output_type(GPIOC, 10, OUTPUT_TYPE_OPEN_DRAIN);
-  set_gpio_pullup(GPIOC, 10, PULL_NONE);
-  set_gpio_mode(GPIOC, 10, MODE_OUTPUT);
-  set_gpio_output(GPIOC, 10, 1);
-
-  set_gpio_output_type(GPIOC, 11, OUTPUT_TYPE_OPEN_DRAIN);
-  set_gpio_pullup(GPIOC, 11, PULL_NONE);
-  set_gpio_mode(GPIOC, 11, MODE_OUTPUT);
-  set_gpio_output(GPIOC, 11, 1);
 
   // G11,B3,D7,B4: transceiver enable
   set_gpio_pullup(GPIOG, 11, PULL_NONE);
@@ -136,25 +96,9 @@ void red_init(void) {
   set_gpio_pullup(GPIOB, 14, PULL_UP);
   set_gpio_mode(GPIOB, 14, MODE_OUTPUT);
   set_gpio_output(GPIOB, 14, 1);
-
-  // Initialize harness
-  harness_init();
-
-
-  // Enable CAN transceivers
-  red_enable_can_transceivers(true);
-
-  // Disable LEDs
-  red_set_led(LED_RED, false);
-  red_set_led(LED_GREEN, false);
-  red_set_led(LED_BLUE, false);
-
-  // Set normal CAN mode
-  red_set_can_mode(CAN_MODE_NORMAL);
 }
 
-harness_configuration red_harness_config = {
-  .has_harness = true,
+static harness_configuration red_harness_config = {
   .GPIO_SBU1 = GPIOC,
   .GPIO_SBU2 = GPIOA,
   .GPIO_relay_SBU1 = GPIOC,
@@ -163,31 +107,30 @@ harness_configuration red_harness_config = {
   .pin_SBU2 = 1,
   .pin_relay_SBU1 = 10,
   .pin_relay_SBU2 = 11,
-  .adc_channel_SBU1 = 4, //ADC12_INP4
-  .adc_channel_SBU2 = 17 //ADC1_INP17
+  .adc_signal_SBU1 = ADC_CHANNEL_DEFAULT(ADC1, 4),
+  .adc_signal_SBU2 = ADC_CHANNEL_DEFAULT(ADC1, 17)
 };
 
 board board_red = {
   .set_bootkick = unused_set_bootkick,
   .harness_config = &red_harness_config,
-  .has_obd = true,
   .has_spi = false,
-  .has_canfd = true,
   .fan_max_rpm = 0U,
+  .fan_max_pwm = 100U,
   .avdd_mV = 3300U,
   .fan_stall_recovery = false,
   .fan_enable_cooldown_time = 0U,
   .init = red_init,
   .init_bootloader = unused_init_bootloader,
   .enable_can_transceiver = red_enable_can_transceiver,
-  .enable_can_transceivers = red_enable_can_transceivers,
-  .set_led = red_set_led,
+  .led_GPIO = {GPIOE, GPIOE, GPIOE},
+  .led_pin = {4, 3, 2},
   .set_can_mode = red_set_can_mode,
-  .check_ignition = red_check_ignition,
   .read_voltage_mV = red_read_voltage_mV,
   .read_current_mA = unused_read_current,
   .set_fan_enabled = unused_set_fan_enabled,
   .set_ir_power = unused_set_ir_power,
   .set_siren = unused_set_siren,
-  .read_som_gpio = unused_read_som_gpio
+  .read_som_gpio = unused_read_som_gpio,
+  .set_amp_enabled = unused_set_amp_enabled
 };

@@ -24,7 +24,13 @@ void Sidebar::drawMetric(QPainter &p, const QPair<QString, QString> &label, QCol
   p.drawText(rect.adjusted(22, 0, 0, 0), Qt::AlignCenter, label.first + "\n" + label.second);
 }
 
-Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(false), settings_pressed(false) {
+Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(false), settings_pressed(false), mic_indicator_pressed(false) {
+  home_img = loadPixmap("../assets/images/button_home.png", home_btn.size());
+  flag_img = loadPixmap("../assets/images/button_flag.png", home_btn.size());
+  settings_img = loadPixmap("../assets/images/button_settings.png", settings_btn.size(), Qt::IgnoreAspectRatio);
+  mic_img = loadPixmap("../assets/icons/microphone.png", QSize(30, 30));
+  link_img = loadPixmap("../assets/icons/link.png", QSize(60, 60));
+
   connect(this, &Sidebar::valueChanged, [=] { update(); });
 
   setAttribute(Qt::WA_OpaquePaintEvent);
@@ -33,41 +39,10 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(
 
   QObject::connect(uiState(), &UIState::uiUpdate, this, &Sidebar::updateState);
 
-  pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"userFlag"});
+  pm = std::make_unique<PubMaster>(std::vector<const char*>{"bookmarkButton"});
 
   // FrogPilot variables
   QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &Sidebar::updateTheme);
-}
-
-void Sidebar::updateTheme() {
-  FrogPilotUIState &fs = *frogpilotUIState();
-  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
-  QJsonObject &frogpilot_toggles = fs.frogpilot_toggles;
-
-  isCPU = frogpilot_toggles.value("cpu_metrics").toBool();
-  isDeveloperUI = frogpilot_toggles.value("developer_ui").toBool();
-  isFahrenheit = frogpilot_toggles.value("fahrenheit").toBool();
-  isGPU = frogpilot_toggles.value("gpu_metrics").toBool();
-  isIP = frogpilot_toggles.value("ip_metrics").toBool();
-  isMemoryUsage = frogpilot_toggles.value("memory_metrics").toBool();
-  isNumericalTemp = frogpilot_toggles.value("numerical_temp").toBool();
-  isStorageLeft = frogpilot_toggles.value("storage_left_metrics").toBool();
-  isStorageUsed = frogpilot_toggles.value("storage_used_metrics").toBool();
-  sidebar_color1 = frogpilot_scene.use_stock_colors ? good_color : frogpilot_scene.sidebar_color1;
-  sidebar_color2 = frogpilot_scene.use_stock_colors ? good_color : frogpilot_scene.sidebar_color2;
-  sidebar_color3 = frogpilot_scene.use_stock_colors ? good_color : frogpilot_scene.sidebar_color3;
-
-  if (util::random_int(0, 100) == 69 && frogpilot_toggles.value("random_events").toBool()) {
-    loadImage("../../frogpilot/assets/random_events/icons/button_home", home_img, home_gif, home_btn.size(), this);
-  } else {
-    loadImage("../../frogpilot/assets/active_theme/icons/button_home", home_img, home_gif, home_btn.size(), this);
-  }
-  loadImage("../../frogpilot/assets/active_theme/icons/button_flag", flag_img, flag_gif, home_btn.size(), this);
-  loadImage("../../frogpilot/assets/active_theme/icons/button_settings", settings_img, settings_gif, settings_btn.size(), this, Qt::IgnoreAspectRatio);
-}
-
-void Sidebar::showEvent(QShowEvent *event) {
-  updateTheme();
 }
 
 void Sidebar::mousePressEvent(QMouseEvent *event) {
@@ -111,6 +86,8 @@ void Sidebar::mousePressEvent(QMouseEvent *event) {
     flag_pressed = true;
   } else if (settings_btn.contains(pos)) {
     settings_pressed = true;
+  } else if (recording_audio && mic_indicator_btn.contains(event->pos())) {
+    mic_indicator_pressed = true;
   }
 
   update();
@@ -118,38 +95,68 @@ void Sidebar::mousePressEvent(QMouseEvent *event) {
 }
 
 void Sidebar::mouseReleaseEvent(QMouseEvent *event) {
-  if (flag_pressed || settings_pressed) {
-    flag_pressed = settings_pressed = false;
+  if (flag_pressed || settings_pressed || mic_indicator_pressed) {
+    flag_pressed = settings_pressed = mic_indicator_pressed = false;
     update();
   }
   if (onroad && home_btn.contains(event->pos())) {
     MessageBuilder msg;
-    msg.initEvent().initUserFlag();
-    pm->send("userFlag", msg);
+    msg.initEvent().initBookmarkButton();
+    pm->send("bookmarkButton", msg);
   } else if (settings_btn.contains(event->pos())) {
     emit openSettings();
+  } else if (recording_audio && mic_indicator_btn.contains(event->pos())) {
+    emit openSettings(2, "RecordAudio");
   }
 }
 
 void Sidebar::offroadTransition(bool offroad) {
   onroad = !offroad;
-
-  // FrogPilot variables
-  if (onroad) {
-    updateTheme();
-  }
-
   update();
+}
+
+void Sidebar::updateTheme() {
+  FrogPilotUIState &fs = *frogpilotUIState();
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
+
+  isCPU = frogpilot_toggles.value("cpu_metrics").toBool();
+  isDeveloperUI = frogpilot_toggles.value("developer_ui").toBool();
+  isFahrenheit = frogpilot_toggles.value("fahrenheit").toBool();
+  isGPU = frogpilot_toggles.value("gpu_metrics").toBool();
+  isIP = frogpilot_toggles.value("ip_metrics").toBool();
+  isMemoryUsage = frogpilot_toggles.value("memory_metrics").toBool();
+  isNumericalTemp = frogpilot_toggles.value("numerical_temp").toBool();
+  isStorageLeft = frogpilot_toggles.value("storage_left_metrics").toBool();
+  isStorageUsed = frogpilot_toggles.value("storage_used_metrics").toBool();
+  sidebar_color1 = frogpilot_scene.use_stock_colors ? good_color : frogpilot_scene.sidebar_color1;
+  sidebar_color2 = frogpilot_scene.use_stock_colors ? good_color : frogpilot_scene.sidebar_color2;
+  sidebar_color3 = frogpilot_scene.use_stock_colors ? good_color : frogpilot_scene.sidebar_color3;
+
+  loadImage("../../frogpilot/assets/active_theme/icons/button_home", home_img, home_gif, home_btn.size(), this);
+  loadImage("../../frogpilot/assets/active_theme/icons/button_flag", flag_img, flag_gif, home_btn.size(), this);
+  loadImage("../../frogpilot/assets/active_theme/icons/button_settings", settings_img, settings_gif, settings_btn.size(), this);
+}
+
+void Sidebar::showEvent(QShowEvent *event) {
+  updateTheme();
 }
 
 void Sidebar::updateState(const UIState &s, const FrogPilotUIState &fs) {
   if (!isVisible()) return;
 
+  // FrogPilot variables
+  const SubMaster &fpsm = *(fs.sm);
+
+  const cereal::FrogPilotDeviceState::Reader &frogpilotDeviceState = fpsm["frogpilotDeviceState"].getFrogpilotDeviceState();
+
   auto &sm = *(s.sm);
 
+  networking = networking ? networking : window()->findChild<Networking *>("");
+  bool tethering_on = networking && networking->wifi->tethering_on;
   auto deviceState = sm["deviceState"].getDeviceState();
-  setProperty("netType", network_type[deviceState.getNetworkType()]);
-  int strength = (int)deviceState.getNetworkStrength();
+  setProperty("netType", tethering_on ? "Hotspot": network_type[deviceState.getNetworkType()]);
+  int strength = tethering_on ? 4 : (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
 
   ItemStatus connectStatus;
@@ -177,15 +184,12 @@ void Sidebar::updateState(const UIState &s, const FrogPilotUIState &fs) {
   ItemStatus pandaStatus = {{tr("VEHICLE"), tr("ONLINE")}, sidebar_color2};
   if (s.scene.pandaType == cereal::PandaState::PandaType::UNKNOWN) {
     pandaStatus = {{tr("NO"), tr("PANDA")}, danger_color};
-  } else if (s.scene.started && !sm["liveLocationKalman"].getLiveLocationKalman().getGpsOK()) {
-    pandaStatus = {{tr("GPS"), tr("SEARCH")}, warning_color};
   }
   setProperty("pandaStatus", QVariant::fromValue(pandaStatus));
 
-  // FrogPilot variables
-  const SubMaster &frog_sm = *(fs.sm);
-  const cereal::FrogPilotDeviceState::Reader &frogpilotDeviceState = frog_sm["frogpilotDeviceState"].getFrogpilotDeviceState();
+  setProperty("recordingAudio", s.scene.recording_audio);
 
+  // FrogPilot variables
   if (isCPU || isGPU) {
     capnp::List<int8_t>::Reader cpu_loads = deviceState.getCpuUsagePercent();
     int cpu_usage = cpu_loads.size() != 0 ? std::accumulate(cpu_loads.begin(), cpu_loads.end(), 0) / cpu_loads.size() : 0;
@@ -241,32 +245,20 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   // buttons
   p.setOpacity(settings_pressed ? 0.65 : 1.0);
-  if (settings_gif) {
-    p.drawPixmap(settings_btn.x(), settings_btn.y(), settings_gif->currentPixmap());
-  } else {
-    p.drawPixmap(settings_btn.x(), settings_btn.y(), settings_img);
-  }
+  p.drawPixmap(settings_btn.x(), settings_btn.y(), settings_gif ? settings_gif->currentPixmap() : settings_img);
   p.setOpacity(onroad && flag_pressed ? 0.65 : 1.0);
-  if (onroad) {
-    if (flag_gif) {
-      p.drawPixmap(home_btn.x(), home_btn.y(), flag_gif->currentPixmap());
-    } else {
-      p.drawPixmap(home_btn.x(), home_btn.y(), flag_img);
-    }
-  } else {
-    if (home_gif) {
-      p.drawPixmap(home_btn.x(), home_btn.y(), home_gif->currentPixmap());
-    } else {
-      p.drawPixmap(home_btn.x(), home_btn.y(), home_img);
-    }
+  p.drawPixmap(home_btn.x(), home_btn.y(), onroad ? flag_gif ? flag_gif->currentPixmap() : flag_img : home_gif ? home_gif->currentPixmap() : home_img);
+  if (recording_audio) {
+    p.setBrush(danger_color);
+    p.setOpacity(mic_indicator_pressed ? 0.65 : 1.0);
+    p.drawRoundedRect(mic_indicator_btn, mic_indicator_btn.height() / 2, mic_indicator_btn.height() / 2);
+    int icon_x = mic_indicator_btn.x() + (mic_indicator_btn.width() - mic_img.width()) / 2;
+    int icon_y = mic_indicator_btn.y() + (mic_indicator_btn.height() - mic_img.height()) / 2;
+    p.drawPixmap(icon_x, icon_y, mic_img);
   }
   p.setOpacity(1.0);
 
   // network
-  int x = 58;
-  const QColor gray(0x54, 0x54, 0x54);
-  p.setFont(InterFont(35));
-
   if (isIP) {
     p.setPen(QColor(0xff, 0xff, 0xff));
     p.save();
@@ -274,16 +266,24 @@ void Sidebar::paintEvent(QPaintEvent *event) {
     p.drawText(QRect(50, 196, 225, 27), Qt::AlignLeft | Qt::AlignVCenter, frogpilotUIState()->wifi->getIp4Address());
     p.restore();
   } else {
+    int x = 58;
+    const QColor gray(0x54, 0x54, 0x54);
     for (int i = 0; i < 5; ++i) {
       p.setBrush(i < net_strength ? Qt::white : gray);
       p.drawEllipse(x, 196, 27, 27);
       x += 37;
     }
-    p.setPen(QColor(0xff, 0xff, 0xff));
   }
 
-  const QRect r = QRect(50, 247, 100, 50);
-  p.drawText(r, Qt::AlignCenter, net_type);
+  p.setFont(InterFont(35));
+  p.setPen(QColor(0xff, 0xff, 0xff));
+  const QRect r = QRect(58, 247, width() - 100, 50);
+
+  if (net_type == "Hotspot") {
+    p.drawPixmap(r.x(), r.y() + (r.height() - link_img.height()) / 2, link_img);
+  } else {
+    p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
+  }
 
   // metrics
   drawMetric(p, temp_status.first, temp_status.second, 338);

@@ -12,13 +12,17 @@ if [[ ! $(id -u) -eq 0 ]]; then
   SUDO="sudo"
 fi
 
+# Check if stdin is open
+if [ -t 0 ]; then
+  INTERACTIVE=1
+fi
+
 # Install common packages
 function install_ubuntu_common_requirements() {
   $SUDO apt-get update
   $SUDO apt-get install -y --no-install-recommends \
     ca-certificates \
     clang \
-    cppcheck \
     build-essential \
     gcc-arm-none-eabi \
     liblzma-dev \
@@ -41,11 +45,13 @@ function install_ubuntu_common_requirements() {
     libgles2-mesa-dev \
     libglfw3-dev \
     libglib2.0-0 \
+    libjpeg-dev \
     libqt5charts5-dev \
     libncurses5-dev \
     libssl-dev \
     libusb-1.0-0-dev \
     libzmq3-dev \
+    libzstd-dev \
     libsqlite3-dev \
     libsystemd-dev \
     locales \
@@ -53,34 +59,12 @@ function install_ubuntu_common_requirements() {
     ocl-icd-libopencl1 \
     ocl-icd-opencl-dev \
     portaudio19-dev \
-    qtmultimedia5-dev \
-    qtlocation5-dev \
-    qtpositioning5-dev \
     qttools5-dev-tools \
     libqt5svg5-dev \
     libqt5serialbus5-dev  \
     libqt5x11extras5-dev \
-    libqt5opengl5-dev
-}
-
-# Install extra packages
-function install_extra_packages() {
-  echo "Installing extra packages..."
-  $SUDO apt-get install -y --no-install-recommends \
-    casync \
-    cmake \
-    make \
-    clinfo \
-    libqt5sql5-sqlite \
-    libreadline-dev \
-    libdw1 \
-    autoconf \
-    libtool \
-    bzip2 \
-    libarchive-dev \
-    libncursesw5-dev \
-    libportaudio2 \
-    locales
+    libqt5opengl5-dev \
+    xvfb
 }
 
 # Install Ubuntu 24.04 LTS packages
@@ -93,17 +77,8 @@ function install_ubuntu_lts_latest_requirements() {
     qtchooser \
     qt5-qmake \
     qtbase5-dev-tools \
-    python3-dev
-}
-
-# Install Ubuntu 20.04 packages
-function install_ubuntu_focal_requirements() {
-  install_ubuntu_common_requirements
-
-  $SUDO apt-get install -y --no-install-recommends \
-    libavresample-dev \
-    qt5-default \
-    python-dev
+    python3-dev \
+    python3-venv
 }
 
 # Detect OS using /etc/os-release file
@@ -113,34 +88,38 @@ if [ -f "/etc/os-release" ]; then
     "jammy" | "kinetic" | "noble")
       install_ubuntu_lts_latest_requirements
       ;;
-    "focal")
-      install_ubuntu_focal_requirements
-      ;;
     *)
-      echo "$ID $VERSION_ID is unsupported. This setup script is written for Ubuntu 20.04."
+      echo "$ID $VERSION_ID is unsupported. This setup script is written for Ubuntu 24.04."
       read -p "Would you like to attempt installation anyway? " -n 1 -r
       echo ""
       if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
       fi
-      if [ "$UBUNTU_CODENAME" = "focal" ]; then
-        install_ubuntu_focal_requirements
-      else
-        install_ubuntu_lts_latest_requirements
-      fi
+      install_ubuntu_lts_latest_requirements
   esac
 
-  # Install extra packages
-  if [[ -z "$INSTALL_EXTRA_PACKAGES" ]]; then
-    read -p "Base setup done. Do you want to install extra development packages? [Y/n]: " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      INSTALL_EXTRA_PACKAGES="yes"
-    fi
+  if [[ -d "/etc/udev/rules.d/" ]]; then
+    # Setup jungle udev rules
+    $SUDO tee /etc/udev/rules.d/12-panda_jungle.rules > /dev/null <<EOF
+SUBSYSTEM=="usb", ATTRS{idVendor}=="3801", ATTRS{idProduct}=="ddcf", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="3801", ATTRS{idProduct}=="ddef", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="bbaa", ATTRS{idProduct}=="ddcf", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="bbaa", ATTRS{idProduct}=="ddef", MODE="0666"
+
+EOF
+
+    # Setup panda udev rules
+    $SUDO tee /etc/udev/rules.d/11-panda.rules > /dev/null <<EOF
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="3801", ATTRS{idProduct}=="ddcc", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="3801", ATTRS{idProduct}=="ddee", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="bbaa", ATTRS{idProduct}=="ddcc", MODE="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="bbaa", ATTRS{idProduct}=="ddee", MODE="0666"
+EOF
+
+    $SUDO udevadm control --reload-rules && $SUDO udevadm trigger || true
   fi
-  if [[ "$INSTALL_EXTRA_PACKAGES" == "yes" ]]; then
-    install_extra_packages
-  fi
+
 else
   echo "No /etc/os-release in the system. Make sure you're running on Ubuntu, or similar."
   exit 1

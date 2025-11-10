@@ -3,55 +3,48 @@ from cereal import car
 from openpilot.common.params import Params
 from openpilot.common.realtime import Priority, config_realtime_process
 from openpilot.common.swaglog import cloudlog
+from openpilot.selfdrive.controls.lib.ldw import LaneDepartureWarning
 from openpilot.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
 import cereal.messaging as messaging
 
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
-def publish_ui_plan(sm, pm, longitudinal_planner):
-  ui_send = messaging.new_message('uiPlan')
-  ui_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'modelV2'])
-  uiPlan = ui_send.uiPlan
-  uiPlan.frameId = sm['modelV2'].frameId
-  uiPlan.position.x = list(sm['modelV2'].position.x)
-  uiPlan.position.y = list(sm['modelV2'].position.y)
-  uiPlan.position.z = list(sm['modelV2'].position.z)
-  uiPlan.accel = longitudinal_planner.a_desired_trajectory_full.tolist()
-  pm.send('uiPlan', ui_send)
 
-def plannerd_thread():
+def main():
   config_realtime_process(5, Priority.CTRL_LOW)
 
   cloudlog.info("plannerd is waiting for CarParams")
   params = Params()
-  with car.CarParams.from_bytes(params.get("CarParams", block=True)) as msg:
-    CP = msg
-  cloudlog.info("plannerd got CarParams: %s", CP.carName)
+  CP = messaging.log_from_bytes(params.get("CarParams", block=True), car.CarParams)
+  cloudlog.info("plannerd got CarParams: %s", CP.brand)
 
+  ldw = LaneDepartureWarning()
   longitudinal_planner = LongitudinalPlanner(CP)
-  pm = messaging.PubMaster(['longitudinalPlan', 'uiPlan'])
-  sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'liveParameters', 'radarState', 'modelV2',
-                            'frogpilotPlan'],
-                           poll='modelV2', ignore_avg_freq=['radarState'])
+  pm = messaging.PubMaster(['longitudinalPlan', 'driverAssistance'])
+  sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'liveParameters', 'radarState', 'modelV2', 'selfdriveState'],
+                           poll='modelV2')
 
   # FrogPilot variables
-  frogpilot_toggles = get_frogpilot_toggles()
+  sm = sm.extend(['frogpilotPlan'])
 
-  classic_longitudinal = frogpilot_toggles.classic_longitudinal
+  frogpilot_toggles = get_frogpilot_toggles()
 
   while True:
     sm.update()
     if sm.updated['modelV2']:
-      longitudinal_planner.update(sm, classic_longitudinal, frogpilot_toggles)
+      longitudinal_planner.update(sm, frogpilot_toggles)
       longitudinal_planner.publish(sm, pm)
-      publish_ui_plan(sm, pm, longitudinal_planner)
 
-    # Update FrogPilot variables
+      ldw.update(sm.frame, sm['modelV2'], sm['carState'], sm['carControl'])
+      msg = messaging.new_message('driverAssistance')
+      msg.valid = sm.all_checks(['carState', 'carControl', 'modelV2', 'liveParameters'])
+      msg.driverAssistance.leftLaneDeparture = ldw.left
+      msg.driverAssistance.rightLaneDeparture = ldw.right
+      pm.send('driverAssistance', msg)
+
+    # FrogPilot variables
     if sm['frogpilotPlan'].togglesUpdated:
       frogpilot_toggles = get_frogpilot_toggles()
-
-def main():
-  plannerd_thread()
 
 
 if __name__ == "__main__":
