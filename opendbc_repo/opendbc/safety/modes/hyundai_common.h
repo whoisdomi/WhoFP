@@ -89,6 +89,14 @@ void hyundai_common_cruise_state_check(const bool cruise_engaged) {
 }
 
 void hyundai_common_cruise_buttons_check(const int cruise_button, const bool main_button) {
+  if (main_button && main_button != cruise_main_prev) {
+    if (acc_main_on && (alternative_experience & ALT_EXP_ALWAYS_ON_LATERAL)) {
+      controls_allowed = false;
+    }
+    acc_main_on = !acc_main_on;
+  }
+  cruise_main_prev = main_button;
+
   if ((cruise_button == HYUNDAI_BTN_RESUME) || (cruise_button == HYUNDAI_BTN_SET) || (cruise_button == HYUNDAI_BTN_CANCEL) || main_button) {
     hyundai_last_button_interaction = 0U;
   } else {
@@ -110,12 +118,6 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const bool mai
 
     cruise_button_prev = cruise_button;
   }
-
-  // FrogPilot variables
-  if (main_button != cruise_main_prev) {
-    acc_main_on = !acc_main_on;
-  }
-  cruise_main_prev = main_button;
 }
 
 #ifdef CANFD
@@ -146,9 +148,9 @@ uint32_t hyundai_common_canfd_compute_checksum(const CANPacket_t *msg) {
 #endif
 
 // FrogPilot variables
-void hyundai_lkas_button_check(const bool lkas) {
-  if (lkas != lkas_prev) {
-    lkas_on = !lkas_on;
+void hyundai_lkas_button_check(const bool lkas_pressed) {
+  if (lkas_pressed && !lkas_prev) {
+    lkas_on = true;
   }
-  lkas_prev = lkas;
+  lkas_prev = lkas_pressed;
 }

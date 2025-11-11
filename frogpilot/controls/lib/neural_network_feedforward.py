@@ -323,7 +323,7 @@ class LatControlNNFF(LatControl):
             pid_log.error += self.torque_from_lateral_accel(0.0, self.torque_params)
         else:
           torque_from_measurement = self.torque_from_lateral_accel(measurement, self.torque_params)
-          torque_from_setpoint = self.torque_from_lateral_accele(setpoint, self.torque_params)
+          torque_from_setpoint = self.torque_from_lateral_accel(setpoint, self.torque_params)
 
           pid_log.error = float(torque_from_setpoint - torque_from_measurement)
 

@@ -39,7 +39,9 @@ WEATHER_CATEGORIES = {
 }
 
 class WeatherChecker:
-  def __init__(self):
+  def __init__(self, FrogPilotPlanner):
+    self.frogpilot_planner = FrogPilotPlanner
+
     self.is_daytime = False
 
     self.api_25_calls = 0
@@ -88,7 +90,7 @@ class WeatherChecker:
       self.reduce_acceleration = 0
       self.reduce_lateral_acceleration = 0
 
-  def update_weather(self, gps_position, now, frogpilot_toggles):
+  def update_weather(self, now, frogpilot_toggles):
     if not self.api_key:
       self.weather_id = 0
       return
@@ -97,8 +99,8 @@ class WeatherChecker:
       distance = calculate_distance_to_point(
         self.last_gps_position["latitude"] * CV.DEG_TO_RAD,
         self.last_gps_position["longitude"] * CV.DEG_TO_RAD,
-        gps_position.get("latitude") * CV.DEG_TO_RAD,
-        gps_position.get("longitude") * CV.DEG_TO_RAD
+        self.frogpilot_planner.gps_position.get("latitude") * CV.DEG_TO_RAD,
+        self.frogpilot_planner.gps_position.get("longitude") * CV.DEG_TO_RAD
       )
       if distance / 1000 > CACHE_DISTANCE:
         self.hourly_forecast = None
@@ -120,7 +122,7 @@ class WeatherChecker:
       data = future.result()
       if data:
         self.hourly_forecast = data.get("hourly")
-        self.last_gps_position = gps_position
+        self.last_gps_position = self.frogpilot_planner.gps_position
 
         if "current" in data:
           source_data = data.get("current", {})
@@ -140,8 +142,8 @@ class WeatherChecker:
         return None
 
       params = {
-        "lat": gps_position["latitude"],
-        "lon": gps_position["longitude"],
+        "lat": self.frogpilot_planner.gps_position["latitude"],
+        "lon": self.frogpilot_planner.gps_position["longitude"],
         "appid": self.api_key,
         "units": "metric",
         "exclude": "alerts,minutely,daily",
