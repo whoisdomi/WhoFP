@@ -320,23 +320,23 @@ class LatControlNNFF(LatControl):
 
           # apply friction override for cars with low NN friction response
           if self.nn_friction_override:
-            pid_log.error += self.torque_from_lateral_accel(0.0, self.torque_params)
+            pid_log.error += self.torque_from_lateral_accel(LatControlInputs(0.0, 0.0, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=False)
         else:
-          torque_from_measurement = self.torque_from_lateral_accel(measurement, self.torque_params)
-          torque_from_setpoint = self.torque_from_lateral_accel(setpoint, self.torque_params)
+          torque_from_measurement = self.torque_from_lateral_accel(LatControlInputs(measurement, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=False)
+          torque_from_setpoint = self.torque_from_lateral_accel(LatControlInputs(setpoint, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=False)
 
           pid_log.error = float(torque_from_setpoint - torque_from_measurement)
 
           error = desired_lateral_accel - actual_lateral_accel
           friction_input = self.lat_accel_friction_factor * error + self.lat_jerk_friction_factor * lookahead_lateral_jerk
-          ff = self.torque_from_lateral_accel(gravity_adjusted_lateral_accel, self.torque_params)
+          ff = self.torque_from_lateral_accel(LatControlInputs(gravity_adjusted_lateral_accel, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=True)
       else:
-        torque_from_measurement = self.torque_from_lateral_accel(measurement, self.torque_params)
-        torque_from_setpoint = self.torque_from_lateral_accel(setpoint, self.torque_params)
+        torque_from_measurement = self.torque_from_lateral_accel(LatControlInputs(measurement, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=False)
+        torque_from_setpoint = self.torque_from_lateral_accel(LatControlInputs(setpoint, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=False)
 
         pid_log.error = float(torque_from_setpoint - torque_from_measurement)
 
-        ff = self.torque_from_lateral_accel(gravity_adjusted_lateral_accel, self.torque_params)
+        ff = self.torque_from_lateral_accel(LatControlInputs(gravity_adjusted_lateral_accel, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params, gravity_adjusted=True)
 
       freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 5
       output_torque = self.pid.update(pid_log.error,
