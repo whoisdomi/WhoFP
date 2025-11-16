@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from cereal import car
+from opendbc.safety import ALTERNATIVE_EXPERIENCE
 from openpilot.common.params import Params
 from openpilot.selfdrive.selfdrived.events import ET
 
@@ -8,13 +9,15 @@ from openpilot.frogpilot.common.frogpilot_variables import NON_DRIVING_GEARS
 ButtonType = car.CarState.ButtonEvent.Type
 
 class FrogPilotCard:
-  def __init__(self, CP):
+  def __init__(self, CP, FPCP):
     self.CP = CP
 
     self.params = Params()
     self.params_memory = Params(memory=True)
 
     self.always_on_lateral_allowed = False
+
+    self.always_on_lateral_set = bool(FPCP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
 
   def update(self, carState, frogpilotCarState, sm, frogpilot_toggles):
     if self.CP.brand == "hyundai":
@@ -28,7 +31,7 @@ class FrogPilotCard:
     else:
       self.always_on_lateral_allowed = carState.cruiseState.enabled
 
-    self.always_on_lateral_enabled = self.always_on_lateral_allowed and frogpilot_toggles.always_on_lateral_set
+    self.always_on_lateral_enabled = self.always_on_lateral_allowed and self.always_on_lateral_set
     self.always_on_lateral_enabled &= carState.gearShifter not in NON_DRIVING_GEARS
     self.always_on_lateral_enabled &= sm["frogpilotPlan"].lateralCheck
     self.always_on_lateral_enabled &= sm["liveCalibration"].calPerc >= 1

@@ -217,3 +217,4 @@ class CarController(CarControllerBase):
         self.sng_acc_resume_cnt = -1
 
     self.prev_close_distance = CS.close_distance
+    return throttle_cmd, speed_cmd

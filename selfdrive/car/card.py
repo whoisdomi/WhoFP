@@ -173,11 +173,6 @@ class Car:
     self.resume_prev_button = False
 
     # FrogPilot variables
-    self.frogpilot_card = FrogPilotCard(self.CP)
-
-    self.sm = self.sm.extend(['frogpilotOnroadEvents', 'frogpilotPlan', 'liveCalibration', 'selfdriveState'])
-    self.pm = self.pm.extend(['frogpilotCarState'])
-
     self.frogpilot_toggles = get_frogpilot_toggles()
 
     if self.frogpilot_toggles.always_on_lateral:
@@ -188,6 +183,11 @@ class Car:
     self.params.put_nonblocking("FrogPilotCarParamsPersistent", fpcp_bytes)
 
     update_frogpilot_toggles()
+
+    self.frogpilot_card = FrogPilotCard(self.CP, self.FPCP)
+
+    self.sm = self.sm.extend(['frogpilotOnroadEvents', 'frogpilotPlan', 'liveCalibration', 'selfdriveState'])
+    self.pm = self.pm.extend(['frogpilotCarState'])
 
   def state_update(self) -> tuple[car.CarState, structs.RadarDataT | None]:
     """carState update loop, driven by can"""
@@ -231,8 +231,6 @@ class Car:
 
     # FrogPilot variables
     FPCS = self.frogpilot_card.update(CS, FPCS, self.sm, self.frogpilot_toggles)
-
-    self.CI.CS.CC = self.sm['carControl']
 
     return CS, RD, FPCS
 
@@ -303,6 +301,12 @@ class Car:
     self.initialized_prev = initialized
     self.CS_prev = CS
 
+    # FrogPilot variables
+    self.CI.CS.CC = self.sm['carControl']
+
+    if self.sm['frogpilotPlan'].togglesUpdated:
+      self.frogpilot_toggles = get_frogpilot_toggles()
+
   def params_thread(self, evt):
     while not evt.is_set():
       self.is_metric = self.params.get_bool("IsMetric")
@@ -320,10 +324,6 @@ class Car:
     finally:
       e.set()
       t.join()
-
-      # FrogPilot variables
-      if self.sm['frogpilotPlan'].togglesUpdated:
-        self.frogpilot_toggles = get_frogpilot_toggles()
 
 
 def main():

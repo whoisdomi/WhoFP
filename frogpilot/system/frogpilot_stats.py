@@ -126,6 +126,7 @@ def send_stats(params):
       with car.CarParams.from_bytes(msg_bytes) as CP:
         cp_dict = CP.to_dict()
         cp_dict.pop("carFw", None)
+        cp_dict.pop("carVin", None)
         car_params = json.dumps(cp_dict)
 
     frogpilot_car_params = "{}"
@@ -134,6 +135,7 @@ def send_stats(params):
       with custom.FrogPilotCarParams.from_bytes(frogpilot_msg_bytes) as FPCP:
         fpcp_dict = FPCP.to_dict()
         fpcp_dict.pop("carFw", None)
+        fpcp_dict.pop("carVin", None)
         frogpilot_car_params = json.dumps(fpcp_dict)
 
     dongle_id = params.get("FrogPilotDongleId")

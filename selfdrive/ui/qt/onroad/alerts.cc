@@ -21,16 +21,19 @@ void OnroadAlerts::updateState(const UIState &s, const FrogPilotUIState &fs) {
 }
 
 void OnroadAlerts::clear() {
-  alertHeight = 0;
-
   alert = {};
   update();
+
+  // FrogPilot variables
+  alertHeight = 0;
 }
 
 OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster &fpsm, uint64_t started_frame, const QJsonObject &frogpilot_toggles) {
   const cereal::SelfdriveState::Reader &ss = sm["selfdriveState"].getSelfdriveState();
-  const cereal::FrogPilotSelfdriveState::Reader &fpss = fpsm["frogpilotSelfdriveState"].getFrogpilotSelfdriveState();
   const uint64_t selfdrive_frame = sm.rcv_frame("selfdriveState");
+
+  // FrogPilot variables
+  const cereal::FrogPilotSelfdriveState::Reader &fpss = fpsm["frogpilotSelfdriveState"].getFrogpilotSelfdriveState();
 
   Alert a = {};
   static QString crash_log_path = "/data/error_logs/error.txt";
@@ -53,6 +56,7 @@ OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster 
     a = {ss.getAlertText1().cStr(), ss.getAlertText2().cStr(),
          ss.getAlertType().cStr(), ss.getAlertSize(), ss.getAlertStatus()};
 
+    // FrogPilot variables
     if (a.size == cereal::SelfdriveState::AlertSize::NONE) {
       a = {fpss.getAlertText1().cStr(), fpss.getAlertText2().cStr(),
            fpss.getAlertType().cStr(), static_cast<cereal::SelfdriveState::AlertSize>(fpss.getAlertSize()), static_cast<cereal::SelfdriveState::AlertStatus>(fpss.getAlertStatus())};
