@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-from cereal import car
+from cereal import car, custom
 from openpilot.common.constants import CV
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
@@ -128,6 +128,14 @@ def send_stats(params):
         cp_dict.pop("carFw", None)
         car_params = json.dumps(cp_dict)
 
+    frogpilot_car_params = "{}"
+    frogpilot_msg_bytes = params.get("FrogPilotCarParamsPersistent")
+    if frogpilot_msg_bytes:
+      with custom.FrogPilotCarParams.from_bytes(frogpilot_msg_bytes) as FPCP:
+        fpcp_dict = FPCP.to_dict()
+        fpcp_dict.pop("carFw", None)
+        frogpilot_car_params = json.dumps(fpcp_dict)
+
     dongle_id = params.get("FrogPilotDongleId")
     frogpilot_stats = params.get("FrogPilotStats") or {}
 
@@ -155,6 +163,7 @@ def send_stats(params):
       .field("country", country)
       .field("device", HARDWARE.get_device_type())
       .field("event", 1)
+      .field("frogpilot_car_params", frogpilot_car_params)
       .field("latitude", latitude)
       .field("longitude", longitude)
       .field("state", state)

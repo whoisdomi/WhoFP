@@ -26,7 +26,7 @@ class CarState(CarStateBase):
     self.distance_button = 0
 
     # RealFast variables
-    self.button_message = "CRUISE_BUTTONS_ALT" if FPCP.flags & ChryslerFrogPilotFlags.RAM_HD_ALT_BUTTONS else self.button_message
+    self.button_message = "CRUISE_BUTTONS_ALT" if FPCP.flags & ChryslerFrogPilotFlags.RAM_HD_ALT_BUTTONS else "CRUISE_BUTTONS"
 
   def update(self, can_parsers, frogpilot_toggles) -> structs.CarState:
     cp = can_parsers[Bus.pt]

@@ -479,9 +479,9 @@ class FrogPilotVariables:
     toggle.device_shutdown_time = DEVICE_SHUTDOWN_TIMES.get(self.params.get("DeviceShutdown") if device_management and tuning_level >= level["DeviceShutdown"] else default["DeviceShutdown"])
     toggle.increase_thermal_limits = device_management and (self.params.get_bool("IncreaseThermalLimits") if tuning_level >= level["IncreaseThermalLimits"] else default["IncreaseThermalLimits"])
     toggle.low_voltage_shutdown = np.clip(self.params.get("LowVoltageShutdown") if device_management and tuning_level >= level["LowVoltageShutdown"] else default["LowVoltageShutdown"], VBATT_PAUSE_CHARGING, 12.5)
-    toggle.no_logging = True #device_management and (self.params.get_bool("NoLogging") if tuning_level >= level["NoLogging"] else default["NoLogging"]) and not self.vetting_branch or toggle.force_onroad
-    toggle.no_uploads = True #device_management and (self.params.get_bool("NoUploads") if tuning_level >= level["NoUploads"] else default["NoUploads"]) and not self.vetting_branch
-    toggle.no_onroad_uploads = False #toggle.no_uploads and (self.params.get_bool("DisableOnroadUploads") if tuning_level >= level["DisableOnroadUploads"] else default["DisableOnroadUploads"])
+    toggle.no_logging = device_management and (self.params.get_bool("NoLogging") if tuning_level >= level["NoLogging"] else default["NoLogging"]) and not self.vetting_branch or toggle.force_onroad
+    toggle.no_uploads = device_management and (self.params.get_bool("NoUploads") if tuning_level >= level["NoUploads"] else default["NoUploads"]) and not self.vetting_branch
+    toggle.no_onroad_uploads = toggle.no_uploads and (self.params.get_bool("DisableOnroadUploads") if tuning_level >= level["DisableOnroadUploads"] else default["DisableOnroadUploads"])
 
     distance_button_control = self.params.get("DistanceButtonControl") if tuning_level >= level["DistanceButtonControl"] else default["DistanceButtonControl"]
     toggle.experimental_mode_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
