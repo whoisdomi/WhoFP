@@ -160,7 +160,7 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
   candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(can_recv, can_send, set_obd_multiplexing, num_pandas, cached_params)
 
   if candidate is None or frogpilot_toggles.force_fingerprint:
-    if frogpilot_toggles.car_model is not None:
+    if frogpilot_toggles.force_fingerprint:
       candidate = frogpilot_toggles.car_model
     else:
       carlog.error({"event": "car doesn't match any fingerprints", "fingerprints": repr(fingerprints)})
