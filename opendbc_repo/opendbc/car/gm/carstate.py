@@ -37,6 +37,8 @@ class CarState(CarStateBase):
 
     self.distance_button = 0
 
+    self.pcm_acc_status = 0
+
   def update_button_enable(self, buttonEvents: list[structs.CarState.ButtonEvent]):
     if not self.CP.pcmCruise:
       for b in buttonEvents:

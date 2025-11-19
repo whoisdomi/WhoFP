@@ -198,7 +198,7 @@ class Car:
     # Update carState from CAN
     CS, FPCS = self.CI.update(can_list, self.frogpilot_toggles)
     if self.CP.brand == 'mock':
-      CS, FPCS = self.mock_carstate.update(CS)
+      CS, FPCS = self.mock_carstate.update(CS, FPCS)
 
     # Update radar tracks from CAN
     RD: structs.RadarDataT | None = self.RI.update(can_list)

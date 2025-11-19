@@ -366,7 +366,10 @@ class FrogPilotVariables:
 
     toggle.automatic_updates = (self.params.get_bool("AutomaticUpdates") if tuning_level >= level["AutomaticUpdates"] and (self.release_branch or self.vetting_branch) else default["AutomaticUpdates"]) and not BACKUP_PATH.is_file()
 
-    toggle.car_model = self.params.get("CarModel") if tuning_level >= level["CarModel"] else default["CarModel"]
+    car_model = self.params.get("CarModel")
+    toggle.force_fingerprint = (self.params.get_bool("ForceFingerprint") if tuning_level >= level["ForceFingerprint"] else default["ForceFingerprint"]) and car_model != default["CarModel"]
+    if toggle.force_fingerprint:
+      toggle.car_model = car_model
 
     toggle.cluster_offset = self.params.get("ClusterOffset") if toggle.car_make == "toyota" and tuning_level >= level["ClusterOffset"] else default["ClusterOffset"]
 
@@ -506,8 +509,6 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
-
-    toggle.force_fingerprint = (self.params.get_bool("ForceFingerprint") if tuning_level >= level["ForceFingerprint"] else default["ForceFingerprint"]) and toggle.car_model != default["CarModel"]
 
     toggle.frogsgomoo_tweak = toggle.openpilot_longitudinal and toggle.car_make == "toyota" and (self.params.get_bool("FrogsGoMoosTweak") if tuning_level >= level["FrogsGoMoosTweak"] else default["FrogsGoMoosTweak"])
     toggle.stoppingDecelRate = 0.01 if toggle.frogsgomoo_tweak else toggle.stoppingDecelRate
