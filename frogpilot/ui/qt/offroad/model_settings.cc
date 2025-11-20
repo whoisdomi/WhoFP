@@ -87,6 +87,11 @@ FrogPilotModelPanel::FrogPilotModelPanel(FrogPilotSettingsWindow *parent) : Frog
               }
             }
 
+            noModelsDownloaded = deletableModels.isEmpty();
+
+            deletableModels.removeAll(modelToDelete);
+            deleteModelButton->setEnabled(!noModelsDownloaded);
+
             allModelsDownloaded = false;
           }
         } else if (id == 1) {
@@ -101,6 +106,8 @@ FrogPilotModelPanel::FrogPilotModelPanel(FrogPilotSettingsWindow *parent) : Frog
                 }
               }
             }
+
+            deleteModelButton->setEnabled(false);
 
             allModelsDownloaded = false;
             noModelsDownloaded = true;

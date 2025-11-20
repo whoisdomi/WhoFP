@@ -466,10 +466,6 @@ void FrogPilotVisualsPanel::updateToggles() {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
-    else if (key == "LeadInfo") {
-      setVisible &= parent->hasOpenpilotLongitudinal;
-    }
-
     else if (key == "OnroadDistanceButton") {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }

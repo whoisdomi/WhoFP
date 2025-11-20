@@ -21,9 +21,9 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
 }
 
-void AnnotatedCameraWidget::updateState(const UIState &s) {
+void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState &fs) {
   // update engageability/experimental mode button
-  experimental_btn->updateState(s);
+  experimental_btn->updateState(s, fs);
   dmon.updateState(s);
 }
 

@@ -3,8 +3,8 @@ from cereal import log
 from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
-from openpilot.selfdrive.selfdrived.events import FROGPILOT_EVENT_NAME
-from openpilot.selfdrive.selfdrived.selfdrived import LONGITUDINAL_PERSONALITY_MAP, EventName, FrogPilotEventName, State
+from openpilot.selfdrive.selfdrived.events import FROGPILOT_EVENT_NAME, EventName, FrogPilotEventName
+from openpilot.selfdrive.selfdrived.selfdrived import LONGITUDINAL_PERSONALITY_MAP, State
 from openpilot.selfdrive.selfdrived.state import ACTIVE_STATES
 from openpilot.selfdrive.ui.soundd import FrogPilotAudibleAlert
 

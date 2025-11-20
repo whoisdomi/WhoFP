@@ -263,13 +263,12 @@ class FrogPilotVariables:
     if msg_bytes:
       CP = messaging.log_from_bytes(msg_bytes, car.CarParams)
     else:
-      CarInterface = interfaces[MOCK.MOCK]
-      CP = CarInterface.get_params(MOCK.MOCK, gen_empty_fingerprint(), [], False, False, False, toggle)
-      CarInterface.configure_torque_tune(MOCK.MOCK, CP.lateralTuning)
+      CP = interfaces[MOCK.MOCK].get_params(MOCK.MOCK, gen_empty_fingerprint(), [], False, False, False, toggle).as_reader()
 
-      safety_config = car.CarParams.SafetyConfig.new_message()
-      safety_config.safetyModel = car.CarParams.SafetyModel.noOutput
-      CP.safetyConfigs = [safety_config]
+    if not CP.safetyConfigs:
+      CP_builder = CP.as_builder()
+      CP_builder.safetyConfigs = [car.CarParams.SafetyConfig.new_message(safetyModel=SafetyModel.noOutput)]
+      CP = CP_builder.as_reader()
 
     is_torque_car = CP.lateralTuning.which() == "torque"
     if not is_torque_car:
@@ -281,8 +280,7 @@ class FrogPilotVariables:
     if fpmsg_bytes:
       FPCP = messaging.log_from_bytes(fpmsg_bytes, custom.FrogPilotCarParams)
     else:
-      CarInterface = interfaces[MOCK.MOCK]
-      FPCP = CarInterface.get_frogpilot_params(MOCK.MOCK, gen_empty_fingerprint(), [], CP, toggle)
+      FPCP = interfaces[MOCK.MOCK].get_frogpilot_params(MOCK.MOCK, gen_empty_fingerprint(), [], CP, toggle)
 
     toggle.car_make = CP.brand
     toggle.car_model = CP.carFingerprint
@@ -313,9 +311,9 @@ class FrogPilotVariables:
 
     msg_bytes = self.params.get("LiveTorqueParameters")
     if msg_bytes:
-      with log.LiveTorqueParametersData.from_bytes(msg_bytes) as LTP:
-        has_auto_tune = LTP.useParams
-        toggle.liveValid = LTP.liveValid
+      LTP = messaging.log_from_bytes(msg_bytes, log.LiveTorqueParametersData)
+      has_auto_tune = LTP.useParams
+      toggle.liveValid = LTP.liveValid
     else:
       has_auto_tune = False
       toggle.liveValid = False

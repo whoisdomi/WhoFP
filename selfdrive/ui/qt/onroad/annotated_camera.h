@@ -13,7 +13,7 @@ class AnnotatedCameraWidget : public CameraWidget {
 
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
-  void updateState(const UIState &s);
+  void updateState(const UIState &s, const FrogPilotUIState &fs);
 
 private:
   QVBoxLayout *main_layout;

@@ -370,6 +370,7 @@ public:
                                fast_increase(fast_increase), interval(interval), label(label), min_value(min_value), max_value(max_value), value_labels(value_labels) {
     factor = std::pow(10, std::ceil(-std::log10(interval)));
     key = param.toStdString();
+    key_type = params.getKeyType(key);
 
     setupButton(decrement_button, "-");
     setupButton(increment_button, "+");
@@ -440,7 +441,11 @@ public:
   }
 
   void refresh() {
-    value = std::clamp(std::round(params.getFloat(key) * factor) / factor, min_value, max_value);
+    if (key_type == ParamKeyType::INT) {
+      value = std::clamp(std::round(params.getInt(key) * factor) / factor, min_value, max_value);
+    } else {
+      value = std::clamp(std::round(params.getFloat(key) * factor) / factor, min_value, max_value);
+    }
     previous_value = value;
 
     updateDisplay();
@@ -498,7 +503,15 @@ public:
   }
 
   void updateParam() {
-    params.putFloat(key, value);
+    if (value == previous_value) {
+      return;
+    }
+
+    if (key_type == ParamKeyType::INT) {
+      params.putInt(key, value);
+    } else {
+      params.putFloat(key, value);
+    }
   }
 
   void updateValue() {
@@ -532,6 +545,8 @@ private:
   std::map<float, QString> value_labels;
 
   std::string key;
+
+  ParamKeyType key_type;
 
   Params params;
 

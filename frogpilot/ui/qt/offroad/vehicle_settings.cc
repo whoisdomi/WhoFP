@@ -52,18 +52,25 @@ QStringList getCarNames(const QString &carMake, QMap<QString, QString> &carModel
   static const QRegularExpression carNameRegex("CarDocs\\w*\\s*\\(\\s*\"([^\"]+)\"");
   static const QRegularExpression commentRegex("#[^\\n]*");
   static const QRegularExpression footnoteRegex("footnotes=\\[[^\\]]*\\],\\s*");
-  static const QRegularExpression platformRegex("(\\w+)\\s*=\\s*\\w+\\s*\\(\\s*\\[([\\s\\S]*?)\\]");
+  static const QRegularExpression platformRegex("(\\w+)\\s*=\\s*\\w+\\s*\\(");
 
   fileContent.remove(commentRegex);
   fileContent.remove(footnoteRegex);
 
   QRegularExpressionMatchIterator platformMatches = platformRegex.globalMatch(fileContent);
+  QList<QRegularExpressionMatch> matches;
   while (platformMatches.hasNext()) {
-    QRegularExpressionMatch platformMatch = platformMatches.next();
-    QString platformName = platformMatch.captured(1);
-    QString carDocsContent = platformMatch.captured(2);
+    matches.append(platformMatches.next());
+  }
 
-    QRegularExpressionMatchIterator carNameMatches = carNameRegex.globalMatch(carDocsContent);
+  for (int i = 0; i < matches.size(); ++i) {
+    QRegularExpressionMatch match = matches[i];
+    QString platformName = match.captured(1);
+
+    int start = match.capturedEnd();
+    int end = (i + 1 < matches.size()) ? matches[i + 1].capturedStart() : fileContent.length();
+
+    QRegularExpressionMatchIterator carNameMatches = carNameRegex.globalMatch(fileContent.mid(start, end - start));
     while (carNameMatches.hasNext()) {
       QString carName = carNameMatches.next().captured(1);
 
@@ -390,12 +397,12 @@ void FrogPilotVehiclesPanel::updateToggles() {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
-    else if (key == "LockDoorsTimer") {
+    if (key == "LockDoorsTimer") {
       setVisible &= !parent->isC3;
     }
 
     else if (key == "SNGHack") {
-      setVisible &= !parent->hasPedal && !parent->hasSNG;
+      setVisible &= !parent->hasSNG;
     }
 
     else if (key == "SubaruSNG") {

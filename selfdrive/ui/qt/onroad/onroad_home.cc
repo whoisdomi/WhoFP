@@ -45,7 +45,7 @@ void OnroadWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
   }
 
   alerts->updateState(s, fs);
-  nvg->updateState(s);
+  nvg->updateState(s, fs);
 
   QColor bgColor = bg_colors[s.status];
   if (bg != bgColor) {
