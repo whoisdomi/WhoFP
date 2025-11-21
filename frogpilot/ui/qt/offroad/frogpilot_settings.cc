@@ -14,16 +14,16 @@
 #include "frogpilot/ui/qt/offroad/wheel_settings.h"
 
 bool nnffLogFileExists(const QString &carFingerprint) {
-  static QStringList files;
+  static QStringList models;
   static QMap<QString, QString> substitutes;
 
-  if (files.isEmpty()) {
+  if (models.isEmpty()) {
     QFileInfoList fileInfoList = QDir(QStringLiteral("../../frogpilot/assets/nnff_models")).entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
     for (const QFileInfo &fileInfo : fileInfoList) {
-      files.append(fileInfo.completeBaseName());
+      models.append(fileInfo.completeBaseName());
     }
 
-    QFile sub_file(QStringLiteral("../../selfdrive/car/torque_data/substitute.toml"));
+    QFile sub_file("../../opendbc/car/torque_data/substitute.toml");
     if (sub_file.open(QIODevice::ReadOnly)) {
       QTextStream in(&sub_file);
       while (!in.atEnd()) {
@@ -51,8 +51,8 @@ bool nnffLogFileExists(const QString &carFingerprint) {
   }
 
   for (const QString &fingerprint : fingerprintsToCheck) {
-    for (const QString &file : files) {
-      if (file.startsWith(fingerprint)) {
+    for (const QString &match : models) {
+      if (match.startsWith(fingerprint)) {
         std::cout << "NNFF model found for fingerprint: " << fingerprint.toStdString() << std::endl;
         return true;
       }
@@ -322,6 +322,7 @@ void FrogPilotSettingsWindow::updateVariables() {
     isTSK = CP.getSecOcRequired();
     isVolt = carFingerprint == "CHEVROLET_VOLT";
     latAccelFactor = CP.getLateralTuning().getTorque().getLatAccelFactor();
+    lkasAllowedForAOL = frogpilot_toggles.value("lkas_allowed_for_aol").toBool();
     longitudinalActuatorDelay = CP.getLongitudinalActuatorDelay();
     startAccel = CP.getStartAccel();
     steerActuatorDelay = CP.getSteerActuatorDelay();

@@ -351,8 +351,7 @@ void FrogPilotLateralPanel::updateToggles() {
     bool setVisible = parent->tuningLevel >= parent->frogpilotToggleLevels[key].toDouble();
 
     if (key == "AlwaysOnLateralLKAS") {
-      setVisible &= parent->isHKGCanFd;
-      setVisible &= !parent->hasOpenpilotLongitudinal;
+      setVisible &= parent->lkasAllowedForAOL;
     }
 
     else if (key == "AlwaysOnLateralMain") {

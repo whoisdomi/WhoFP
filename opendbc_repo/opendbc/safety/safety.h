@@ -61,10 +61,10 @@ int cruise_button_prev = 0;
 bool safety_rx_checks_invalid = false;
 
 // FrogPilot variables
-bool acc_main_on_prev = false;
 bool aol_allowed = false;
+bool lkas_button_prev = false;
 bool lkas_on = false;
-bool lkas_on_prev = false;
+bool main_button_prev = false;
 
 // for safety modes with torque steering control
 int desired_torque_last = 0;       // last desired steer torque

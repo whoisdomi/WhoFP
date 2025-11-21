@@ -44,6 +44,7 @@ public:
   bool isTSK = false;
   bool isVolt = true;
   bool keepScreenOn = false;
+  bool lkasAllowedForAOL = false;
   bool openpilotLongitudinalControlDisabled = false;
 
   float friction;

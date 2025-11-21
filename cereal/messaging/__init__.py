@@ -274,4 +274,7 @@ class PubMaster:
 
   # FrogPilot variables
   def extend(self, new_services: List[str]):
-    return PubMaster(list(self.sock.keys()) + new_services)
+    for service in new_services:
+      if service not in self.sock:
+        self.sock[service] = pub_sock(service)
+    return self

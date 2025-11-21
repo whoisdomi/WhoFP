@@ -269,10 +269,10 @@ extern int cruise_button_prev;
 extern bool safety_rx_checks_invalid;
 
 // FrogPilot variables
-extern bool acc_main_on_prev;
 extern bool aol_allowed;
+extern bool lkas_button_prev;
 extern bool lkas_on;
-extern bool lkas_on_prev;
+extern bool main_button_prev;
 
 // for safety modes with torque steering control
 extern int desired_torque_last;       // last desired steer torque

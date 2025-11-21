@@ -112,6 +112,10 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const bool mai
   }
 
   // FrogPilot variables
+  if (main_button && !main_button_prev) {
+    acc_main_on = !acc_main_on;
+  }
+  main_button_prev = main_button;
 }
 
 #ifdef CANFD
@@ -142,3 +146,9 @@ uint32_t hyundai_common_canfd_compute_checksum(const CANPacket_t *msg) {
 #endif
 
 // FrogPilot variables
+void hyundai_lkas_button_check(const bool lkas_button) {
+  if (lkas_button && !lkas_button_prev) {
+    lkas_on = !lkas_on;
+  }
+  lkas_button_prev = lkas_button;
+}

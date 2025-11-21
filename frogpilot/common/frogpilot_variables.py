@@ -15,6 +15,7 @@ from cereal import car, custom, log
 from opendbc.car import gen_empty_fingerprint
 from opendbc.car.car_helpers import interfaces
 from opendbc.car.gm.values import GMFlags
+from opendbc.car.hyundai.values import HyundaiFlags
 from opendbc.car.interfaces import TORQUE_SUBSTITUTE_PATH, CarInterfaceBase
 from opendbc.car.mock.interface import CarInterface
 from opendbc.car.mock.values import CAR as MOCK
@@ -30,7 +31,6 @@ from openpilot.system.hardware.power_monitoring import VBATT_PAUSE_CHARGING
 from openpilot.system.version import get_build_metadata
 
 GearShifter = car.CarState.GearShifter
-SafetyModel = car.CarParams.SafetyModel
 
 CITY_SPEED_LIMIT = 25                     # 55mph is typically the minimum speed for highways
 CRUISING_SPEED = 5                        # Roughly the speed cars go when not touching the gas while in drive
@@ -265,11 +265,6 @@ class FrogPilotVariables:
     else:
       CP = interfaces[MOCK.MOCK].get_params(MOCK.MOCK, gen_empty_fingerprint(), [], False, False, False, toggle).as_reader()
 
-    if not CP.safetyConfigs:
-      CP_builder = CP.as_builder()
-      CP_builder.safetyConfigs = [car.CarParams.SafetyConfig.new_message(safetyModel=SafetyModel.noOutput)]
-      CP = CP_builder.as_reader()
-
     is_torque_car = CP.lateralTuning.which() == "torque"
     if not is_torque_car:
       CP_builder = CP.as_builder()
@@ -296,16 +291,17 @@ class FrogPilotVariables:
     toggle.has_zss = toggle.car_make == "toyota" and bool(FPCP.flags & ToyotaFrogPilotFlags.ZSS.value)
     is_angle_car = CP.steerControlType == car.CarParams.SteerControlType.angle
     latAccelFactor = CP.lateralTuning.torque.latAccelFactor
+    toggle.lkas_allowed_for_aol = toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD)
     longitudinalActuatorDelay = CP.longitudinalActuatorDelay
     toggle.openpilot_longitudinal = CP.openpilotLongitudinalControl and not toggle.disable_openpilot_long
     pcm_cruise = CP.pcmCruise
+    prohibited_main_aol = not toggle.openpilot_longitudinal and bool(CP.flags & HyundaiFlags.CANFD)
     startAccel = CP.startAccel
     stopAccel = CP.stopAccel
     steerActuatorDelay = CP.steerActuatorDelay
     steerKp = CP.lateralTuning.torque.kp
     steerRatio = CP.steerRatio
     toggle.stoppingDecelRate = CP.stoppingDecelRate
-    use_lkas_for_aol = not toggle.openpilot_longitudinal and CP.safetyConfigs[0].safetyModel == SafetyModel.hyundaiCanfd
     toggle.vEgoStarting = CP.vEgoStarting
     toggle.vEgoStopping = CP.vEgoStopping
 
@@ -358,8 +354,8 @@ class FrogPilotVariables:
     toggle.warningImmediate_volume = max(self.params.get("WarningImmediateVolume") if toggle.alert_volume_controller and tuning_level >= level["WarningImmediateVolume"] else default["WarningImmediateVolume"], 25)
 
     toggle.always_on_lateral = self.params.get_bool("AlwaysOnLateral") if tuning_level >= level["AlwaysOnLateral"] else default["AlwaysOnLateral"]
-    toggle.always_on_lateral_lkas = toggle.always_on_lateral and use_lkas_for_aol and (self.params.get_bool("AlwaysOnLateralLKAS") if tuning_level >= level["AlwaysOnLateralLKAS"] else default["AlwaysOnLateralLKAS"])
-    toggle.always_on_lateral_main = toggle.always_on_lateral and not use_lkas_for_aol and (self.params.get_bool("AlwaysOnLateralMain") if tuning_level >= level["AlwaysOnLateralMain"] else default["AlwaysOnLateralMain"])
+    toggle.always_on_lateral_lkas = toggle.always_on_lateral and toggle.lkas_allowed_for_aol and (self.params.get_bool("AlwaysOnLateralLKAS") if tuning_level >= level["AlwaysOnLateralLKAS"] else default["AlwaysOnLateralLKAS"])
+    toggle.always_on_lateral_main = toggle.always_on_lateral and not prohibited_main_aol and not toggle.always_on_lateral_lkas and (self.params.get_bool("AlwaysOnLateralMain") if tuning_level >= level["AlwaysOnLateralMain"] else default["AlwaysOnLateralMain"])
     toggle.always_on_lateral_pause_speed = self.params.get("PauseAOLOnBrake") if toggle.always_on_lateral and tuning_level >= level["PauseAOLOnBrake"] else default["PauseAOLOnBrake"]
 
     toggle.automatic_updates = (self.params.get_bool("AutomaticUpdates") if tuning_level >= level["AutomaticUpdates"] and (self.release_branch or self.vetting_branch) else default["AutomaticUpdates"]) and not BACKUP_PATH.is_file()
