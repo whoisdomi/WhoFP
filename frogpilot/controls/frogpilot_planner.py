@@ -4,6 +4,7 @@ import cereal.messaging as messaging
 from openpilot.common.constants import CV
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.gps import get_gps_location_service
+from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import A_CHANGE_COST, DANGER_ZONE_COST, J_EGO_COST, STOP_DISTANCE
@@ -18,12 +19,15 @@ from openpilot.frogpilot.controls.lib.frogpilot_vcruise import FrogPilotVCruise
 from openpilot.frogpilot.controls.lib.weather_checker import WeatherChecker
 
 class FrogPilotPlanner:
-  def __init__(self, error_log, ThemeManager, params):
+  def __init__(self, error_log, ThemeManager):
+    self.params = Params()
+    self.params_memory = Params(memory=True)
+
     self.frogpilot_acceleration = FrogPilotAcceleration(self)
     self.frogpilot_cem = ConditionalExperimentalMode(self)
     self.frogpilot_events = FrogPilotEvents(self, error_log, ThemeManager)
     self.frogpilot_following = FrogPilotFollowing(self)
-    self.frogpilot_vcruise = FrogPilotVCruise(self, params)
+    self.frogpilot_vcruise = FrogPilotVCruise(self)
     self.frogpilot_weather = WeatherChecker(self)
 
     self.driving_in_curve = False
@@ -43,11 +47,11 @@ class FrogPilotPlanner:
 
     self.gps_position = None
 
-    self.gps_location_service = get_gps_location_service(params)
+    self.gps_location_service = get_gps_location_service(self.params)
 
     self.tracking_lead_filter = FirstOrderFilter(0, 0.5, DT_MDL)
 
-  def update(self, now, time_validated, params, params_memory, sm, frogpilot_toggles):
+  def update(self, now, time_validated, sm, frogpilot_toggles):
     self.lead_one = sm["radarState"].leadOne
 
     long_control_active = sm["carControl"].longActive
@@ -62,7 +66,7 @@ class FrogPilotPlanner:
       self.frogpilot_acceleration.min_accel = 0
 
     if long_control_active and frogpilot_toggles.conditional_experimental_mode:
-      self.frogpilot_cem.update(v_ego, params_memory, sm, frogpilot_toggles)
+      self.frogpilot_cem.update(v_ego, sm, frogpilot_toggles)
     else:
       self.frogpilot_cem.curve_detected = False
       self.frogpilot_cem.stop_sign_and_light(v_ego, sm, PLANNER_TIME - 2)
@@ -80,10 +84,10 @@ class FrogPilotPlanner:
         "longitude": gps_location.longitude,
         "bearing": gps_location.bearingDeg,
       }
-      params_memory.put("LastGPSPosition", self.gps_position)
+      self.params_memory.put("LastGPSPosition", self.gps_position)
     else:
       self.gps_position = None
-      params_memory.remove("LastGPSPosition")
+      self.params_memory.remove("LastGPSPosition")
 
     if v_ego >= frogpilot_toggles.minimum_lane_change_speed:
       self.lane_width_left = calculate_lane_width(sm["modelV2"].laneLines[0], sm["modelV2"].laneLines[1], sm["modelV2"].roadEdges[0])
@@ -105,7 +109,7 @@ class FrogPilotPlanner:
     if not sm["carState"].standstill:
       self.tracking_lead = self.update_lead_status()
 
-    self.v_cruise = self.frogpilot_vcruise.update(long_control_active, now, time_validated, v_cruise, v_ego, params, params_memory, sm, frogpilot_toggles)
+    self.v_cruise = self.frogpilot_vcruise.update(long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles)
 
     if self.gps_position and time_validated and frogpilot_toggles.weather_presets:
       self.frogpilot_weather.update_weather(now, frogpilot_toggles)
@@ -119,7 +123,7 @@ class FrogPilotPlanner:
     self.tracking_lead_filter.update(following_lead)
     return self.tracking_lead_filter.x >= THRESHOLD
 
-  def publish(self, theme_updated, toggles_updated, params_memory, sm, pm, frogpilot_toggles):
+  def publish(self, theme_updated, toggles_updated, sm, pm, frogpilot_toggles):
     frogpilot_plan_send = messaging.new_message("frogpilotPlan")
     frogpilot_plan_send.valid = sm.all_checks(service_list=["carState", "controlsState", "selfdriveState", "radarState"])
     frogpilotPlan = frogpilot_plan_send.frogpilotPlan

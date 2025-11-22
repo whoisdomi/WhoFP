@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
 from cereal import log
 from openpilot.common.constants import CV
+from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
-from openpilot.selfdrive.selfdrived.events import FROGPILOT_EVENT_NAME, EventName, FrogPilotEventName
+from openpilot.selfdrive.selfdrived.events import FROGPILOT_EVENT_NAME
 from openpilot.selfdrive.selfdrived.selfdrived import LONGITUDINAL_PERSONALITY_MAP, State
 from openpilot.selfdrive.selfdrived.state import ACTIVE_STATES
 from openpilot.selfdrive.ui.soundd import FrogPilotAudibleAlert
 
 from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name
+from openpilot.frogpilot.controls.lib.frogpilot_events import RANDOM_EVENT_END, RANDOM_EVENT_START
 from openpilot.frogpilot.controls.lib.weather_checker import WEATHER_CATEGORIES
 
-RANDOM_EVENT_START = FrogPilotEventName.accel30
-RANDOM_EVENT_END = FrogPilotEventName.youveGotMail
-
 class FrogPilotTracking:
-  def __init__(self, frogpilot_planner, params, frogpilot_toggles):
+  def __init__(self, frogpilot_planner, frogpilot_toggles):
+    self.params = Params()
+
     self.frogpilot_events = frogpilot_planner.frogpilot_events
     self.frogpilot_weather = frogpilot_planner.frogpilot_weather
 
-    self.frogpilot_stats = params.get("FrogPilotStats")
+    self.frogpilot_stats = self.params.get("FrogPilotStats")
     self.frogpilot_stats.pop("ResetStats", None)
 
     self.drive_added = False
@@ -36,7 +37,7 @@ class FrogPilotTracking:
 
     self.model_name = clean_model_name(frogpilot_toggles.model_name)
 
-  def update(self, now, time_validated, params, sm, frogpilot_toggles):
+  def update(self, now, time_validated, sm, frogpilot_toggles):
     v_cruise = min(sm["carState"].vCruiseCluster, V_CRUISE_MAX) * CV.KPH_TO_MS
     v_ego = max(sm["carState"].vEgo, 0)
 
@@ -173,4 +174,4 @@ class FrogPilotTracking:
         self.frogpilot_stats["FrogPilotDrives"] = self.frogpilot_stats.get("FrogPilotDrives", 0) + 1
         self.drive_added = True
 
-      params.put_nonblocking("FrogPilotStats", dict(sorted(self.frogpilot_stats.items())))
+      self.params.put_nonblocking("FrogPilotStats", dict(sorted(self.frogpilot_stats.items())))

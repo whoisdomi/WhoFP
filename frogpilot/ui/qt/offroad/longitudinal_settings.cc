@@ -1007,7 +1007,7 @@ void FrogPilotLongitudinalPanel::updateToggles() {
     bool setVisible = parent->tuningLevel >= parent->frogpilotToggleLevels[key].toDouble();
 
     if (key == "CEStopLights") {
-      setVisible &= !toggles["CEModelStopTime"]->isVisible();
+      setVisible &= parent->tuningLevel < parent->frogpilotToggleLevels["CEModelStopTime"].toDouble();
     }
 
     else if (key == "CustomCruise" || key == "CustomCruiseLong" || key == "SetSpeedLimit" || key == "SetSpeedOffset") {

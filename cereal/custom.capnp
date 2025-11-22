@@ -121,27 +121,28 @@ struct FrogPilotOnroadEvent @0xa5cd762cd951a455 {
     laneChangeBlockedLoud @6;
     leadDeparting @7;
     noLaneAvailable @8;
-    openpilotCrashed @9;
-    pedalInterceptorNoBrake @10;
-    speedLimitChanged @11;
-    trafficModeActive @12;
-    trafficModeInactive @13;
-    turningLeft @14;
-    turningRight @15;
+    nnffLoaded @9;
+    openpilotCrashed @10;
+    pedalInterceptorNoBrake @11;
+    speedLimitChanged @12;
+    trafficModeActive @13;
+    trafficModeInactive @14;
+    turningLeft @15;
+    turningRight @16;
 
     # Random Events
-    accel30 @16;
-    accel35 @17;
-    accel40 @18;
-    dejaVuCurve @19;
-    firefoxSteerSaturated @20;
-    hal9000 @21;
-    openpilotCrashedRandomEvent @22;
-    thisIsFineSteerSaturated @23;
-    toBeContinued @24;
-    vCruise69 @25;
-    yourFrogTriedToKillMe @26;
-    youveGotMail @27;
+    accel30 @17;
+    accel35 @18;
+    accel40 @19;
+    dejaVuCurve @20;
+    firefoxSteerSaturated @21;
+    hal9000 @22;
+    openpilotCrashedRandomEvent @23;
+    thisIsFineSteerSaturated @24;
+    toBeContinued @25;
+    vCruise69 @26;
+    yourFrogTriedToKillMe @27;
+    youveGotMail @28;
   }
 }
 

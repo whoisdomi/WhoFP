@@ -200,6 +200,9 @@ class FrogPilotVariables:
     self.default_values = {key.decode(): self.params.get_default_value(key) for key in self.params.all_keys()}
     self.tuning_levels = {key.decode(): self.params.get_tuning_level(key) for key in self.params.all_keys()}
 
+    device_type = HARDWARE.get_device_type()
+    self.is_tici = device_type == "tici"
+
     short_branch = get_build_metadata().channel
     self.development_branch = short_branch == "FrogPilot-Development"
     self.release_branch = short_branch == "FrogPilot"
@@ -286,7 +289,7 @@ class FrogPilotVariables:
     has_nnff = nnff_supported(toggle.car_model)
     toggle.has_pedal = CP.enableGasInterceptorDEPRECATED
     has_radar = not CP.radarUnavailable
-    toggle.has_sdsu = False #toggle.car_make == "toyota" and bool(FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU.value)
+    toggle.has_sdsu = toggle.car_make == "toyota" and bool(FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU.value)
     has_sng = CP.autoResumeSng
     toggle.has_zss = toggle.car_make == "toyota" and bool(FPCP.flags & ToyotaFrogPilotFlags.ZSS.value)
     is_angle_car = CP.steerControlType == car.CarParams.SteerControlType.angle
@@ -425,7 +428,11 @@ class FrogPilotVariables:
     toggle.icon_pack = self.params.get("IconPack") if custom_themes else "stock"
     toggle.signal_icons = self.params.get("SignalAnimation") if custom_themes else "stock"
     toggle.sound_pack = self.params.get("SoundPack") if custom_themes else "stock"
-    toggle.wheel_image = self.params.get("WheelIcon") if custom_themes else "stock"
+    toggle.random_themes = custom_themes and (self.params.get_bool("RandomThemes") if tuning_level >= level["RandomThemes"] else default["RandomThemes"])
+    if not toggle.random_themes:
+      toggle.wheel_image = self.params.get("WheelIcon") if custom_themes else "stock"
+    else:
+      toggle.wheel_image = random.choice([file.stem for file in (THEME_SAVE_PATH / "steering_wheels").iterdir() if file.is_file()] or ["stock"])
 
     custom_ui = self.params.get_bool("CustomUI") if tuning_level >= level["CustomUI"] else default["CustomUI"]
     toggle.acceleration_path = toggle.openpilot_longitudinal and (custom_ui and (self.params.get_bool("AccelerationPath") if tuning_level >= level["AccelerationPath"] else default["AccelerationPath"]) or toggle.debug_mode)
@@ -542,7 +549,7 @@ class FrogPilotVariables:
     toggle.personality_profile_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
 
-    toggle.lock_doors_timer = self.params.get("LockDoorsTimer") if toggle.car_make == "toyota" and tuning_level >= level["LockDoorsTimer"] else default["LockDoorsTimer"]
+    toggle.lock_doors_timer = self.params.get("LockDoorsTimer") if (toggle.car_make == "toyota" and not self.is_tici and tuning_level >= level["LockDoorsTimer"]) else default["LockDoorsTimer"]
 
     longitudinal_tuning = toggle.openpilot_longitudinal and (self.params.get_bool("LongitudinalTune") if tuning_level >= level["LongitudinalTune"] else default["LongitudinalTune"])
     toggle.acceleration_profile = self.params.get("AccelerationProfile") if longitudinal_tuning and tuning_level >= level["AccelerationProfile"] else default["AccelerationProfile"]

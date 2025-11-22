@@ -28,7 +28,7 @@ class ConditionalExperimentalMode:
     self.experimental_mode = False
     self.stop_light_detected = False
 
-  def update(self, v_ego, params_memory, sm, frogpilot_toggles):
+  def update(self, v_ego, sm, frogpilot_toggles):
     if frogpilot_toggles.experimental_mode_via_press:
       self.status_value = CEStatus["OFF"]
     else:
@@ -37,7 +37,7 @@ class ConditionalExperimentalMode:
     if self.status_value not in (CEStatus["USER_DISABLED"], CEStatus["USER_OVERRIDDEN"]) and not sm["carState"].standstill:
       self.update_conditions(v_ego, sm, frogpilot_toggles)
       self.experimental_mode = self.check_conditions(v_ego, sm, frogpilot_toggles)
-      params_memory.put("CEStatus", self.status_value if self.experimental_mode else CEStatus["OFF"])
+      self.frogpilot_planner.params_memory.put("CEStatus", self.status_value if self.experimental_mode else CEStatus["OFF"])
     else:
       self.experimental_mode = self.status_value == CEStatus["USER_OVERRIDDEN"] or sm["carState"].standstill and self.experimental_mode and self.frogpilot_planner.model_stopped
       self.experimental_mode &= self.status_value != CEStatus["USER_DISABLED"]

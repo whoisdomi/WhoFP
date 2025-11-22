@@ -13,7 +13,7 @@ ROUNDING_PRECISION = 5
 STEP = 0.001
 
 class CurveSpeedController:
-  def __init__(self, FrogPilotVCruise, params):
+  def __init__(self, FrogPilotVCruise):
     self.frogpilot_planner = FrogPilotVCruise.frogpilot_planner
 
     self.enable_training = False
@@ -21,13 +21,13 @@ class CurveSpeedController:
 
     self.training_timer = 0
 
-    self.curvature_data = params.get("CurvatureData")
+    self.curvature_data = self.frogpilot_planner.params.get("CurvatureData")
 
     self.required_curvatures = [str(round(road_curvature, ROUNDING_PRECISION)) for road_curvature in np.arange(MIN_CURVATURE, MAX_CURVATURE + STEP, STEP)]
 
-    self.update_lateral_acceleration(params)
+    self.update_lateral_acceleration()
 
-  def log_data(self, long_control_active, v_ego, params, sm):
+  def log_data(self, long_control_active, v_ego, sm):
     self.enable_training = v_ego > CRUISING_SPEED
     self.enable_training &= not self.frogpilot_planner.tracking_lead
     self.enable_training &= not long_control_active
@@ -56,7 +56,7 @@ class CurveSpeedController:
             "count": 1
           }
 
-        self.update_lateral_acceleration(params)
+        self.update_lateral_acceleration()
       else:
         self.enable_training = False
 
@@ -66,8 +66,8 @@ class CurveSpeedController:
         if key in self.curvature_data:
           progress += min(self.curvature_data[key]["count"] / CALIBRATION_PROGRESS_THRESHOLD, 1.0)
 
-      params.put_nonblocking("CalibrationProgress", (progress / len(self.required_curvatures)) * 100)
-      params.put_nonblocking("CurvatureData", self.curvature_data)
+      self.frogpilot_planner.params.put_nonblocking("CalibrationProgress", (progress / len(self.required_curvatures)) * 100)
+      self.frogpilot_planner.params.put_nonblocking("CurvatureData", self.curvature_data)
 
       self.enable_training = False
       self.training_timer = 0
@@ -75,14 +75,14 @@ class CurveSpeedController:
       self.enable_training = False
       self.training_timer = 0
 
-  def update_lateral_acceleration(self, params):
+  def update_lateral_acceleration(self):
     if self.curvature_data:
       all_samples = [data["average"] for data in self.curvature_data.values()]
       self.lateral_acceleration = float(np.percentile(all_samples, PERCENTILE))
     else:
       self.lateral_acceleration = DEFAULT_LATERAL_ACCELERATION
 
-    params.put_nonblocking("CalibratedLateralAcceleration", self.lateral_acceleration)
+    self.frogpilot_planner.params.put_nonblocking("CalibratedLateralAcceleration", self.lateral_acceleration)
 
   def update_target(self, v_ego):
     lateral_acceleration = self.lateral_acceleration

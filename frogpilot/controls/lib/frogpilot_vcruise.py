@@ -5,12 +5,12 @@ from openpilot.frogpilot.common.frogpilot_variables import CRUISING_SPEED
 from openpilot.frogpilot.controls.lib.curve_speed_controller import CurveSpeedController
 
 class FrogPilotVCruise:
-  def __init__(self, FrogPilotPlanner, params):
+  def __init__(self, FrogPilotPlanner):
     self.frogpilot_planner = FrogPilotPlanner
 
-    self.csc = CurveSpeedController(self, params)
+    self.csc = CurveSpeedController(self)
 
-  def update(self, long_control_active, now, time_validated, v_cruise, v_ego, params, params_memory, sm, frogpilot_toggles):
+  def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
     v_cruise_cluster = max(sm["carState"].vCruiseCluster * CV.KPH_TO_MS, v_cruise)
     v_cruise_diff = v_cruise_cluster - v_cruise
 
@@ -25,7 +25,7 @@ class FrogPilotVCruise:
 
       self.csc_target = self.csc.target
     else:
-      self.csc.log_data(long_control_active, v_ego, params, sm)
+      self.csc.log_data(long_control_active, v_ego, sm)
 
       self.csc_controlling_speed = False
       self.csc.target_set = False

@@ -15,7 +15,7 @@ from pathlib import Path
 
 import openpilot.system.sentry as sentry
 
-from cereal import log, messaging
+from cereal import car, log, messaging
 from opendbc.can.parser import CANParser
 from opendbc.car.toyota.carcontroller import LOCK_CMD
 from openpilot.common.realtime import DT_DMON, DT_HW
@@ -174,20 +174,19 @@ def extract_zip(zip_file, extract_path):
 def flash_panda(params_memory):
   for serial in Panda.list():
     try:
-      panda = Panda(serial)
-      panda.reset(enter_bootstub=True)
-      panda.flash()
-      panda.close()
+      with Panda(serial=serial) as panda:
+        print(f"Flashing Panda {serial}")
+        panda.reset(enter_bootstub=True)
+        panda.flash()
     except Exception as exception:
-      print(f"Error flashing Panda {serial}: {exception}")
+      print(f"Failed to flash Panda {serial}: {exception}")
       sentry.capture_exception(exception)
 
   params_memory.remove("FlashPanda")
 
 
 def get_lock_status(can_parser, can_sock):
-  can_msgs = messaging.drain_sock_raw(can_sock, wait_for_one=True)
-  can_parser.update_strings(can_msgs)
+  update_can_parser(can_parser, can_sock)
   return can_parser.vl["DOOR_LOCKS"]["LOCK_STATUS"]
 
 
@@ -231,7 +230,7 @@ def lock_doors(params, lock_doors_timer, sm):
       break
 
     with Panda(disable_checks=True) as panda:
-      panda.set_safety_mode(panda.SAFETY_TOYOTA)
+      panda.set_safety_mode(car.CarParams.SafetyModel.toyota)
       panda.can_send(0x750, LOCK_CMD, 0)
 
     time.sleep(1)
@@ -252,6 +251,11 @@ def run_cmd(cmd, success_message, fail_message, env=None, report=True):
     if report:
       sentry.capture_exception(exception)
     return None
+
+
+def update_can_parser(can_parser, can_sock):
+  can_msgs = messaging.drain_sock(can_sock, wait_for_one=True)
+  can_parser.update([(msg.logMonoTime, [[frame.address, frame.dat, frame.src] for frame in msg.can]) for msg in can_msgs if msg.which() == "can"])
 
 
 def update_json_file(path, data):
@@ -369,8 +373,7 @@ def wait_for_no_driver(params, sm, door_checks=False, time_threshold=60):
       start_time = time.monotonic()
 
     if door_checks:
-      can_msgs = messaging.drain_sock_raw(can_sock, wait_for_one=True)
-      can_parser.update_strings(can_msgs)
+      update_can_parser(can_parser, can_sock)
 
       door_open = any([can_parser.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FL"], can_parser.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FR"],
                        can_parser.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RL"], can_parser.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RR"]])
