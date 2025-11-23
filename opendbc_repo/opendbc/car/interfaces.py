@@ -218,8 +218,6 @@ class CarInterfaceBase(ABC):
           if 0x23 in fingerprint[0]:
             fp_ret.flags |= ToyotaFrogPilotFlags.ZSS.value
 
-      fp_ret.openpilotLongitudinalControlDisabled = frogpilot_toggles.disable_openpilot_long
-
     return fp_ret
 
   @staticmethod

@@ -4,18 +4,19 @@ from opendbc.can import CANDefine, CANParser
 from opendbc.car import Bus, create_button_events, structs
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
-from opendbc.car.gm.values import DBC, AccState, CruiseButtons, STEER_THRESHOLD, SDGM_CAR, ALT_ACCS, CC_ONLY_CAR, \
-  CAMERA_ACC_CAR
+from opendbc.car.gm.values import CAMERA_ACC_CAR, CC_ONLY_CAR, DBC, AccState, CruiseButtons, STEER_THRESHOLD, SDGM_CAR, ALT_ACCS
 
 ButtonType = structs.CarState.ButtonEvent.Type
 TransmissionType = structs.CarParams.TransmissionType
 NetworkLocation = structs.CarParams.NetworkLocation
-GearShifter = structs.CarState.GearShifter
 
 STANDSTILL_THRESHOLD = 10 * 0.0311
 
 BUTTONS_DICT = {CruiseButtons.RES_ACCEL: ButtonType.accelCruise, CruiseButtons.DECEL_SET: ButtonType.decelCruise,
                 CruiseButtons.MAIN: ButtonType.mainCruise, CruiseButtons.CANCEL: ButtonType.cancel}
+
+# OPGM variables
+GearShifter = structs.CarState.GearShifter
 
 
 class CarState(CarStateBase):
@@ -32,12 +33,12 @@ class CarState(CarStateBase):
     self.cam_lka_steering_cmd_counter = 0
     self.buttons_counter = 0
 
-    self.single_pedal_mode = False
-    self.pedal_steady = 0.
-
     self.distance_button = 0
 
-    self.pcm_acc_status = 0
+    # OPGM variables
+    self.single_pedal_mode = False
+
+    self.pedal_steady = 0
 
   def update_button_enable(self, buttonEvents: list[structs.CarState.ButtonEvent]):
     if not self.CP.pcmCruise:
@@ -103,7 +104,6 @@ class CarState(CarStateBase):
     # Regen braking is braking
     if self.CP.transmissionType == TransmissionType.direct:
       ret.regenBraking = pt_cp.vl["EBCMRegenPaddle"]["RegenPaddle"] != 0
-      self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1
 
     if self.CP.enableGasInterceptorDEPRECATED:
       gas = (pt_cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS"] + pt_cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS2"]) / 2.
@@ -157,11 +157,6 @@ class CarState(CarStateBase):
       if self.CP.carFingerprint not in SDGM_CAR:
         ret.stockAeb = cam_cp.vl["AEBCmd"]["AEBCmdActive"] != 0
 
-    if self.CP.carFingerprint in CC_ONLY_CAR:
-      ret.accFaulted = False
-      ret.cruiseState.speed = pt_cp.vl["ECMCruiseControl"]["CruiseSetSpeed"] * CV.KPH_TO_MS
-      ret.cruiseState.enabled = pt_cp.vl["ECMCruiseControl"]["CruiseActive"] != 0
-
     if self.CP.enableBsm:
       ret.leftBlindspot = pt_cp.vl["BCMBlindSpotMonitor"]["LeftBSM"] == 1
       ret.rightBlindspot = pt_cp.vl["BCMBlindSpotMonitor"]["RightBSM"] == 1
@@ -178,8 +173,24 @@ class CarState(CarStateBase):
     if ret.vEgo < self.CP.minSteerSpeed:
       ret.lowSpeedAlert = True
 
+    # OPGM variables
+    if self.CP.carFingerprint in CC_ONLY_CAR:
+      ret.accFaulted = False
+
+      ret.cruiseState.enabled = pt_cp.vl["ECMCruiseControl"]["CruiseActive"] != 0
+      ret.cruiseState.speed = pt_cp.vl["ECMCruiseControl"]["CruiseSetSpeed"] * CV.KPH_TO_MS
+
+    if self.CP.transmissionType == TransmissionType.direct:
+      self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1 or (ret.regenBraking and GearShifter.manumatic)
+
     # FrogPilot variables
     fp_ret = custom.FrogPilotCarState.new_message()
+
+    if "AcceleratorPedal2" in pt_cp.vl:
+      self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]["CruiseState"]
+
+    if "SportMode" in pt_cp.vl:
+      fp_ret.sportGear = pt_cp.vl["SportMode"]["SportMode"] == 1
 
     return ret, fp_ret
 

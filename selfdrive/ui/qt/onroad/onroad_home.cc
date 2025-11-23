@@ -53,6 +53,13 @@ void OnroadWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
     bg = bgColor;
     update();
   }
+
+  // FrogPilot variables
+  const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  const QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
+
+  alerts->frogpilot_toggles = frogpilot_toggles;
+  nvg->frogpilot_toggles = frogpilot_toggles;
 }
 
 void OnroadWindow::offroadTransition(bool offroad) {

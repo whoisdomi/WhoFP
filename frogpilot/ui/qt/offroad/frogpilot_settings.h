@@ -19,10 +19,10 @@ public:
   bool canUsePedal = false;
   bool canUseSDSU = false;
   bool forceOpenDescriptions = false;
+  bool hasAlphaLongitudinal = false;
   bool hasAutoTune = true;
   bool hasBSM = true;
   bool hasDashSpeedLimits = true;
-  bool hasExperimentalOpenpilotLongitudinal = false;
   bool hasNNFFLog = true;
   bool hasOpenpilotLongitudinal = true;
   bool hasPCMCruise = false;

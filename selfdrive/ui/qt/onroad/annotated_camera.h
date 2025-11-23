@@ -15,6 +15,9 @@ public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s, const FrogPilotUIState &fs);
 
+  // FrogPilot variables
+  QJsonObject frogpilot_toggles;
+
 private:
   QVBoxLayout *main_layout;
   ExperimentalButton *experimental_btn;

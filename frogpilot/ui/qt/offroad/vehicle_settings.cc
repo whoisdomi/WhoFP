@@ -328,7 +328,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent) 
   QObject::connect(parent, &FrogPilotSettingsWindow::closeSubPanel, [vehiclesLayout, vehiclesPanel, this] {
     if (forceOpenDescriptions) {
       openDescriptions(forceOpenDescriptions, toggles);
-
       disableOpenpilotLong->showDescription();
       forceFingerprint->showDescription();
     }
@@ -434,7 +433,7 @@ void FrogPilotVehiclesPanel::updateToggles() {
     }
   }
 
-  disableOpenpilotLong->setVisible((parent->hasOpenpilotLongitudinal || parent->openpilotLongitudinalControlDisabled) && !parent->hasExperimentalOpenpilotLongitudinal && parent->tuningLevel >= parent->frogpilotToggleLevels["DisableOpenpilotLongitudinal"].toBool());
+  disableOpenpilotLong->setVisible((parent->hasOpenpilotLongitudinal || parent->openpilotLongitudinalControlDisabled) && !parent->hasAlphaLongitudinal && parent->tuningLevel >= parent->frogpilotToggleLevels["DisableOpenpilotLongitudinal"].toBool());
   forceFingerprint->setVisible(parent->tuningLevel >= parent->frogpilotToggleLevels["ForceFingerprint"].toBool());
 
   openDescriptions(forceOpenDescriptions, toggles);

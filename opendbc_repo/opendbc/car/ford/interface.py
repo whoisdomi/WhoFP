@@ -52,7 +52,7 @@ class CarInterface(CarInterfaceBase):
     ret.alphaLongitudinalAvailable = ret.radarUnavailable
     if alpha_long or not ret.radarUnavailable:
       ret.safetyConfigs[-1].safetyParam |= FordSafetyFlags.LONG_CONTROL.value
-      ret.openpilotLongitudinalControl = alpha_long or not frogpilot_toggles.disable_openpilot_long
+      ret.openpilotLongitudinalControl = True
 
     if ret.flags & FordFlags.CANFD:
       ret.safetyConfigs[-1].safetyParam |= FordSafetyFlags.CANFD.value

@@ -14,6 +14,9 @@ public:
   explicit ExperimentalButton(QWidget *parent = 0);
   void updateState(const UIState &s, const FrogPilotUIState &fs);
 
+  // FrogPilot variables
+  QJsonObject frogpilot_toggles;
+
 private:
   void paintEvent(QPaintEvent *event) override;
   void changeMode();
@@ -28,10 +31,6 @@ private:
   void showEvent(QShowEvent *event) override;
   void updateBackgroundColor();
   void updateTheme();
-
-  bool conditional_experimental_mode;
-  bool use_rotating_wheel;
-  bool use_stock_wheel;
 
   int steering_angle_deg;
 

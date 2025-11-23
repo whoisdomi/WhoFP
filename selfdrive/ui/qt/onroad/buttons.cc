@@ -36,7 +36,7 @@ void ExperimentalButton::changeMode() {
   bool can_change = hasLongitudinalControl(cp) && params.getBool("ExperimentalModeConfirmed");
   if (can_change) {
     // FrogPilot variables
-    if (conditional_experimental_mode) {
+    if (frogpilot_toggles.value("conditional_experimental_mode").toBool()) {
       int conditional_status = frogpilotUIState()->frogpilot_scene.conditional_status;
       int override_value = (conditional_status == 1 || conditional_status == 2) ? 0 : experimental_mode ? 1 : 2;
       params_memory.putInt("CEStatus", override_value);
@@ -59,10 +59,10 @@ void ExperimentalButton::updateState(const UIState &s, const FrogPilotUIState &f
   const cereal::CarState::Reader &carState = (*s.sm)["carState"].getCarState();
 
   int current_steering_angle_deg = carState.getSteeringAngleDeg();
-  if (-current_steering_angle_deg != steering_angle_deg && use_rotating_wheel) {
+  if (-current_steering_angle_deg != steering_angle_deg && frogpilot_toggles.value("rotating_wheel").toBool()) {
     steering_angle_deg = -current_steering_angle_deg;
     update();
-  } else if (!use_rotating_wheel) {
+  } else if (!frogpilot_toggles.value("rotating_wheel").toBool()) {
     steering_angle_deg = 0;
   }
 
@@ -82,7 +82,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   clip_path.addEllipse(QPoint(btn_size / 2, btn_size / 2), btn_size / 2, btn_size / 2);
   p.setClipPath(clip_path);
 
-  if (use_stock_wheel) {
+  if (frogpilot_toggles.value("wheel_image").toString() == "stock") {
     QPixmap img = experimental_mode ? experimental_img : engage_img;
     drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0, steering_angle_deg);
   } else if (wheel_gif) {
@@ -96,14 +96,6 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 
 // FrogPilot variables
 void ExperimentalButton::showEvent(QShowEvent *event) {
-  FrogPilotUIState *fs = frogpilotUIState();
-  FrogPilotUIScene &frogpilot_scene = fs->frogpilot_scene;
-  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
-
-  conditional_experimental_mode = frogpilot_toggles.value("conditional_experimental_mode").toBool();
-  use_rotating_wheel = frogpilot_toggles.value("rotating_wheel").toBool();
-  use_stock_wheel = frogpilot_toggles.value("wheel_image").toString() == "stock";
-
   updateTheme();
 }
 

@@ -300,9 +300,9 @@ void FrogPilotSettingsWindow::updateVariables() {
     carMake = CP.getBrand();
 
     friction = CP.getLateralTuning().getTorque().getFriction();
+    hasAlphaLongitudinal = CP.getAlphaLongitudinalAvailable();
     hasBSM = CP.getEnableBsm();
     hasDashSpeedLimits = carMake == "ford" || carMake == "hyundai" || carMake == "toyota";
-    hasExperimentalOpenpilotLongitudinal = CP.getAlphaLongitudinalAvailable();
     hasNNFFLog = nnffLogFileExists(QString::fromStdString(carFingerprint));
     hasOpenpilotLongitudinal = hasLongitudinalControl(CP);
     hasPCMCruise = CP.getPcmCruise();

@@ -9,7 +9,6 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from cereal import car, custom
-from openpilot.common.constants import CV
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 

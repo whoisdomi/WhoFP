@@ -25,6 +25,10 @@ void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState
   // update engageability/experimental mode button
   experimental_btn->updateState(s, fs);
   dmon.updateState(s);
+
+  // FrogPilot variables
+  experimental_btn->frogpilot_toggles = frogpilot_toggles;
+  model.frogpilot_toggles = frogpilot_toggles;
 }
 
 void AnnotatedCameraWidget::initializeGL() {

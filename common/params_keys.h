@@ -465,7 +465,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"TuningLevel", {PERSISTENT, INT, "0", "0", 0}},
     {"TuningLevelConfirmed", {PERSISTENT, BOOL, "0", "0", 0}},
     {"TurnDesires", {PERSISTENT, BOOL, "0", "0", 2}},
-    {"UnlimitedLength", {PERSISTENT, BOOL, "1", "0", 2}},
     {"UnlockDoors", {PERSISTENT, BOOL, "1", "0", 0}},
     {"Updated", {PERSISTENT, STRING, "0", "0"}},
     {"UpdateSpeedLimits", {CLEAR_ON_MANAGER_START, BOOL, "0", "0"}},

@@ -6,9 +6,9 @@
 #include "selfdrive/ui/qt/util.h"
 
 void OnroadAlerts::updateState(const UIState &s, const FrogPilotUIState &fs) {
-  Alert a = getAlert(*(s.sm), *(fs.sm), s.scene.started_frame, fs.frogpilot_scene.frogpilot_toggles);
+  Alert a = getAlert(*(s.sm), *(fs.sm), s.scene.started_frame);
   if (!alert.equal(a)) {
-    if (alert.status == cereal::SelfdriveState::AlertStatus::NORMAL && fs.frogpilot_scene.frogpilot_toggles.value("hide_alerts").toBool()) {
+    if (alert.status == cereal::SelfdriveState::AlertStatus::NORMAL && frogpilot_toggles.value("hide_alerts").toBool()) {
       clear();
     } else {
       alert = a;
@@ -28,7 +28,7 @@ void OnroadAlerts::clear() {
   alertHeight = 0;
 }
 
-OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster &fpsm, uint64_t started_frame, const QJsonObject &frogpilot_toggles) {
+OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster &fpsm, uint64_t started_frame) {
   const cereal::SelfdriveState::Reader &ss = sm["selfdriveState"].getSelfdriveState();
   const uint64_t selfdrive_frame = sm.rcv_frame("selfdriveState");
 

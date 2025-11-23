@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from cereal import log
 from openpilot.common.constants import CV
 from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL

@@ -15,6 +15,8 @@ public:
   // FrogPilot variables
   int alertHeight;
 
+  QJsonObject frogpilot_toggles;
+
 protected:
   struct Alert {
     QString text1;
@@ -35,7 +37,7 @@ protected:
   };
 
   void paintEvent(QPaintEvent*) override;
-  OnroadAlerts::Alert getAlert(const SubMaster &sm, const SubMaster &fpsm, uint64_t started_frame, const QJsonObject &frogpilot_toggles);
+  OnroadAlerts::Alert getAlert(const SubMaster &sm, const SubMaster &fpsm, uint64_t started_frame);
 
   QColor bg;
   Alert alert = {};
