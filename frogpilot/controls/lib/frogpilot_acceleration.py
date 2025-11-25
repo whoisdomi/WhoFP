@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 
+from opendbc.car.interfaces import ACCEL_MAX
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import CRUISE_MIN_ACCEL
 from openpilot.selfdrive.controls.lib.longitudinal_planner import ACCEL_MIN, get_max_accel
 
@@ -53,7 +54,9 @@ class FrogPilotAcceleration:
     eco_gear = sm["frogpilotCarState"].ecoGear
     sport_gear = sm["frogpilotCarState"].sportGear
 
-    if (eco_gear or sport_gear) and frogpilot_toggles.map_acceleration:
+    if sm["frogpilotCarState"].trafficModeEnabled:
+      self.max_accel = ACCEL_MAX
+    elif (eco_gear or sport_gear) and frogpilot_toggles.map_acceleration:
       if eco_gear:
         self.max_accel = get_max_accel_eco(v_ego)
       else:

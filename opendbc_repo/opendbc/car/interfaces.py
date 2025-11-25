@@ -21,7 +21,7 @@ from opendbc.car.common.simple_kalman import KF1D, get_kalman_gain
 from opendbc.car.gm.values import CAR as GM
 from opendbc.car.honda.values import CAR as HONDA, HONDA_BOSCH, HondaSafetyFlags
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import CAR as HYUNDAI, CANFD_CAR, HyundaiSafetyFlags
+from opendbc.car.hyundai.values import CAR as HYUNDAI, CANFD_CAR, HyundaiFlags, HyundaiFrogPilotSafetyFlags
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.toyota.values import CAR as TOYOTA, NO_DSU_CAR, TSS2_CAR, UNSUPPORTED_DSU_CAR, ToyotaFrogPilotFlags, ToyotaSafetyFlags
 from opendbc.car.values import PLATFORMS
@@ -206,6 +206,9 @@ class CarInterfaceBase(ABC):
           hda2 = Ecu.adas in [fw.ecu for fw in car_fw]
 
           fp_ret.isHDA2 = hda2
+
+        if CP.flags & HyundaiFlags.HAS_LDA_BUTTON:
+          fp_ret.safetyConfigs[-1].safetyParam |= HyundaiFrogPilotSafetyFlags.HAS_LDA_BUTTON.value
 
       elif platform in TOYOTA:
         fp_ret.canUsePedal = not CP.autoResumeSng

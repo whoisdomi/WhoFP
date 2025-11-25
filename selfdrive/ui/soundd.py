@@ -230,7 +230,7 @@ class Soundd:
         if sm['frogpilotPlan'].togglesUpdated:
           self.frogpilot_toggles = get_frogpilot_toggles()
 
-          self.update_frogpilot_sounds(sd, stream)
+          stream = self.update_frogpilot_sounds(sd, stream)
 
   def update_frogpilot_sounds(self, sd=None, stream=None):
     self.volume_map = {
@@ -267,6 +267,8 @@ class Soundd:
         stream.close()
         stream = self.get_stream(sd)
         stream.start()
+
+    return stream
 
 
 def main():

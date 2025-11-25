@@ -6,7 +6,7 @@ import numpy as np
 from tinygrad import Tensor, Device, dtypes
 from tinygrad.helpers import getenv, OSX
 from tinygrad.device import is_dtype_supported
-from tinygrad.frontend.onnx import OnnxRunner
+from tinygrad.nn.onnx import OnnxRunner
 
 # pip3 install tabulate
 pytest_plugins = 'onnx.backend.test.report',
@@ -112,7 +112,6 @@ backend_test.exclude('test_dequantizelinear_e5m2_cpu')
 backend_test.exclude('test_dequantizelinear_float4e2m1_cpu')
 
 # we don't support indexes
-backend_test.exclude('test_nonzero_*')
 
 # no support for int pow
 backend_test.exclude('test_pow_types_int32_int32_cpu')
@@ -193,12 +192,12 @@ backend_test.exclude('test_adam_cpu')
 backend_test.exclude('test_gradient_of_add_and_mul_cpu')
 backend_test.exclude('test_gradient_of_add_cpu')
 
-if Device.DEFAULT in ['GPU', 'METAL']:
+if Device.DEFAULT in ['CL', 'METAL']:
   backend_test.exclude('test_resize_upsample_sizes_nearest_axes_2_3_cpu')
   backend_test.exclude('test_resize_upsample_sizes_nearest_axes_3_2_cpu')
   backend_test.exclude('test_resize_upsample_sizes_nearest_cpu')
 
-if Device.DEFAULT == "METAL" or (OSX and Device.DEFAULT == "GPU"):
+if Device.DEFAULT == "METAL" or (OSX and Device.DEFAULT == "CL"):
   # numerical inaccuracy
   backend_test.exclude('test_mish_cpu')
   backend_test.exclude('test_mish_expanded_cpu')

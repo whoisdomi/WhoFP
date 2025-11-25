@@ -306,11 +306,11 @@ class FrogPilotVariables:
     toggle.has_zss = toggle.car_make == "toyota" and bool(FPCP.flags & ToyotaFrogPilotFlags.ZSS.value)
     is_angle_car = CP.steerControlType == car.CarParams.SteerControlType.angle
     latAccelFactor = CP.lateralTuning.torque.latAccelFactor
-    toggle.lkas_allowed_for_aol = toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD)
+    toggle.lkas_allowed_for_aol = toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD or CP.flags & HyundaiFlags.HAS_LDA_BUTTON)
     longitudinalActuatorDelay = CP.longitudinalActuatorDelay
     toggle.openpilot_longitudinal = CP.openpilotLongitudinalControl and not toggle.disable_openpilot_long
     pcm_cruise = CP.pcmCruise
-    prohibited_main_aol = not toggle.openpilot_longitudinal and bool(CP.flags & HyundaiFlags.CANFD)
+    prohibited_main_aol = not toggle.openpilot_longitudinal and toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD or CP.flags & HyundaiFlags.HAS_LDA_BUTTON)
     startAccel = CP.startAccel
     stopAccel = CP.stopAccel
     steerActuatorDelay = CP.steerActuatorDelay
@@ -646,7 +646,6 @@ class FrogPilotVariables:
     toggle.sng_hack = self.get_value("SNGHack", condition=toggle.openpilot_longitudinal and toggle.car_make == "toyota" and not toggle.has_pedal and not has_sng)
 
     toggle.speed_limit_controller = toggle.openpilot_longitudinal and self.get_value("SpeedLimitController")
-    toggle.force_mph_dashboard = self.get_value("ForceMPHDashboard", condition=toggle.speed_limit_controller)
     toggle.map_speed_lookahead_higher = self.get_value("SLCLookaheadHigher", float, condition=toggle.speed_limit_controller)
     toggle.map_speed_lookahead_lower = self.get_value("SLCLookaheadLower", float, condition=toggle.speed_limit_controller)
     toggle.set_speed_limit = self.get_value("SetSpeedLimit", condition=toggle.speed_limit_controller)

@@ -66,11 +66,11 @@ void HomeWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
   }
 
   // FrogPilot variables
-  //const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
-  //const QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
+  const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  const QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
   if (s.scene.started) {
-    developer_sidebar->setVisible(false);
+    developer_sidebar->setVisible(frogpilot_toggles.value("developer_sidebar").toBool());
 
     frogpilotUIState()->frogpilot_scene.sidebars_open = developer_sidebar->isVisible() && sidebar->isVisible();
   }
@@ -295,11 +295,12 @@ void OffroadHome::refresh() {
   }
 
   // FrogPilot variables
-  //FrogPilotUIState &fs = *frogpilotUIState();
-  //FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  FrogPilotUIState &fs = *frogpilotUIState();
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
   date->setText(QLocale(uiState()->language.mid(5)).toString(QDateTime::currentDateTime(), "dddd, MMMM d"));
   date->setVisible(util::system_time_valid());
 
-  version->setText(getBrand() + " v" + getVersion().left(14).trimmed());
+  version->setText(getBrand() + " v" + getVersion().left(14).trimmed() + " - " + cleanModelName(frogpilot_toggles.value("model_name").toString()));
 }

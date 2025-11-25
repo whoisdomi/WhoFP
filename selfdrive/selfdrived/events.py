@@ -422,7 +422,7 @@ def holiday_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, 
   }
 
   return Alert(
-    holiday_messages.get(frogpilot_toggles.current_holiday_theme),
+    holiday_messages.get(frogpilot_toggles.current_holiday_theme, ""),
     "",
     AlertStatus.normal, AlertSize.small,
     Priority.LOWEST, VisualAlert.none, FrogPilotAudibleAlert.startup, 5.)
@@ -1156,6 +1156,14 @@ FROGPILOT_EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       "Please post the 'Error Log' in the FrogPilot Discord!",
       AlertStatus.critical, AlertSize.mid,
       Priority.HIGHEST, VisualAlert.none, AudibleAlert.prompt, .1),
+  },
+
+  FrogPilotEventName.speedLimitChanged: {
+    ET.PERMANENT: Alert(
+      "Speed limit changed",
+      "",
+      FrogPilotAlertStatus.frogpilot, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.),
   },
 
   FrogPilotEventName.turningLeft: {

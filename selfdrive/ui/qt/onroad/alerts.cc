@@ -91,6 +91,7 @@ OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster 
 
 void OnroadAlerts::paintEvent(QPaintEvent *event) {
   if (alert.size == cereal::SelfdriveState::AlertSize::NONE) {
+    // FrogPilot variables
     alertHeight = 0;
     return;
   }
@@ -99,6 +100,7 @@ void OnroadAlerts::paintEvent(QPaintEvent *event) {
     {cereal::SelfdriveState::AlertSize::MID, 420},
     {cereal::SelfdriveState::AlertSize::FULL, height()},
   };
+  // FrogPilot variables
   alertHeight = alert_heights[alert.size];
   int h = alertHeight;
 
@@ -108,6 +110,7 @@ void OnroadAlerts::paintEvent(QPaintEvent *event) {
     margin = 0;
     radius = 0;
   }
+  // FrogPilot variables
   alertHeight -= margin;
   QRect r = QRect(0 + margin, height() - h + margin, width() - margin*2, h - margin*2);
 

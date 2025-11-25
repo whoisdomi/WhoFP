@@ -16,8 +16,6 @@ static void update_state(FrogPilotUIState *fs) {
   }
   if (fpsm.updated("frogpilotPlan")) {
     const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
-    frogpilot_scene.lane_width_left = frogpilotPlan.getLaneWidthLeft();
-    frogpilot_scene.lane_width_right = frogpilotPlan.getLaneWidthRight();
     if (frogpilotPlan.getTogglesUpdated()) {
       frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray::fromStdString(fs->params_memory.get("FrogPilotToggles"))).object();
 
@@ -51,7 +49,9 @@ void update_theme(FrogPilotUIScene &frogpilot_scene) {
 
 FrogPilotUIState::FrogPilotUIState(QObject *parent) : QObject(parent) {
   sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
-    "deviceState", "frogpilotCarState", "frogpilotDeviceState", "frogpilotPlan", "frogpilotSelfdriveState", "selfdriveState"
+    "carControl", "deviceState", "frogpilotCarState", "frogpilotDeviceState",
+    "frogpilotPlan", "frogpilotSelfdriveState", "liveDelay",
+    "liveParameters", "liveTorqueParameters", "liveTracks", "selfdriveState"
   });
 
   wifi = new WifiManager(this);

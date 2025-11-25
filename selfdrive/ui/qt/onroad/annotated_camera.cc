@@ -19,6 +19,13 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
+
+  // FrogPilot variables
+  personality_btn = new DrivingPersonalityButton(this);
+  personality_btn->setVisible(false);
+
+  screen_recorder = new ScreenRecorder(this);
+  screen_recorder->setVisible(false);
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState &fs) {
@@ -27,8 +34,32 @@ void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState
   dmon.updateState(s);
 
   // FrogPilot variables
+  const SubMaster &sm = *(s.sm);
+
+  const cereal::CarState::Reader &carState = sm["carState"].getCarState();
+
+  dmon.frogpilot_nvg = frogpilot_nvg;
+  hud.frogpilot_nvg = frogpilot_nvg;
+  model.frogpilot_nvg = frogpilot_nvg;
+
+  dmon.frogpilot_toggles = frogpilot_toggles;
   experimental_btn->frogpilot_toggles = frogpilot_toggles;
+  hud.frogpilot_toggles = frogpilot_toggles;
   model.frogpilot_toggles = frogpilot_toggles;
+
+  frogpilot_nvg->experimentalButtonPosition = QPoint(experimental_btn->x(), experimental_btn->y());
+
+  bool onroad_distance_btn_enabled = frogpilot_nvg->dmIconPosition != QPoint(0, 0) && !frogpilot_nvg->hideBottomIcons && frogpilot_toggles.value("onroad_distance_button").toBool();
+  personality_btn->setVisible(onroad_distance_btn_enabled);
+  if (onroad_distance_btn_enabled) {
+    personality_btn->move(frogpilot_nvg->rightHandDM ? width() - UI_BORDER_SIZE - personality_btn->width() - (UI_BORDER_SIZE / 2) : UI_BORDER_SIZE, frogpilot_nvg->dmIconPosition.y() - personality_btn->height() / 2);
+    personality_btn->updateState(s, fs);
+  }
+
+  dmon.onroad_distance_btn_enabled = onroad_distance_btn_enabled;
+
+  screen_recorder->move(experimental_btn->x() - UI_BORDER_SIZE - btn_size, experimental_btn->y());
+  screen_recorder->setVisible(frogpilot_nvg->standstillDuration == 0 && !(frogpilot_nvg->signalStyle == "static" && carState.getRightBlinker()) && frogpilot_toggles.value("screen_recorder").toBool());
 }
 
 void AnnotatedCameraWidget::initializeGL() {
@@ -96,6 +127,10 @@ void AnnotatedCameraWidget::paintGL() {
   SubMaster &sm = *(s->sm);
   const double start_draw_t = millis_since_boot();
 
+  // FrogPilot variables
+  FrogPilotUIState *fs = frogpilotUIState();
+  SubMaster &fpsm = *(fs->sm);
+
   // draw camera frame
   {
     std::lock_guard lk(frame_lock);
@@ -115,7 +150,7 @@ void AnnotatedCameraWidget::paintGL() {
 
     // Wide or narrow cam dependent on speed
     bool has_wide_cam = available_streams.count(VISION_STREAM_WIDE_ROAD);
-    if (has_wide_cam) {
+    if (has_wide_cam && frogpilot_toggles.value("camera_view").toInt() == 0) {
       float v_ego = sm["carState"].getCarState().getVEgo();
       if ((v_ego < 10) || available_streams.size() == 1) {
         wide_cam_requested = true;
@@ -124,7 +159,9 @@ void AnnotatedCameraWidget::paintGL() {
       }
       wide_cam_requested = wide_cam_requested && sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
     }
-    CameraWidget::setStreamType(wide_cam_requested ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
+    CameraWidget::setStreamType(frogpilot_toggles.value("camera_view").toInt() == 1 ? VISION_STREAM_DRIVER :
+                                frogpilot_toggles.value("camera_view").toInt() == 3 || wide_cam_requested ? VISION_STREAM_WIDE_ROAD :
+                                VISION_STREAM_ROAD);
     CameraWidget::setFrameId(sm["modelV2"].getModelV2().getFrameId());
     CameraWidget::paintGL();
   }
@@ -138,9 +175,12 @@ void AnnotatedCameraWidget::paintGL() {
   hud.updateState(*s);
   hud.draw(painter, rect());
 
+  // FrogPilot variables
+  frogpilot_nvg->paintFrogPilotWidgets(painter, *s, *fs, sm, fpsm);
+
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
-  double fps = fps_filter.update(1. / dt * 1000);
+  fps = fps_filter.update(1. / dt * 1000);
   if (fps < 15) {
     LOGW("slow frame rate: %.2f fps", fps);
   }

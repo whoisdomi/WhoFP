@@ -5,6 +5,8 @@
 
 #include "selfdrive/ui/ui.h"
 
+#include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
+
 class ModelRenderer {
 public:
   ModelRenderer() {}
@@ -12,6 +14,8 @@ public:
   void draw(QPainter &painter, const QRect &surface_rect);
 
   // FrogPilot variables
+  FrogPilotAnnotatedCameraWidget *frogpilot_nvg;
+
   QJsonObject frogpilot_toggles;
 
 private:
@@ -39,4 +43,15 @@ private:
   QPointF lead_vertices[2] = {};
   Eigen::Matrix3f car_space_transform = Eigen::Matrix3f::Zero();
   QRectF clip_region;
+
+  // FrogPilot variables
+  void mapAveragedLineToPolygon(const cereal::XYZTData::Reader &line1, const cereal::XYZTData::Reader &line2, float y_off, float z_off,
+                                QPolygonF *pvd, int max_idx, bool allow_invert = true);
+  void updateRadarTracks(const cereal::XYZTData::Reader &line);
+
+  bool model_ui;
+  bool use_stock_colors;
+
+  QColor lane_lines_color;
+  QColor path_color;
 };

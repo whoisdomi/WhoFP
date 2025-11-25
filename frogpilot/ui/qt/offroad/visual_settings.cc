@@ -465,6 +465,10 @@ void FrogPilotVisualsPanel::updateToggles() {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
+    else if (key == "HideSpeedLimit") {
+      setVisible &= parent->hasOpenpilotLongitudinal && params.getBool("SpeedLimitController");
+    }
+
     else if (key == "OnroadDistanceButton") {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
@@ -486,8 +490,12 @@ void FrogPilotVisualsPanel::updateToggles() {
     }
 
     else if (key == "SLCMapboxFiller") {
-      setVisible &= params.getBool("ShowSpeedLimits") && !(parent->hasOpenpilotLongitudinal && params.getBool("SpeedLimitController"));
+      setVisible &= params.getBool("ShowSpeedLimits") || params.getBool("SpeedLimitController");
       setVisible &= !params.get("MapboxSecretKey").empty();
+    }
+
+    else if (key == "UseVienna") {
+      setVisible &= params.getBool("ShowSpeedLimits") || params.getBool("SpeedLimitController");
     }
 
     toggle->setVisible(setVisible);

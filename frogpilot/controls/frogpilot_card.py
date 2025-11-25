@@ -15,6 +15,8 @@ class FrogPilotCard:
     self.params = Params()
     self.params_memory = Params(memory=True)
 
+    self.accel_pressed = False
+    self.decel_pressed = False
     self.always_on_lateral_allowed = False
 
     self.always_on_lateral_set = bool(FPCP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
@@ -38,6 +40,14 @@ class FrogPilotCard:
     self.always_on_lateral_enabled &= sm["selfdriveState"].alertType != ET.IMMEDIATE_DISABLE or frogpilot_toggles.frogs_go_moo
     self.always_on_lateral_enabled &= not (carState.brakePressed and carState.vEgo < frogpilot_toggles.always_on_lateral_pause_speed or carState.standstill)
 
+    if sm.updated["frogpilotPlan"] or any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in carState.buttonEvents):
+      self.accel_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in carState.buttonEvents)
+
+    if sm.updated["frogpilotPlan"] or any(be.type == ButtonType.decelCruise for be in carState.buttonEvents):
+      self.decel_pressed = any(be.type == ButtonType.decelCruise for be in carState.buttonEvents)
+
+    frogpilotCarState.accelPressed = self.accel_pressed
     frogpilotCarState.alwaysOnLateralEnabled = self.always_on_lateral_enabled
+    frogpilotCarState.decelPressed = self.decel_pressed
 
     return frogpilotCarState

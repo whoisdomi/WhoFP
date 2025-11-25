@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+
 import cereal.messaging as messaging
 
 from openpilot.common.constants import CV
@@ -31,7 +33,7 @@ class FrogPilotPlanner:
     self.frogpilot_weather = WeatherChecker(self)
 
     self.driving_in_curve = False
-    self.lateral_check = True #False
+    self.lateral_check = False
     self.model_stopped = False
     self.road_curvature_detected = False
     self.slower_lead = False
@@ -78,16 +80,12 @@ class FrogPilotPlanner:
     self.frogpilot_following.update(long_control_active, v_ego, sm, frogpilot_toggles)
 
     gps_location = sm[self.gps_location_service]
-    if gps_location.flags % 2 == 1:
-      self.gps_position = {
-        "latitude": gps_location.latitude,
-        "longitude": gps_location.longitude,
-        "bearing": gps_location.bearingDeg,
-      }
-      self.params_memory.put("LastGPSPosition", self.gps_position)
-    else:
-      self.gps_position = None
-      self.params_memory.remove("LastGPSPosition")
+    self.gps_position = {
+      "latitude": gps_location.latitude,
+      "longitude": gps_location.longitude,
+      "bearing": gps_location.bearingDeg,
+    }
+    self.params_memory.put("LastGPSPosition", json.dumps(self.gps_position))
 
     if v_ego >= frogpilot_toggles.minimum_lane_change_speed:
       self.lane_width_left = calculate_lane_width(sm["modelV2"].laneLines[0], sm["modelV2"].laneLines[1], sm["modelV2"].roadEdges[0])
@@ -97,6 +95,10 @@ class FrogPilotPlanner:
       self.lane_width_right = 0
 
     self.lateral_acceleration = v_ego**2 * sm["controlsState"].curvature
+
+    self.lateral_check = v_ego >= frogpilot_toggles.pause_lateral_below_speed
+    self.lateral_check |= not (sm["carState"].leftBlinker or sm["carState"].rightBlinker) and frogpilot_toggles.pause_lateral_below_signal
+    self.lateral_check |= sm["carState"].standstill
 
     self.model_length = sm["modelV2"].position.x[-1]
 
@@ -159,6 +161,16 @@ class FrogPilotPlanner:
     frogpilotPlan.redLight = self.frogpilot_cem.stop_light_detected
 
     frogpilotPlan.roadCurvature = self.road_curvature
+
+    frogpilotPlan.slcMapSpeedLimit = self.frogpilot_vcruise.slc.map_speed_limit
+    frogpilotPlan.slcMapboxSpeedLimit = self.frogpilot_vcruise.slc.mapbox_limit
+    frogpilotPlan.slcNextSpeedLimit = self.frogpilot_vcruise.slc.next_speed_limit
+    frogpilotPlan.slcOverriddenSpeed = self.frogpilot_vcruise.slc.overridden_speed
+    frogpilotPlan.slcSpeedLimit = self.frogpilot_vcruise.slc_target
+    frogpilotPlan.slcSpeedLimitOffset = self.frogpilot_vcruise.slc_offset
+    frogpilotPlan.slcSpeedLimitSource = self.frogpilot_vcruise.slc.source
+    frogpilotPlan.speedLimitChanged = self.frogpilot_vcruise.slc.speed_limit_changed_timer > DT_MDL
+    frogpilotPlan.unconfirmedSlcSpeedLimit = self.frogpilot_vcruise.slc.unconfirmed_speed_limit
 
     frogpilotPlan.themeUpdated = theme_updated
 
