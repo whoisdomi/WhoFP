@@ -29,8 +29,8 @@ OVERPASS_STATUS_URL = "https://overpass-api.de/api/status"
 
 class MapSpeedLogger:
   def __init__(self):
-    self.params = Params()
-    self.params_memory = Params(memory=True)
+    self.params = Params(return_defaults=True)
+    self.params_memory = Params(memory=True, return_defaults=True)
 
     self.cached_box = None
     self.previous_coordinates = None

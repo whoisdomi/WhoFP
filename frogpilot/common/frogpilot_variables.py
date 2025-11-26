@@ -189,7 +189,7 @@ def update_frogpilot_toggles():
 class FrogPilotVariables:
   def __init__(self):
     self.params = Params(return_defaults=True)
-    self.params_memory = Params(memory=True)
+    self.params_memory = Params(memory=True, return_defaults=True)
 
     self.frogpilot_toggles = get_frogpilot_toggles()
     toggle = self.frogpilot_toggles
@@ -445,7 +445,7 @@ class FrogPilotVariables:
     toggle.sound_pack = self.get_value("SoundPack", cast=None, condition=custom_themes, default="stock")
     toggle.random_themes = self.get_value("RandomThemes", condition=custom_themes)
     if toggle.random_themes:
-      toggle.wheel_image = random.choice([file.stem for file in (THEME_SAVE_PATH / "steering_wheels").iterdir() if file.is_file()] or ["stock"])
+      toggle.wheel_image = random.choice([file.stem for file in (THEME_SAVE_PATH / "steering_wheels").iterdir() if file.is_file()] or ["stock"]) if (THEME_SAVE_PATH / "steering_wheels").exists() else "stock"
     else:
       toggle.wheel_image = self.get_value("WheelIcon", cast=None, condition=custom_themes, default="stock")
 

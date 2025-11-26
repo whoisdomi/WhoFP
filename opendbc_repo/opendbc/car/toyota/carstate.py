@@ -73,6 +73,7 @@ class CarState(CarStateBase):
 
     self.angle_offset_zss = 0
 
+    self.has_can_filter = self.FPCP.flags & ToyotaFrogPilotFlags.RADAR_CAN_FILTER
     self.has_SDSU = self.FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU
     self.has_ZSS = self.FPCP.flags & ToyotaFrogPilotFlags.ZSS
 
@@ -205,7 +206,7 @@ class CarState(CarStateBase):
       self.pcm_follow_distance = cp.vl["PCM_CRUISE_2"]["PCM_FOLLOW_DISTANCE"]
 
     buttonEvents = []
-    if self.CP.carFingerprint in TSS2_CAR:
+    if self.CP.carFingerprint in TSS2_CAR or (self.has_SDSU and not self.has_can_filter):
       # lkas button is wired to the camera
       prev_lkas_button = self.lkas_button
       self.lkas_button = cp_cam.vl["LKAS_HUD"]["LDA_ON_MESSAGE"]
@@ -215,7 +216,7 @@ class CarState(CarStateBase):
         buttonEvents.extend(create_button_events(1, 0, {1: ButtonType.lkas}) +
                             create_button_events(0, 1, {1: ButtonType.lkas}))
 
-      if self.CP.carFingerprint not in (RADAR_ACC_CAR | SECOC_CAR) or (self.has_SDSU):
+      if self.CP.carFingerprint not in (RADAR_ACC_CAR | SECOC_CAR) or self.has_SDSU:
         # distance button is wired to the ACC module (camera or radar)
         prev_distance_button = self.distance_button
         if self.has_SDSU:

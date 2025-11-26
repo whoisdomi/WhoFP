@@ -165,11 +165,12 @@ class SelfdriveD:
     self.frogpilot_events = Events(frogpilot=True)
 
     self.distance_pressed_previously = False
-    self.has_menu = self.CP.brand == "gm" and not (self.CP.flags & GMFlags.NO_CAMERA.value or self.CP.carFingerprint in CC_ONLY_CAR)
 
     self.display_timer = 0
 
     self.frogpilot_events_prev = []
+
+    self.has_menu = self.CP.brand == "gm" and self.CP.carFingerprint not in CC_ONLY_CAR
 
     self.FPCP = messaging.log_from_bytes(self.params.get("FrogPilotCarParams", block=True), custom.FrogPilotCarParams)
 
@@ -478,7 +479,10 @@ class SelfdriveD:
     # FrogPilot variables
     self.frogpilot_events.add_from_msg(self.sm['frogpilotPlan'].frogpilotEvents)
 
-    self.experimental_mode |= self.sm['frogpilotPlan'].experimentalMode
+    if self.frogpilot_toggles.conditional_experimental_mode:
+      self.experimental_mode = self.sm['frogpilotPlan'].experimentalMode
+    else:
+      self.experimental_mode |= self.sm['frogpilotPlan'].experimentalMode
 
   def data_sample(self):
     _car_state = messaging.recv_one(self.car_state_sock)

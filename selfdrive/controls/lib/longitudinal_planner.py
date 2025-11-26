@@ -104,7 +104,7 @@ class LongitudinalPlanner:
     return x, v, a, j, throttle_prob
 
   def update(self, sm, frogpilot_toggles):
-    mode = 'blended' if sm['selfdriveState'].experimentalMode or sm["frogpilotCarState"].trafficModeEnabled else 'acc'
+    mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])

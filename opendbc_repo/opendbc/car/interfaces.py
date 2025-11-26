@@ -214,6 +214,9 @@ class CarInterfaceBase(ABC):
         fp_ret.canUsePedal = not CP.autoResumeSng
         fp_ret.canUseSDSU = not CP.enableDsu and candidate not in UNSUPPORTED_DSU_CAR and candidate not in TSS2_CAR
 
+        if 0x2AA in fingerprint[0] and candidate in NO_DSU_CAR:
+          fp_ret.flags |= ToyotaFlags.RADAR_CAN_FILTER.value
+
         if 0x2FF in fingerprint[0] or (0x2AA in fingerprint[0] and candidate in NO_DSU_CAR):
           fp_ret.flags |= ToyotaFrogPilotFlags.SMART_DSU.value
 
@@ -331,7 +334,7 @@ class CarInterfaceBase(ABC):
     self.CS.out = ret
 
     # FrogPilot variables
-    fp_ret.distancePressed = self.CS.distance_button
+    fp_ret.distancePressed = bool(self.CS.distance_button)
     fp_ret.ecoGear |= ret.gearShifter == GearShifter.eco
     fp_ret.sportGear |= ret.gearShifter == GearShifter.sport
 
@@ -368,7 +371,7 @@ class CarStateBase(ABC):
 
     self.CC: structs.CarControl = structs.CarControl.new_message()
 
-    self.distance_button = 0
+    self.distance_button = False
 
   @abstractmethod
   def update(self, can_parsers, frogpilot_toggles) -> structs.CarState:

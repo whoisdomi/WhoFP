@@ -22,8 +22,8 @@ from openpilot.frogpilot.controls.lib.weather_checker import WeatherChecker
 
 class FrogPilotPlanner:
   def __init__(self, error_log, ThemeManager):
-    self.params = Params()
-    self.params_memory = Params(memory=True)
+    self.params = Params(return_defaults=True)
+    self.params_memory = Params(memory=True, return_defaults=True)
 
     self.frogpilot_acceleration = FrogPilotAcceleration(self)
     self.frogpilot_cem = ConditionalExperimentalMode(self)
@@ -143,13 +143,19 @@ class FrogPilotPlanner:
 
     frogpilotPlan.desiredFollowDistance = int(self.frogpilot_following.desired_follow_distance)
 
-    frogpilotPlan.experimentalMode = self.frogpilot_cem.experimental_mode
+    frogpilotPlan.experimentalMode = self.frogpilot_cem.experimental_mode or self.frogpilot_vcruise.slc.experimental_mode
+
+    frogpilotPlan.forcingStop = self.frogpilot_vcruise.forcing_stop
+    frogpilotPlan.forcingStopLength = self.frogpilot_vcruise.tracked_model_length
 
     frogpilotPlan.frogpilotEvents = self.frogpilot_events.events.to_msg()
 
-    frogpilotPlan.increasedStoppedDistance = frogpilot_toggles.increase_stopped_distance
-    if self.frogpilot_weather.weather_id != 0:
-      frogpilotPlan.increasedStoppedDistance += self.frogpilot_weather.increase_stopped_distance
+    if sm["frogpilotCarState"].trafficModeEnabled:
+      frogpilotPlan.increasedStoppedDistance = 0
+    else:
+      frogpilotPlan.increasedStoppedDistance = frogpilot_toggles.increase_stopped_distance
+      if self.frogpilot_weather.weather_id != 0:
+        frogpilotPlan.increasedStoppedDistance += self.frogpilot_weather.increase_stopped_distance
 
     frogpilotPlan.laneWidthLeft = self.lane_width_left
     frogpilotPlan.laneWidthRight = self.lane_width_right

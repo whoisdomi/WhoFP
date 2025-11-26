@@ -27,6 +27,7 @@ class FrogPilotEvents:
     self.events = Events(frogpilot=True)
 
     self.always_on_lateral_enabled_previously = False
+    self.previous_traffic_mode = False
     self.random_event_playing = False
     self.startup_seen = False
     self.stopped_for_light = False
@@ -53,6 +54,9 @@ class FrogPilotEvents:
       self.max_acceleration = max(acceleration, self.max_acceleration)
     else:
       self.max_acceleration = 0
+
+    if self.frogpilot_planner.frogpilot_vcruise.forcing_stop:
+      self.events.add(FrogPilotEventName.forcingStop)
 
     if not self.frogpilot_planner.tracking_lead and sm["carState"].standstill and sm["carState"].gearShifter not in NON_DRIVING_GEARS:
       if not self.frogpilot_planner.model_stopped and self.stopped_for_light and frogpilot_toggles.green_light_alert:
@@ -184,6 +188,14 @@ class FrogPilotEvents:
       self.events.add(FrogPilotEventName.speedLimitChanged)
 
     self.startup_seen |= sm["frogpilotSelfdriveState"].alertText1 == frogpilot_toggles.startup_alert_top and sm["frogpilotSelfdriveState"].alertText2 == frogpilot_toggles.startup_alert_bottom
+
+    if sm["frogpilotCarState"].trafficModeEnabled != self.previous_traffic_mode:
+      if self.previous_traffic_mode:
+        self.events.add(FrogPilotEventName.trafficModeInactive)
+      else:
+        self.events.add(FrogPilotEventName.trafficModeActive)
+
+      self.previous_traffic_mode = sm["frogpilotCarState"].trafficModeEnabled
 
     if sm["frogpilotModelV2"].turnDirection == TurnDirection.turnLeft:
       self.events.add(FrogPilotEventName.turningLeft)

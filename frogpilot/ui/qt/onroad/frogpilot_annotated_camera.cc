@@ -241,8 +241,6 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     paintLongitudinalPaused(p);
   }
 
-  paintPathEdges(p, sm);
-
   if (frogpilot_toggles.value("pedals_on_ui").toBool()) {
     paintPedalIcons(p, sm, fpsm);
   }
@@ -317,7 +315,7 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
       gradient.setColorAt(1.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.2f));
     } else {
       float ratio = std::clamp(laneWidth / frogpilot_toggles.value("lane_detection_width").toDouble(), 0.0, 1.0);
-      float hue = ratio * (120.0f / 360.0f);
+      float hue = (ratio * ratio) * (120.0f / 360.0f);
 
       gradient.setColorAt(0.0f, QColor::fromHslF(hue, 0.75f, 0.5f, 0.6f));
       gradient.setColorAt(0.5f, QColor::fromHslF(hue, 0.75f, 0.5f, 0.4f));
@@ -604,48 +602,54 @@ void FrogPilotAnnotatedCameraWidget::paintLateralPaused(QPainter &p) {
 }
 
 void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent, QPointF *chevron, const cereal::RadarState::LeadData::Reader &lead_data) {
-  float leadDistance = lead_data.getDRel() + (adjacent ? fabs(lead_data.getYRel()) : 0);
+  float leadDistance = lead_data.getDRel() + (adjacent ? std::abs(lead_data.getYRel()) : 0.0f);
   float leadSpeed = std::max(lead_data.getVLead(), 0.0f);
 
   p.setFont(InterFont(40, QFont::Bold));
-  p.setPen(QPen(whiteColor()));
+  p.setPen(whiteColor());
 
-  QString text;
+  QVector<QString> textLines;
+  textLines.reserve(3);
   if (adjacent) {
-    text = QString("%1 %2 | %3 %4")
-              .arg(qRound(leadDistance * distanceConversion))
-              .arg(leadDistanceUnit)
-              .arg(qRound(leadSpeed * speedConversionMetrics))
-              .arg(leadSpeedUnit);
+    textLines.append(QString("%1 %2").arg(QString::number(qRound(leadDistance * distanceConversion)), leadDistanceUnit));
+    textLines.append(QString("%1 %2").arg(QString::number(qRound(leadSpeed * speedConversionMetrics)), leadSpeedUnit));
   } else {
-    text = QString("%1 %2 (%3) | %4 %5 | %6 %7")
-              .arg(qRound(leadDistance * distanceConversion))
-              .arg(leadDistanceUnit)
-              .arg(QString(tr("Desired: %1")).arg(desiredFollowDistance * distanceConversion))
-              .arg(qRound(leadSpeed * speedConversionMetrics))
-              .arg(leadSpeedUnit)
-              .arg(QString::number(leadDistance / std::max(speed / speedConversion, 1.0f), 'f', 2))
-              .arg(tr("s"));
+    if (frogpilot_toggles.value("openpilot_longitudinal").toBool()) {
+      int desiredDistance = std::max(0, qRound(desiredFollowDistance * distanceConversion));
+      textLines.append(QString("%1 %2 (%3)").arg(QString::number(qRound(leadDistance * distanceConversion)), leadDistanceUnit, tr("Desired: %1").arg(desiredDistance)));
+    } else {
+      textLines.append(QString("%1 %2").arg(QString::number(qRound(leadDistance * distanceConversion)), leadDistanceUnit));
+    }
+    textLines.append(QString("%1 %2").arg(QString::number(qRound(leadSpeed * speedConversionMetrics)), leadSpeedUnit));
+
+    float timeGap = leadDistance / std::max(speed / speedConversion, 1.0f);
+    textLines.append(QString("%1 %2").arg(QString::number(timeGap, 'f', 2), tr("seconds")));
   }
 
   QFontMetrics metrics(p.font());
-  int textHeight = metrics.height();
-  int textWidth = metrics.horizontalAdvance(text);
+  int lineHeight = metrics.lineSpacing();
+  int maxTextWidth = 0;
 
-  int textX = ((chevron[2].x() + chevron[0].x()) / 2) - textWidth / 2;
-  int textY = chevron[0].y() + textHeight + 5;
+  for (const QString &line : textLines) {
+    maxTextWidth = std::max(maxTextWidth, metrics.horizontalAdvance(line));
+  }
+
+  int centerX = (chevron[2].x() + chevron[0].x()) / 2;
+  int startY = chevron[0].y() + lineHeight + 5;
+
+  QRect textRect(centerX - maxTextWidth / 2, startY - lineHeight, maxTextWidth, textLines.size() * lineHeight);
 
   if (!adjacent) {
-    int xMargin = textWidth * 0.25;
-    int yMargin = textHeight * 0.25;
+    int xMargin = maxTextWidth * 0.25;
+    int yMargin = lineHeight * 0.25;
+    leadTextRect = textRect.adjusted(-xMargin, -yMargin, xMargin, yMargin);
+  } else if (textRect.intersects(leadTextRect)) {
+    return;
+  }
 
-    leadTextRect = QRect(textX, textY - textHeight, textWidth, textHeight).adjusted(-xMargin, -yMargin, xMargin, yMargin);
-    p.drawText(textX, textY, text);
-  } else {
-    QRect adjacentTextRect(textX, textY - textHeight, textWidth, textHeight);
-    if (!adjacentTextRect.intersects(leadTextRect)) {
-      p.drawText(textX, textY, text);
-    }
+  for (int i = 0; i < textLines.size(); ++i) {
+    int lineX = centerX - metrics.horizontalAdvance(textLines[i]) / 2;
+    p.drawText(lineX, startY + (i * lineHeight), textLines[i]);
   }
 }
 

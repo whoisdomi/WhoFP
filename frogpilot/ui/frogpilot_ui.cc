@@ -13,6 +13,7 @@ static void update_state(FrogPilotUIState *fs) {
   if (fpsm.updated("frogpilotCarState")) {
     const cereal::FrogPilotCarState::Reader &frogpilotCarState = fpsm["frogpilotCarState"].getFrogpilotCarState();
     frogpilot_scene.always_on_lateral_active = !frogpilot_scene.enabled && frogpilotCarState.getAlwaysOnLateralEnabled();
+    frogpilot_scene.traffic_mode_enabled = frogpilotCarState.getTrafficModeEnabled();
   }
   if (fpsm.updated("frogpilotPlan")) {
     const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
@@ -74,4 +75,5 @@ void FrogPilotUIState::update() {
   update_state(this);
 
   frogpilot_scene.conditional_status = frogpilot_scene.enabled ? params_memory.getInt("CEStatus") : 0;
+  frogpilot_scene.driver_camera_timer = frogpilot_scene.reverse && frogpilot_scene.frogpilot_toggles.value("driver_camera_in_reverse").toBool() ? frogpilot_scene.driver_camera_timer + 1 : 0;
 }

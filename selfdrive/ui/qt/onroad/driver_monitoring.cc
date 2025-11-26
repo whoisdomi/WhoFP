@@ -119,7 +119,9 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   painter.restore();
 
   // FrogPilot variables
-  frogpilot_nvg->dmIconPosition.setX(x);
-  frogpilot_nvg->dmIconPosition.setY(y);
-  frogpilot_nvg->rightHandDM = is_rhd;
+  if (frogpilot_nvg) {
+    frogpilot_nvg->dmIconPosition.setX(x);
+    frogpilot_nvg->dmIconPosition.setY(y);
+    frogpilot_nvg->rightHandDM = is_rhd;
+  }
 }
