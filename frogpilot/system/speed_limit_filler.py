@@ -210,10 +210,6 @@ class MapSpeedLogger:
       return
 
     gps_location = self.sm[self.gps_location_service]
-    if gps_location.flags % 2 != 1:
-      self.previous_coordinates = None
-      return
-
     current_latitude = gps_location.latitude
     current_longitude = gps_location.longitude
 
@@ -224,7 +220,7 @@ class MapSpeedLogger:
     current_speed_source = self.get_speed_limit_source()
     valid_sources = {source[0] for source in [current_speed_source] if source and source[0] > 0}
 
-    map_speed = self.params_memory.get("MapSpeedLimit")
+    map_speed = self.params_memory.get("MapSpeedLimit", return_default=True)
     is_incorrect_limit = bool(map_speed > 0 and valid_sources and all(abs(map_speed - source) > 1 for source in valid_sources))
 
     if map_speed > 0 and not is_incorrect_limit:

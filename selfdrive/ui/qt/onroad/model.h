@@ -16,6 +16,8 @@ public:
   // FrogPilot variables
   FrogPilotAnnotatedCameraWidget *frogpilot_nvg;
 
+  FrogPilotUIScene frogpilot_scene;
+
   QJsonObject frogpilot_toggles;
 
 private:
@@ -48,10 +50,4 @@ private:
   void mapAveragedLineToPolygon(const cereal::XYZTData::Reader &line1, const cereal::XYZTData::Reader &line2, float y_off, float z_off,
                                 QPolygonF *pvd, int max_idx, bool allow_invert = true);
   void updateRadarTracks(const cereal::XYZTData::Reader &line);
-
-  bool model_ui;
-  bool use_stock_colors;
-
-  QColor lane_lines_color;
-  QColor path_color;
 };

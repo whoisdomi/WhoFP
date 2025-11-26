@@ -15,6 +15,8 @@ public:
   void updateState(const UIState &s, const FrogPilotUIState &fs);
 
   // FrogPilot variables
+  FrogPilotUIScene frogpilot_scene;
+
   QJsonObject frogpilot_toggles;
 
 private:

@@ -16,7 +16,7 @@ from opendbc.car import gen_empty_fingerprint
 from opendbc.car.car_helpers import interfaces
 from opendbc.car.gm.values import GMFlags
 from opendbc.car.hyundai.values import HyundaiFlags
-from opendbc.car.interfaces import TORQUE_SUBSTITUTE_PATH, CarInterfaceBase
+from opendbc.car.interfaces import TORQUE_SUBSTITUTE_PATH, CarInterfaceBase, GearShifter
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.subaru.values import SubaruFlags
 from opendbc.car.toyota.values import ToyotaFrogPilotFlags
@@ -27,8 +27,6 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.hardware.power_monitoring import VBATT_PAUSE_CHARGING
 from openpilot.system.version import get_build_metadata
-
-GearShifter = car.CarState.GearShifter
 
 CITY_SPEED_LIMIT = 25                     # 55mph is typically the minimum speed for highways
 CRUISING_SPEED = 5                        # Roughly the speed cars go when not touching the gas while in drive
@@ -47,10 +45,10 @@ DISCORD_WEBHOOK_URL_THEME = os.getenv("DISCORD_WEBHOOK_URL_THEME")
 
 RESOURCES_REPO = "FrogAi/FrogPilot-Resources"
 
-ACTIVE_THEME_PATH = Path(__file__).parents[1] / "assets/active_theme"
-METADATAS_PATH = Path(__file__).parents[1] / "assets/model_metadata"
+ACTIVE_THEME_PATH = Path(BASEDIR) / "frogpilot/assets/active_theme"
+METADATAS_PATH = Path(BASEDIR) / "frogpilot/assets/model_metadata"
 MODELS_PATH = Path("/data/models")
-RANDOM_EVENTS_PATH = Path(__file__).parents[1] / "assets/random_events"
+RANDOM_EVENTS_PATH = Path(BASEDIR) / "frogpilot/assets/random_events"
 THEME_SAVE_PATH = Path("/data/themes")
 
 ERROR_LOGS_PATH = Path("/data/error_logs")
@@ -194,6 +192,7 @@ class FrogPilotVariables:
     self.params_memory = Params(memory=True)
 
     self.frogpilot_toggles = get_frogpilot_toggles()
+    toggle = self.frogpilot_toggles
 
     self.default_values = {key.decode(): self.params.get_default_value(key) for key in self.params.all_keys()}
     self.tuning_levels = {key.decode(): self.params.get_tuning_level(key) for key in self.params.all_keys()}
@@ -201,17 +200,15 @@ class FrogPilotVariables:
     device_type = HARDWARE.get_device_type()
     self.is_tici = device_type == "tici"
 
-    short_branch = get_build_metadata().channel
-    self.development_branch = short_branch == "FrogPilot-Development"
-    self.release_branch = short_branch == "FrogPilot"
-    self.staging_branch = short_branch == "FrogPilot-Staging"
-    self.testing_branch = short_branch == "FrogPilot-Testing"
-    self.vetting_branch = short_branch == "FrogPilot-Vetting"
-
-    toggle = self.frogpilot_toggles
+    branch = get_build_metadata().channel
+    self.development_branch = branch == "FrogPilot-Development"
+    self.release_branch = branch == "FrogPilot"
+    self.staging_branch = branch == "FrogPilot-Staging"
+    self.testing_branch = branch == "FrogPilot-Testing"
+    self.vetting_branch = branch == "FrogPilot-Vetting"
 
     toggle.frogs_go_moo = Path("/persist/frogsgomoo.py").is_file()
-    toggle.block_user = (self.development_branch or short_branch == "MAKE-PRS-HERE" or self.vetting_branch) and not toggle.frogs_go_moo
+    toggle.block_user = (self.development_branch or branch == "MAKE-PRS-HERE" or self.vetting_branch) and not toggle.frogs_go_moo
 
     self.tuning_level = self.params.get("TuningLevel") if self.params.get_bool("TuningLevelConfirmed") else TUNING_LEVELS["ADVANCED"]
 

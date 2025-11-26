@@ -23,6 +23,8 @@ public:
 
   FrogPilotAnnotatedCameraWidget *frogpilot_nvg;
 
+  FrogPilotUIScene frogpilot_scene;
+
   QJsonObject frogpilot_toggles;
 
 private:
@@ -37,6 +39,8 @@ private:
   bool wide_cam_requested = false;
 
   // FrogPilot variables
+  void paintEvent(QPaintEvent *event) override;
+
   DrivingPersonalityButton *personality_btn;
   ScreenRecorder *screen_recorder;
 

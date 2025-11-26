@@ -12,7 +12,11 @@ public:
 
   double fps;
 
+  FrogPilotUIScene frogpilot_scene;
+
   QColor bg;
+
+  QJsonObject frogpilot_toggles;
 
 private:
   void paintEvent(QPaintEvent *event);

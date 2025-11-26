@@ -37,8 +37,7 @@ void ExperimentalButton::changeMode() {
   if (can_change) {
     // FrogPilot variables
     if (frogpilot_toggles.value("conditional_experimental_mode").toBool()) {
-      int conditional_status = frogpilotUIState()->frogpilot_scene.conditional_status;
-      int override_value = (conditional_status == 1 || conditional_status == 2) ? 0 : experimental_mode ? 1 : 2;
+      int override_value = (frogpilot_scene.conditional_status == 1 || frogpilot_scene.conditional_status == 2) ? 0 : experimental_mode ? 1 : 2;
       params_memory.putInt("CEStatus", override_value);
     } else {
       params.putBool("ExperimentalMode", !experimental_mode);
@@ -100,9 +99,6 @@ void ExperimentalButton::showEvent(QShowEvent *event) {
 }
 
 void ExperimentalButton::updateBackgroundColor() {
-  FrogPilotUIState &fs = *frogpilotUIState();
-  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
-
   static const QMap<QString, QColor> status_color_map {
     {"default", QColor(0, 0, 0, 166)},
     {"always_on_lateral_active", bg_colors[STATUS_ALWAYS_ON_LATERAL_ACTIVE]},

@@ -16,7 +16,7 @@ public:
   explicit FrogPilotAnnotatedCameraWidget(QWidget *parent = 0);
 
   void mousePressEvent(QMouseEvent *e) override;
-  void paintFrogPilotWidgets(QPainter &p, UIState &s, FrogPilotUIState &fs, SubMaster &sm, SubMaster &fpsm);
+  void paintFrogPilotWidgets(QPainter &p, UIState &s, SubMaster &sm);
   void paintLeadMetrics(QPainter &p, bool adjacent, QPointF *chevron, const cereal::RadarState::LeadData::Reader &lead_data);
   void paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point);
   void updateState(const UIState &s, const FrogPilotUIState &fs);
@@ -32,6 +32,8 @@ public:
   float speed;
 
   std::vector<RadarTrackData> radar_tracks;
+
+  FrogPilotUIScene frogpilot_scene;
 
   QJsonObject frogpilot_toggles;
 
@@ -54,12 +56,14 @@ protected:
 private:
   void paintAdjacentPaths(QPainter &p, SubMaster &sm, SubMaster &fpsm);
   void paintBlindSpotPath(QPainter &p, SubMaster &sm, SubMaster &fpsm);
-  void paintCEMStatus(QPainter &p, FrogPilotUIScene &frogpilot_scene, SubMaster &sm);
+  void paintCEMStatus(QPainter &p, SubMaster &sm);
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
-  void paintPathEdges(QPainter &p, const FrogPilotUIScene &frogpilot_scene, SubMaster &sm);
-  void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm, FrogPilotUIScene &frogpilot_scene);
+  void paintLateralPaused(QPainter &p);
+  void paintLongitudinalPaused(QPainter &p);
+  void paintPathEdges(QPainter &p, SubMaster &sm);
+  void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm);
   void paintPendingSpeedLimit(QPainter &p, SubMaster &fpsm);
   void paintRadarTracks(QPainter &p);
   void paintRoadName(QPainter &p);
@@ -68,7 +72,7 @@ private:
   void paintStandstillTimer(QPainter &p);
   void paintStoppingPoint(QPainter &p, SubMaster &sm);
   void paintTurnSignals(QPainter &p, SubMaster &sm);
-  void paintWeather(QPainter &p, SubMaster &fpsm, FrogPilotUIScene &frogpilot_scene);
+  void paintWeather(QPainter &p, SubMaster &fpsm);
   void updateSignals();
 
   bool speedLimitChanged;
@@ -107,10 +111,14 @@ private:
   QPixmap mapboxIcon;
   QPixmap nextMapsIcon;
   QPixmap gasPedalImg;
+  QPixmap pausedIcon;
+  QPixmap speedIcon;
   QPixmap stopSignImg;
+  QPixmap turnIcon;
 
   QPoint cemStatusPosition;
   QPoint compassPosition;
+  QPoint lateralPausedPosition;
 
   QRect leadTextRect;
   QRect newSpeedLimitRect;

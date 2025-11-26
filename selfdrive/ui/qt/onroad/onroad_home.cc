@@ -70,20 +70,25 @@ void OnroadWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
   const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
   const QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
-  frogpilot_onroad->setGeometry(rect());
-
-  frogpilot_nvg->updateState(s, fs);
-  frogpilot_onroad->updateState(s, fs);
-
   frogpilot_nvg->alertHeight = alerts->alertHeight;
 
+  frogpilot_onroad->bg = bg;
   frogpilot_onroad->fps = nvg->fps;
 
   nvg->frogpilot_nvg = frogpilot_nvg;
 
+  nvg->frogpilot_scene = frogpilot_scene;
+  frogpilot_nvg->frogpilot_scene = frogpilot_scene;
+  frogpilot_onroad->frogpilot_scene = frogpilot_scene;
+
   alerts->frogpilot_toggles = frogpilot_toggles;
   frogpilot_nvg->frogpilot_toggles = frogpilot_toggles;
   nvg->frogpilot_toggles = frogpilot_toggles;
+
+  frogpilot_onroad->setGeometry(rect());
+
+  frogpilot_nvg->updateState(s, fs);
+  frogpilot_onroad->updateState(s, fs);
 }
 
 void OnroadWindow::offroadTransition(bool offroad) {

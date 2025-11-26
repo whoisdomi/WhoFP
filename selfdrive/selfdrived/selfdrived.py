@@ -10,6 +10,8 @@ from cereal import car, custom, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
 
+from opendbc.car.gm.values import CC_ONLY_CAR, GMFlags
+
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from openpilot.common.swaglog import cloudlog
@@ -163,6 +165,9 @@ class SelfdriveD:
     self.frogpilot_events = Events(frogpilot=True)
 
     self.distance_pressed_previously = False
+    self.has_menu = self.CP.brand == "gm" and not (self.CP.flags & GMFlags.NO_CAMERA.value or self.CP.carFingerprint in CC_ONLY_CAR)
+
+    self.display_timer = 0
 
     self.frogpilot_events_prev = []
 
@@ -448,14 +453,27 @@ class SelfdriveD:
     # Decrement personality on distance button press
     if self.CP.openpilotLongitudinalControl:
       distance_pressed = self.params_memory.get_bool("OnroadDistanceButtonPressed")
-      distance_pressed |= any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents)
+
+      if self.frogpilot_toggles.personality_profile_via_distance:
+        distance_pressed |= any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents)
+        distance_pressed &= not (self.sm['frogpilotCarState'].distanceLongPressed or self.sm['frogpilotCarState'].distanceVeryLongPressed)
+      if self.frogpilot_toggles.personality_profile_via_distance_long:
+        distance_pressed |= self.sm['frogpilotCarState'].distanceLongPressed
+      if self.frogpilot_toggles.personality_profile_via_distance_very_long:
+        distance_pressed |= self.sm['frogpilotCarState'].distanceVeryLongPressed
+      if self.frogpilot_toggles.personality_profile_via_lkas:
+        distance_pressed |= any(be.pressed and be.type == FrogPilotButtonType.lkas for be in CS.buttonEvents)
 
       if not distance_pressed and self.distance_pressed_previously:
-        self.personality = (self.personality - 1) % 3
-        self.params.put_nonblocking('LongitudinalPersonality', self.personality)
-        self.events.add(EventName.personalityChanged)
+        if self.display_timer > 0 or not self.has_menu:
+          self.personality = (self.personality - 1) % 3
+          self.params.put_nonblocking('LongitudinalPersonality', self.personality)
+          self.events.add(EventName.personalityChanged)
+        self.display_timer = 350
 
       self.distance_pressed_previously = distance_pressed
+
+      self.display_timer -= 1
 
     # FrogPilot variables
     self.frogpilot_events.add_from_msg(self.sm['frogpilotPlan'].frogpilotEvents)
@@ -565,7 +583,14 @@ class SelfdriveD:
     fpss_msg.valid = True
     fpss = fpss_msg.frogpilotSelfdriveState
 
-    fpss.alertText1 = self.frogpilot_AM.current_alert.alert_text_1
+    alert_text_1 = self.frogpilot_AM.current_alert.alert_text_1
+    if not isinstance(alert_text_1, str):
+      sentry.set_tag("bad_alert_event_type", str(self.frogpilot_AM.current_alert.alert_type))
+      sentry.set_tag("bad_alert_content", str(alert_text_1))
+      sentry.capture_exception(Exception(f"Invalid alertText1 type: {type(alert_text_1)}"))
+    else:
+      fpss.alertText1 = alert_text_1
+
     fpss.alertText2 = self.frogpilot_AM.current_alert.alert_text_2
     fpss.alertSize = self.frogpilot_AM.current_alert.alert_size
     fpss.alertStatus = self.frogpilot_AM.current_alert.alert_status
@@ -601,7 +626,8 @@ class SelfdriveD:
       self.is_metric = self.params.get_bool("IsMetric")
       self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
       self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
-      self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
+      if not self.frogpilot_toggles.conditional_experimental_mode:
+        self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
       self.personality = self.params.get("LongitudinalPersonality", return_default=True)
       time.sleep(0.1)
 

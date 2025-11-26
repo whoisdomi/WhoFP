@@ -74,7 +74,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
   int max_idx = get_path_length_idx(lane_lines[0], max_distance);
   for (int i = 0; i < std::size(lane_line_vertices); i++) {
     lane_line_probs[i] = line_probs[i];
-    mapLineToPolygon(lane_lines[i], (model_ui ? frogpilot_toggles.value("lane_line_width").toDouble() : 0.025) * lane_line_probs[i], 0, &lane_line_vertices[i], max_idx);
+    mapLineToPolygon(lane_lines[i], (frogpilot_toggles.value("model_ui").toBool() ? frogpilot_toggles.value("lane_line_width").toDouble() : 0.025) * lane_line_probs[i], 0, &lane_line_vertices[i], max_idx);
   }
 
   // update road edges
@@ -82,7 +82,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
   const auto &edge_stds = model.getRoadEdgeStds();
   for (int i = 0; i < std::size(road_edge_vertices); i++) {
     road_edge_stds[i] = edge_stds[i];
-    mapLineToPolygon(road_edges[i], model_ui ? frogpilot_toggles.value("road_edge_width").toDouble() : 0.025, 0, &road_edge_vertices[i], max_idx);
+    mapLineToPolygon(road_edges[i], frogpilot_toggles.value("model_ui").toBool() ? frogpilot_toggles.value("road_edge_width").toDouble() : 0.025, 0, &road_edge_vertices[i], max_idx);
   }
 
   // update path
@@ -96,23 +96,17 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
     UIState *s = uiState();
     path_width *= s->status == STATUS_ENGAGED ? 1.0f : s->status == STATUS_ALWAYS_ON_LATERAL_ACTIVE ? 0.75f : 0.50f;
   }
-  mapLineToPolygon(model_position, model_ui ? path_width * (1 - (frogpilot_toggles.value("path_edge_width").toDouble() / 100.0f)) : 0.9, path_offset_z, &track_vertices, max_idx, false);
+  mapLineToPolygon(model_position, frogpilot_toggles.value("model_ui").toBool() ? path_width * (1 - (frogpilot_toggles.value("path_edge_width").toDouble() / 100.0f)) : 0.9, path_offset_z, &track_vertices, max_idx, false);
 
   // FrogPilot variables
   FrogPilotUIState *fs = frogpilotUIState();
-  FrogPilotUIScene &frogpilot_scene = fs->frogpilot_scene;
   SubMaster &fpsm = *(fs->sm);
 
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
-  lane_lines_color = frogpilot_scene.lane_lines_color;
-  model_ui = frogpilot_toggles.value("model_ui").toBool();
-  path_color = frogpilot_scene.path_color;
-  use_stock_colors = frogpilot_scene.use_stock_colors;
-
   frogpilot_nvg->track_vertices = track_vertices;
 
-  mapLineToPolygon(model_position, model_ui ? path_width : 0, path_offset_z, &frogpilot_nvg->track_edge_vertices, max_idx, false);
+  mapLineToPolygon(model_position, frogpilot_toggles.value("model_ui").toBool() ? path_width : 0, path_offset_z, &frogpilot_nvg->track_edge_vertices, max_idx, false);
 
   mapAveragedLineToPolygon(lane_lines[0], lane_lines[1], frogpilotPlan.getLaneWidthLeft() / 2.0f, 0, &frogpilot_nvg->track_adjacent_vertices[0], max_idx, false);
   mapAveragedLineToPolygon(lane_lines[2], lane_lines[3], frogpilotPlan.getLaneWidthRight() / 2.0f, 0, &frogpilot_nvg->track_adjacent_vertices[1], max_idx, false);
@@ -121,10 +115,10 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
 void ModelRenderer::drawLaneLines(QPainter &painter) {
   // lanelines
   for (int i = 0; i < std::size(lane_line_vertices); ++i) {
-    if (use_stock_colors) {
+    if (frogpilot_scene.use_stock_colors) {
       painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(lane_line_probs[i], 0.0, 0.7)));
     } else {
-      QColor lane_color = QColor(lane_lines_color);
+      QColor lane_color = QColor(frogpilot_scene.lane_lines_color);
       lane_color.setAlphaF(lane_color.alphaF() * std::clamp<float>(lane_line_probs[i], 0.0, 0.7));
       painter.setBrush(lane_color);
     }
@@ -155,8 +149,8 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
 
       if ((fabs(acceleration[i]) < 0.25 || !frogpilot_toggles.value("acceleration_path").toBool()) && frogpilot_toggles.value("rainbow_path").toBool()) {
         frogpilot_nvg->paintRainbowPath(painter, bg, lin_grad_point);
-      } else if (fabs(acceleration[i]) < 0.25 && !use_stock_colors) {
-        QColor color = path_color;
+      } else if (fabs(acceleration[i]) < 0.25 && !frogpilot_scene.use_stock_colors) {
+        QColor color = frogpilot_scene.path_color;
         color.setAlphaF(util::map_val(lin_grad_point, 0.0f, 1.0f, 1.0f, 0.1f));
         bg.setColorAt(lin_grad_point, color);
       } else {

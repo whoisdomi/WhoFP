@@ -38,15 +38,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState
 
   const cereal::CarState::Reader &carState = sm["carState"].getCarState();
 
-  dmon.frogpilot_nvg = frogpilot_nvg;
-  hud.frogpilot_nvg = frogpilot_nvg;
-  model.frogpilot_nvg = frogpilot_nvg;
-
-  dmon.frogpilot_toggles = frogpilot_toggles;
-  experimental_btn->frogpilot_toggles = frogpilot_toggles;
-  hud.frogpilot_toggles = frogpilot_toggles;
-  model.frogpilot_toggles = frogpilot_toggles;
-
   frogpilot_nvg->experimentalButtonPosition = QPoint(experimental_btn->x(), experimental_btn->y());
 
   bool onroad_distance_btn_enabled = frogpilot_nvg->dmIconPosition != QPoint(0, 0) && !frogpilot_nvg->hideBottomIcons && frogpilot_toggles.value("onroad_distance_button").toBool();
@@ -123,13 +114,14 @@ mat4 AnnotatedCameraWidget::calcFrameMatrix() {
 }
 
 void AnnotatedCameraWidget::paintGL() {
+}
+
+void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   UIState *s = uiState();
   SubMaster &sm = *(s->sm);
   const double start_draw_t = millis_since_boot();
 
-  // FrogPilot variables
-  FrogPilotUIState *fs = frogpilotUIState();
-  SubMaster &fpsm = *(fs->sm);
+  QPainter painter(this);
 
   // draw camera frame
   {
@@ -163,12 +155,27 @@ void AnnotatedCameraWidget::paintGL() {
                                 frogpilot_toggles.value("camera_view").toInt() == 3 || wide_cam_requested ? VISION_STREAM_WIDE_ROAD :
                                 VISION_STREAM_ROAD);
     CameraWidget::setFrameId(sm["modelV2"].getModelV2().getFrameId());
+
+    painter.beginNativePainting();
     CameraWidget::paintGL();
+    painter.endNativePainting();
   }
 
-  QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
   painter.setPen(Qt::NoPen);
+
+  // FrogPilot variables
+  dmon.frogpilot_nvg = frogpilot_nvg;
+  hud.frogpilot_nvg = frogpilot_nvg;
+  model.frogpilot_nvg = frogpilot_nvg;
+
+  experimental_btn->frogpilot_scene = frogpilot_scene;
+  model.frogpilot_scene = frogpilot_scene;
+
+  dmon.frogpilot_toggles = frogpilot_toggles;
+  experimental_btn->frogpilot_toggles = frogpilot_toggles;
+  hud.frogpilot_toggles = frogpilot_toggles;
+  model.frogpilot_toggles = frogpilot_toggles;
 
   model.draw(painter, rect());
   dmon.draw(painter, rect());
@@ -176,7 +183,7 @@ void AnnotatedCameraWidget::paintGL() {
   hud.draw(painter, rect());
 
   // FrogPilot variables
-  frogpilot_nvg->paintFrogPilotWidgets(painter, *s, *fs, sm, fpsm);
+  frogpilot_nvg->paintFrogPilotWidgets(painter, *s, sm);
 
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
