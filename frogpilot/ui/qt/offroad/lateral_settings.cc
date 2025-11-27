@@ -49,7 +49,6 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent) : 
     {"ForceTorqueController", tr("Force Torque Controller"), tr("<b>Use torque-based steering control instead of angle-based control for smoother lane keeping, especially in curves.</b>"), ""},
 
     {"AlwaysOnLateral", tr("Always On Lateral"), tr("<b>openpilot's steering remains active even when the accelerator or brake pedals are pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_always_on_lateral.png"},
-    {"AlwaysOnLateralMain", tr("Enable With Cruise Control"), tr("<b>Enable \"Always On Lateral\" whenever \"Cruise Control\" is on, even when openpilot is not engaged.</b>"), ""},
     {"AlwaysOnLateralLKAS", tr("Enable With LKAS"), tr("<b>Enable \"Always On Lateral\" whenever \"LKAS\" is on, even when openpilot is not engaged.</b>"), ""},
     {"PauseAOLOnBrake", tr("Pause on Brake Press Below"), tr("<b>Pause \"Always On Lateral\" below the set speed while the brake pedal is pressed.</b>"), ""},
 
@@ -350,13 +349,12 @@ void FrogPilotLateralPanel::updateToggles() {
 
     bool setVisible = parent->tuningLevel >= parent->frogpilotToggleLevels[key].toDouble();
 
-    if (key == "AlwaysOnLateralLKAS") {
-      setVisible &= parent->lkasAllowedForAOL;
+    if (key == "AlwaysOnLateral") {
+      setVisible &= parent->canUseAOL;
     }
 
-    else if (key == "AlwaysOnLateralMain") {
-      setVisible &= !parent->isHKGCanFd;
-      setVisible |= parent->hasOpenpilotLongitudinal;
+    if (key == "AlwaysOnLateralLKAS") {
+      setVisible &= parent->lkasAllowedForAOL;
     }
 
     else if (key == "ForceAutoTune") {

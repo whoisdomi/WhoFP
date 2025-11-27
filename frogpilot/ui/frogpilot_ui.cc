@@ -51,7 +51,7 @@ void update_theme(FrogPilotUIScene &frogpilot_scene) {
 FrogPilotUIState::FrogPilotUIState(QObject *parent) : QObject(parent) {
   sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "carControl", "deviceState", "frogpilotCarState", "frogpilotDeviceState",
-    "frogpilotPlan", "frogpilotSelfdriveState", "liveDelay",
+    "frogpilotPlan", "frogpilotRadarState", "frogpilotSelfdriveState", "liveDelay",
     "liveParameters", "liveTorqueParameters", "liveTracks", "selfdriveState"
   });
 

@@ -33,16 +33,36 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
   update_model(model, lead_one);
   drawLaneLines(painter);
-  drawPath(painter, model, surface_rect.height(), sm);
+  drawPath(painter, model, surface_rect.height());
 
   if ((longitudinal_control || frogpilot_toggles.value("lead_info").toBool()) && sm.alive("radarState") && !frogpilot_toggles.value("hide_lead_marker").toBool()) {
     update_leads(radar_state, model.getPosition());
     const auto &lead_two = radar_state.getLeadTwo();
     if (lead_one.getStatus()) {
-      drawLead(painter, lead_one, lead_vertices[0], surface_rect, lead_one.getModelProb() >= frogpilot_toggles.value("lead_detection_probability").toDouble() ? frogpilot_scene.lead_marker_color : frogpilot_nvg->whiteColor());
+      if (lead_one.getModelProb() >= frogpilot_toggles.value("lead_detection_probability").toDouble()) {
+        drawLead(painter, lead_one, lead_vertices[0], surface_rect, frogpilot_scene.lead_marker_color);
+      } else {
+        drawLead(painter, lead_one, lead_vertices[0], surface_rect, frogpilot_nvg->whiteColor());
+      }
     }
     if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
       drawLead(painter, lead_two, lead_vertices[1], surface_rect, frogpilot_scene.lead_marker_color);
+    }
+
+    // FrogPilot variables
+    SubMaster &fpsm = *(frogpilotUIState()->sm);
+    const cereal::FrogPilotRadarState::Reader &frogpilot_radar_state = fpsm["frogpilotRadarState"].getFrogpilotRadarState();
+
+    updateAdjacentLeads(frogpilot_radar_state, model.getPosition());
+
+    const cereal::FrogPilotRadarState::LeadData::Reader &lead_left = frogpilot_radar_state.getLeadLeft();
+    const cereal::FrogPilotRadarState::LeadData::Reader &lead_right = frogpilot_radar_state.getLeadRight();
+
+    if (lead_left.getStatus()) {
+      drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_left), adjacent_lead_vertices[0], surface_rect, frogpilot_nvg->blueColor(), true);
+    }
+    if (lead_right.getStatus()) {
+      drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_right), adjacent_lead_vertices[1], surface_rect, frogpilot_nvg->purpleColor(), true);
     }
   }
 
@@ -132,7 +152,7 @@ void ModelRenderer::drawLaneLines(QPainter &painter) {
   }
 }
 
-void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height, SubMaster &sm) {
+void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height) {
   QLinearGradient bg(0, height, 0, 0);
   if (experimental_mode || frogpilot_toggles.value("acceleration_path").toBool()) {
     // The first half of track_vertices are the points for the right side of the path
@@ -177,6 +197,15 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
   painter.drawPolygon(track_vertices);
 
   // FrogPilot variables
+  SubMaster &sm = *(uiState()->sm);
+  SubMaster &fpsm = *(frogpilotUIState()->sm);
+
+  if (frogpilot_toggles.value("adjacent_path_metrics").toBool() || frogpilot_toggles.value("adjacent_paths").toBool()) {
+    frogpilot_nvg->paintAdjacentPaths(painter, sm, fpsm);
+  } else if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles.value("blind_spot_path").toBool()) {
+    frogpilot_nvg->paintBlindSpotPath(painter, sm, fpsm);
+  }
+
   frogpilot_nvg->paintPathEdges(painter, sm);
 }
 
@@ -313,6 +342,16 @@ void ModelRenderer::mapAveragedLineToPolygon(const cereal::XYZTData::Reader &lin
       }
       pvd->push_back(left);
       pvd->push_front(right);
+    }
+  }
+}
+
+void ModelRenderer::updateAdjacentLeads(const cereal::FrogPilotRadarState::Reader &radar_state, const cereal::XYZTData::Reader &line) {
+  for (int i = 0; i < 2; ++i) {
+    const auto &lead_data = (i == 0) ? radar_state.getLeadLeft() : radar_state.getLeadRight();
+    if (lead_data.getStatus()) {
+      float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
+      mapToScreen(lead_data.getDRel(), -lead_data.getYRel(), z + path_offset_z, &adjacent_lead_vertices[i]);
     }
   }
 }

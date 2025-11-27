@@ -24,6 +24,7 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(btn_size / 2, btn_size / 2), this);
+  loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(btn_size / 2, btn_size / 2), this);
 
@@ -195,12 +196,6 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   const cereal::CarState::Reader &carState = sm["carState"].getCarState();
   const cereal::FrogPilotCarState::Reader &frogpilotCarState = fpsm["frogpilotCarState"].getFrogpilotCarState();
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
-
-  if (frogpilot_toggles.value("adjacent_path_metrics").toBool() || frogpilot_toggles.value("adjacent_paths").toBool()) {
-    paintAdjacentPaths(p, sm, fpsm);
-  } else if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles.value("blind_spot_path").toBool()) {
-    paintBlindSpotPath(p, sm, fpsm);
-  }
 
   if (!hideBottomIcons && frogpilot_toggles.value("cem_status").toBool()) {
     paintCEMStatus(p, sm);
@@ -605,32 +600,33 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
   float leadDistance = lead_data.getDRel() + (adjacent ? std::abs(lead_data.getYRel()) : 0.0f);
   float leadSpeed = std::max(lead_data.getVLead(), 0.0f);
 
-  p.setFont(InterFont(40, QFont::Bold));
-  p.setPen(whiteColor());
+  QString distanceString = QString::number(qRound(leadDistance * distanceConversion));
+  QString speedString = QString::number(qRound(leadSpeed * speedConversionMetrics));
 
   QVector<QString> textLines;
   textLines.reserve(3);
   if (adjacent) {
-    textLines.append(QString("%1 %2").arg(QString::number(qRound(leadDistance * distanceConversion)), leadDistanceUnit));
-    textLines.append(QString("%1 %2").arg(QString::number(qRound(leadSpeed * speedConversionMetrics)), leadSpeedUnit));
+    textLines.append(QString("%1 %2").arg(distanceString, leadDistanceUnit));
+    textLines.append(QString("%1 %2").arg(speedString, leadSpeedUnit));
   } else {
     if (frogpilot_toggles.value("openpilot_longitudinal").toBool()) {
       int desiredDistance = std::max(0, qRound(desiredFollowDistance * distanceConversion));
-      textLines.append(QString("%1 %2 (%3)").arg(QString::number(qRound(leadDistance * distanceConversion)), leadDistanceUnit, tr("Desired: %1").arg(desiredDistance)));
+      textLines.append(QString("%1 %2 (%3)").arg(distanceString, leadDistanceUnit, tr("Desired: %1").arg(desiredDistance)));
     } else {
-      textLines.append(QString("%1 %2").arg(QString::number(qRound(leadDistance * distanceConversion)), leadDistanceUnit));
+      textLines.append(QString("%1 %2").arg(distanceString, leadDistanceUnit));
     }
-    textLines.append(QString("%1 %2").arg(QString::number(qRound(leadSpeed * speedConversionMetrics)), leadSpeedUnit));
+    textLines.append(QString("%1 %2").arg(speedString, leadSpeedUnit));
 
     float timeGap = leadDistance / std::max(speed / speedConversion, 1.0f);
     textLines.append(QString("%1 %2").arg(QString::number(timeGap, 'f', 2), tr("seconds")));
   }
 
+  p.setFont(InterFont(40, QFont::Bold));
   QFontMetrics metrics(p.font());
   int lineHeight = metrics.lineSpacing();
   int maxTextWidth = 0;
 
-  for (const QString &line : textLines) {
+  for (QString &line : textLines) {
     maxTextWidth = std::max(maxTextWidth, metrics.horizontalAdvance(line));
   }
 
@@ -643,10 +639,16 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
     int xMargin = maxTextWidth * 0.25;
     int yMargin = lineHeight * 0.25;
     leadTextRect = textRect.adjusted(-xMargin, -yMargin, xMargin, yMargin);
+
+    QRect backgroundRect = textRect.adjusted(-10, 0, 10, 20);
+    p.setBrush(blackColor(166));
+    p.setPen(QPen(blackColor(), 10));
+    p.drawRoundedRect(backgroundRect, 24, 24);
   } else if (textRect.intersects(leadTextRect)) {
     return;
   }
 
+  p.setPen(whiteColor());
   for (int i = 0; i < textLines.size(); ++i) {
     int lineX = centerX - metrics.horizontalAdvance(textLines[i]) / 2;
     p.drawText(lineX, startY + (i * lineHeight), textLines[i]);
@@ -1127,6 +1129,8 @@ void FrogPilotAnnotatedCameraWidget::paintWeather(QPainter &p, SubMaster &fpsm) 
     icon = weatherRain;
   } else if (weatherId >= 600 && weatherId <= 622) {
     icon = weatherSnow;
+  } else if (weatherId >= 701 && weatherId <= 762) {
+    icon = weatherLowVisibility;
   } else if (weatherId == 800) {
     icon = frogpilotPlan.getWeatherDaytime() ? weatherClearDay : weatherClearNight;
   }

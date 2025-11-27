@@ -79,7 +79,7 @@ void FrogPilotWheelPanel::updateToggles() {
 
     if (key == "LKASButtonControl") {
       setVisible &= !parent->isSubaru;
-      setVisible &= !(params.getBool("AlwaysOnLateral") && params.getBool("AlwaysOnLateralLKAS"));
+      setVisible &= !parent->lkasAllowedForAOL || !(params.getBool("AlwaysOnLateral") && params.getBool("AlwaysOnLateralLKAS"));
     }
 
     toggle->setVisible(setVisible);

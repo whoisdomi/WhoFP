@@ -16,6 +16,7 @@ public:
 
   void updateVariables();
 
+  bool canUseAOL = true;
   bool canUsePedal = false;
   bool canUseSDSU = false;
   bool forceOpenDescriptions = false;

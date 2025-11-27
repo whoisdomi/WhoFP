@@ -186,7 +186,7 @@ class Car:
 
     self.frogpilot_card = FrogPilotCard(self.CP, self.FPCP)
 
-    self.sm = self.sm.extend(['frogpilotOnroadEvents', 'frogpilotPlan', 'liveCalibration', 'selfdriveState'])
+    self.sm = self.sm.extend(['frogpilotOnroadEvents', 'frogpilotPlan', 'frogpilotSelfdriveState', 'liveCalibration', 'selfdriveState'])
     self.pm = self.pm.extend(['frogpilotCarState'])
 
   def state_update(self) -> tuple[car.CarState, structs.RadarDataT | None]:

@@ -16,6 +16,8 @@ public:
   explicit FrogPilotAnnotatedCameraWidget(QWidget *parent = 0);
 
   void mousePressEvent(QMouseEvent *e) override;
+  void paintAdjacentPaths(QPainter &p, SubMaster &sm, SubMaster &fpsm);
+  void paintBlindSpotPath(QPainter &p, SubMaster &sm, SubMaster &fpsm);
   void paintFrogPilotWidgets(QPainter &p, UIState &s, SubMaster &sm);
   void paintLeadMetrics(QPainter &p, bool adjacent, QPointF *chevron, const cereal::RadarState::LeadData::Reader &lead_data);
   void paintPathEdges(QPainter &p, SubMaster &sm);
@@ -59,8 +61,6 @@ protected:
   void showEvent(QShowEvent *event) override;
 
 private:
-  void paintAdjacentPaths(QPainter &p, SubMaster &sm, SubMaster &fpsm);
-  void paintBlindSpotPath(QPainter &p, SubMaster &sm, SubMaster &fpsm);
   void paintCEMStatus(QPainter &p, SubMaster &sm);
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
@@ -135,6 +135,7 @@ private:
   QSharedPointer<QMovie> experimentalModeIcon;
   QSharedPointer<QMovie> weatherClearDay;
   QSharedPointer<QMovie> weatherClearNight;
+  QSharedPointer<QMovie> weatherLowVisibility;
   QSharedPointer<QMovie> weatherRain;
   QSharedPointer<QMovie> weatherSnow;
 
