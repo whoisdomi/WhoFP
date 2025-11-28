@@ -33,13 +33,13 @@ class FrogPilotCard:
   def handle_button_event(self, sm, frogpilot_toggles, key):
     if sm["carControl"].longActive and getattr(frogpilot_toggles, f"experimental_mode_via_{key}"):
       self.handle_experimental_mode(sm, frogpilot_toggles)
-    elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"force_coast_via{key}"):
+    elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"force_coast_via_{key}"):
       self.force_coast = not self.force_coast
-    elif getattr(frogpilot_toggles, f"pause_lateral_via{key}"):
+    elif getattr(frogpilot_toggles, f"pause_lateral_via_{key}"):
       self.pause_lateral = not self.pause_lateral
-    elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"pause_longitudinal_via{key}"):
+    elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"pause_longitudinal_via_{key}"):
       self.pause_longitudinal = not self.pause_longitudinal
-    elif getattr(frogpilot_toggles, f"traffic_mode_via{key}"):
+    elif getattr(frogpilot_toggles, f"traffic_mode_via_{key}"):
       self.traffic_mode_enabled = not self.traffic_mode_enabled
 
   def handle_experimental_mode(self, sm, frogpilot_toggles):

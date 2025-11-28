@@ -387,19 +387,7 @@ public:
     QObject::connect(&decrement_button, &QPushButton::pressed, this, &FrogPilotParamValueControl::decrementPressed);
     QObject::connect(&increment_button, &QPushButton::pressed, this, &FrogPilotParamValueControl::incrementPressed);
 
-    QObject::connect(&decrement_button, &QPushButton::released, [this]() {
-      decrement_repeating_timer.start(decrement_button.autoRepeatInterval());
-    });
-    QObject::connect(&increment_button, &QPushButton::released, [this]() {
-      increment_repeating_timer.start(increment_button.autoRepeatInterval());
-    });
-
-    QObject::connect(&decrement_repeating_timer, &QTimer::timeout, [this]() {
-      decrement_repeating = false;
-    });
-    QObject::connect(&increment_repeating_timer, &QTimer::timeout, [this]() {
-      increment_repeating = false;
-    });
+    last_action_timer.start();
   }
 
   void decrementPressed() {
@@ -407,14 +395,20 @@ public:
       showWarning();
     }
 
+    if (last_action_timer.isValid() && last_action_timer.elapsed() > 200) {
+      decrement_repeating = false;
+    }
+
     float delta = decrement_repeating && fast_increase ? interval * 5 : interval;
     value = std::max(value - delta, min_value);
 
     updateValue();
 
-    decrement_repeating |= std::lround(value / interval) % 5 == 0;
-    decrement_repeating &= std::abs(value - previous_value) > 5 * interval;
-    decrement_repeating |= delta == interval * 5;
+    if (std::lround(value / interval) % 5 == 0) {
+      decrement_repeating = true;
+    }
+
+    last_action_timer.restart();
   }
 
   void hideEvent(QHideEvent *event) override {
@@ -430,14 +424,20 @@ public:
       showWarning();
     }
 
+    if (last_action_timer.isValid() && last_action_timer.elapsed() > 200) {
+      increment_repeating = false;
+    }
+
     float delta = increment_repeating && fast_increase ? interval * 5 : interval;
     value = std::min(value + delta, max_value);
 
     updateValue();
 
-    increment_repeating |= std::lround(value / interval) % 5 == 0;
-    increment_repeating &= std::abs(value - previous_value) > 5 * interval;
-    increment_repeating |= delta == interval * 5;
+    if (std::lround(value / interval) % 5 == 0) {
+      increment_repeating = true;
+    }
+
+    last_action_timer.restart();
   }
 
   void refresh() {
@@ -550,14 +550,13 @@ private:
 
   Params params;
 
+  QElapsedTimer last_action_timer;
+
   QPushButton decrement_button;
   QPushButton increment_button;
 
   QString label;
   QString warning;
-
-  QTimer decrement_repeating_timer;
-  QTimer increment_repeating_timer;
 };
 
 class FrogPilotParamValueButtonControl : public FrogPilotParamValueControl {

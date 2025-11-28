@@ -240,7 +240,7 @@ class CarController(CarControllerBase):
 
           error_future = pcm_accel_cmd - a_ego_future
 
-          if not stopping:
+          if not stopping and not frogpilot_toggles.frogsgomoo_tweak:
             # Toyota's PCM slowly responds to changes in pitch. On change, we amplify our
             # acceleration request to compensate for the undershoot and following overshoot
             pitch_compensation = float(np.clip(math.sin(self.pitch_hp.x) * ACCELERATION_DUE_TO_GRAVITY,

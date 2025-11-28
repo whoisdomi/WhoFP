@@ -622,6 +622,8 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
   }
 
   p.setFont(InterFont(40, QFont::Bold));
+  p.setPen(whiteColor());
+
   QFontMetrics metrics(p.font());
   int lineHeight = metrics.lineSpacing();
   int maxTextWidth = 0;
@@ -639,16 +641,10 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
     int xMargin = maxTextWidth * 0.25;
     int yMargin = lineHeight * 0.25;
     leadTextRect = textRect.adjusted(-xMargin, -yMargin, xMargin, yMargin);
-
-    QRect backgroundRect = textRect.adjusted(-10, 0, 10, 20);
-    p.setBrush(blackColor(166));
-    p.setPen(QPen(blackColor(), 10));
-    p.drawRoundedRect(backgroundRect, 24, 24);
   } else if (textRect.intersects(leadTextRect)) {
     return;
   }
 
-  p.setPen(whiteColor());
   for (int i = 0; i < textLines.size(); ++i) {
     int lineX = centerX - metrics.horizontalAdvance(textLines[i]) / 2;
     p.drawText(lineX, startY + (i * lineHeight), textLines[i]);

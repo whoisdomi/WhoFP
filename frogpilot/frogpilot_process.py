@@ -58,9 +58,9 @@ def frogpilot_thread():
                             "frogpilotSelfdriveState", "frogpilotModelV2", "frogpilotOnroadEvents"],
                             poll="modelV2")
 
-  params = Params()
-  params_cache = Params(cache=True)
-  params_memory = Params(memory=True)
+  params = Params(return_defaults=True)
+  params_cache = Params(cache=True, return_defaults=True)
+  params_memory = Params(memory=True, return_defaults=True)
 
   frogpilot_variables = FrogPilotVariables()
   theme_manager = ThemeManager(params, params_memory)
