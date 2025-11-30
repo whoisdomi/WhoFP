@@ -25,7 +25,7 @@ private:
   bool offroad = false;
 
   // FrogPilot variables
-  bool forceOpenDescriptions = true;
+  bool forceOpenDescriptions = false;
   bool hasBSM = true;
   bool hasOpenpilotLongitudinal = true;
   bool hasRadar = true;

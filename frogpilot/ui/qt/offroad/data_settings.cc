@@ -2,16 +2,8 @@
 
 #include "frogpilot/ui/qt/offroad/data_settings.h"
 
-FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
-  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
-  QString className = this->metaObject()->className();
-
-  bool forceOpenDescriptions = false;
-  if (!shownDescriptions.value(className).toBool(false)) {
-    forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
-  }
+FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {
+  forceOpenDescriptions = forceOpen;
 
   QStackedLayout *dataLayout = new QStackedLayout();
   addItem(dataLayout);

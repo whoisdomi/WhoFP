@@ -1,14 +1,7 @@
 #include "frogpilot/ui/qt/offroad/visual_settings.h"
 
-FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
-  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
-  QString className = this->metaObject()->className();
-
-  if (!shownDescriptions.value(className).toBool(false)) {
-    forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
-  }
+FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {
+  forceOpenDescriptions = forceOpen;
 
   QStackedLayout *visualsLayout = new QStackedLayout();
   addItem(visualsLayout);

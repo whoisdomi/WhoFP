@@ -1,15 +1,7 @@
 #include "frogpilot/ui/qt/offroad/utilities.h"
 
-FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
-  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
-  QString className = this->metaObject()->className();
-
-  bool forceOpenDescriptions = false;
-  if (!shownDescriptions.value(className).toBool(false)) {
-    forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
-  }
+FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {
+  forceOpenDescriptions = forceOpen;
 
   ParamControl *debugModeToggle = new ParamControl("DebugMode", tr("Debug Mode"), tr("<b>Use FrogPilot's developer metrics on your next drive</b> to diagnose issues and improve bug reports."), "");
   if (forceOpenDescriptions) {

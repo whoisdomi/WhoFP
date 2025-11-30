@@ -6,7 +6,7 @@ class FrogPilotNavigationPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotNavigationPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotNavigationPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 signals:
   void closeSubPanel();

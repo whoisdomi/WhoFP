@@ -98,6 +98,8 @@ private:
   Params params;
   Params params_memory{"", false, true};
 
+  QJsonObject shownDescriptions;
+
   QStackedLayout *mainLayout;
 
   ScrollView *frogpilotPanel;

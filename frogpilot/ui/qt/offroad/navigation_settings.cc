@@ -1,16 +1,9 @@
 #include "frogpilot/ui/qt/offroad/navigation_settings.h"
 
-FrogPilotNavigationPanel::FrogPilotNavigationPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
+FrogPilotNavigationPanel::FrogPilotNavigationPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {
+  forceOpenDescriptions = forceOpen;
+
   networkManager = new QNetworkAccessManager(this);
-
-  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
-  QString className = this->metaObject()->className();
-
-  if (!shownDescriptions.value(className).toBool(false)) {
-    forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
-  }
 
   primelessLayout = new QStackedLayout();
   addItem(primelessLayout);

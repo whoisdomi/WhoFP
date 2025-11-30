@@ -63,24 +63,25 @@ bool nnffLogFileExists(const QString &carFingerprint) {
 }
 
 void FrogPilotSettingsWindow::createPanelButtons(FrogPilotListWidget *list) {
-  FrogPilotDataPanel *frogpilotDataPanel = new FrogPilotDataPanel(this);
-  FrogPilotDevicePanel *frogpilotDevicePanel = new FrogPilotDevicePanel(this);
-  FrogPilotLateralPanel *frogpilotLateralPanel = new FrogPilotLateralPanel(this);
-  FrogPilotLongitudinalPanel *frogpilotLongitudinalPanel = new FrogPilotLongitudinalPanel(this);
-  FrogPilotMapsPanel *frogpilotMapsPanel = new FrogPilotMapsPanel(this);
-  FrogPilotModelPanel *frogpilotModelPanel = new FrogPilotModelPanel(this);
-  FrogPilotNavigationPanel *frogpilotNavigationPanel = new FrogPilotNavigationPanel(this);
-  FrogPilotSoundsPanel *frogpilotSoundsPanel = new FrogPilotSoundsPanel(this);
-  FrogPilotThemesPanel *frogpilotThemesPanel = new FrogPilotThemesPanel(this);
-  FrogPilotVehiclesPanel *frogpilotVehiclesPanel = new FrogPilotVehiclesPanel(this);
-  FrogPilotVisualsPanel *frogpilotVisualsPanel = new FrogPilotVisualsPanel(this);
-  FrogPilotWheelPanel *frogpilotWheelPanel = new FrogPilotWheelPanel(this);
+  FrogPilotDataPanel *frogpilotDataPanel = new FrogPilotDataPanel(this, !shownDescriptions.value("FrogPilotDataPanel").toBool(false));
+  FrogPilotDevicePanel *frogpilotDevicePanel = new FrogPilotDevicePanel(this, !shownDescriptions.value("FrogPilotDevicePanel").toBool(false));
+  FrogPilotLateralPanel *frogpilotLateralPanel = new FrogPilotLateralPanel(this, !shownDescriptions.value("FrogPilotLateralPanel").toBool(false));
+  FrogPilotLongitudinalPanel *frogpilotLongitudinalPanel = new FrogPilotLongitudinalPanel(this, !shownDescriptions.value("FrogPilotLongitudinalPanel").toBool(false));
+  FrogPilotMapsPanel *frogpilotMapsPanel = new FrogPilotMapsPanel(this, !shownDescriptions.value("FrogPilotMapsPanel").toBool(false));
+  FrogPilotModelPanel *frogpilotModelPanel = new FrogPilotModelPanel(this, !shownDescriptions.value("FrogPilotModelPanel").toBool(false));
+  FrogPilotNavigationPanel *frogpilotNavigationPanel = new FrogPilotNavigationPanel(this, !shownDescriptions.value("FrogPilotNavigationPanel").toBool(false));
+  FrogPilotSoundsPanel *frogpilotSoundsPanel = new FrogPilotSoundsPanel(this, !shownDescriptions.value("FrogPilotSoundsPanel").toBool(false));
+  FrogPilotThemesPanel *frogpilotThemesPanel = new FrogPilotThemesPanel(this, !shownDescriptions.value("FrogPilotThemesPanel").toBool(false));
+  FrogPilotUtilitiesPanel *frogpilotUtilitiesPanel = new FrogPilotUtilitiesPanel(this, !shownDescriptions.value("FrogPilotUtilitiesPanel").toBool(false));
+  FrogPilotVehiclesPanel *frogpilotVehiclesPanel = new FrogPilotVehiclesPanel(this, !shownDescriptions.value("FrogPilotVehiclesPanel").toBool(false));
+  FrogPilotVisualsPanel *frogpilotVisualsPanel = new FrogPilotVisualsPanel(this, !shownDescriptions.value("FrogPilotVisualsPanel").toBool(false));
+  FrogPilotWheelPanel *frogpilotWheelPanel = new FrogPilotWheelPanel(this, !shownDescriptions.value("FrogPilotWheelPanel").toBool(false));
 
   std::vector<std::vector<std::tuple<QString, QWidget*>>> panelButtons = {
     {{tr("MANAGE"), frogpilotSoundsPanel}},
     {{tr("DRIVING MODEL"), frogpilotModelPanel}, {tr("GAS / BRAKE"), frogpilotLongitudinalPanel}, {tr("STEERING"), frogpilotLateralPanel}},
     {{tr("MAP DATA"), frogpilotMapsPanel}, {tr("NAVIGATION"), frogpilotNavigationPanel}},
-    {{tr("DATA"), frogpilotDataPanel}, {tr("DEVICE CONTROLS"), frogpilotDevicePanel}, {tr("UTILITIES"), new FrogPilotUtilitiesPanel(this)}},
+    {{tr("DATA"), frogpilotDataPanel}, {tr("DEVICE CONTROLS"), frogpilotDevicePanel}, {tr("UTILITIES"), frogpilotUtilitiesPanel}},
     {{tr("APPEARANCE"), frogpilotVisualsPanel}, {tr("THEME"), frogpilotThemesPanel}},
     {{tr("VEHICLE SETTINGS"), frogpilotVehiclesPanel}, {tr("WHEEL CONTROLS"), frogpilotWheelPanel}}
   };
@@ -133,6 +134,17 @@ void FrogPilotSettingsWindow::createPanelButtons(FrogPilotListWidget *list) {
       panelOpen = true;
 
       openPanel();
+
+      ScrollView *panelFrame = qobject_cast<ScrollView*>(widgets[id]);
+      if (panelFrame) {
+        QWidget *panel = panelFrame->widget();
+        QString className = panel->metaObject()->className();
+
+        if (!shownDescriptions.value(className).toBool(false)) {
+          shownDescriptions.insert(className, true);
+          params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
+        }
+      }
     });
 
     list->addItem(panelButton);
@@ -156,13 +168,11 @@ void FrogPilotSettingsWindow::createPanelButtons(FrogPilotListWidget *list) {
 }
 
 FrogPilotSettingsWindow::FrogPilotSettingsWindow(SettingsWindow *parent) : QFrame(parent) {
-  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
-  QString className = this->metaObject()->className();
+  shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
 
+  QString className = this->metaObject()->className();
   if (!shownDescriptions.value(className).toBool(false)) {
     forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
   }
 
   mainLayout = new QStackedLayout(this);
@@ -240,6 +250,12 @@ void FrogPilotSettingsWindow::updateTuningLevel() {
 
 void FrogPilotSettingsWindow::showEvent(QShowEvent *event) {
   static bool alertShown = false;
+
+  QString className = this->metaObject()->className();
+  if (!shownDescriptions.value(className).toBool(false)) {
+    shownDescriptions.insert(className, true);
+    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
+  }
 
   if (forceOpenDescriptions) {
     togglePreset->showDescription();

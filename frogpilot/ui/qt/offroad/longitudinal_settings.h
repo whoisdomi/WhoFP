@@ -6,7 +6,7 @@ class FrogPilotLongitudinalPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 signals:
   void openSubPanel();

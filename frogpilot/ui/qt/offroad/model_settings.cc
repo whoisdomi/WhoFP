@@ -16,17 +16,10 @@ bool hasAllTinygradFiles(const QDir &modelDir, const QString &modelKey) {
   return true;
 }
 
-FrogPilotModelPanel::FrogPilotModelPanel(FrogPilotSettingsWindow *parent) : FrogPilotListWidget(parent), parent(parent) {
+FrogPilotModelPanel::FrogPilotModelPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {
+  forceOpenDescriptions = forceOpen;
+
   defaultModel = QString::fromStdString(params.getKeyDefaultValue("DrivingModel").value());
-
-  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
-  QString className = this->metaObject()->className();
-
-  if (!shownDescriptions.value(className).toBool(false)) {
-    forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
-  }
 
   QStackedLayout *modelLayout = new QStackedLayout();
   addItem(modelLayout);

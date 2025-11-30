@@ -6,9 +6,11 @@ class FrogPilotUtilitiesPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 private:
+  bool forceOpenDescriptions;
+
   FrogPilotSettingsWindow *parent;
 
   Params params;

@@ -6,7 +6,7 @@ class FrogPilotThemesPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotThemesPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotThemesPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 protected:
   void showEvent(QShowEvent *event) override;

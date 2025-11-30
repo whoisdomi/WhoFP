@@ -8,7 +8,7 @@ class FrogPilotModelPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotModelPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotModelPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 signals:
   void openSubPanel();

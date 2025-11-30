@@ -6,7 +6,7 @@ class FrogPilotDataPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotDataPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 signals:
   void openSubPanel();
@@ -14,6 +14,7 @@ signals:
 private:
   void updateStatsLabels(FrogPilotListWidget *labelsList);
 
+  bool forceOpenDescriptions;
   bool isMetric;
 
   FrogPilotSettingsWindow *parent;

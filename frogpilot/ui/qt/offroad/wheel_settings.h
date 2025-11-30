@@ -8,7 +8,7 @@ class FrogPilotWheelPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotWheelPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotWheelPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 protected:
   void showEvent(QShowEvent *event) override;

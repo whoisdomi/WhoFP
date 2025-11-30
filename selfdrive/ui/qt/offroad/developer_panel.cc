@@ -51,14 +51,18 @@ DeveloperPanel::DeveloperPanel(SettingsWindow *parent) : QFrame(parent) {
   });
   mainList->addItem(experimentalLongitudinalToggle);
 
+  // Joystick and longitudinal maneuvers should be hidden on release branches
+  is_release = false;
+
+  // Toggles should be not available to change in onroad state
+  QObject::connect(uiState(), &UIState::offroadTransition, this, &DeveloperPanel::updateToggles);
+
   // FrogPilot variables
   QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
   QString className = this->metaObject()->className();
 
   if (!shownDescriptions.value(className).toBool(false)) {
     forceOpenDescriptions = true;
-    shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
   }
 
   std::vector<std::string> keys = params.allKeys();
@@ -247,13 +251,6 @@ DeveloperPanel::DeveloperPanel(SettingsWindow *parent) : QFrame(parent) {
     }
   }
 
-  // Joystick and longitudinal maneuvers should be hidden on release branches
-  is_release = false;
-
-  // Toggles should be not available to change in onroad state
-  QObject::connect(uiState(), &UIState::offroadTransition, this, &DeveloperPanel::updateToggles);
-
-  // FrogPilot variables
   QObject::connect(parent, &SettingsWindow::closeSubPanel, [this]() {mainLayout->setCurrentWidget(mainWidget);});
   QObject::connect(parent, &SettingsWindow::closeSubSubPanel, [this]() {mainLayout->setCurrentWidget(developerUIPanel);});
 }
@@ -359,6 +356,8 @@ void DeveloperPanel::updateToggles(bool _offroad) {
 }
 
 void DeveloperPanel::showEvent(QShowEvent *event) {
+  updateToggles(offroad);
+
   // FrogPilot variables
   for (int i = 0; i < sidebarMetricsToggles.size(); ++i) {
     if (params.getBool(sidebarMetricsToggles[i].toStdString())) {
@@ -366,5 +365,11 @@ void DeveloperPanel::showEvent(QShowEvent *event) {
     }
   }
 
-  updateToggles(offroad);
+  QJsonObject shownDescriptions = QJsonDocument::fromJson(QString::fromStdString(params.get("ShownToggleDescriptions")).toUtf8()).object();
+  QString className = this->metaObject()->className();
+
+  if (!shownDescriptions.value(className).toBool(false)) {
+    shownDescriptions.insert(className, true);
+    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
+  }
 }

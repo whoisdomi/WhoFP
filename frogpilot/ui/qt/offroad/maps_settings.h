@@ -7,7 +7,7 @@ class FrogPilotMapsPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotMapsPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotMapsPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 signals:
   void openSubPanel();

@@ -6,7 +6,7 @@ class FrogPilotSoundsPanel : public FrogPilotListWidget {
   Q_OBJECT
 
 public:
-  explicit FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent);
+  explicit FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
 signals:
   void openSubPanel();
