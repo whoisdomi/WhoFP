@@ -104,7 +104,7 @@ FrogPilotDevicePanel::FrogPilotDevicePanel(FrogPilotSettingsWindow *parent) : Fr
 
           screenRecorder->startRecording();
         } else if (id == 1) {
-          recorderToggle->clearCheckedButtons(true);
+          recorderToggle->clearCheckedButtons();
 
           recorderToggle->setVisibleButton(0, true);
           recorderToggle->setVisibleButton(1, false);

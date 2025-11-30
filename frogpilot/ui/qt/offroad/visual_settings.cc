@@ -21,30 +21,18 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent) : 
 
   FrogPilotListWidget *advancedCustomList = new FrogPilotListWidget(this);
   FrogPilotListWidget *customUIList = new FrogPilotListWidget(this);
-  FrogPilotListWidget *developerMetricList = new FrogPilotListWidget(this);
-  FrogPilotListWidget *developerSidebarList = new FrogPilotListWidget(this);
-  FrogPilotListWidget *developerUIList = new FrogPilotListWidget(this);
-  FrogPilotListWidget *developerWidgetList = new FrogPilotListWidget(this);
   FrogPilotListWidget *modelUIList = new FrogPilotListWidget(this);
   FrogPilotListWidget *navigationUIList = new FrogPilotListWidget(this);
   FrogPilotListWidget *qualityOfLifeList = new FrogPilotListWidget(this);
 
   ScrollView *advancedCustomPanel = new ScrollView(advancedCustomList, this);
   ScrollView *customUIPanel = new ScrollView(customUIList, this);
-  ScrollView *developerMetricPanel = new ScrollView(developerMetricList, this);
-  ScrollView *developerSidebarPanel = new ScrollView(developerSidebarList, this);
-  ScrollView *developerUIPanel = new ScrollView(developerUIList, this);
-  ScrollView *developerWidgetPanel = new ScrollView(developerWidgetList, this);
   ScrollView *modelUIPanel = new ScrollView(modelUIList, this);
   ScrollView *navigationUIPanel = new ScrollView(navigationUIList, this);
   ScrollView *qualityOfLifePanel = new ScrollView(qualityOfLifeList, this);
 
   visualsLayout->addWidget(advancedCustomPanel);
   visualsLayout->addWidget(customUIPanel);
-  visualsLayout->addWidget(developerMetricPanel);
-  visualsLayout->addWidget(developerSidebarPanel);
-  visualsLayout->addWidget(developerUIPanel);
-  visualsLayout->addWidget(developerWidgetPanel);
   visualsLayout->addWidget(modelUIPanel);
   visualsLayout->addWidget(navigationUIPanel);
   visualsLayout->addWidget(qualityOfLifePanel);
@@ -57,28 +45,6 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent) : 
     {"HideAlerts", tr("Hide Non-Critical Alerts"), tr("<b>Hide non-critical alerts</b> from the driving screen."), ""},
     {"HideSpeedLimit", tr("Hide Speed Limits"), tr("<b>Hide posted speed limits</b> from the driving screen."), ""},
     {"WheelSpeed", tr("Use Wheel Speed"), tr("<b>Use the vehicle's wheel speed</b> instead of the cluster speed. This is purely a visual change and doesn't impact how openpilot drives!"), ""},
-
-    {"DeveloperUI", tr("Developer UI"), tr("<b>Detailed information about openpilot's internal operations.</b>"), "../assets/icons/shell.png"},
-    {"AdjacentPathMetrics", tr("Adjacent Lane Metrics"), tr("<b>Show the width of the adjacent lanes.</b>"), ""},
-    {"DeveloperMetrics", tr("Developer Metrics"), tr("<b>Performance data, sensor readings, and system metrics</b> for debugging and optimizing openpilot."), ""},
-    {"BorderMetrics", tr("Border Metrics"), tr("<b>Show statuses along the border of the driving screen.</b><br><br><b>Blind Spot</b>: The border turns red when a vehicle is in a blind spot<br><b>Steering Torque</b>: The border goes from green to red according to how much steering torque is being used<br><b>Turn Signal</b>: The border flashes yellow when a turn signal is on"), ""},
-    {"LeadInfo", tr("Lead Info"), tr("<b>Show each tracked vehicle's distance and speed</b> below its marker."), ""},
-    {"FPSCounter", tr("FPS Display"), tr("<b>Show the frames per second (FPS)</b> at the bottom of the driving screen."), ""},
-    {"NumericalTemp", tr("Numerical Temperature Gauge"), tr("<b>Show a numerical temperature in the sidebar</b> instead of the status labels."), ""},
-    {"SidebarMetrics", tr("Sidebar Metrics"), tr("<b>Display system information</b> (CPU, GPU, RAM usage, IP address, device storage) in the sidebar."), ""},
-    {"UseSI", tr("Use International System of Units"), tr("<b>Display measurements using the \"International System of Units\" (SI)</b> standard."), ""},
-    {"DeveloperSidebar", tr("Developer Sidebar"), tr("<b>Display debugging info and metrics</b> in a dedicated sidebar on the right side of the screen."), ""},
-    {"DeveloperSidebarMetric1", tr("Metric #1"), tr("<b>Select the metric shown in the first \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperSidebarMetric2", tr("Metric #2"), tr("<b>Select the metric shown in the second \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperSidebarMetric3", tr("Metric #3"), tr("<b>Select the metric shown in the third \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperSidebarMetric4", tr("Metric #4"), tr("<b>Select the metric shown in the fourth \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperSidebarMetric5", tr("Metric #5"), tr("<b>Select the metric shown in the fifth \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperSidebarMetric6", tr("Metric #6"), tr("<b>Select the metric shown in the sixth \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperSidebarMetric7", tr("Metric #7"), tr("<b>Select the metric shown in the seventh \"Developer Sidebar\" widget.</b>"), ""},
-    {"DeveloperWidgets", tr("Developer Widgets"), tr("<b>Overlays for debugging visuals, internal states, and model predictions</b> on the driving screen."), ""},
-    {"AdjacentLeadsUI", tr("Adjacent Leads Tracking"), tr("<b>Display adjacent leads detected by the car's radar</b> to the left and right of the current driving path."), ""},
-    {"ShowStoppingPoint", tr("Model Stopping Point"), tr("<b>Show a stop-sign marker where the model intends to stop.</b>"), ""},
-    {"RadarTracksUI", tr("Radar Tracks"), tr("<b>Display all radar points</b> produced by the car's radar."), ""},
 
     {"CustomUI", tr("Driving Screen Widgets"), tr("<b>Custom FrogPilot widgets</b> for the driving screen."), "../assets/icons/calibration.png"},
     {"AccelerationPath", tr("Acceleration Path"), tr("<b>Color the driving path by planned acceleration and braking.</b>"), ""},
@@ -117,127 +83,6 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent) : 
         visualsLayout->setCurrentWidget(advancedCustomPanel);
       });
       visualToggle = advancedCustomUIToggle;
-
-    } else if (param == "DeveloperUI") {
-      FrogPilotManageControl *developerUIToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(developerUIToggle, &FrogPilotManageControl::manageButtonClicked, [visualsLayout, developerUIPanel]() {
-        visualsLayout->setCurrentWidget(developerUIPanel);
-      });
-      visualToggle = developerUIToggle;
-    } else if (param == "DeveloperMetrics") {
-      FrogPilotManageControl *developerMetricsToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(developerMetricsToggle, &FrogPilotManageControl::manageButtonClicked, [visualsLayout, developerMetricPanel, this]() {
-        openSubSubPanel();
-
-        visualsLayout->setCurrentWidget(developerMetricPanel);
-
-        developerUIOpen = true;
-      });
-      visualToggle = developerMetricsToggle;
-    } else if (param == "BorderMetrics") {
-      std::vector<QString> borderToggles{"BlindSpotMetrics", "ShowSteering", "SignalMetrics"};
-      std::vector<QString> borderToggleNames{tr("Blind Spot"), tr("Steering Torque"), tr("Turn Signal")};
-      borderMetricsButton = new FrogPilotButtonToggleControl(param, title, desc, icon, borderToggles, borderToggleNames);
-      visualToggle = borderMetricsButton;
-    } else if (param == "NumericalTemp") {
-      std::vector<QString> temperatureToggles{"Fahrenheit"};
-      std::vector<QString> temperatureToggleNames{tr("Fahrenheit")};
-      visualToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, temperatureToggles, temperatureToggleNames);
-    } else if (param == "SidebarMetrics") {
-      sidebarMetricsToggles = {"ShowCPU", "ShowGPU", "ShowIP", "ShowMemoryUsage", "ShowStorageLeft", "ShowStorageUsed"};
-      std::vector<QString> sidebarMetricsToggleNames{tr("CPU"), tr("GPU"), tr("IP"), tr("RAM"), tr("SSD Left"), tr("SSD Used")};
-      sidebarMetricsToggle = new FrogPilotButtonsControl(title, desc, icon, sidebarMetricsToggleNames, true, false, 150);
-      for (int i = 0; i < sidebarMetricsToggles.size(); ++i) {
-        if (params.getBool(sidebarMetricsToggles[i].toStdString())) {
-          sidebarMetricsToggle->setCheckedButton(i);
-        }
-      }
-      QObject::connect(sidebarMetricsToggle, &FrogPilotButtonsControl::buttonClicked, [this](int id) {
-        params.putBool(sidebarMetricsToggles[id].toStdString(), !params.getBool(sidebarMetricsToggles[id].toStdString()));
-
-        if (id == 0) {
-          params.putBool("ShowGPU", false);
-        } else if (id == 1) {
-          params.putBool("ShowCPU", false);
-        } else if (id == 3) {
-          params.putBool("ShowStorageLeft", false);
-          params.putBool("ShowStorageUsed", false);
-        } else if (id == 4) {
-          params.putBool("ShowMemoryUsage", false);
-          params.putBool("ShowStorageUsed", false);
-        } else if (id == 5) {
-          params.putBool("ShowMemoryUsage", false);
-          params.putBool("ShowStorageLeft", false);
-        }
-
-        sidebarMetricsToggle->clearCheckedButtons();
-        for (int i = 0; i < sidebarMetricsToggles.size(); ++i) {
-          if (params.getBool(sidebarMetricsToggles[i].toStdString())) {
-            sidebarMetricsToggle->setCheckedButton(i);
-          }
-        }
-      });
-      visualToggle = sidebarMetricsToggle;
-    } else if (param == "DeveloperSidebar") {
-      FrogPilotManageControl *developerSidebarToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(developerSidebarToggle, &FrogPilotManageControl::manageButtonClicked, [visualsLayout, developerSidebarPanel, this]() {
-        openSubSubPanel();
-
-        visualsLayout->setCurrentWidget(developerSidebarPanel);
-
-        developerUIOpen = true;
-      });
-      visualToggle = developerSidebarToggle;
-    } else if (developerSidebarKeys.contains(param)) {
-      QMap<int, QString> developerSidebarMetricOptions {
-        {0, tr("None")},
-        {1, tr("Acceleration: Current")},
-        {2, tr("Acceleration: Max")},
-        {3, tr("Auto Tune: Actuator Delay")},
-        {4, tr("Auto Tune: Friction")},
-        {5, tr("Auto Tune: Lateral Acceleration")},
-        {6, tr("Auto Tune: Steer Ratio")},
-        {7, tr("Auto Tune: Stiffness Factor")},
-        {8, tr("Engagement %: Lateral")},
-        {9, tr("Engagement %: Longitudinal")},
-        {10, tr("Lateral Control: Steering Angle")},
-        {11, tr("Lateral Control: Torque % Used")},
-        {12, tr("Longitudinal Control: Actuator Acceleration Output")},
-        {13, tr("Longitudinal MPC: Danger Factor")},
-        {14, tr("Longitudinal MPC Jerk: Acceleration")},
-        {15, tr("Longitudinal MPC Jerk: Danger Zone")},
-        {16, tr("Longitudinal MPC Jerk: Speed Control")},
-      };
-
-      ButtonControl *metricToggle = new ButtonControl(title, tr("SELECT"), desc);
-      QObject::connect(metricToggle, &ButtonControl::clicked, [metricToggle, key = param, developerSidebarMetricOptions, this]() mutable {
-        QString current = developerSidebarMetricOptions.value(params.getInt(key.toStdString()), tr("None"));
-        QString selection = MultiOptionDialog::getSelection(tr("Select a metric to display"), developerSidebarMetricOptions.values(), current, this);
-
-        if (!selection.isEmpty()) {
-          int selectedMetric = developerSidebarMetricOptions.key(selection);
-
-          params.putInt(key.toStdString(), selectedMetric);
-
-          metricToggle->setValue(selection);
-        }
-      });
-      metricToggle->setValue(developerSidebarMetricOptions.value(params.getInt(param.toStdString()), tr("None")));
-      visualToggle = metricToggle;
-    } else if (param == "DeveloperWidgets") {
-      FrogPilotManageControl *developerWidgetsToggle = new FrogPilotManageControl(param, title, desc, icon);
-      QObject::connect(developerWidgetsToggle, &FrogPilotManageControl::manageButtonClicked, [visualsLayout, developerWidgetPanel, this]() {
-        openSubSubPanel();
-
-        visualsLayout->setCurrentWidget(developerWidgetPanel);
-
-        developerUIOpen = true;
-      });
-      visualToggle = developerWidgetsToggle;
-    } else if (param == "ShowStoppingPoint") {
-      std::vector<QString> stoppingPointToggles{"ShowStoppingPointMetrics"};
-      std::vector<QString> stoppingPointToggleNames{tr("Show Distance")};
-      visualToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, stoppingPointToggles, stoppingPointToggleNames);
 
     } else if (param == "CustomUI") {
       FrogPilotManageControl *customUIToggle = new FrogPilotManageControl(param, title, desc, icon);
@@ -303,14 +148,6 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent) : 
       advancedCustomList->addItem(visualToggle);
     } else if (customOnroadUIKeys.contains(param)) {
       customUIList->addItem(visualToggle);
-    } else if (developerMetricKeys.contains(param)) {
-      developerMetricList->addItem(visualToggle);
-    } else if (developerSidebarKeys.contains(param)) {
-      developerSidebarList->addItem(visualToggle);
-    } else if (developerUIKeys.contains(param)) {
-      developerUIList->addItem(visualToggle);
-    } else if (developerWidgetKeys.contains(param)) {
-      developerWidgetList->addItem(visualToggle);
     } else if (modelUIKeys.contains(param)) {
       modelUIList->addItem(visualToggle);
     } else if (navigationUIKeys.contains(param)) {
@@ -349,25 +186,13 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(FrogPilotSettingsWindow *parent) : 
     openDescriptions(forceOpenDescriptions, toggles);
     visualsLayout->setCurrentWidget(visualsPanel);
   });
-  QObject::connect(parent, &FrogPilotSettingsWindow::closeSubSubPanel, [visualsLayout, developerUIPanel, this]() {
+  QObject::connect(parent, &FrogPilotSettingsWindow::closeSubSubPanel, [this]() {
     openDescriptions(forceOpenDescriptions, toggles);
-
-    if (developerUIOpen) {
-      visualsLayout->setCurrentWidget(developerUIPanel);
-
-      developerUIOpen = false;
-    }
   });
   QObject::connect(parent, &FrogPilotSettingsWindow::updateMetric, this, &FrogPilotVisualsPanel::updateMetric);
 }
 
 void FrogPilotVisualsPanel::showEvent(QShowEvent *event) {
-  for (int i = 0; i < sidebarMetricsToggles.size(); ++i) {
-    if (params.getBool(sidebarMetricsToggles[i].toStdString())) {
-      sidebarMetricsToggle->setCheckedButton(i);
-    }
-  }
-
   updateToggles();
 }
 
@@ -453,10 +278,6 @@ void FrogPilotVisualsPanel::updateToggles() {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
-    else if (key == "AdjacentLeadsUI") {
-      setVisible &= parent->hasRadar && !(params.getBool("AdvancedCustomUI") && params.getBool("HideLeadMarker"));
-    }
-
     else if (key == "BlindSpotPath") {
       setVisible &= parent->hasBSM;
     }
@@ -477,16 +298,8 @@ void FrogPilotVisualsPanel::updateToggles() {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
-    else if (key == "RadarTracksUI") {
-      setVisible &= parent->hasRadar;
-    }
-
     else if (key == "ShowSpeedLimits") {
       setVisible &= !params.getBool("SpeedLimitController") || !parent->hasOpenpilotLongitudinal;
-    }
-
-    else if (key == "ShowStoppingPoint") {
-      setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
     else if (key == "SLCMapboxFiller") {
@@ -505,12 +318,6 @@ void FrogPilotVisualsPanel::updateToggles() {
         toggles["AdvancedCustomUI"]->setVisible(true);
       } else if (customOnroadUIKeys.contains(key)) {
         toggles["CustomUI"]->setVisible(true);
-      } else if (developerMetricKeys.contains(key)) {
-        toggles["DeveloperMetrics"]->setVisible(true);
-      } else if (developerUIKeys.contains(key)) {
-        toggles["DeveloperUI"]->setVisible(true);
-      } else if (developerWidgetKeys.contains(key)) {
-        toggles["DeveloperWidgets"]->setVisible(true);
       } else if (modelUIKeys.contains(key)) {
         toggles["ModelUI"]->setVisible(true);
       } else if (navigationUIKeys.contains(key)) {
@@ -520,8 +327,6 @@ void FrogPilotVisualsPanel::updateToggles() {
       }
     }
   }
-
-  borderMetricsButton->setVisibleButton(0, parent->hasBSM);
 
   openDescriptions(forceOpenDescriptions, toggles);
 

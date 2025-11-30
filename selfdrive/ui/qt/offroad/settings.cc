@@ -525,13 +525,18 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   QObject::connect(frogpilotSettingsWindow, &FrogPilotSettingsWindow::openSubPanel, [this]() {subPanelOpen=true;});
   QObject::connect(frogpilotSettingsWindow, &FrogPilotSettingsWindow::openSubSubPanel, [this]() {subSubPanelOpen=true;});
   QObject::connect(frogpilotSettingsWindow, &FrogPilotSettingsWindow::openSubSubSubPanel, [this]() {subSubSubPanelOpen=true;});
+  QObject::connect(frogpilotSettingsWindow, &FrogPilotSettingsWindow::tuningLevelChanged, this, &SettingsWindow::updateDeveloperToggle);
+
+  DeveloperPanel *developerPanel = new DeveloperPanel(this);
+  QObject::connect(developerPanel, &DeveloperPanel::openSubPanel, [this]() {subPanelOpen=true;});
+  QObject::connect(developerPanel, &DeveloperPanel::openSubSubPanel, [this]() {subSubPanelOpen=true;});
 
   QList<QPair<QString, QWidget *>> panels = {
     {tr("Device"), device},
     {tr("Network"), networking},
     {tr("Toggles"), toggles},
     {tr("Software"), new SoftwarePanel(this)},
-    {tr("Developer"), new DeveloperPanel(this)},
+    {tr("Developer"), developerPanel},
     {tr("FrogPilot"), frogpilotSettingsWindow},
   };
 
@@ -613,21 +618,21 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
         }
       }
 
-      if (panelOpen) {
-        closePanel();
-        panelOpen = false;
-      }
-      if (subPanelOpen) {
-        closeSubPanel();
-        subPanelOpen = false;
+      if (subSubSubPanelOpen) {
+        closeSubSubSubPanel();
+        subSubSubPanelOpen = false;
       }
       if (subSubPanelOpen) {
         closeSubSubPanel();
         subSubPanelOpen = false;
       }
-      if (subSubSubPanelOpen) {
-        closeSubSubSubPanel();
-        subSubSubPanelOpen = false;
+      if (subPanelOpen) {
+        closeSubPanel();
+        subPanelOpen = false;
+      }
+      if (panelOpen) {
+        closePanel();
+        panelOpen = false;
       }
       btn->setChecked(true);
       panel_widget->setCurrentWidget(w);
@@ -655,4 +660,17 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
       border-radius: 30px;
     }
   )");
+
+  // FrogPilot variables
+  updateDeveloperToggle(params.getInt("TuningLevel"));
+}
+
+// FrogPilot variables
+void SettingsWindow::updateDeveloperToggle(int tuningLevel) {
+  for (QAbstractButton *btn : nav_btns->buttons()) {
+    if (btn->text() == tr("Developer")) {
+      btn->setVisible(tuningLevel >= 3);
+      break;
+    }
+  }
 }

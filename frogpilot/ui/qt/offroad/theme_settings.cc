@@ -615,7 +615,7 @@ FrogPilotThemesPanel::FrogPilotThemesPanel(FrogPilotSettingsWindow *parent) : Fr
             params.remove("StartupMessageTop");
             params.remove("StartupMessageBottom");
 
-            startupAlertButton->clearCheckedButtons(true);
+            startupAlertButton->clearCheckedButtons();
           }
         }
       });

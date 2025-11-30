@@ -50,6 +50,8 @@ private:
   QStackedWidget *panel_widget;
 
   // FrogPilot variables
+  void updateDeveloperToggle(int tuningLevel);
+
   bool panelOpen;
   bool subPanelOpen;
   bool subSubPanelOpen;

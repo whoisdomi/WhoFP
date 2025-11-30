@@ -72,6 +72,7 @@ signals:
   void openSubPanel();
   void openSubSubPanel();
   void openSubSubSubPanel();
+  void tuningLevelChanged(int level);
   void updateMetric(bool metric, bool bootRun=false);
 
 private:

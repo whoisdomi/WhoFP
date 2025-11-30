@@ -81,6 +81,10 @@ class FrogPilotListWidget : public QWidget {
     inner_layout.addWidget(w);
   }
   inline void addItem(QLayout *layout) { inner_layout.addLayout(layout); }
+  inline void insertItem(int index, QWidget *w, bool expanding = false) {
+    w->setSizePolicy(QSizePolicy::Preferred, expanding ? QSizePolicy::Expanding : QSizePolicy::Fixed);
+    inner_layout.insertWidget(index, w);
+  }
   inline void setSpacing(int spacing) { inner_layout.setSpacing(spacing); }
 
   void clear() {
@@ -145,6 +149,8 @@ public:
     });
 
     QObject::connect(this, &ToggleControl::toggleFlipped, this, &FrogPilotButtonControl::refresh);
+
+    refresh();
   }
 
   virtual void refresh() {
@@ -158,18 +164,16 @@ public:
     }
   }
 
-  void clearCheckedButtons(bool clear_exclusivity = false) {
-    if (clear_exclusivity) {
-      button_group->setExclusive(false);
-    }
+  void clearCheckedButtons() {
+    bool original_exclusive = button_group->exclusive();
+
+    button_group->setExclusive(false);
 
     for (QAbstractButton *button : button_group->buttons()) {
       button->setChecked(false);
     }
 
-    if (clear_exclusivity) {
-      button_group->setExclusive(true);
-    }
+    button_group->setExclusive(original_exclusive);
   }
 
   void setCheckedButton(int id) {
@@ -188,10 +192,6 @@ public:
     if (QAbstractButton *button = button_group->button(id)) {
       button->setVisible(visible);
     }
-  }
-
-  void showEvent(QShowEvent *event) override {
-    refresh();
   }
 
 signals:
@@ -228,18 +228,16 @@ public:
     });
   }
 
-  void clearCheckedButtons(bool clear_exclusivity = false) {
-    if (clear_exclusivity) {
-      button_group->setExclusive(false);
-    }
+  void clearCheckedButtons() {
+    bool original_exclusive = button_group->exclusive();
+
+    button_group->setExclusive(false);
 
     for (QAbstractButton *button : button_group->buttons()) {
       button->setChecked(false);
     }
 
-    if (clear_exclusivity) {
-      button_group->setExclusive(true);
-    }
+    button_group->setExclusive(original_exclusive);
   }
 
   void setCheckedButton(int id) {
@@ -395,7 +393,7 @@ public:
       showWarning();
     }
 
-    if (last_action_timer.isValid() && last_action_timer.elapsed() > 200) {
+    if (last_action_timer.isValid() && last_action_timer.elapsed() > decrement_button.autoRepeatInterval() + 50) {
       decrement_repeating = false;
     }
 
@@ -424,7 +422,7 @@ public:
       showWarning();
     }
 
-    if (last_action_timer.isValid() && last_action_timer.elapsed() > 200) {
+    if (last_action_timer.isValid() && last_action_timer.elapsed() > increment_button.autoRepeatInterval() + 50) {
       increment_repeating = false;
     }
 
@@ -498,6 +496,9 @@ public:
         break;
       }
     }
+
+    decrement_button.setEnabled(value > min_value);
+    increment_button.setEnabled(value < max_value);
 
     value_label->setText(displayText);
   }

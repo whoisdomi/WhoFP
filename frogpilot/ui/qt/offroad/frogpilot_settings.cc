@@ -194,6 +194,8 @@ FrogPilotSettingsWindow::FrogPilotSettingsWindow(SettingsWindow *parent) : QFram
 
     updateVariables();
 
+    emit tuningLevelChanged(tuningLevel);
+
     if (id == 3) {
       ConfirmationDialog::alert(tr("WARNING: These settings are risky and can drastically change how openpilot drives. Only change if you fully understand what they do!"), this);
     }
@@ -232,6 +234,8 @@ void FrogPilotSettingsWindow::updateTuningLevel() {
   togglePreset->setCheckedButton(params.getInt("TuningLevel"));
 
   updateVariables();
+
+  emit tuningLevelChanged(tuningLevel);
 }
 
 void FrogPilotSettingsWindow::showEvent(QShowEvent *event) {
