@@ -49,6 +49,7 @@ private:
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
+  void paintRoadName(QPainter &p);
   void paintTurnSignals(QPainter &p, SubMaster &sm);
   void updateSignals();
 
