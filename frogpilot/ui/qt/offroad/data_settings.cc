@@ -18,6 +18,7 @@ FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool for
 
   ButtonControl *deleteDrivingDataButton = new ButtonControl(tr("Delete Driving Data"), tr("DELETE"), tr("<b>Delete all stored driving footage and data</b> to free up space and clear private information."));
   QObject::connect(deleteDrivingDataButton, &ButtonControl::clicked, [=]() {
+    QDir hdDataDir("/data/media/0/realdata_HD/");
     QDir realDataDir("/data/media/0/realdata/");
 
     if (ConfirmationDialog::confirm(tr("Delete all driving data and footage?"), tr("Delete"), this)) {
@@ -27,7 +28,7 @@ FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool for
         deleteDrivingDataButton->setEnabled(false);
         deleteDrivingDataButton->setValue(tr("Deleting..."));
 
-        QList<QDir> footageDirs = {realDataDir};
+        QList<QDir> footageDirs = {hdDataDir, realDataDir};
         for (const QDir &footageDir : footageDirs) {
           if (!footageDir.exists()) {
             continue;
