@@ -49,11 +49,41 @@ void ExperimentalButton::updateState(const UIState &s, const FrogPilotUIState &f
 }
 
 void ExperimentalButton::paintEvent(QPaintEvent *event) {
+  updateBackgroundColor();
+
   QPainter p(this);
+
+  QPainterPath clip_path;
+  clip_path.addEllipse(QPoint(btn_size / 2, btn_size / 2), btn_size / 2, btn_size / 2);
+  p.setClipPath(clip_path);
+
   QPixmap img = experimental_mode ? experimental_img : engage_img;
-  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, QColor(0, 0, 0, 166), (isDown() || !engageable) ? 0.6 : 1.0);
+  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+
+  p.setClipping(false);
 }
 
 // FrogPilot variables
 void ExperimentalButton::showEvent(QShowEvent *event) {
+}
+
+void ExperimentalButton::updateBackgroundColor() {
+  static const QMap<QString, QColor> status_color_map {
+    {"default", QColor(0, 0, 0, 166)},
+    {"always_on_lateral_active", bg_colors[STATUS_ALWAYS_ON_LATERAL_ACTIVE]},
+    {"experimental_mode_enabled", bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]}
+  };
+
+  if (isDown() || !engageable) {
+    background_color = status_color_map["default"];
+    return;
+  }
+
+  if (frogpilot_scene.always_on_lateral_active) {
+    background_color = status_color_map["always_on_lateral_active"];
+  } else if (experimental_mode) {
+    background_color = status_color_map["experimental_mode_enabled"];
+  } else {
+    background_color = status_color_map["default"];
+  }
 }
