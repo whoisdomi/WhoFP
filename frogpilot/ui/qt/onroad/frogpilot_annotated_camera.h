@@ -41,6 +41,7 @@ protected:
   void showEvent(QShowEvent *event) override;
 
 private:
+  void paintCEMStatus(QPainter &p, SubMaster &sm);
   void paintCompass(QPainter &p);
 
   float distanceConversion;
@@ -54,7 +55,16 @@ private:
   QColor blackColor(int alpha = 255) { return QColor(0, 0, 0, alpha); }
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
 
+  QPoint cemStatusPosition;
   QPoint compassPosition;
+
+  QSharedPointer<QMovie> cemCurveIcon;
+  QSharedPointer<QMovie> cemLeadIcon;
+  QSharedPointer<QMovie> cemSpeedIcon;
+  QSharedPointer<QMovie> cemStopIcon;
+  QSharedPointer<QMovie> cemTurnIcon;
+  QSharedPointer<QMovie> chillModeIcon;
+  QSharedPointer<QMovie> experimentalModeIcon;
 
   QString leadDistanceUnit;
   QString leadSpeedUnit;
