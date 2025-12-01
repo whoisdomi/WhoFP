@@ -170,6 +170,10 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
   // FrogPilot variables
   SubMaster &sm = *(uiState()->sm);
   SubMaster &fpsm = *(frogpilotUIState()->sm);
+
+  if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles.value("blind_spot_path").toBool()) {
+    frogpilot_nvg->paintBlindSpotPath(painter, sm);
+  }
 }
 
 void ModelRenderer::updatePathGradient(QLinearGradient &bg) {
