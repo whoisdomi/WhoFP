@@ -43,6 +43,8 @@ protected:
 private:
   void paintCEMStatus(QPainter &p, SubMaster &sm);
   void paintCompass(QPainter &p);
+  void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
+  void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
 
   float distanceConversion;
   float setSpeed;
@@ -54,6 +56,10 @@ private:
 
   QColor blackColor(int alpha = 255) { return QColor(0, 0, 0, alpha); }
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
+
+  QElapsedTimer glowTimer;
+
+  QPixmap curveSpeedIcon;
 
   QPoint cemStatusPosition;
   QPoint compassPosition;
