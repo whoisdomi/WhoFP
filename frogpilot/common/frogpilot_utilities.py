@@ -121,6 +121,10 @@ def calculate_road_curvature(modelData, v_ego):
   return predicted_lateral_acc / max(v_ego, 1)**2, max(time_to_curve, 1)
 
 
+def clean_model_name(name):
+  return name.replace("(Default)", "").strip()
+
+
 def contains_event_type(events, frogpilot_events, *event_types):
   return any(events.contains(event_type) or frogpilot_events.contains(event_type) for event_type in event_types)
 
