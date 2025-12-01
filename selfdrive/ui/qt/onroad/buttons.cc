@@ -24,6 +24,7 @@ ExperimentalButton::ExperimentalButton(QWidget *parent) : experimental_mode(fals
   QObject::connect(this, &QPushButton::clicked, this, &ExperimentalButton::changeMode);
 
   // FrogPilot variables
+  QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &ExperimentalButton::updateTheme);
 }
 
 void ExperimentalButton::changeMode() {
@@ -57,19 +58,27 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   updateBackgroundColor();
 
   QPainter p(this);
+  p.setRenderHint(QPainter::Antialiasing);
 
   QPainterPath clip_path;
   clip_path.addEllipse(QPoint(btn_size / 2, btn_size / 2), btn_size / 2, btn_size / 2);
   p.setClipPath(clip_path);
 
-  QPixmap img = experimental_mode ? experimental_img : engage_img;
-  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+  if (frogpilot_toggles.value("wheel_image").toString() == "stock") {
+    QPixmap img = experimental_mode ? experimental_img : engage_img;
+    drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+  } else if (wheel_gif) {
+    drawIcon(p, QPoint(btn_size / 2, btn_size / 2), wheel_gif->currentPixmap(), background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+  } else if (!wheel_img.isNull()) {
+    drawIcon(p, QPoint(btn_size / 2, btn_size / 2), wheel_img, background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+  }
 
   p.setClipping(false);
 }
 
 // FrogPilot variables
 void ExperimentalButton::showEvent(QShowEvent *event) {
+  updateTheme();
 }
 
 void ExperimentalButton::updateBackgroundColor() {
@@ -94,4 +103,8 @@ void ExperimentalButton::updateBackgroundColor() {
   } else {
     background_color = status_color_map["default"];
   }
+}
+
+void ExperimentalButton::updateTheme() {
+  loadImage("../../frogpilot/assets/active_theme/steering_wheel/wheel", wheel_img, wheel_gif, QSize(img_size, img_size), this);
 }
