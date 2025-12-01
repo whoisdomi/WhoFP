@@ -78,6 +78,7 @@ private:
   void paintStandstillTimer(QPainter &p);
   void paintStoppingPoint(QPainter &p, SubMaster &sm);
   void paintTurnSignals(QPainter &p, SubMaster &sm);
+  void paintWeather(QPainter &p, SubMaster &fpsm);
   void updateSignals();
 
   bool speedLimitChanged;
@@ -133,6 +134,11 @@ private:
   QSharedPointer<QMovie> cemTurnIcon;
   QSharedPointer<QMovie> chillModeIcon;
   QSharedPointer<QMovie> experimentalModeIcon;
+  QSharedPointer<QMovie> weatherClearDay;
+  QSharedPointer<QMovie> weatherClearNight;
+  QSharedPointer<QMovie> weatherLowVisibility;
+  QSharedPointer<QMovie> weatherRain;
+  QSharedPointer<QMovie> weatherSnow;
 
   QString leadDistanceUnit;
   QString leadSpeedUnit;
