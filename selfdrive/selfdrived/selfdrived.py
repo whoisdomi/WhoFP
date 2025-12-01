@@ -587,7 +587,14 @@ class SelfdriveD:
     fpss_msg.valid = True
     fpss = fpss_msg.frogpilotSelfdriveState
 
-    fpss.alertText1 = self.frogpilot_AM.current_alert.alert_text_1
+    alert_text_1 = self.frogpilot_AM.current_alert.alert_text_1
+    if not isinstance(alert_text_1, str):
+      sentry.set_tag("bad_alert_event_type", str(self.frogpilot_AM.current_alert.alert_type))
+      sentry.set_tag("bad_alert_content", str(alert_text_1))
+      sentry.capture_exception(Exception(f"Invalid alertText1 type: {type(alert_text_1)}"))
+    else:
+      fpss.alertText1 = alert_text_1
+
     fpss.alertText2 = self.frogpilot_AM.current_alert.alert_text_2
     fpss.alertSize = self.frogpilot_AM.current_alert.alert_size
     fpss.alertStatus = self.frogpilot_AM.current_alert.alert_status
