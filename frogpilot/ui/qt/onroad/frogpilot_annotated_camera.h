@@ -57,6 +57,7 @@ private:
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
   void paintLongitudinalPaused(QPainter &p);
+  void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm);
   void paintRadarTracks(QPainter &p);
   void paintRoadName(QPainter &p);
   void paintStandstillTimer(QPainter &p);
@@ -86,7 +87,9 @@ private:
   QElapsedTimer glowTimer;
   QElapsedTimer standstillTimer;
 
+  QPixmap brakePedalImg;
   QPixmap curveSpeedIcon;
+  QPixmap gasPedalImg;
   QPixmap pausedIcon;
   QPixmap speedIcon;
   QPixmap stopSignImg;
