@@ -21,6 +21,7 @@ public:
   bool rightHandDM;
 
   int alertHeight;
+  int standstillDuration;
 
   float speed;
 
@@ -50,6 +51,7 @@ private:
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
   void paintRoadName(QPainter &p);
+  void paintStandstillTimer(QPainter &p);
   void paintTurnSignals(QPainter &p, SubMaster &sm);
   void updateSignals();
 
@@ -73,6 +75,7 @@ private:
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
 
   QElapsedTimer glowTimer;
+  QElapsedTimer standstillTimer;
 
   QPixmap curveSpeedIcon;
 

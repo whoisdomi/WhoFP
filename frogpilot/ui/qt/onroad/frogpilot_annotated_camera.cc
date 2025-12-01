@@ -18,6 +18,8 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   });
   QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &FrogPilotAnnotatedCameraWidget::updateSignals);
   QObject::connect(uiState(), &UIState::offroadTransition, [this] {
+    standstillTimer.invalidate();
+
     QJsonObject stats = QJsonDocument::fromJson(QString::fromStdString(params.get("FrogPilotStats")).toUtf8()).object();
     stats["FrogHops"] = stats.value("FrogHops").toInt(0) + frogHopCount;
     params.putNonBlocking("FrogPilotStats", QJsonDocument(stats).toJson(QJsonDocument::Compact).toStdString());
@@ -128,6 +130,17 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   hideBottomIcons |= frogpilotSelfdriveState.getAlertSize() != cereal::FrogPilotSelfdriveState::AlertSize::NONE;
   hideBottomIcons |= signalStyle.startsWith("traditional") && (carState.getLeftBlinker() || carState.getRightBlinker());
 
+  if (frogpilot_scene.standstill && frogpilot_toggles.value("stopped_timer").toBool()) {
+    if (!standstillTimer.isValid()) {
+      standstillTimer.start();
+    } else {
+      standstillDuration = frogpilot_scene.started_timer / UI_FREQ < 60 ? 0 : standstillTimer.elapsed() / 1000;
+    }
+  } else {
+    standstillDuration = 0;
+    standstillTimer.invalidate();
+  }
+
   static int lastFrameIndex;
   if (lastFrameIndex > animationFrameIndex && frogpilot_toggles.value("signal_icons").toString() == "frog") {
     frogHopCount++;
@@ -180,6 +193,10 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
 
   if (frogpilot_toggles.value("road_name_ui").toBool()) {
     paintRoadName(p);
+  }
+
+  if (standstillDuration != 0 && frogpilot_scene.started_timer / UI_FREQ >= 60) {
+    paintStandstillTimer(p);
   }
 
   if ((carState.getLeftBlinker() || carState.getRightBlinker()) && signalStyle != "None") {
@@ -440,6 +457,60 @@ void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
   p.setFont(font);
   p.setPen(QPen(whiteColor(), 6));
   p.drawText(roadNameRect, Qt::AlignCenter, roadName);
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintStandstillTimer(QPainter &p) {
+  p.save();
+
+  float transition = 0.0f;
+
+  QColor startColor, endColor;
+  if (standstillDuration < 60) {
+    startColor = endColor = bg_colors[STATUS_ENGAGED];
+  } else if (standstillDuration < 150) {
+    startColor = bg_colors[STATUS_ENGAGED];
+    endColor = bg_colors[STATUS_CONDITIONAL_OVERRIDDEN];
+
+    transition = (standstillDuration - 60) / 150.0f;
+  } else if (standstillDuration < 300) {
+    startColor = bg_colors[STATUS_CONDITIONAL_OVERRIDDEN];
+    endColor = bg_colors[STATUS_TRAFFIC_MODE_ENABLED];
+
+    transition = (standstillDuration - 150) / 150.0f;
+  } else {
+    startColor = endColor = bg_colors[STATUS_TRAFFIC_MODE_ENABLED];
+
+    transition = 0.0f;
+  }
+
+  QColor blendedColor(
+    startColor.red() + transition * (endColor.red() - startColor.red()),
+    startColor.green() + transition * (endColor.green() - startColor.green()),
+    startColor.blue() + transition * (endColor.blue() - startColor.blue())
+  );
+
+  int minutes = standstillDuration / 60;
+  int seconds = standstillDuration % 60;
+
+  p.setFont(InterFont(176, QFont::Bold));
+  {
+    QString minuteStr = (minutes == 1) ? tr("1 minute") : QString(tr("%1 minutes")).arg(minutes);
+    QRect textRect = p.fontMetrics().boundingRect(minuteStr);
+    textRect.moveCenter({rect().center().x(), 210 - textRect.height() / 2});
+    p.setPen(QPen(blendedColor));
+    p.drawText(textRect.x(), textRect.bottom(), minuteStr);
+  }
+
+  p.setFont(InterFont(66));
+  {
+    QString secondStr = (seconds == 1) ? tr("1 second") : QString(tr("%1 seconds")).arg(seconds);
+    QRect textRect = p.fontMetrics().boundingRect(secondStr);
+    textRect.moveCenter({rect().center().x(), 290 - textRect.height() / 2});
+    p.setPen(QPen(whiteColor()));
+    p.drawText(textRect.x(), textRect.bottom(), secondStr);
+  }
 
   p.restore();
 }
