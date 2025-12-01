@@ -50,10 +50,11 @@ def update_checks(now, theme_manager, thread_manager, params, params_memory, fro
   time.sleep(1)
 
 def update_toggles(frogpilot_variables, started, theme_manager, thread_manager, time_validated, params):
-  frogpilot_variables.update(started)
+  frogpilot_variables.update(theme_manager.holiday_theme, started)
   frogpilot_toggles = frogpilot_variables.frogpilot_toggles
 
-  theme_manager.update_active_theme(frogpilot_toggles)
+  theme_manager.theme_updated = False
+  theme_manager.update_active_theme(time_validated, frogpilot_toggles)
 
   if time_validated:
     thread_manager.run_with_lock(backup_toggles, (params))
@@ -126,7 +127,7 @@ def frogpilot_thread():
     if rate_keeper.frame % ASSET_CHECK_RATE == 0:
       check_assets(theme_manager, thread_manager, params_memory, frogpilot_toggles)
 
-    if params_memory.get_bool("FrogPilotTogglesUpdated"):
+    if params_memory.get_bool("FrogPilotTogglesUpdated") or theme_manager.theme_updated:
       frogpilot_toggles = update_toggles(frogpilot_variables, started, theme_manager, thread_manager, time_validated, params)
 
       toggles_last_updated = now
@@ -138,6 +139,7 @@ def frogpilot_thread():
     run_update_checks &= time_validated
 
     if run_update_checks:
+      theme_manager.update_active_theme(time_validated, frogpilot_toggles)
       thread_manager.run_with_lock(update_checks, (now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles))
 
       run_update_checks = False
@@ -147,6 +149,7 @@ def frogpilot_thread():
         continue
 
       thread_manager.run_with_lock(send_stats, (params))
+      theme_manager.update_active_theme(time_validated, frogpilot_toggles)
       thread_manager.run_with_lock(update_checks, (now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, True))
 
     rate_keeper.keep_time()
