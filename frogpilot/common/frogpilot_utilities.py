@@ -21,7 +21,7 @@ from openpilot.common.realtime import DT_DMON, DT_HW
 from openpilot.system.hardware import HARDWARE
 from panda import Panda
 
-from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH, KONIK_PATH
+from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
 
 class ThreadManager:
   def __init__(self):
@@ -268,6 +268,38 @@ def update_json_file(path, data):
     os.fsync(file.fileno())
 
   os.replace(temp_path, path)
+
+
+def update_maps(now, params, params_memory):
+  while not MAPD_PATH.exists():
+    time.sleep(60)
+
+  maps_selected = params.get("MapsSelected")
+  if not maps_selected or not (maps_selected.get("nations") or maps_selected.get("states")):
+    return
+
+  day = now.day
+  is_first = day == 1
+  is_sunday = now.weekday() == 6
+  schedule = params.get("PreferredSchedule")
+
+  maps_downloaded = MAPS_PATH.exists()
+  if maps_downloaded and (schedule == 0 or (schedule == 1 and not is_sunday) or (schedule == 2 and not is_first)):
+    return
+
+  suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+  todays_date = now.strftime(f"%B {day}{suffix}, %Y")
+
+  if maps_downloaded and params.get("LastMapsUpdate") == todays_date:
+    return
+
+  if params.get("OSMDownloadProgress") is None:
+    params_memory.put("OSMDownloadLocations", maps_selected)
+
+  while params.get("OSMDownloadProgress") is not None:
+    time.sleep(60)
+
+  params.put("LastMapsUpdate", todays_date)
 
 
 def update_openpilot(thread_manager, params):
