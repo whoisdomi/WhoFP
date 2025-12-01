@@ -192,6 +192,10 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     glowTimer.invalidate();
   }
 
+  if (frogpilot_toggles.value("radar_tracks").toBool()) {
+    paintRadarTracks(p);
+  }
+
   if (frogpilot_toggles.value("road_name_ui").toBool()) {
     paintRoadName(p);
   }
@@ -440,6 +444,26 @@ void FrogPilotAnnotatedCameraWidget::paintCurveSpeedControlTraining(QPainter &p,
   p.setFont(InterFont(35, QFont::Bold));
   p.setPen(QPen(whiteColor(), 6));
   p.drawText(textRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft, "Training...");
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintRadarTracks(QPainter &p) {
+  p.save();
+
+  int diameter = 25;
+
+  QRect viewport = p.viewport();
+
+  for (std::size_t i = 0; i < radar_tracks.size(); ++i) {
+    const RadarTrackData &track = radar_tracks[i];
+
+    float x = std::clamp(static_cast<float>(track.calibrated_point.x()), 0.0f, float(viewport.width() - diameter));
+    float y = std::clamp(static_cast<float>(track.calibrated_point.y()), 0.0f, float(viewport.height() - diameter));
+
+    p.setBrush(redColor());
+    p.drawEllipse(QPointF(x + diameter / 2.0f, y + diameter / 2.0f), diameter / 2.0f, diameter / 2.0f);
+  }
 
   p.restore();
 }

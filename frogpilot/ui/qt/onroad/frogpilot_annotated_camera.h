@@ -5,6 +5,10 @@
 
 const int widget_size = img_size + (UI_BORDER_SIZE / 2);
 
+struct RadarTrackData {
+  QPointF calibrated_point;
+};
+
 class FrogPilotAnnotatedCameraWidget : public QWidget {
   Q_OBJECT
 
@@ -24,6 +28,8 @@ public:
   int standstillDuration;
 
   float speed;
+
+  std::vector<RadarTrackData> radar_tracks;
 
   FrogPilotUIScene frogpilot_scene;
 
@@ -50,6 +56,7 @@ private:
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
+  void paintRadarTracks(QPainter &p);
   void paintRoadName(QPainter &p);
   void paintStandstillTimer(QPainter &p);
   void paintStoppingPoint(QPainter &p, SubMaster &sm);
