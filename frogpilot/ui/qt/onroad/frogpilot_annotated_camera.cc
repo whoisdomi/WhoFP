@@ -5,7 +5,11 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
 
   brakePedalImg = loadPixmap("../../frogpilot/assets/other_images/brake_pedal.png", {btn_size, btn_size});
   curveSpeedIcon = loadPixmap("../../frogpilot/assets/other_images/curve_speed.png", {btn_size, btn_size});
+  dashboardIcon = loadPixmap("../../frogpilot/assets/other_images/dashboard_icon.png", {btn_size / 2, btn_size / 2});
   gasPedalImg = loadPixmap("../../frogpilot/assets/other_images/gas_pedal.png", {btn_size, btn_size});
+  mapboxIcon = loadPixmap("../../frogpilot/assets/other_images/mapbox_icon.png", {btn_size / 2, btn_size / 2});
+  mapDataIcon = loadPixmap("../../frogpilot/assets/other_images/offline_maps_icon.png", {btn_size / 2, btn_size / 2});
+  nextMapsIcon = loadPixmap("../../frogpilot/assets/other_images/next_maps_icon.png", {btn_size / 2, btn_size / 2});
   pausedIcon = loadPixmap("../../frogpilot/assets/other_images/paused_icon.png", {widget_size, widget_size});
   speedIcon = loadPixmap("../../frogpilot/assets/other_images/speed_icon.png", {widget_size, widget_size});
   stopSignImg = loadPixmap("../../frogpilot/assets/other_images/stop_sign.png", {btn_size, btn_size});
@@ -138,6 +142,15 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   hideBottomIcons |= frogpilotSelfdriveState.getAlertSize() != cereal::FrogPilotSelfdriveState::AlertSize::NONE;
   hideBottomIcons |= signalStyle.startsWith("traditional") && (carState.getLeftBlinker() || carState.getRightBlinker());
 
+  speedLimit = frogpilotPlan.getSlcOverriddenSpeed() != 0 ? frogpilotPlan.getSlcOverriddenSpeed() : frogpilotPlan.getSlcSpeedLimit();
+  speedLimitChanged = frogpilotPlan.getSpeedLimitChanged();
+  if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && !frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
+    speedLimit += frogpilotPlan.getSlcSpeedLimitOffset();
+  }
+  speedLimit *= (scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
+  float speedLimitOffset = frogpilotPlan.getSlcSpeedLimitOffset() * speedConversion;
+  speedLimitOffsetStr = (speedLimitOffset != 0) ? QString::number(speedLimitOffset, 'f', 0).prepend((speedLimitOffset > 0) ? "+" : "-") : "–";
+
   if (frogpilot_scene.standstill && frogpilot_toggles.value("stopped_timer").toBool()) {
     if (!standstillTimer.isValid()) {
       standstillTimer.start();
@@ -159,6 +172,12 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
 }
 
 void FrogPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *mouseEvent) {
+  if (speedLimitChanged && newSpeedLimitRect.contains(mouseEvent->pos())) {
+    params_memory.putBool("SpeedLimitAccepted", true);
+    mouseEvent->accept();
+    return;
+  }
+
   mouseEvent->ignore();
 }
 
@@ -214,12 +233,29 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     paintPedalIcons(p, sm, fpsm);
   }
 
+  if (frogpilotPlan.getSpeedLimitChanged()) {
+    paintPendingSpeedLimit(p, fpsm);
+  } else {
+    pendingLimitTimer.invalidate();
+  }
+
   if (frogpilot_toggles.value("radar_tracks").toBool()) {
     paintRadarTracks(p);
   }
 
   if (frogpilot_toggles.value("road_name_ui").toBool()) {
     paintRoadName(p);
+  }
+
+  bool hideSpeedLimit = !frogpilotPlan.getSpeedLimitChanged() && frogpilot_toggles.value("hide_speed_limit").toBool();
+  if (!hideSpeedLimit && (frogpilot_toggles.value("show_speed_limits").toBool() || frogpilot_toggles.value("speed_limit_controller").toBool())) {
+    paintSpeedLimit(p);
+  } else {
+    speedLimitHeight = 0;
+  }
+
+  if (frogpilot_toggles.value("speed_limit_sources").toBool()) {
+    paintSpeedLimitSources(p, fpsm);
   }
 
   if (standstillDuration != 0 && frogpilot_scene.started_timer / UI_FREQ >= 60) {
@@ -717,6 +753,47 @@ void FrogPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p, SubMaster &sm,
   p.restore();
 }
 
+void FrogPilotAnnotatedCameraWidget::paintPendingSpeedLimit(QPainter &p, SubMaster &fpsm) {
+  p.save();
+
+  const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
+
+  if (!pendingLimitTimer.isValid()) {
+    pendingLimitTimer.start();
+  }
+
+  QString newSpeedLimitStr = (frogpilotPlan.getUnconfirmedSlcSpeedLimit() > 1) ? QString::number(std::nearbyint(frogpilotPlan.getUnconfirmedSlcSpeedLimit() * speedConversion)) : "–";
+  newSpeedLimitRect = speedLimitRect.translated(speedLimitRect.width() + UI_BORDER_SIZE, 0);
+
+  if (!frogpilot_toggles.value("speed_limit_vienna").toBool()) {
+    newSpeedLimitRect.setWidth(newSpeedLimitStr.size() >= 3 ? 200 : 175);
+
+    p.setBrush(whiteColor());
+    p.setPen(Qt::NoPen);
+    p.drawRoundedRect(newSpeedLimitRect, 24, 24);
+    p.setPen(pendingLimitTimer.elapsed() % 1000 < 500 ? QPen(blackColor(), 6) : QPen(redColor(), 6));
+    p.drawRoundedRect(newSpeedLimitRect.adjusted(9, 9, -9, -9), 16, 16);
+
+    p.setFont(InterFont(28, QFont::DemiBold));
+    p.drawText(newSpeedLimitRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("PENDING"));
+    p.drawText(newSpeedLimitRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+    p.setFont(InterFont(70, QFont::Bold));
+    p.drawText(newSpeedLimitRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, newSpeedLimitStr);
+  } else {
+    p.setBrush(whiteColor());
+    p.setPen(Qt::NoPen);
+    p.drawEllipse(newSpeedLimitRect);
+    p.setPen(QPen(Qt::red, 20));
+    p.drawEllipse(newSpeedLimitRect.adjusted(16, 16, -16, -16));
+
+    p.setPen(pendingLimitTimer.elapsed() % 1000 < 500 ? QPen(blackColor(), 6) : QPen(redColor(), 6));
+    p.setFont(InterFont((newSpeedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
+    p.drawText(newSpeedLimitRect, Qt::AlignCenter, newSpeedLimitStr);
+  }
+
+  p.restore();
+}
+
 void FrogPilotAnnotatedCameraWidget::paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point) {
   p.save();
 
@@ -782,6 +859,152 @@ void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
   p.setFont(font);
   p.setPen(QPen(whiteColor(), 6));
   p.drawText(roadNameRect, Qt::AlignCenter, roadName);
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
+  if (setSpeedRect.isEmpty()) {
+    return;
+  }
+
+  p.save();
+
+  SubMaster &fpsm = *frogpilotUIState()->sm;
+  const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
+
+  QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
+
+  bool hasUsSpeedLimit = !frogpilot_toggles.value("speed_limit_vienna").toBool();
+  bool hasEuSpeedLimit = !hasUsSpeedLimit;
+
+  int euSignSize = 176;
+  int usSignHeight = 186;
+  int signMargin = 12;
+
+  if (hasUsSpeedLimit) {
+    speedLimitHeight = usSignHeight + signMargin;
+  } else if (hasEuSpeedLimit) {
+    speedLimitHeight = euSignSize + signMargin;
+  }
+
+  QRect signRect;
+  if (hasUsSpeedLimit) {
+    signRect = QRect(setSpeedRect.x() + signMargin, setSpeedRect.bottom() - speedLimitHeight, setSpeedRect.width() - 2 * signMargin, usSignHeight);
+  } else if (hasEuSpeedLimit) {
+    signRect = QRect(setSpeedRect.x() + signMargin, setSpeedRect.bottom() - speedLimitHeight, setSpeedRect.width() - 2 * signMargin, euSignSize);
+  }
+  speedLimitRect = signRect;
+
+  if (hasUsSpeedLimit) {
+    p.setPen(Qt::NoPen);
+    p.setBrush(whiteColor());
+    p.drawRoundedRect(signRect, 24, 24);
+    p.setPen(QPen(blackColor(), 6));
+    p.drawRoundedRect(signRect.adjusted(9, 9, -9, -9), 16, 16);
+
+    p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
+    if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
+      p.setFont(InterFont(28, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+      p.setFont(InterFont(70, QFont::Bold));
+      p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
+      p.setFont(InterFont(50, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+    } else {
+      p.setFont(InterFont(28, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
+      p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+      p.setFont(InterFont(70, QFont::Bold));
+      p.drawText(signRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
+    }
+  }
+
+  if (hasEuSpeedLimit) {
+    p.setPen(Qt::NoPen);
+    p.setBrush(whiteColor());
+    p.drawEllipse(signRect);
+    p.setPen(QPen(Qt::red, 20));
+    p.drawEllipse(signRect.adjusted(16, 16, -16, -16));
+
+    p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
+    p.setPen(blackColor());
+    if (frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
+      p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
+      p.drawText(signRect.adjusted(0, -25, 0, 0), Qt::AlignCenter, speedLimitStr);
+      p.setFont(InterFont(40, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+    } else {
+      p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
+      p.drawText(signRect, Qt::AlignCenter, speedLimitStr);
+    }
+  }
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMaster &fpsm) {
+  p.save();
+
+  const cereal::FrogPilotCarState::Reader &frogpilotCarState = fpsm["frogpilotCarState"].getFrogpilotCarState();
+  const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
+
+  std::function<void(QRect&, QPixmap&, const QString&, const double)> drawSource = [&](QRect &rect, QPixmap &icon, QString title, double speedLimitValue) {
+    bool isActive = QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr()) == title && speedLimitValue != 0;
+
+    if (isActive) {
+      p.setBrush(redColor(166));
+      p.setFont(InterFont(35, QFont::Bold));
+      p.setPen(QPen(redColor(), 10));
+    } else {
+      p.setBrush(blackColor(166));
+      p.setFont(InterFont(35, QFont::DemiBold));
+      p.setPen(QPen(blackColor(), 10));
+    }
+
+    QRect iconRect(rect.x() + 20, rect.y() + (rect.height() - img_size / 4) / 2, img_size / 4, img_size / 4);
+    QPixmap scaledIcon = icon.scaled(iconRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QString speedText;
+    if (speedLimitValue != 0) {
+      speedText = QString::number(std::nearbyint(speedLimitValue)) + speedUnit;
+    } else {
+      speedText = "N/A";
+    }
+
+    QString fullText = tr(title.toUtf8().constData()) + " - " + speedText;
+
+    p.setOpacity(1.0);
+    p.drawRoundedRect(rect, 24, 24);
+    p.drawPixmap(iconRect, scaledIcon);
+
+    p.setPen(QPen(whiteColor(), 6));
+    QRect textRect(iconRect.right() + 10, rect.y(), rect.width() - iconRect.width() - 30, rect.height());
+
+    if (isActive) {
+      QFontMetrics fm(p.font());
+      int textYPosition = textRect.y() + (textRect.height() - fm.height()) / 2 + fm.ascent();
+
+      QPainterPath path;
+      path.addText(textRect.x(), textYPosition, p.font(), fullText);
+      p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      p.drawText(textRect.x(), textYPosition, fullText);
+    } else {
+      p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, fullText);
+    }
+  };
+
+  int signMargin = 12;
+
+  QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
+  QRect mapDataRect(dashboardRect.x(), dashboardRect.y() + dashboardRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+  QRect mapboxRect(mapDataRect.x(), mapDataRect.y() + mapDataRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+  QRect nextLimitRect(mapboxRect.x(), mapboxRect.y() + mapboxRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+
+  drawSource(dashboardRect, dashboardIcon, "Dashboard", frogpilotCarState.getDashboardSpeedLimit() * speedConversion);
+  drawSource(mapDataRect, mapDataIcon, "Map Data", frogpilotPlan.getSlcMapSpeedLimit() * speedConversion);
+  drawSource(mapboxRect, mapboxIcon, "Mapbox", frogpilotPlan.getSlcMapboxSpeedLimit() * speedConversion);
+  drawSource(nextLimitRect, nextMapsIcon, "Upcoming", frogpilotPlan.getSlcNextSpeedLimit() * speedConversion);
 
   p.restore();
 }

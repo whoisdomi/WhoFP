@@ -29,6 +29,7 @@ public:
   bool rightHandDM;
 
   int alertHeight;
+  int speedLimitHeight;
   int standstillDuration;
 
   float speed;
@@ -69,12 +70,17 @@ private:
   void paintLateralPaused(QPainter &p);
   void paintLongitudinalPaused(QPainter &p);
   void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm);
+  void paintPendingSpeedLimit(QPainter &p, SubMaster &fpsm);
   void paintRadarTracks(QPainter &p);
   void paintRoadName(QPainter &p);
+  void paintSpeedLimit(QPainter &p);
+  void paintSpeedLimitSources(QPainter &p, SubMaster &fpsm);
   void paintStandstillTimer(QPainter &p);
   void paintStoppingPoint(QPainter &p, SubMaster &sm);
   void paintTurnSignals(QPainter &p, SubMaster &sm);
   void updateSignals();
+
+  bool speedLimitChanged;
 
   int animationFrameIndex;
   int desiredFollowDistance;
@@ -89,6 +95,7 @@ private:
   float setSpeed;
   float speedConversion;
   float speedConversionMetrics;
+  float speedLimit;
 
   Params params;
   Params params_memory{"", true};
@@ -97,10 +104,15 @@ private:
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
 
   QElapsedTimer glowTimer;
+  QElapsedTimer pendingLimitTimer;
   QElapsedTimer standstillTimer;
 
   QPixmap brakePedalImg;
   QPixmap curveSpeedIcon;
+  QPixmap dashboardIcon;
+  QPixmap mapDataIcon;
+  QPixmap mapboxIcon;
+  QPixmap nextMapsIcon;
   QPixmap gasPedalImg;
   QPixmap pausedIcon;
   QPixmap speedIcon;
@@ -110,6 +122,9 @@ private:
   QPoint cemStatusPosition;
   QPoint compassPosition;
   QPoint lateralPausedPosition;
+
+  QRect newSpeedLimitRect;
+  QRect speedLimitRect;
 
   QSharedPointer<QMovie> cemCurveIcon;
   QSharedPointer<QMovie> cemLeadIcon;
@@ -121,6 +136,7 @@ private:
 
   QString leadDistanceUnit;
   QString leadSpeedUnit;
+  QString speedLimitOffsetStr;
   QString speedUnit;
 
   QTimer *animationTimer;
