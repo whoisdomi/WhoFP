@@ -15,9 +15,10 @@ from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.hardware import HARDWARE
 
+from openpilot.frogpilot.assets.theme_manager import ThemeManager
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, is_FrogsGoMoo, run_cmd
 from openpilot.frogpilot.common.frogpilot_variables import (
-  EXCLUDED_KEYS, FROGPILOT_BACKUPS, FROGS_GO_MOO_PATH, TOGGLE_BACKUPS,
+  EXCLUDED_KEYS, FROGPILOT_BACKUPS, FROGS_GO_MOO_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS,
   FrogPilotVariables, get_frogpilot_toggles
 )
 
@@ -116,6 +117,7 @@ def frogpilot_boot_functions(build_metadata, params):
   params_memory = Params(memory=True)
 
   FrogPilotVariables()
+  ThemeManager(params, params_memory, boot_run=True).update_active_theme(frogpilot_toggles=get_frogpilot_toggles(), boot_run=True)
 
   def boot_thread():
     while not system_time_valid():
@@ -129,6 +131,7 @@ def frogpilot_boot_functions(build_metadata, params):
 
 def install_frogpilot(build_metadata, params):
   paths = [
+    THEME_SAVE_PATH
   ]
   for path in paths:
     path.mkdir(parents=True, exist_ok=True)

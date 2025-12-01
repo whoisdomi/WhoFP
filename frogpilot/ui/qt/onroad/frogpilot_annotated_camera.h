@@ -20,6 +20,8 @@ public:
   bool isCruiseSet;
   bool rightHandDM;
 
+  int alertHeight;
+
   float speed;
 
   FrogPilotUIScene frogpilot_scene;
@@ -37,6 +39,8 @@ public:
 
   QSize defaultSize;
 
+  QString signalStyle;
+
 protected:
   void showEvent(QShowEvent *event) override;
 
@@ -45,6 +49,16 @@ private:
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
+  void paintTurnSignals(QPainter &p, SubMaster &sm);
+  void updateSignals();
+
+  int animationFrameIndex;
+  int frogHopCount;
+  int signalAnimationLength;
+  int signalHeight;
+  int signalMovement;
+  int signalWidth;
+  int totalFrames;
 
   float distanceConversion;
   float setSpeed;
@@ -75,4 +89,9 @@ private:
   QString leadDistanceUnit;
   QString leadSpeedUnit;
   QString speedUnit;
+
+  QTimer *animationTimer;
+
+  QVector<QPixmap> blindspotImages;
+  QVector<QPixmap> signalImages;
 };

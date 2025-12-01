@@ -1,6 +1,8 @@
 #include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
 
 FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) : QWidget(parent) {
+  animationTimer = new QTimer(this);
+
   curveSpeedIcon = loadPixmap("../../frogpilot/assets/other_images/curve_speed.png", {btn_size, btn_size});
 
   loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
@@ -10,9 +12,87 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(widget_size, widget_size), this);
   loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(widget_size, widget_size), this);
   loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(widget_size, widget_size), this);
+
+  QObject::connect(animationTimer, &QTimer::timeout, [this] {
+    animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
+  });
+  QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &FrogPilotAnnotatedCameraWidget::updateSignals);
+  QObject::connect(uiState(), &UIState::offroadTransition, [this] {
+    QJsonObject stats = QJsonDocument::fromJson(QString::fromStdString(params.get("FrogPilotStats")).toUtf8()).object();
+    stats["FrogHops"] = stats.value("FrogHops").toInt(0) + frogHopCount;
+    params.putNonBlocking("FrogPilotStats", QJsonDocument(stats).toJson(QJsonDocument::Compact).toStdString());
+
+    frogHopCount = 0;
+  });
 }
 
 void FrogPilotAnnotatedCameraWidget::showEvent(QShowEvent *event) {
+  updateSignals();
+}
+
+void FrogPilotAnnotatedCameraWidget::updateSignals() {
+  QVector<QPixmap>().swap(blindspotImages);
+  QVector<QPixmap>().swap(signalImages);
+
+  bool isGif = false;
+
+  QFileInfoList files = QDir("../../frogpilot/assets/active_theme/signals/").entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+  for (const QFileInfo &fileInfo : files) {
+    QString fileName = fileInfo.fileName();
+    QString filePath = fileInfo.absoluteFilePath();
+
+    if (fileName.endsWith(".gif", Qt::CaseInsensitive)) {
+      isGif = true;
+
+      QMovie movie(filePath);
+      movie.setCacheMode(QMovie::CacheNone);
+      movie.start();
+
+      int frameCount = movie.frameCount();
+      signalImages.reserve(frameCount);
+
+      for (int i = 0; i < frameCount; ++i) {
+        movie.jumpToFrame(i);
+
+        QImage image = movie.currentPixmap().toImage().convertToFormat(QImage::Format_Indexed8);
+        QPixmap frame = QPixmap::fromImage(image);
+        signalImages.append(frame);
+      }
+
+      movie.stop();
+    } else if (fileName.endsWith(".png", Qt::CaseInsensitive)) {
+      QVector<QPixmap> &targetList = fileName.contains("blindspot", Qt::CaseInsensitive) ? blindspotImages : signalImages;
+      targetList.append(QPixmap::fromImage(QImage(filePath).convertToFormat(QImage::Format_Indexed8)));
+    } else {
+      QStringList parts = fileName.split('_');
+      if (parts.size() == 2) {
+        signalStyle = parts[0];
+        signalAnimationLength = parts[1].toInt();
+      }
+    }
+  }
+
+  if (!signalImages.isEmpty()) {
+    QPixmap &firstImage = signalImages.front();
+    signalHeight = firstImage.height();
+    signalWidth = firstImage.width();
+    totalFrames = signalImages.size();
+
+    if (isGif && signalStyle == "traditional") {
+      signalMovement = (width() + signalWidth * 2) / totalFrames;
+      signalStyle = "traditional_gif";
+    } else {
+      signalMovement = 0;
+    }
+  } else {
+    signalAnimationLength = 0;
+    signalHeight = 0;
+    signalMovement = 0;
+    signalWidth = 0;
+    totalFrames = 0;
+
+    signalStyle = "None";
+  }
 }
 
 void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState &fs) {
@@ -46,6 +126,13 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
 
   hideBottomIcons = selfdriveState.getAlertSize() != cereal::SelfdriveState::AlertSize::NONE;
   hideBottomIcons |= frogpilotSelfdriveState.getAlertSize() != cereal::FrogPilotSelfdriveState::AlertSize::NONE;
+  hideBottomIcons |= signalStyle.startsWith("traditional") && (carState.getLeftBlinker() || carState.getRightBlinker());
+
+  static int lastFrameIndex;
+  if (lastFrameIndex > animationFrameIndex && frogpilot_toggles.value("signal_icons").toString() == "frog") {
+    frogHopCount++;
+  }
+  lastFrameIndex = animationFrameIndex;
 
   update();
 }
@@ -89,6 +176,15 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     }
   } else {
     glowTimer.invalidate();
+  }
+
+  if ((carState.getLeftBlinker() || carState.getRightBlinker()) && signalStyle != "None") {
+    if (!animationTimer->isActive()) {
+      animationTimer->start(signalAnimationLength);
+    }
+    paintTurnSignals(p, sm);
+  } else if (animationTimer->isActive()) {
+    animationTimer->stop();
   }
 }
 
@@ -312,6 +408,42 @@ void FrogPilotAnnotatedCameraWidget::paintCurveSpeedControlTraining(QPainter &p,
   p.setFont(InterFont(35, QFont::Bold));
   p.setPen(QPen(whiteColor(), 6));
   p.drawText(textRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft, "Training...");
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintTurnSignals(QPainter &p, SubMaster &sm) {
+  const cereal::CarState::Reader &carState = sm["carState"].getCarState();
+
+  p.save();
+
+  bool leftBlinker = carState.getLeftBlinker();
+  bool blindspotActive = leftBlinker ? carState.getLeftBlindspot() : carState.getRightBlindspot();
+
+  if (signalStyle == "static") {
+    int signalXPosition = leftBlinker ? (rect().center().x() * 0.75) - signalWidth : rect().center().x() * 1.25;
+    int signalYPosition = signalHeight / 2;
+
+    if (blindspotActive && !blindspotImages.empty()) {
+      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, blindspotImages[0].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+    } else {
+      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, signalImages[animationFrameIndex].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+    }
+  } else {
+    int signalXPosition;
+    if (signalStyle == "traditional_gif") {
+      signalXPosition = leftBlinker ? width() - (animationFrameIndex * signalMovement) + signalWidth : (animationFrameIndex * signalMovement) - signalWidth;
+    } else {
+      signalXPosition = leftBlinker ? width() - ((animationFrameIndex + 1) * signalWidth) : animationFrameIndex * signalWidth;
+    }
+    int signalYPosition = height() - signalHeight - alertHeight;
+
+    if (blindspotActive && !blindspotImages.empty()) {
+      p.drawPixmap(leftBlinker ? width() - signalWidth : 0, signalYPosition, signalWidth, signalHeight, blindspotImages[0].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+    } else {
+      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, signalImages[animationFrameIndex].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+    }
+  }
 
   p.restore();
 }
