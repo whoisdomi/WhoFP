@@ -18,7 +18,7 @@ from openpilot.system.hardware import HARDWARE
 from openpilot.frogpilot.assets.theme_manager import ThemeManager
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, is_FrogsGoMoo, run_cmd
 from openpilot.frogpilot.common.frogpilot_variables import (
-  ERROR_LOGS_PATH, EXCLUDED_KEYS, FROGPILOT_BACKUPS, FROGS_GO_MOO_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS,
+  ERROR_LOGS_PATH, EXCLUDED_KEYS, FROGPILOT_BACKUPS, FROGS_GO_MOO_PATH, HD_LOGS_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS,
   FrogPilotVariables, get_frogpilot_toggles
 )
 
@@ -132,6 +132,7 @@ def frogpilot_boot_functions(build_metadata, params):
 def install_frogpilot(build_metadata, params):
   paths = [
     ERROR_LOGS_PATH,
+    HD_LOGS_PATH,
     THEME_SAVE_PATH
   ]
   for path in paths:
