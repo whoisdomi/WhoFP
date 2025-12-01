@@ -4,6 +4,7 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   animationTimer = new QTimer(this);
 
   curveSpeedIcon = loadPixmap("../../frogpilot/assets/other_images/curve_speed.png", {btn_size, btn_size});
+  stopSignImg = loadPixmap("../../frogpilot/assets/other_images/stop_sign.png", {btn_size, btn_size});
 
   loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(btn_size / 2, btn_size / 2), this);
   loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(btn_size / 2, btn_size / 2), this);
@@ -197,6 +198,10 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
 
   if (standstillDuration != 0 && frogpilot_scene.started_timer / UI_FREQ >= 60) {
     paintStandstillTimer(p);
+  }
+
+  if (track_vertices.length() >= 1 && frogpilotPlan.getRedLight() && frogpilot_toggles.value("show_stopping_point").toBool()) {
+    paintStoppingPoint(p, sm);
   }
 
   if ((carState.getLeftBlinker() || carState.getRightBlinker()) && signalStyle != "None") {
@@ -516,6 +521,28 @@ void FrogPilotAnnotatedCameraWidget::paintStandstillTimer(QPainter &p) {
     textRect.moveCenter({rect().center().x(), 290 - textRect.height() / 2});
     p.setPen(QPen(whiteColor()));
     p.drawText(textRect.x(), textRect.bottom(), secondStr);
+  }
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &sm) {
+  p.save();
+
+  const cereal::ModelDataV2::Reader &modelV2 = sm["modelV2"].getModelV2();
+
+  QPointF centerPoint = (track_vertices.first() + track_vertices.last()) / 2.0;
+  QPointF adjustedPoint = centerPoint - QPointF(stopSignImg.width() / 2, stopSignImg.height());
+  p.drawPixmap(adjustedPoint, stopSignImg);
+
+  if (frogpilot_toggles.value("show_stopping_point_metrics").toBool()) {
+    QFont font = InterFont(45, QFont::DemiBold);
+    QString text = QString::number(std::nearbyint(modelV2.getPosition().getX()[33 - 1] * distanceConversion)) + leadDistanceUnit;
+    QPointF textPosition = centerPoint - QPointF(QFontMetrics(font).horizontalAdvance(text) / 2, stopSignImg.height() + 35);
+
+    p.setFont(font);
+    p.setPen(QPen(whiteColor()));
+    p.drawText(textPosition, text);
   }
 
   p.restore();
