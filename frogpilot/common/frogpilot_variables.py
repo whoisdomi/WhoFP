@@ -116,6 +116,7 @@ class FrogPilotVariables:
     self.vetting_branch = branch == "FrogPilot-Vetting"
 
     toggle.frogs_go_moo = Path("/persist/frogsgomoo.py").is_file()
+    toggle.block_user = (self.development_branch or branch == "MAKE-PRS-HERE" or self.vetting_branch) and not toggle.frogs_go_moo
 
     self.update()
 
