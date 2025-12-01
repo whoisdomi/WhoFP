@@ -1,5 +1,13 @@
 #include "frogpilot/ui/qt/offroad/sounds_settings.h"
 
+void playSound(const QString &alert, int volume) {
+  QString stockPath = "../../selfdrive/assets/sounds/" + alert + ".wav";
+  QString themePath = "../../frogpilot/assets/active_theme/sounds/" + alert + ".wav";
+
+  QProcess::execute("pkill", {"-f", "ffplay"});
+  QProcess::startDetached("ffplay", {"-nodisp", "-autoexit", "-volume", QString::number(std::clamp(volume, 0, 100)), QFile::exists(themePath) ? themePath : stockPath});
+}
+
 FrogPilotSoundsPanel::FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {
   forceOpenDescriptions = forceOpen;
 
@@ -98,6 +106,31 @@ FrogPilotSoundsPanel::FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent, bool
     });
   }
 
+  for (const QString &key : alertVolumeControlKeys) {
+    FrogPilotParamValueButtonControl *toggle = static_cast<FrogPilotParamValueButtonControl*>(toggles[key]);
+
+    QString baseName = QString(key).remove("Volume");
+    QString camelCaseAlert = QString(baseName).replace(0, 1, baseName[0].toLower());
+    QString snakeCaseAlert = QString(baseName).replace(QRegularExpression("([A-Z])"), "_\\1").toLower().mid(1);
+
+    QObject::connect(toggle, &FrogPilotParamValueButtonControl::buttonClicked, [camelCaseAlert, key, snakeCaseAlert, toggle, this]() {
+      toggle->updateParam();
+
+      updateFrogPilotToggles();
+
+      util::sleep_for(UI_FREQ);
+
+      if (started) {
+        params_memory.put("TestAlert", camelCaseAlert.toStdString());
+      } else {
+        int volume = params.getInt(key.toStdString());
+        std::thread([snakeCaseAlert, volume]() {
+          playSound(snakeCaseAlert, volume);
+        }).detach();
+      }
+    });
+  }
+
   QObject::connect(parent, &FrogPilotSettingsWindow::closeSubPanel, [soundsLayout, soundsPanel, this] {
     openDescriptions(forceOpenDescriptions, toggles);
     soundsLayout->setCurrentWidget(soundsPanel);
@@ -122,7 +155,14 @@ void FrogPilotSoundsPanel::updateState(const UIState &s) {
     return;
   }
 
-  started = s.scene.started;
+  if (started != s.scene.started) {
+    started = s.scene.started;
+
+    for (const QString &key : alertVolumeControlKeys) {
+      FrogPilotParamValueButtonControl *toggle = static_cast<FrogPilotParamValueButtonControl*>(toggles[key]);
+      toggle->setEnabledButtons(0, started);
+    }
+  }
 }
 
 void FrogPilotSoundsPanel::updateToggles() {
