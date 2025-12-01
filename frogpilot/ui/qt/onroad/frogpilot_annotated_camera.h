@@ -21,6 +21,7 @@ public:
   void paintFrogPilotWidgets(QPainter &p, UIState &s, SubMaster &sm);
   void paintLeadMetrics(QPainter &p, bool adjacent, QPointF *chevron, const cereal::RadarState::LeadData::Reader &lead_data);
   void paintPathEdges(QPainter &p, SubMaster &sm);
+  void paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point);
   void updateState(const UIState &s, const FrogPilotUIState &fs);
 
   bool hideBottomIcons;
