@@ -110,7 +110,12 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
     max_distance = std::clamp((float)(lead_d - fmin(lead_d * 0.35, 10.)), 0.0f, max_distance);
   }
   max_idx = get_path_length_idx(model_position, max_distance);
-  mapLineToPolygon(model_position, frogpilot_toggles.value("model_ui").toBool() ? frogpilot_toggles.value("path_width").toDouble() : 0.9, path_offset_z, &track_vertices, max_idx, false);
+  float path_width = frogpilot_toggles.value("path_width").toDouble();
+  if (frogpilot_toggles.value("dynamic_path_width").toBool()) {
+    UIState *s = uiState();
+    path_width *= s->status == STATUS_ENGAGED ? 1.0f : s->status == STATUS_ALWAYS_ON_LATERAL_ACTIVE ? 0.75f : 0.50f;
+  }
+  mapLineToPolygon(model_position, frogpilot_toggles.value("model_ui").toBool() ? path_width : 0.9, path_offset_z, &track_vertices, max_idx, false);
 
   // FrogPilot variables
   FrogPilotUIState *fs = frogpilotUIState();
