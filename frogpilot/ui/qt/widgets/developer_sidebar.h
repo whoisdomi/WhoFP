@@ -14,7 +14,7 @@ private:
   void resetVariables();
   void showEvent(QShowEvent *event);
   void updateState(const UIState &s, const FrogPilotUIState &fs);
-  void updateTheme();
+  void updateToggles();
 
   double lateralEngagementTime;
   double longitudinalEngagementTime;

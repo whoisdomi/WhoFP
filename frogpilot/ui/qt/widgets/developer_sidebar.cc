@@ -25,16 +25,16 @@ DeveloperSidebar::DeveloperSidebar(QWidget *parent) : QFrame(parent) {
   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
   setFixedWidth(300);
 
-  QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &DeveloperSidebar::updateTheme);
+  QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &DeveloperSidebar::updateToggles);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &DeveloperSidebar::resetVariables);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &DeveloperSidebar::updateState);
 }
 
 void DeveloperSidebar::showEvent(QShowEvent *event) {
-  updateTheme();
+  updateToggles();
 }
 
-void DeveloperSidebar::updateTheme() {
+void DeveloperSidebar::updateToggles() {
   FrogPilotUIState &fs = *frogpilotUIState();
   FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
   QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
@@ -46,7 +46,7 @@ void DeveloperSidebar::updateTheme() {
     metricAssignments.push_back(metricId);
   }
 
-  metricColor = frogpilot_scene.use_stock_colors ? QColor(255, 255, 255) : frogpilot_scene.sidebar_color1;
+  metricColor = QColor(frogpilot_toggles.value("sidebar_color1").toString());
 }
 
 void DeveloperSidebar::resetVariables() {

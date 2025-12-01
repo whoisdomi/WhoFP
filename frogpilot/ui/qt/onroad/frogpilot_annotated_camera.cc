@@ -699,8 +699,8 @@ void FrogPilotAnnotatedCameraWidget::paintPathEdges(QPainter &p, SubMaster &sm) 
     setPathEdgeColors(pe, bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]);
   } else if (sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
     setPathEdgeColors(pe, bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]);
-  } else if (!frogpilot_scene.use_stock_colors) {
-    setPathEdgeColors(pe, frogpilot_scene.path_edges_color);
+  } else if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
+    setPathEdgeColors(pe, QColor(frogpilot_toggles.value("path_edges_color").toString()));
   } else {
     pe.setColorAt(0.0f, QColor::fromHslF(148 / 360.0f, 0.94f, 0.51f, 1.0f));
     pe.setColorAt(0.5f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.68f, 0.5f));

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from openpilot.common.constants import CV
-from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
 from openpilot.selfdrive.selfdrived.events import FROGPILOT_EVENT_NAME
@@ -14,7 +13,7 @@ from openpilot.frogpilot.controls.lib.weather_checker import WEATHER_CATEGORIES
 
 class FrogPilotTracking:
   def __init__(self, frogpilot_planner, frogpilot_toggles):
-    self.params = Params()
+    self.params = frogpilot_planner.params
 
     self.frogpilot_events = frogpilot_planner.frogpilot_events
     self.frogpilot_weather = frogpilot_planner.frogpilot_weather

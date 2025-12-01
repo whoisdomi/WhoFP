@@ -40,13 +40,13 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     const auto &lead_two = radar_state.getLeadTwo();
     if (lead_one.getStatus()) {
       if (lead_one.getModelProb() >= frogpilot_toggles.value("lead_detection_probability").toDouble()) {
-        drawLead(painter, lead_one, lead_vertices[0], surface_rect, frogpilot_scene.lead_marker_color);
+        drawLead(painter, lead_one, lead_vertices[0], surface_rect, QColor(frogpilot_toggles.value("lead_marker_color").toString()));
       } else {
         drawLead(painter, lead_one, lead_vertices[0], surface_rect, frogpilot_nvg->whiteColor());
       }
     }
     if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
-      drawLead(painter, lead_two, lead_vertices[1], surface_rect, frogpilot_scene.lead_marker_color);
+      drawLead(painter, lead_two, lead_vertices[1], surface_rect, QColor(frogpilot_toggles.value("lead_marker_color").toString()));
     }
 
     // FrogPilot variables
@@ -135,10 +135,10 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
 void ModelRenderer::drawLaneLines(QPainter &painter) {
   // lanelines
   for (int i = 0; i < std::size(lane_line_vertices); ++i) {
-    if (frogpilot_scene.use_stock_colors) {
+    if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
       painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(lane_line_probs[i], 0.0, 0.7)));
     } else {
-      QColor lane_color = QColor(frogpilot_scene.lane_lines_color);
+      QColor lane_color = QColor(frogpilot_toggles.value("lane_lines_color").toString());
       lane_color.setAlphaF(lane_color.alphaF() * std::clamp<float>(lane_line_probs[i], 0.0, 0.7));
       painter.setBrush(lane_color);
     }
@@ -169,8 +169,8 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
 
       if ((fabs(acceleration[i]) < 0.25 || !frogpilot_toggles.value("acceleration_path").toBool()) && frogpilot_toggles.value("rainbow_path").toBool()) {
         frogpilot_nvg->paintRainbowPath(painter, bg, lin_grad_point);
-      } else if (fabs(acceleration[i]) < 0.25 && !frogpilot_scene.use_stock_colors) {
-        QColor color = frogpilot_scene.path_color;
+      } else if (fabs(acceleration[i]) < 0.25 && frogpilot_toggles.value("color_scheme").toString() != "stock") {
+        QColor color = QColor(frogpilot_toggles.value("path_color").toString());
         color.setAlphaF(util::map_val(lin_grad_point, 0.0f, 1.0f, 1.0f, 0.1f));
         bg.setColorAt(lin_grad_point, color);
       } else {

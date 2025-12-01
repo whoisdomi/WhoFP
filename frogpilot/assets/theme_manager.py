@@ -9,7 +9,7 @@ from dateutil import easter
 from pathlib import Path
 from urllib.parse import quote_plus
 
-from openpilot.frogpilot.assets.download_functions import GITLAB_URL, download_file, get_repository_url, handle_error, handle_request_error, verify_download
+from openpilot.frogpilot.common.download_utilities import GITLAB_URL, download_file, get_repository_url, handle_error, handle_request_error, verify_download
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, extract_zip, load_json_file, update_json_file
 from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, RANDOM_EVENTS_PATH, RESOURCES_REPO, THEME_SAVE_PATH
 
@@ -107,49 +107,52 @@ class ThemeManager:
     if theme_component == "distance_icons":
       download_link = f"{repo_url}/Distance-Icons/{theme_name}"
       download_path = THEME_SAVE_PATH / "theme_packs" / theme_name / theme_component
-      extensions = [".zip"]
+      extension = ".zip"
     elif theme_component == "steering_wheels":
       download_link = f"{repo_url}/Steering-Wheels/{theme_name}"
       download_path = THEME_SAVE_PATH / theme_component / theme_name
-      extensions = [".gif", ".png"]
+      extension = ".gif"
     else:
       download_link = f"{repo_url}/Themes/{theme_name}/{theme_component}"
       download_path = THEME_SAVE_PATH / "theme_packs" / theme_name / theme_component
-      extensions = [".zip"]
+      extension = ".zip"
 
-    for extension in extensions:
-      theme_path = download_path.with_suffix(extension)
-      theme_url = download_link + extension
+    theme_path = download_path.with_suffix(extension)
+    theme_url = download_link + extension
 
+    delete_file(theme_path)
+
+    print(f"Downloading theme from GitHub: {theme_name}")
+    download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session, self.params_memory)
+
+    if theme_component == "steering_wheels" and not theme_path.exists() and theme_path.with_suffix(".png").exists():
+      theme_path = theme_path.with_suffix(".png")
+      extension = ".png"
+
+    if self.params_memory.get_bool(CANCEL_DOWNLOAD_PARAM):
       delete_file(theme_path)
+      handle_error(None, "Download cancelled...", "Download cancelled...", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
 
-      print(f"Downloading theme from GitHub: {theme_name}")
-      download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session, self.params_memory)
+      self.downloading_theme = False
+      return
 
-      if self.params_memory.get_bool(CANCEL_DOWNLOAD_PARAM):
-        delete_file(theme_path)
-        handle_error(None, "Download cancelled...", "Download cancelled...", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
+    if verify_download(theme_path, theme_url, self.session, self.params_memory):
+      print(f"Theme {theme_name} downloaded and verified successfully from GitHub!")
+      self.update_theme_size(theme_component, theme_name, theme_path.stat().st_size)
 
-        self.downloading_theme = False
-        return
+      if extension == ".zip":
+        self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Unpacking theme...")
+        extract_zip(theme_path, download_path)
 
-      if verify_download(theme_path, theme_url, self.session, self.params_memory):
-        print(f"Theme {theme_name} downloaded and verified successfully from GitHub!")
-        self.update_theme_size(theme_component, theme_name, theme_path.stat().st_size)
+      self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Downloaded!")
+      self.params_memory.remove(asset_param)
 
-        if extension == ".zip":
-          self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Unpacking theme...")
-          extract_zip(theme_path, download_path)
+      self.downloading_theme = False
 
-        self.params_memory.put(DOWNLOAD_PROGRESS_PARAM, "Downloaded!")
-        self.params_memory.remove(asset_param)
-
-        self.downloading_theme = False
-
-        self.update_themes(frogpilot_toggles)
-        return
-      elif self.handle_verification_failure(extension, theme_component, theme_name, asset_param, theme_path, download_path, frogpilot_toggles):
-        return
+      self.update_themes(frogpilot_toggles)
+      return
+    elif self.handle_verification_failure(extension, theme_component, theme_name, asset_param, theme_path, download_path, frogpilot_toggles):
+      return
 
     handle_error(download_path, "Download failed...", "Download failed...", asset_param, DOWNLOAD_PROGRESS_PARAM, self.params_memory)
     self.downloading_theme = False
@@ -335,6 +338,10 @@ class ThemeManager:
     theme_url = download_link + extension
     print(f"Downloading theme from GitLab: {theme_name}")
     download_file(CANCEL_DOWNLOAD_PARAM, theme_path, DOWNLOAD_PROGRESS_PARAM, theme_url, asset_param, self.session, self.params_memory)
+
+    if theme_component == "steering_wheels" and not theme_path.exists() and theme_path.with_suffix(".png").exists():
+      theme_path = theme_path.with_suffix(".png")
+      extension = ".png"
 
     if verify_download(theme_path, theme_url, self.session, self.params_memory):
       print(f"Theme {theme_name} downloaded and verified successfully from GitLab!")

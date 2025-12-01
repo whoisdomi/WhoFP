@@ -157,7 +157,7 @@ class SelfdriveD:
     self.sm = self.sm.extend(['frogpilotCarState', 'frogpilotPlan'])
     self.pm = self.pm.extend(['frogpilotOnroadEvents', 'frogpilotSelfdriveState'])
 
-    self.params_memory = Params(memory=True)
+    self.params_memory = Params(memory=True, return_defaults=True)
 
     self.frogpilot_toggles = get_frogpilot_toggles()
 

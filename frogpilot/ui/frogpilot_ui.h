@@ -16,20 +16,11 @@ struct FrogPilotUIScene {
   bool sidebars_open;
   bool standstill;
   bool traffic_mode_enabled;
-  bool use_stock_colors;
   bool wake_up_screen;
 
   int conditional_status;
   int driver_camera_timer;
   int started_timer;
-
-  QColor lane_lines_color;
-  QColor lead_marker_color;
-  QColor path_color;
-  QColor path_edges_color;
-  QColor sidebar_color1;
-  QColor sidebar_color2;
-  QColor sidebar_color3;
 
   QJsonObject frogpilot_toggles;
 
@@ -57,5 +48,3 @@ signals:
 };
 
 FrogPilotUIState *frogpilotUIState();
-
-void update_theme(FrogPilotUIScene &frogpilot_scene);

@@ -17,11 +17,10 @@ static void update_state(FrogPilotUIState *fs) {
   }
   if (fpsm.updated("frogpilotPlan")) {
     const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
-    if (frogpilotPlan.getTogglesUpdated()) {
+    if (frogpilotPlan.getThemeUpdated() || frogpilotPlan.getTogglesUpdated()) {
       frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray::fromStdString(fs->params_memory.get("FrogPilotToggles"))).object();
 
       if (frogpilotPlan.getThemeUpdated()) {
-        update_theme(fs->frogpilot_scene);
         emit fs->themeUpdated();
       }
     }
@@ -29,22 +28,6 @@ static void update_state(FrogPilotUIState *fs) {
   if (fpsm.updated("selfdriveState")) {
     const cereal::SelfdriveState::Reader &selfdriveState = fpsm["selfdriveState"].getSelfdriveState();
     frogpilot_scene.enabled = selfdriveState.getEnabled();
-  }
-}
-
-void update_theme(FrogPilotUIScene &frogpilot_scene) {
-  frogpilot_scene.use_stock_colors = frogpilot_scene.frogpilot_toggles.value("color_scheme").toString() == "stock";
-
-  if (!frogpilot_scene.use_stock_colors) {
-    frogpilot_scene.use_stock_colors |= !loadThemeColors("", true).isValid();
-
-    frogpilot_scene.lane_lines_color = loadThemeColors("LaneLines");
-    frogpilot_scene.lead_marker_color = loadThemeColors("LeadMarker");
-    frogpilot_scene.path_color = loadThemeColors("Path");
-    frogpilot_scene.path_edges_color = loadThemeColors("PathEdge");
-    frogpilot_scene.sidebar_color1 = loadThemeColors("Sidebar1");
-    frogpilot_scene.sidebar_color2 = loadThemeColors("Sidebar2");
-    frogpilot_scene.sidebar_color3 = loadThemeColors("Sidebar3");
   }
 }
 
@@ -62,8 +45,6 @@ FrogPilotUIState::FrogPilotUIState(QObject *parent) : QObject(parent) {
   if (frogpilot_scene.frogpilot_toggles.value("tethering_config").toInt() == 1) {
     wifi->setTetheringEnabled(true);
   }
-
-  update_theme(this->frogpilot_scene);
 }
 
 FrogPilotUIState *frogpilotUIState() {

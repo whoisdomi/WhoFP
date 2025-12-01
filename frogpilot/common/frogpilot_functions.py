@@ -84,7 +84,7 @@ def backup_frogpilot(build_metadata, params):
 
 
 def backup_toggles(params, params_cache):
-  params_backup = Params("/data/params_backup")
+  params_backup = Params("/data/params_backup", return_defaults=True)
 
   changes_found = False
   for key in params.all_keys():
@@ -110,9 +110,9 @@ def backup_toggles(params, params_cache):
 
 
 def frogpilot_boot_functions(build_metadata, params, params_cache):
-  params_memory = Params(memory=True)
+  params_memory = Params(memory=True, return_defaults=True)
 
-  FrogPilotVariables().update()
+  FrogPilotVariables()
   ThemeManager(params, params_memory, boot_run=True).update_active_theme(time_validated=system_time_valid(), frogpilot_toggles=get_frogpilot_toggles(), boot_run=True)
 
   if use_konik_server():

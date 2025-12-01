@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import math
 import numpy as np
 import os
@@ -49,6 +50,8 @@ ACTIVE_THEME_PATH = Path(BASEDIR) / "frogpilot/assets/active_theme"
 METADATAS_PATH = Path(BASEDIR) / "frogpilot/assets/model_metadata"
 MODELS_PATH = Path("/data/models")
 RANDOM_EVENTS_PATH = Path(BASEDIR) / "frogpilot/assets/random_events"
+STOCK_THEME_PATH = Path(BASEDIR) / "frogpilot/assets/stock_theme"
+THEME_COLORS_PATH = (ACTIVE_THEME_PATH / "colors/colors.json")
 THEME_SAVE_PATH = Path("/data/themes")
 
 ERROR_LOGS_PATH = Path("/data/error_logs")
@@ -160,7 +163,7 @@ def get_nnff_substitutes():
   return substitutes
 
 def nnff_supported(car_fingerprint):
-  model_files = get_nnff_model_files()
+  model_files = set(get_nnff_model_files())
   substitutes = get_nnff_substitutes()
 
   fingerprints_to_check = [car_fingerprint]
@@ -168,21 +171,20 @@ def nnff_supported(car_fingerprint):
     fingerprints_to_check.append(substitutes[car_fingerprint])
 
   for fingerprint in fingerprints_to_check:
-    for file in model_files:
-      if file.startswith(fingerprint):
-        return True
+    if any(file.startswith(fingerprint) for file in model_files):
+      return True
 
   return False
 
 def get_frogpilot_toggles():
   if not hasattr(get_frogpilot_toggles, "_params_memory"):
-    get_frogpilot_toggles._params_memory = Params(memory=True)
+    get_frogpilot_toggles._params_memory = Params(memory=True, return_defaults=True)
 
-  return SimpleNamespace(**get_frogpilot_toggles._params_memory.get("FrogPilotToggles", return_default=True))
+  return SimpleNamespace(**get_frogpilot_toggles._params_memory.get("FrogPilotToggles"))
 
 def update_frogpilot_toggles():
   if not hasattr(update_frogpilot_toggles, "_params_memory"):
-    update_frogpilot_toggles._params_memory = Params(memory=True)
+    update_frogpilot_toggles._params_memory = Params(memory=True, return_defaults=True)
 
   update_frogpilot_toggles._params_memory.put_bool("FrogPilotTogglesUpdated", True)
 
@@ -239,25 +241,40 @@ class FrogPilotVariables:
       KONIK_PATH.unlink()
       HARDWARE.reboot()
 
-  def get_value(self, key, cast=bool, condition=True, default=None, min=None, max=None):
-    if condition and self.tuning_level >= self.tuning_levels[key]:
-      if cast is bool:
-        value = self.params.get_bool(key)
-      else:
-        value = self.params.get(key)
+    stock_colors_json = (STOCK_THEME_PATH / "colors/colors.json")
+    self.stock_colors = json.loads(stock_colors_json.read_text()) if stock_colors_json.is_file() else {}
+
+    self.update()
+
+  def get_color(self, key, theme_colors):
+    for source in (theme_colors, self.stock_colors):
+      color = source.get(key)
+      if isinstance(color, dict):
+        return f"#{color.get("alpha", 255):02X}{color.get("red", 255):02X}{color.get("green", 255):02X}{color.get("blue", 255):02X}"
+    return "#FFFFFFFF"
+
+  def get_value(self, key, cast=bool, condition=True, conversion=None, default=None, min=None, max=None):
+    if not condition or (self.tuning_level < self.tuning_levels.get(key, 0)):
+      if default is not None:
+        return default
+      return False if cast is bool else self.default_values.get(key)
+
+    if cast is bool:
+      value = self.params.get_bool(key)
+    else:
+      value = self.params.get(key)
+
+    if value is not None:
+      if cast is not bool:
+        try:
+          value = cast(value)
+        except (ValueError, TypeError):
+          value = self.default_values.get(key)
     elif default is not None:
       value = default
-    elif cast is bool:
-      value = False
-    else:
-      value = self.default_values[key]
 
-    if cast is not None and value is not None:
-      if cast is bool:
-        if not isinstance(value, bool):
-          value = (value == b"1")
-      else:
-        value = cast(value)
+    if conversion is not None and isinstance(value, (int, float)):
+      value *= conversion
 
     if min is not None and value < min:
       value = min
@@ -347,38 +364,38 @@ class FrogPilotVariables:
     advanced_lateral_tuning = self.get_value("AdvancedLateralTune")
     toggle.force_auto_tune = self.get_value("ForceAutoTune", condition=advanced_lateral_tuning and not has_auto_tune and is_torque_car)
     toggle.force_auto_tune_off = self.get_value("ForceAutoTuneOff", condition=advanced_lateral_tuning and has_auto_tune and is_torque_car)
-    toggle.steerActuatorDelay = self.get_value("SteerDelay", float, condition=advanced_lateral_tuning, default=steerActuatorDelay, min=0.01, max=1.0)
+    toggle.steerActuatorDelay = self.get_value("SteerDelay", cast=float, condition=advanced_lateral_tuning, default=steerActuatorDelay, min=0.01, max=1.0)
     toggle.use_custom_steerActuatorDelay = bool(round(toggle.steerActuatorDelay, 2) != round(steerActuatorDelay, 2))
-    toggle.friction = self.get_value("SteerFriction", float, condition=advanced_lateral_tuning, default=friction, min=0, max=0.5)
+    toggle.friction = self.get_value("SteerFriction", cast=float, condition=advanced_lateral_tuning, default=friction, min=0, max=0.5)
     toggle.use_custom_friction = bool(round(toggle.friction, 2) != round(friction, 2)) and is_torque_car and not toggle.force_auto_tune or toggle.force_auto_tune_off
-    toggle.steerKp = [[0], [self.get_value("SteerKP", float, condition=advanced_lateral_tuning and is_torque_car, default=steerKp, min=steerKp * 0.5, max=steerKp * 1.5)]]
-    toggle.latAccelFactor = self.get_value("SteerLatAccel", float, condition=advanced_lateral_tuning, default=latAccelFactor, min=latAccelFactor * 0.75, max=latAccelFactor * 1.25)
+    toggle.steerKp = [[0], [self.get_value("SteerKP", cast=float, condition=advanced_lateral_tuning and is_torque_car, default=steerKp, min=steerKp * 0.5, max=steerKp * 1.5)]]
+    toggle.latAccelFactor = self.get_value("SteerLatAccel", cast=float, condition=advanced_lateral_tuning, default=latAccelFactor, min=latAccelFactor * 0.75, max=latAccelFactor * 1.25)
     toggle.use_custom_latAccelFactor = bool(round(toggle.latAccelFactor, 2) != round(latAccelFactor, 2)) and is_torque_car and not toggle.force_auto_tune or toggle.force_auto_tune_off
-    toggle.steerRatio = self.get_value("SteerRatio", float, condition=advanced_lateral_tuning, default=steerRatio, min=steerRatio * 0.5, max=steerRatio * 1.5)
+    toggle.steerRatio = self.get_value("SteerRatio", cast=float, condition=advanced_lateral_tuning, default=steerRatio, min=steerRatio * 0.5, max=steerRatio * 1.5)
     toggle.use_custom_steerRatio = bool(round(toggle.steerRatio, 2) != round(steerRatio, 2)) and not toggle.force_auto_tune or toggle.force_auto_tune_off
 
     advanced_longitudinal_tuning = toggle.openpilot_longitudinal and self.get_value("AdvancedLongitudinalTune")
-    toggle.longitudinalActuatorDelay = self.get_value("LongitudinalActuatorDelay", float, condition=advanced_longitudinal_tuning, default=longitudinalActuatorDelay, min=0, max=1)
-    toggle.max_desired_acceleration = self.get_value("MaxDesiredAcceleration", float, condition=advanced_longitudinal_tuning, min=0.1, max=4.0)
-    toggle.startAccel = self.get_value("StartAccel", float, condition=advanced_longitudinal_tuning, default=startAccel, min=0, max=4)
-    toggle.stopAccel = self.get_value("StopAccel", float, condition=advanced_longitudinal_tuning, default=stopAccel, min=-4, max=0)
-    toggle.stoppingDecelRate = self.get_value("StoppingDecelRate", float, condition=advanced_longitudinal_tuning, default=toggle.stoppingDecelRate, min=0.001, max=1)
-    toggle.vEgoStarting = self.get_value("VEgoStarting", float, condition=advanced_longitudinal_tuning, default=toggle.vEgoStarting, min=0.01, max=1)
-    toggle.vEgoStopping = self.get_value("VEgoStopping", float, condition=advanced_longitudinal_tuning, default=toggle.vEgoStopping, min=0.01, max=1)
+    toggle.longitudinalActuatorDelay = self.get_value("LongitudinalActuatorDelay", cast=float, condition=advanced_longitudinal_tuning, default=longitudinalActuatorDelay, min=0, max=1)
+    toggle.max_desired_acceleration = self.get_value("MaxDesiredAcceleration", cast=float, condition=advanced_longitudinal_tuning, min=0.1, max=4.0)
+    toggle.startAccel = self.get_value("StartAccel", cast=float, condition=advanced_longitudinal_tuning, default=startAccel, min=0, max=4)
+    toggle.stopAccel = self.get_value("StopAccel", cast=float, condition=advanced_longitudinal_tuning, default=stopAccel, min=-4, max=0)
+    toggle.stoppingDecelRate = self.get_value("StoppingDecelRate", cast=float, condition=advanced_longitudinal_tuning, default=toggle.stoppingDecelRate, min=0.001, max=1)
+    toggle.vEgoStarting = self.get_value("VEgoStarting", cast=float, condition=advanced_longitudinal_tuning, default=toggle.vEgoStarting, min=0.01, max=1)
+    toggle.vEgoStopping = self.get_value("VEgoStopping", cast=float, condition=advanced_longitudinal_tuning, default=toggle.vEgoStopping, min=0.01, max=1)
 
     toggle.alert_volume_controller = self.get_value("AlertVolumeControl")
-    toggle.disengage_volume = self.get_value("DisengageVolume", float, condition=toggle.alert_volume_controller)
-    toggle.engage_volume = self.get_value("EngageVolume", float, condition=toggle.alert_volume_controller)
-    toggle.prompt_volume = self.get_value("PromptVolume", float, condition=toggle.alert_volume_controller)
-    toggle.promptDistracted_volume = self.get_value("PromptDistractedVolume", float, condition=toggle.alert_volume_controller)
-    toggle.refuse_volume = self.get_value("RefuseVolume", float, condition=toggle.alert_volume_controller)
-    toggle.warningSoft_volume = self.get_value("WarningSoftVolume", float, condition=toggle.alert_volume_controller)
-    toggle.warningImmediate_volume = max(self.get_value("WarningImmediateVolume", float, condition=toggle.alert_volume_controller, default=25), 25)
+    toggle.disengage_volume = self.get_value("DisengageVolume", cast=float, condition=toggle.alert_volume_controller)
+    toggle.engage_volume = self.get_value("EngageVolume", cast=float, condition=toggle.alert_volume_controller)
+    toggle.prompt_volume = self.get_value("PromptVolume", cast=float, condition=toggle.alert_volume_controller)
+    toggle.promptDistracted_volume = self.get_value("PromptDistractedVolume", cast=float, condition=toggle.alert_volume_controller)
+    toggle.refuse_volume = self.get_value("RefuseVolume", cast=float, condition=toggle.alert_volume_controller)
+    toggle.warningSoft_volume = self.get_value("WarningSoftVolume", cast=float, condition=toggle.alert_volume_controller)
+    toggle.warningImmediate_volume = max(self.get_value("WarningImmediateVolume", cast=float, condition=toggle.alert_volume_controller, default=25), 25)
 
     toggle.always_on_lateral = self.get_value("AlwaysOnLateral", condition=not toggle.disable_always_on_lateral)
     toggle.always_on_lateral_lkas = toggle.always_on_lateral and toggle.lkas_allowed_for_aol and self.get_value("AlwaysOnLateralLKAS")
     toggle.always_on_lateral_main = toggle.always_on_lateral and not prohibited_main_aol and not toggle.always_on_lateral_lkas
-    toggle.always_on_lateral_pause_speed = self.get_value("PauseAOLOnBrake", float, condition=toggle.always_on_lateral)
+    toggle.always_on_lateral_pause_speed = self.get_value("PauseAOLOnBrake", cast=float, condition=toggle.always_on_lateral)
 
     toggle.automatic_updates = self.get_value("AutomaticUpdates", condition=(self.release_branch or self.vetting_branch), default=True) and not BACKUP_PATH.is_file()
 
@@ -387,7 +404,7 @@ class FrogPilotVariables:
     if toggle.force_fingerprint:
       toggle.car_model = car_model
 
-    toggle.cluster_offset = self.get_value("ClusterOffset", float, condition=toggle.car_make == "toyota")
+    toggle.cluster_offset = self.get_value("ClusterOffset", cast=float, condition=toggle.car_make == "toyota")
 
     toggle.conditional_experimental_mode = toggle.openpilot_longitudinal and self.get_value("ConditionalExperimental")
     toggle.conditional_curves = self.get_value("CECurves", condition=toggle.conditional_experimental_mode)
@@ -395,10 +412,10 @@ class FrogPilotVariables:
     toggle.conditional_lead = self.get_value("CELead", condition=toggle.conditional_experimental_mode)
     toggle.conditional_slower_lead = self.get_value("CESlowerLead", condition=toggle.conditional_lead)
     toggle.conditional_stopped_lead = self.get_value("CEStoppedLead", condition=toggle.conditional_lead)
-    toggle.conditional_limit = self.get_value("CESpeed", float, condition=toggle.conditional_experimental_mode) * speed_conversion
-    toggle.conditional_limit_lead = self.get_value("CESpeedLead", float, condition=toggle.conditional_experimental_mode) * speed_conversion
-    toggle.conditional_model_stop_time = self.get_value("CEModelStopTime", float, condition=toggle.conditional_experimental_mode and self.get_value("CEStopLights"))
-    toggle.conditional_signal = self.get_value("CESignalSpeed", float, condition=toggle.conditional_experimental_mode) * speed_conversion
+    toggle.conditional_limit = self.get_value("CESpeed", cast=float, condition=toggle.conditional_experimental_mode, conversion=speed_conversion)
+    toggle.conditional_limit_lead = self.get_value("CESpeedLead", cast=float, condition=toggle.conditional_experimental_mode, conversion=speed_conversion)
+    toggle.conditional_model_stop_time = self.get_value("CEModelStopTime", cast=float, condition=toggle.conditional_experimental_mode and self.get_value("CEStopLights"))
+    toggle.conditional_signal = self.get_value("CESignalSpeed", cast=float, condition=toggle.conditional_experimental_mode, conversion=speed_conversion)
     toggle.conditional_signal_lane_detection = toggle.conditional_signal != 0 and self.get_value("CESignalLaneDetection")
     toggle.cem_status = self.get_value("ShowCEMStatus", condition=toggle.conditional_experimental_mode) or toggle.debug_mode
 
@@ -413,33 +430,41 @@ class FrogPilotVariables:
     toggle.speed_limit_changed_alert = self.get_value("SpeedLimitChangedAlert", condition=toggle.custom_alerts)
 
     toggle.custom_personalities = toggle.openpilot_longitudinal and self.get_value("CustomPersonalities")
-    toggle.aggressive_jerk_acceleration = np.clip(self.get_value("AggressiveJerkAcceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.aggressive_jerk_deceleration = np.clip(self.get_value("AggressiveJerkDeceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.aggressive_jerk_danger = np.clip(self.get_value("AggressiveJerkDanger", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.aggressive_jerk_speed = np.clip(self.get_value("AggressiveJerkSpeed", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.aggressive_jerk_speed_decrease = np.clip(self.get_value("AggressiveJerkSpeedDecrease", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.aggressive_follow = self.get_value("AggressiveFollow", float, condition=toggle.custom_personalities, min=1, max=MAX_T_FOLLOW)
-    toggle.standard_jerk_acceleration = np.clip(self.get_value("StandardJerkAcceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.standard_jerk_deceleration = np.clip(self.get_value("StandardJerkDeceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.standard_jerk_danger = np.clip(self.get_value("StandardJerkDanger", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.standard_jerk_speed = np.clip(self.get_value("StandardJerkSpeed", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.standard_jerk_speed_decrease = np.clip(self.get_value("StandardJerkSpeedDecrease", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.standard_follow = self.get_value("StandardFollow", float, condition=toggle.custom_personalities, min=1, max=MAX_T_FOLLOW)
-    toggle.relaxed_jerk_acceleration = np.clip(self.get_value("RelaxedJerkAcceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.relaxed_jerk_deceleration = np.clip(self.get_value("RelaxedJerkDeceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.relaxed_jerk_danger = np.clip(self.get_value("RelaxedJerkDanger", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.relaxed_jerk_speed = np.clip(self.get_value("RelaxedJerkSpeed", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.relaxed_jerk_speed_decrease = np.clip(self.get_value("RelaxedJerkSpeedDecrease", float, condition=toggle.custom_personalities) / 100, 0.25, 2)
-    toggle.relaxed_follow = self.get_value("RelaxedFollow", float, condition=toggle.custom_personalities, min=1, max=MAX_T_FOLLOW)
-    toggle.traffic_mode_jerk_acceleration = [np.clip(self.get_value("TrafficJerkAcceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2), toggle.aggressive_jerk_acceleration]
-    toggle.traffic_mode_jerk_deceleration = [np.clip(self.get_value("TrafficJerkDeceleration", float, condition=toggle.custom_personalities) / 100, 0.25, 2), toggle.aggressive_jerk_deceleration]
-    toggle.traffic_mode_jerk_danger = [np.clip(self.get_value("TrafficJerkDanger", float, condition=toggle.custom_personalities) / 100, 0.25, 2), toggle.aggressive_jerk_danger]
-    toggle.traffic_mode_jerk_speed = [np.clip(self.get_value("TrafficJerkSpeed", float, condition=toggle.custom_personalities) / 100, 0.25, 2), toggle.aggressive_jerk_speed]
-    toggle.traffic_mode_jerk_speed_decrease = [np.clip(self.get_value("TrafficJerkSpeedDecrease", float, condition=toggle.custom_personalities) / 100, 0.25, 2), toggle.aggressive_jerk_speed_decrease]
-    toggle.traffic_mode_follow = [self.get_value("TrafficFollow", float, condition=toggle.custom_personalities, min=0.5, max=MAX_T_FOLLOW), toggle.aggressive_follow]
+    toggle.aggressive_jerk_acceleration = self.get_value("AggressiveJerkAcceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.aggressive_jerk_deceleration = self.get_value("AggressiveJerkDeceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.aggressive_jerk_danger = self.get_value("AggressiveJerkDanger", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.aggressive_jerk_speed = self.get_value("AggressiveJerkSpeed", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.aggressive_jerk_speed_decrease = self.get_value("AggressiveJerkSpeedDecrease", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.aggressive_follow = self.get_value("AggressiveFollow", cast=float, condition=toggle.custom_personalities, min=1, max=MAX_T_FOLLOW)
+    toggle.standard_jerk_acceleration = self.get_value("StandardJerkAcceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.standard_jerk_deceleration = self.get_value("StandardJerkDeceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.standard_jerk_danger = self.get_value("StandardJerkDanger", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.standard_jerk_speed = self.get_value("StandardJerkSpeed", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.standard_jerk_speed_decrease = self.get_value("StandardJerkSpeedDecrease", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.standard_follow = self.get_value("StandardFollow", cast=float, condition=toggle.custom_personalities, min=1, max=MAX_T_FOLLOW)
+    toggle.relaxed_jerk_acceleration = self.get_value("RelaxedJerkAcceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.relaxed_jerk_deceleration = self.get_value("RelaxedJerkDeceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.relaxed_jerk_danger = self.get_value("RelaxedJerkDanger", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.relaxed_jerk_speed = self.get_value("RelaxedJerkSpeed", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.relaxed_jerk_speed_decrease = self.get_value("RelaxedJerkSpeedDecrease", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
+    toggle.relaxed_follow = self.get_value("RelaxedFollow", cast=float, condition=toggle.custom_personalities, min=1, max=MAX_T_FOLLOW)
+    toggle.traffic_mode_jerk_acceleration = [self.get_value("TrafficJerkAcceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0), toggle.aggressive_jerk_acceleration]
+    toggle.traffic_mode_jerk_deceleration = [self.get_value("TrafficJerkDeceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0), toggle.aggressive_jerk_deceleration]
+    toggle.traffic_mode_jerk_danger = [self.get_value("TrafficJerkDanger", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0), toggle.aggressive_jerk_danger]
+    toggle.traffic_mode_jerk_speed = [self.get_value("TrafficJerkSpeed", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0), toggle.aggressive_jerk_speed]
+    toggle.traffic_mode_jerk_speed_decrease = [self.get_value("TrafficJerkSpeedDecrease", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0), toggle.aggressive_jerk_speed_decrease]
+    toggle.traffic_mode_follow = [self.get_value("TrafficFollow", cast=float, condition=toggle.custom_personalities, min=0.5, max=MAX_T_FOLLOW), toggle.aggressive_follow]
 
     custom_themes = self.get_value("CustomThemes")
     toggle.color_scheme = self.get_value("ColorScheme", cast=None, condition=custom_themes, default="stock")
+    theme_colors = json.loads(THEME_COLORS_PATH.read_text()) if THEME_COLORS_PATH.is_file() else {}
+    toggle.lane_lines_color = self.get_color("LaneLines", theme_colors)
+    toggle.lead_marker_color = self.get_color("LeadMarker", theme_colors)
+    toggle.path_color = self.get_color("Path", theme_colors)
+    toggle.path_edges_color = self.get_color("PathEdge", theme_colors)
+    toggle.sidebar_color1 = self.get_color("Sidebar1", theme_colors)
+    toggle.sidebar_color2 = self.get_color("Sidebar2", theme_colors)
+    toggle.sidebar_color3 = self.get_color("Sidebar3", theme_colors)
     toggle.distance_icons = self.get_value("DistanceIconPack", cast=None, condition=custom_themes, default="stock")
     toggle.icon_pack = self.get_value("IconPack", cast=None, condition=custom_themes, default="stock")
     toggle.signal_icons = self.get_value("SignalAnimation", cast=None, condition=custom_themes, default="stock")
@@ -479,13 +504,13 @@ class FrogPilotVariables:
     toggle.storage_used_metrics = self.get_value("ShowStorageUsed", condition=developer_metrics) and not toggle.debug_mode
     toggle.use_si_metrics = self.get_value("UseSI", condition=developer_metrics) or toggle.debug_mode
     toggle.developer_sidebar = self.get_value("DeveloperSidebar", condition=toggle.developer_ui) or toggle.debug_mode
-    toggle.developer_sidebar_metric1 = self.get_value("DeveloperSidebarMetric1", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["ACCELERATION_CURRENT"] if toggle.debug_mode else None)
-    toggle.developer_sidebar_metric2 = self.get_value("DeveloperSidebarMetric2", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_ACTUATOR_DELAY"] if toggle.debug_mode else None)
-    toggle.developer_sidebar_metric3 = self.get_value("DeveloperSidebarMetric3", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_FRICTION"] if toggle.debug_mode else None)
-    toggle.developer_sidebar_metric4 = self.get_value("DeveloperSidebarMetric4", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_LATERAL_ACCELERATION"] if toggle.debug_mode else None)
-    toggle.developer_sidebar_metric5 = self.get_value("DeveloperSidebarMetric5", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_STEER_RATIO"] if toggle.debug_mode else None)
-    toggle.developer_sidebar_metric6 = self.get_value("DeveloperSidebarMetric6", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_STIFFNESS_FACTOR"] if toggle.debug_mode else None)
-    toggle.developer_sidebar_metric7 = self.get_value("DeveloperSidebarMetric7", None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["LATERAL_TORQUE_USED"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric1 = self.get_value("DeveloperSidebarMetric1", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["ACCELERATION_CURRENT"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric2 = self.get_value("DeveloperSidebarMetric2", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_ACTUATOR_DELAY"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric3 = self.get_value("DeveloperSidebarMetric3", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_FRICTION"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric4 = self.get_value("DeveloperSidebarMetric4", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_LATERAL_ACCELERATION"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric5 = self.get_value("DeveloperSidebarMetric5", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_STEER_RATIO"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric6 = self.get_value("DeveloperSidebarMetric6", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["AUTOTUNE_STIFFNESS_FACTOR"] if toggle.debug_mode else None)
+    toggle.developer_sidebar_metric7 = self.get_value("DeveloperSidebarMetric7", cast=None, condition=toggle.developer_sidebar, default=DEVELOPER_SIDEBAR_METRICS["LATERAL_TORQUE_USED"] if toggle.debug_mode else None)
     developer_widgets = self.get_value("DeveloperWidgets", condition=toggle.developer_ui)
     toggle.adjacent_lead_tracking = has_radar and (self.get_value("AdjacentLeadsUI", condition=developer_widgets) or toggle.debug_mode)
     toggle.radar_tracks = has_radar and (self.get_value("RadarTracksUI", condition=developer_widgets) or toggle.debug_mode)
@@ -493,14 +518,14 @@ class FrogPilotVariables:
     toggle.show_stopping_point_metrics = toggle.show_stopping_point and (self.get_value("ShowStoppingPointMetrics") or toggle.debug_mode)
 
     device_management = self.get_value("DeviceManagement")
-    toggle.device_shutdown_time = DEVICE_SHUTDOWN_TIMES.get(self.get_value("DeviceShutdown", float, condition=device_management))
+    toggle.device_shutdown_time = DEVICE_SHUTDOWN_TIMES.get(self.get_value("DeviceShutdown", cast=int, condition=device_management))
     toggle.increase_thermal_limits = self.get_value("IncreaseThermalLimits", condition=device_management)
-    toggle.low_voltage_shutdown = self.get_value("LowVoltageShutdown", float, condition=device_management, min=VBATT_PAUSE_CHARGING, max=12.5)
+    toggle.low_voltage_shutdown = self.get_value("LowVoltageShutdown", cast=float, condition=device_management, min=VBATT_PAUSE_CHARGING, max=12.5)
     toggle.no_logging = self.get_value("NoLogging", condition=device_management) and not self.vetting_branch or toggle.force_onroad
     toggle.no_uploads = self.get_value("NoUploads", condition=device_management) and not self.vetting_branch
     toggle.no_onroad_uploads = self.get_value("DisableOnroadUploads", condition=toggle.no_uploads)
 
-    distance_button_control = self.get_value("DistanceButtonControl", float)
+    distance_button_control = self.get_value("DistanceButtonControl", cast=float)
     toggle.experimental_mode_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press = toggle.experimental_mode_via_distance
     toggle.force_coast_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["FORCE_COAST"]
@@ -509,7 +534,7 @@ class FrogPilotVariables:
     toggle.personality_profile_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
 
-    distance_button_control_long = self.get_value("LongDistanceButtonControl", float)
+    distance_button_control_long = self.get_value("LongDistanceButtonControl", cast=float)
     toggle.experimental_mode_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press |= toggle.experimental_mode_via_distance_long
     toggle.force_coast_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["FORCE_COAST"]
@@ -518,7 +543,7 @@ class FrogPilotVariables:
     toggle.personality_profile_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
 
-    distance_button_control_very_long = self.get_value("VeryLongDistanceButtonControl", float)
+    distance_button_control_very_long = self.get_value("VeryLongDistanceButtonControl", cast=float)
     toggle.experimental_mode_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press |= toggle.experimental_mode_via_distance_very_long
     toggle.force_coast_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["FORCE_COAST"]
@@ -543,10 +568,10 @@ class FrogPilotVariables:
       toggle.wheel_image = toggle.current_holiday_theme
 
     toggle.lane_changes = self.get_value("LaneChanges")
-    toggle.lane_change_delay = self.get_value("LaneChangeTime", float, condition=toggle.lane_changes)
-    toggle.lane_detection_width = self.get_value("LaneDetectionWidth", float, condition=toggle.lane_changes) * distance_conversion
+    toggle.lane_change_delay = self.get_value("LaneChangeTime", cast=float, condition=toggle.lane_changes)
+    toggle.lane_detection_width = self.get_value("LaneDetectionWidth", cast=float, condition=toggle.lane_changes, conversion=distance_conversion)
     toggle.lane_detection = toggle.lane_detection_width > 0
-    toggle.minimum_lane_change_speed = self.get_value("MinimumLaneChangeSpeed", float, condition=toggle.lane_changes) * speed_conversion
+    toggle.minimum_lane_change_speed = self.get_value("MinimumLaneChangeSpeed", cast=float, condition=toggle.lane_changes, conversion=speed_conversion)
     toggle.nudgeless = self.get_value("NudgelessLaneChange", condition=toggle.lane_changes)
     toggle.one_lane_change = self.get_value("OneLaneChange", condition=toggle.lane_changes)
 
@@ -556,7 +581,7 @@ class FrogPilotVariables:
     toggle.nnff_lite = self.get_value("NNFFLite", condition=not toggle.nnff and lateral_tuning and not is_angle_car)
     toggle.use_turn_desires = self.get_value("TurnDesires", condition=lateral_tuning)
 
-    lkas_button_control = self.get_value("LKASButtonControl", float, condition=toggle.car_make != "subaru")
+    lkas_button_control = self.get_value("LKASButtonControl", cast=float, condition=toggle.car_make != "subaru")
     toggle.experimental_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press |= toggle.experimental_mode_via_lkas
     toggle.force_coast_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["FORCE_COAST"]
@@ -565,15 +590,15 @@ class FrogPilotVariables:
     toggle.personality_profile_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
 
-    toggle.lock_doors_timer = self.get_value("LockDoorsTimer", float, condition=(toggle.car_make == "toyota" and not self.is_tici))
+    toggle.lock_doors_timer = self.get_value("LockDoorsTimer", cast=float, condition=(toggle.car_make == "toyota" and not self.is_tici))
 
     longitudinal_tuning = toggle.openpilot_longitudinal and self.get_value("LongitudinalTune")
-    toggle.acceleration_profile = self.get_value("AccelerationProfile", float, condition=longitudinal_tuning)
-    toggle.deceleration_profile = self.get_value("DecelerationProfile", float, condition=longitudinal_tuning)
+    toggle.acceleration_profile = self.get_value("AccelerationProfile", cast=float, condition=longitudinal_tuning)
+    toggle.deceleration_profile = self.get_value("DecelerationProfile", cast=float, condition=longitudinal_tuning)
     toggle.human_acceleration = self.get_value("HumanAcceleration", condition=longitudinal_tuning)
     toggle.human_following = self.get_value("HumanFollowing", condition=longitudinal_tuning)
     toggle.human_lane_changes = has_radar and self.get_value("HumanLaneChanges", condition=longitudinal_tuning)
-    toggle.lead_detection_probability = np.clip(self.get_value("LeadDetectionThreshold", float, condition=longitudinal_tuning) / 100, 0.25, 0.50)
+    toggle.lead_detection_probability = self.get_value("LeadDetectionThreshold", cast=float, condition=longitudinal_tuning, conversion=0.01, min=0.25, max=0.5)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
 
     toggle.model = self.default_values["DrivingModel"]
@@ -581,10 +606,10 @@ class FrogPilotVariables:
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)
-    toggle.lane_line_width = self.get_value("LaneLinesWidth", float, condition=toggle.model_ui) * small_distance_conversion / 200
-    toggle.path_edge_width = self.get_value("PathEdgeWidth", float, condition=toggle.model_ui)
-    toggle.path_width = self.get_value("PathWidth", float, condition=toggle.model_ui) * distance_conversion / 2
-    toggle.road_edge_width = self.get_value("RoadEdgesWidth", float, condition=toggle.model_ui) * small_distance_conversion / 200
+    toggle.lane_line_width = self.get_value("LaneLinesWidth", cast=float, condition=toggle.model_ui, conversion=small_distance_conversion / 200)
+    toggle.path_edge_width = self.get_value("PathEdgeWidth", cast=float, condition=toggle.model_ui)
+    toggle.path_width = self.get_value("PathWidth", cast=float, condition=toggle.model_ui, conversion=distance_conversion / 2)
+    toggle.road_edge_width = self.get_value("RoadEdgesWidth", cast=float, condition=toggle.model_ui, conversion=small_distance_conversion / 200)
 
     toggle.navigation_ui = self.get_value("NavigationUI")
     toggle.road_name_ui = self.get_value("RoadNameUI", condition=toggle.navigation_ui)
@@ -592,39 +617,39 @@ class FrogPilotVariables:
     toggle.speed_limit_vienna = self.get_value("UseVienna", condition=toggle.navigation_ui)
 
     quality_of_life_lateral = self.get_value("QOLLateral")
-    toggle.pause_lateral_below_speed = self.get_value("PauseLateralSpeed", float, condition=quality_of_life_lateral) * speed_conversion
+    toggle.pause_lateral_below_speed = self.get_value("PauseLateralSpeed", cast=float, condition=quality_of_life_lateral, conversion=speed_conversion)
     toggle.pause_lateral_below_signal = toggle.pause_lateral_below_speed != 0 and self.get_value("PauseLateralOnSignal")
 
     quality_of_life_longitudinal = toggle.openpilot_longitudinal and self.get_value("QOLLongitudinal")
-    toggle.cruise_increase = self.get_value("CustomCruise", float, condition=(quality_of_life_longitudinal and not pcm_cruise))
-    toggle.cruise_increase_long = self.get_value("CustomCruiseLong", float, condition=(quality_of_life_longitudinal and not pcm_cruise))
+    toggle.cruise_increase = self.get_value("CustomCruise", cast=float, condition=(quality_of_life_longitudinal and not pcm_cruise))
+    toggle.cruise_increase_long = self.get_value("CustomCruiseLong", cast=float, condition=(quality_of_life_longitudinal and not pcm_cruise))
     toggle.force_stops = self.get_value("ForceStops", condition=quality_of_life_longitudinal)
-    toggle.increase_stopped_distance = self.get_value("IncreasedStoppedDistance", float, condition=quality_of_life_longitudinal) * distance_conversion
+    toggle.increase_stopped_distance = self.get_value("IncreasedStoppedDistance", cast=float, condition=quality_of_life_longitudinal, conversion=distance_conversion)
     map_gears = self.get_value("MapGears", condition=quality_of_life_longitudinal)
     toggle.map_acceleration = self.get_value("MapAcceleration", condition=map_gears)
     toggle.map_deceleration = self.get_value("MapDeceleration", condition=map_gears)
     toggle.reverse_cruise_increase = self.get_value("ReverseCruise", condition=quality_of_life_longitudinal and toggle.car_make == "toyota" and pcm_cruise)
-    toggle.set_speed_offset = self.get_value("SetSpeedOffset", float, condition=(quality_of_life_longitudinal and not pcm_cruise)) * (1 if toggle.is_metric else CV.MPH_TO_KPH)
+    toggle.set_speed_offset = self.get_value("SetSpeedOffset", cast=float, condition=(quality_of_life_longitudinal and not pcm_cruise), conversion=(1 if toggle.is_metric else CV.MPH_TO_KPH))
     toggle.weather_presets = self.get_value("WeatherPresets", condition=quality_of_life_longitudinal)
-    toggle.increase_following_distance_low_visibility = self.get_value("IncreaseFollowingLowVisibility", float, condition=toggle.weather_presets)
-    toggle.increase_following_distance_rain = self.get_value("IncreaseFollowingRain", float, condition=toggle.weather_presets)
-    toggle.increase_following_distance_rain_storm = self.get_value("IncreaseFollowingRainStorm", float, condition=toggle.weather_presets)
-    toggle.increase_following_distance_snow = self.get_value("IncreaseFollowingSnow", float, condition=toggle.weather_presets)
-    toggle.increase_stopped_distance_low_visibility = self.get_value("IncreasedStoppedDistanceLowVisibility", float, condition=toggle.weather_presets) * distance_conversion
-    toggle.increase_stopped_distance_rain = self.get_value("IncreasedStoppedDistanceRain", float, condition=toggle.weather_presets) * distance_conversion
-    toggle.increase_stopped_distance_rain_storm = self.get_value("IncreasedStoppedDistanceRainStorm", float, condition=toggle.weather_presets) * distance_conversion
-    toggle.increase_stopped_distance_snow = self.get_value("IncreasedStoppedDistanceSnow", float, condition=toggle.weather_presets) * distance_conversion
-    toggle.reduce_acceleration_low_visibility = self.get_value("ReduceAccelerationLowVisibility", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_acceleration_rain = self.get_value("ReduceAccelerationRain", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_acceleration_rain_storm = self.get_value("ReduceAccelerationRainStorm", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_acceleration_snow = self.get_value("ReduceAccelerationSnow", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_lateral_acceleration_low_visibility = self.get_value("ReduceLateralAccelerationLowVisibility", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_lateral_acceleration_rain = self.get_value("ReduceLateralAccelerationRain", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_lateral_acceleration_rain_storm = self.get_value("ReduceLateralAccelerationRainStorm", float, condition=toggle.weather_presets) / 100
-    toggle.reduce_lateral_acceleration_snow = self.get_value("ReduceLateralAccelerationSnow", float, condition=toggle.weather_presets) / 100
+    toggle.increase_following_distance_low_visibility = self.get_value("IncreaseFollowingLowVisibility", cast=float, condition=toggle.weather_presets)
+    toggle.increase_following_distance_rain = self.get_value("IncreaseFollowingRain", cast=float, condition=toggle.weather_presets)
+    toggle.increase_following_distance_rain_storm = self.get_value("IncreaseFollowingRainStorm", cast=float, condition=toggle.weather_presets)
+    toggle.increase_following_distance_snow = self.get_value("IncreaseFollowingSnow", cast=float, condition=toggle.weather_presets)
+    toggle.increase_stopped_distance_low_visibility = self.get_value("IncreasedStoppedDistanceLowVisibility", cast=float, condition=toggle.weather_presets, conversion=distance_conversion)
+    toggle.increase_stopped_distance_rain = self.get_value("IncreasedStoppedDistanceRain", cast=float, condition=toggle.weather_presets, conversion=distance_conversion)
+    toggle.increase_stopped_distance_rain_storm = self.get_value("IncreasedStoppedDistanceRainStorm", cast=float, condition=toggle.weather_presets, conversion=distance_conversion)
+    toggle.increase_stopped_distance_snow = self.get_value("IncreasedStoppedDistanceSnow", cast=float, condition=toggle.weather_presets, conversion=distance_conversion)
+    toggle.reduce_acceleration_low_visibility = self.get_value("ReduceAccelerationLowVisibility", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_acceleration_rain = self.get_value("ReduceAccelerationRain", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_acceleration_rain_storm = self.get_value("ReduceAccelerationRainStorm", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_acceleration_snow = self.get_value("ReduceAccelerationSnow", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_lateral_acceleration_low_visibility = self.get_value("ReduceLateralAccelerationLowVisibility", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_lateral_acceleration_rain = self.get_value("ReduceLateralAccelerationRain", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_lateral_acceleration_rain_storm = self.get_value("ReduceLateralAccelerationRainStorm", cast=float, condition=toggle.weather_presets, conversion=0.01)
+    toggle.reduce_lateral_acceleration_snow = self.get_value("ReduceLateralAccelerationSnow", cast=float, condition=toggle.weather_presets, conversion=0.01)
 
     quality_of_life_visuals = self.get_value("QOLVisuals")
-    toggle.camera_view = self.get_value("CameraView", float, condition=quality_of_life_visuals)
+    toggle.camera_view = self.get_value("CameraView", cast=float, condition=quality_of_life_visuals)
     toggle.driver_camera_in_reverse = self.get_value("DriverCamera", condition=quality_of_life_visuals)
     toggle.onroad_distance_button = toggle.openpilot_longitudinal and (self.get_value("OnroadDistanceButton", condition=quality_of_life_visuals) or toggle.debug_mode)
     toggle.stopped_timer = self.get_value("StoppedTimer", condition=quality_of_life_visuals)
@@ -634,21 +659,21 @@ class FrogPilotVariables:
     toggle.random_events = self.get_value("RandomEvents")
 
     screen_management = self.get_value("ScreenManagement")
-    toggle.screen_brightness = max(self.get_value("ScreenBrightness", float, condition=screen_management), 1)
-    toggle.screen_brightness_onroad = self.get_value("ScreenBrightnessOnroad", float, condition=(screen_management and not toggle.force_onroad))
+    toggle.screen_brightness = max(self.get_value("ScreenBrightness", cast=float, condition=screen_management), 1)
+    toggle.screen_brightness_onroad = self.get_value("ScreenBrightnessOnroad", cast=float, condition=(screen_management and not toggle.force_onroad))
     toggle.screen_recorder = self.get_value("ScreenRecorder", condition=screen_management) or toggle.debug_mode
-    toggle.screen_timeout = self.get_value("ScreenTimeout", float, condition=screen_management)
-    toggle.screen_timeout_onroad = self.get_value("ScreenTimeoutOnroad", float, condition=screen_management)
+    toggle.screen_timeout = self.get_value("ScreenTimeout", cast=float, condition=screen_management)
+    toggle.screen_timeout_onroad = self.get_value("ScreenTimeoutOnroad", cast=float, condition=screen_management)
     toggle.standby_mode = self.get_value("StandbyMode", condition=screen_management)
 
     toggle.sng_hack = self.get_value("SNGHack", condition=toggle.openpilot_longitudinal and toggle.car_make == "toyota" and not toggle.has_pedal and not has_sng)
 
     toggle.speed_limit_controller = toggle.openpilot_longitudinal and self.get_value("SpeedLimitController")
-    toggle.map_speed_lookahead_higher = self.get_value("SLCLookaheadHigher", float, condition=toggle.speed_limit_controller)
-    toggle.map_speed_lookahead_lower = self.get_value("SLCLookaheadLower", float, condition=toggle.speed_limit_controller)
+    toggle.map_speed_lookahead_higher = self.get_value("SLCLookaheadHigher", cast=float, condition=toggle.speed_limit_controller)
+    toggle.map_speed_lookahead_lower = self.get_value("SLCLookaheadLower", cast=float, condition=toggle.speed_limit_controller)
     toggle.set_speed_limit = self.get_value("SetSpeedLimit", condition=toggle.speed_limit_controller)
     toggle.show_speed_limit_offset = self.get_value("ShowSLCOffset", condition=toggle.speed_limit_controller) or toggle.debug_mode
-    slc_fallback_method = self.get_value("SLCFallback", float, condition=toggle.speed_limit_controller)
+    slc_fallback_method = self.get_value("SLCFallback", cast=float, condition=toggle.speed_limit_controller)
     toggle.slc_fallback_experimental_mode = slc_fallback_method == 1
     toggle.slc_fallback_previous_speed_limit = slc_fallback_method == 2
     toggle.slc_fallback_set_speed = slc_fallback_method == 0
@@ -656,30 +681,30 @@ class FrogPilotVariables:
     toggle.speed_limit_confirmation = self.get_value("SLCConfirmation", condition=toggle.speed_limit_controller)
     toggle.speed_limit_confirmation_higher = self.get_value("SLCConfirmationHigher", condition=toggle.speed_limit_confirmation)
     toggle.speed_limit_confirmation_lower = self.get_value("SLCConfirmationLower", condition=toggle.speed_limit_confirmation)
-    slc_override_method = self.get_value("SLCOverride", float, condition=toggle.speed_limit_controller)
+    slc_override_method = self.get_value("SLCOverride", cast=float, condition=toggle.speed_limit_controller)
     toggle.speed_limit_controller_override_manual = slc_override_method == 1
     toggle.speed_limit_controller_override_set_speed = slc_override_method == 2
-    toggle.speed_limit_offset1 = self.get_value("Offset1", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_offset2 = self.get_value("Offset2", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_offset3 = self.get_value("Offset3", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_offset4 = self.get_value("Offset4", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_offset5 = self.get_value("Offset5", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_offset6 = self.get_value("Offset6", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_offset7 = self.get_value("Offset7", float, condition=toggle.speed_limit_controller) * speed_conversion
-    toggle.speed_limit_priority1 = self.get_value("SLCPriority1", None, condition=toggle.speed_limit_controller)
-    toggle.speed_limit_priority2 = self.get_value("SLCPriority2", None, condition=toggle.speed_limit_controller)
+    toggle.speed_limit_offset1 = self.get_value("Offset1", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_offset2 = self.get_value("Offset2", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_offset3 = self.get_value("Offset3", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_offset4 = self.get_value("Offset4", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_offset5 = self.get_value("Offset5", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_offset6 = self.get_value("Offset6", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_offset7 = self.get_value("Offset7", cast=float, condition=toggle.speed_limit_controller, conversion=speed_conversion)
+    toggle.speed_limit_priority1 = self.get_value("SLCPriority1", cast=None, condition=toggle.speed_limit_controller)
+    toggle.speed_limit_priority2 = self.get_value("SLCPriority2", cast=None, condition=toggle.speed_limit_controller)
     toggle.speed_limit_priority_highest = toggle.speed_limit_priority1 == "Highest"
     toggle.speed_limit_priority_lowest = toggle.speed_limit_priority1 == "Lowest"
     toggle.speed_limit_sources = self.get_value("SpeedLimitSources", condition=toggle.speed_limit_controller)
 
     toggle.speed_limit_filler = self.get_value("SpeedLimitFiller")
 
-    toggle.startup_alert_top = self.get_value("StartupMessageTop", None)
-    toggle.startup_alert_bottom = self.get_value("StartupMessageBottom", None)
+    toggle.startup_alert_top = self.get_value("StartupMessageTop", cast=None)
+    toggle.startup_alert_bottom = self.get_value("StartupMessageBottom", cast=None)
 
     toggle.subaru_sng = self.get_value("SubaruSNG", condition=toggle.openpilot_longitudinal and toggle.car_make == "subaru" and not (CP.flags & SubaruFlags.GLOBAL_GEN2 or CP.flags & SubaruFlags.HYBRID))
 
-    toggle.tethering_config = self.get_value("TetheringEnabled", float)
+    toggle.tethering_config = self.get_value("TetheringEnabled", cast=float)
 
     toyota_doors = toggle.car_make == "toyota" and self.get_value("ToyotaDoors")
     toggle.lock_doors = self.get_value("LockDoors", condition=toyota_doors)

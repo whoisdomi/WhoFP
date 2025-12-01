@@ -7,7 +7,7 @@ from pathlib import Path
 
 from openpilot.common.basedir import BASEDIR
 
-from openpilot.frogpilot.assets.download_functions import download_file, verify_download
+from openpilot.frogpilot.common.download_utilities import download_file, verify_download
 from openpilot.frogpilot.assets.model_manager import CANCEL_DOWNLOAD_PARAM, DOWNLOAD_PROGRESS_PARAM, MODEL_DOWNLOAD_PARAM
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, run_cmd
 from openpilot.frogpilot.common.frogpilot_variables import MODELS_PATH

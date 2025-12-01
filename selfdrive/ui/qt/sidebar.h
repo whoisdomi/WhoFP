@@ -74,7 +74,7 @@ private:
 
   // FrogPilot variables
   void showEvent(QShowEvent *event);
-  void updateTheme();
+  void updateToggles();
 
   bool isCPU;
   bool isDeveloperUI;
@@ -87,10 +87,6 @@ private:
   bool isStorageUsed;
 
   Params params;
-
-  QColor sidebar_color1;
-  QColor sidebar_color2;
-  QColor sidebar_color3;
 
   QSharedPointer<QMovie> flag_gif;
   QSharedPointer<QMovie> home_gif;

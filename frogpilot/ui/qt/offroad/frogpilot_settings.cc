@@ -142,7 +142,7 @@ void FrogPilotSettingsWindow::createPanelButtons(FrogPilotListWidget *list) {
 
         if (!shownDescriptions.value(className).toBool(false)) {
           shownDescriptions.insert(className, true);
-          params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
+          params.putNonBlocking("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
         }
       }
     });
@@ -200,7 +200,7 @@ FrogPilotSettingsWindow::FrogPilotSettingsWindow(SettingsWindow *parent) : QFram
   QObject::connect(togglePreset, &FrogPilotButtonsControl::buttonClicked, [this](int id) {
     tuningLevel = id;
 
-    params.putInt("TuningLevel", tuningLevel);
+    params.putIntNonBlocking("TuningLevel", tuningLevel);
 
     updateVariables();
 
@@ -254,7 +254,7 @@ void FrogPilotSettingsWindow::showEvent(QShowEvent *event) {
   QString className = this->metaObject()->className();
   if (!shownDescriptions.value(className).toBool(false)) {
     shownDescriptions.insert(className, true);
-    params.put("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
+    params.putNonBlocking("ShownToggleDescriptions", QJsonDocument(shownDescriptions).toJson(QJsonDocument::Compact).toStdString());
   }
 
   if (forceOpenDescriptions) {
@@ -368,79 +368,79 @@ void FrogPilotSettingsWindow::updateVariables() {
 
     if (currentDelayStock != steerActuatorDelay && steerActuatorDelay != 0) {
       if (params.getFloat("SteerDelay") == currentDelayStock || currentDelayStock == 0) {
-        params.putFloat("SteerDelay", steerActuatorDelay);
+        params.putFloatNonBlocking("SteerDelay", steerActuatorDelay);
       }
-      params.putFloat("SteerDelayStock", steerActuatorDelay);
+      params.putFloatNonBlocking("SteerDelayStock", steerActuatorDelay);
     }
 
     if (currentFrictionStock != friction && friction != 0) {
       if (params.getFloat("SteerFriction") == currentFrictionStock || currentFrictionStock == 0) {
-        params.putFloat("SteerFriction", friction);
+        params.putFloatNonBlocking("SteerFriction", friction);
       }
-      params.putFloat("SteerFrictionStock", friction);
+      params.putFloatNonBlocking("SteerFrictionStock", friction);
     }
 
     if (currentKPStock != steerKp && steerKp != 0) {
       if (params.getFloat("SteerKP") == currentKPStock || currentKPStock == 0) {
-        params.putFloat("SteerKP", steerKp);
+        params.putFloatNonBlocking("SteerKP", steerKp);
       }
-      params.putFloat("SteerKPStock", steerKp);
+      params.putFloatNonBlocking("SteerKPStock", steerKp);
     }
 
     if (currentLatAccelStock != latAccelFactor && latAccelFactor != 0) {
       if (params.getFloat("SteerLatAccel") == currentLatAccelStock || currentLatAccelStock == 0) {
-        params.putFloat("SteerLatAccel", latAccelFactor);
+        params.putFloatNonBlocking("SteerLatAccel", latAccelFactor);
       }
-      params.putFloat("SteerLatAccelStock", latAccelFactor);
+      params.putFloatNonBlocking("SteerLatAccelStock", latAccelFactor);
     }
 
     if (currentLongDelayStock != longitudinalActuatorDelay && longitudinalActuatorDelay != 0) {
       if (params.getFloat("LongitudinalActuatorDelay") == currentLongDelayStock || currentLongDelayStock == 0) {
-        params.putFloat("LongitudinalActuatorDelay", longitudinalActuatorDelay);
+        params.putFloatNonBlocking("LongitudinalActuatorDelay", longitudinalActuatorDelay);
       }
-      params.putFloat("LongitudinalActuatorDelayStock", longitudinalActuatorDelay);
+      params.putFloatNonBlocking("LongitudinalActuatorDelayStock", longitudinalActuatorDelay);
     }
 
     if (currentStartAccelStock != startAccel && startAccel != 0) {
       if (params.getFloat("StartAccel") == currentStartAccelStock || currentStartAccelStock == 0) {
-        params.putFloat("StartAccel", startAccel);
+        params.putFloatNonBlocking("StartAccel", startAccel);
       }
-      params.putFloat("StartAccelStock", startAccel);
+      params.putFloatNonBlocking("StartAccelStock", startAccel);
     }
 
     if (currentSteerRatioStock != steerRatio && steerRatio != 0) {
       if (params.getFloat("SteerRatio") == currentSteerRatioStock || currentSteerRatioStock == 0) {
-        params.putFloat("SteerRatio", steerRatio);
+        params.putFloatNonBlocking("SteerRatio", steerRatio);
       }
-      params.putFloat("SteerRatioStock", steerRatio);
+      params.putFloatNonBlocking("SteerRatioStock", steerRatio);
     }
 
     if (currentStopAccelStock != stopAccel && stopAccel != 0) {
       if (params.getFloat("StopAccel") == currentStopAccelStock || currentStopAccelStock == 0) {
-        params.putFloat("StopAccel", stopAccel);
+        params.putFloatNonBlocking("StopAccel", stopAccel);
       }
-      params.putFloat("StopAccelStock", stopAccel);
+      params.putFloatNonBlocking("StopAccelStock", stopAccel);
     }
 
     if (currentStoppingDecelRateStock != stoppingDecelRate && stoppingDecelRate != 0) {
       if (params.getFloat("StoppingDecelRate") == currentStoppingDecelRateStock || currentStoppingDecelRateStock == 0) {
-        params.putFloat("StoppingDecelRate", stoppingDecelRate);
+        params.putFloatNonBlocking("StoppingDecelRate", stoppingDecelRate);
       }
-      params.putFloat("StoppingDecelRateStock", stoppingDecelRate);
+      params.putFloatNonBlocking("StoppingDecelRateStock", stoppingDecelRate);
     }
 
     if (currentVEgoStartingStock != vEgoStarting && vEgoStarting != 0) {
       if (params.getFloat("VEgoStarting") == currentVEgoStartingStock || currentVEgoStartingStock == 0) {
-        params.putFloat("VEgoStarting", vEgoStarting);
+        params.putFloatNonBlocking("VEgoStarting", vEgoStarting);
       }
-      params.putFloat("VEgoStartingStock", vEgoStarting);
+      params.putFloatNonBlocking("VEgoStartingStock", vEgoStarting);
     }
 
     if (currentVEgoStoppingStock != vEgoStopping && vEgoStopping != 0) {
       if (params.getFloat("VEgoStopping") == currentVEgoStoppingStock || currentVEgoStoppingStock == 0) {
-        params.putFloat("VEgoStopping", vEgoStopping);
+        params.putFloatNonBlocking("VEgoStopping", vEgoStopping);
       }
-      params.putFloat("VEgoStoppingStock", vEgoStopping);
+      params.putFloatNonBlocking("VEgoStoppingStock", vEgoStopping);
     }
   }
 

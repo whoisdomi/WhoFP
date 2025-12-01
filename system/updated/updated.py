@@ -447,7 +447,7 @@ def main() -> None:
     first_run = True
 
     # FrogPilot variables
-    params_memory = Params(memory=True)
+    params_memory = Params(memory=True, return_defaults=True)
 
     frogpilot_toggles = get_frogpilot_toggles()
 
