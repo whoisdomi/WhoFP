@@ -65,6 +65,7 @@ private:
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
+  void paintLateralPaused(QPainter &p);
   void paintLongitudinalPaused(QPainter &p);
   void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm);
   void paintRadarTracks(QPainter &p);
@@ -103,9 +104,11 @@ private:
   QPixmap pausedIcon;
   QPixmap speedIcon;
   QPixmap stopSignImg;
+  QPixmap turnIcon;
 
   QPoint cemStatusPosition;
   QPoint compassPosition;
+  QPoint lateralPausedPosition;
 
   QSharedPointer<QMovie> cemCurveIcon;
   QSharedPointer<QMovie> cemLeadIcon;
