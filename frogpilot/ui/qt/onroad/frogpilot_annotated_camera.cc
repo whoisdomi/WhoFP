@@ -4,6 +4,7 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   animationTimer = new QTimer(this);
 
   curveSpeedIcon = loadPixmap("../../frogpilot/assets/other_images/curve_speed.png", {btn_size, btn_size});
+  stopSignImg = loadPixmap("../../frogpilot/assets/other_images/stop_sign.png", {btn_size, btn_size});
 
   loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
   loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(widget_size, widget_size), this);
@@ -197,6 +198,10 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
 
   if (standstillDuration != 0 && frogpilot_scene.started_timer / UI_FREQ >= 60) {
     paintStandstillTimer(p);
+  }
+
+  if (track_vertices.length() >= 1 && frogpilotPlan.getRedLight() && frogpilot_toggles.value("show_stopping_point").toBool()) {
+    paintStoppingPoint(p, sm);
   }
 
   if ((carState.getLeftBlinker() || carState.getRightBlinker()) && signalStyle != "None") {
@@ -510,6 +515,36 @@ void FrogPilotAnnotatedCameraWidget::paintStandstillTimer(QPainter &p) {
     textRect.moveCenter({rect().center().x(), 290 - textRect.height() / 2});
     p.setPen(QPen(whiteColor()));
     p.drawText(textRect.x(), textRect.bottom(), secondStr);
+  }
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &sm) {
+  p.save();
+
+  const cereal::ModelDataV2::Reader &modelV2 = sm["modelV2"].getModelV2();
+
+  QPointF centerPoint = (track_vertices.first() + track_vertices.last()) / 2.0f;
+  QPointF stopSignPosition = centerPoint - QPointF(stopSignImg.width() / 2.0f, stopSignImg.height());
+  p.drawPixmap(stopSignPosition, stopSignImg);
+
+  if (frogpilot_toggles.value("show_stopping_point_metrics").toBool()) {
+    float stoppingDistance = modelV2.getPosition().getX()[33 - 1] * distanceConversion;
+    QString distanceText = QString::number(std::nearbyint(stoppingDistance)) + leadDistanceUnit;
+
+    QFont font = InterFont(45, QFont::DemiBold);
+    QFontMetrics fm(font);
+
+    QPointF textPosition(centerPoint.x() - fm.horizontalAdvance(distanceText) / 2.0f, centerPoint.y() - stopSignImg.height() - 35);
+
+    QPainterPath path;
+    path.addText(textPosition, font, distanceText);
+    p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+    p.setFont(font);
+    p.setPen(whiteColor());
+    p.drawText(textPosition, distanceText);
   }
 
   p.restore();
