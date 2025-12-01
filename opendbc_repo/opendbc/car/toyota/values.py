@@ -78,6 +78,9 @@ class ToyotaFlags(IntFlag):
   SECOC = 2048
 
 
+# FrogPilot variables
+
+
 def dbc_dict(pt, radar):
   return {Bus.pt: pt, Bus.radar: radar}
 

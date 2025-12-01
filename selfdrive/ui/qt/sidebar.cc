@@ -40,6 +40,8 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(
   QObject::connect(uiState(), &UIState::uiUpdate, this, &Sidebar::updateState);
 
   pm = std::make_unique<PubMaster>(std::vector<const char*>{"bookmarkButton"});
+
+  // FrogPilot variables
 }
 
 void Sidebar::mousePressEvent(QMouseEvent *event) {
@@ -76,8 +78,13 @@ void Sidebar::offroadTransition(bool offroad) {
   update();
 }
 
-void Sidebar::updateState(const UIState &s) {
+void Sidebar::updateState(const UIState &s, const FrogPilotUIState &fs) {
   if (!isVisible()) return;
+
+  // FrogPilot variables
+  const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+
+  const SubMaster &fpsm = *(fs.sm);
 
   auto &sm = *(s.sm);
 
@@ -115,6 +122,8 @@ void Sidebar::updateState(const UIState &s) {
   setProperty("pandaStatus", QVariant::fromValue(pandaStatus));
 
   setProperty("recordingAudio", s.scene.recording_audio);
+
+  // FrogPilot variables
 }
 
 void Sidebar::paintEvent(QPaintEvent *event) {
@@ -162,4 +171,14 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   drawMetric(p, temp_status.first, temp_status.second, 338);
   drawMetric(p, panda_status.first, panda_status.second, 496);
   drawMetric(p, connect_status.first, connect_status.second, 654);
+}
+
+// FrogPilot variables
+void Sidebar::showEvent(QShowEvent *event) {
+  updateToggles();
+}
+
+void Sidebar::updateToggles() {
+  FrogPilotUIState &fs = *frogpilotUIState();
+  FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
 }
