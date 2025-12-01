@@ -597,6 +597,39 @@ void FrogPilotAnnotatedCameraWidget::paintLongitudinalPaused(QPainter &p) {
   p.restore();
 }
 
+void FrogPilotAnnotatedCameraWidget::paintPathEdges(QPainter &p, SubMaster &sm) {
+  p.save();
+
+  std::function<void(QLinearGradient&, const QColor&)> setPathEdgeColors = [&](QLinearGradient &gradient, QColor baseColor) {
+    baseColor.setAlphaF(1.0f); gradient.setColorAt(0.0f, baseColor);
+    baseColor.setAlphaF(0.5f); gradient.setColorAt(0.5f, baseColor);
+    baseColor.setAlphaF(0.1f); gradient.setColorAt(1.0f, baseColor);
+  };
+
+  QLinearGradient pe(0, height(), 0, 0);
+  if (frogpilot_scene.always_on_lateral_active) {
+    setPathEdgeColors(pe, bg_colors[STATUS_ALWAYS_ON_LATERAL_ACTIVE]);
+  } else if (frogpilot_scene.conditional_status == 1) {
+    setPathEdgeColors(pe, bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]);
+  } else if (sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
+    setPathEdgeColors(pe, bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]);
+  } else if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
+    setPathEdgeColors(pe, QColor(frogpilot_toggles.value("path_edges_color").toString()));
+  } else {
+    pe.setColorAt(0.0f, QColor::fromHslF(148 / 360.0f, 0.94f, 0.51f, 1.0f));
+    pe.setColorAt(0.5f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.68f, 0.5f));
+    pe.setColorAt(1.0f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.68f, 0.1f));
+  }
+
+  QPainterPath path;
+  path.addPolygon(track_vertices);
+  path.addPolygon(track_edge_vertices);
+  p.setBrush(pe);
+  p.drawPath(path);
+
+  p.restore();
+}
+
 void FrogPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm) {
   p.save();
 
