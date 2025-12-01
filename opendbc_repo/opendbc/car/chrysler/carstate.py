@@ -104,6 +104,10 @@ class CarState(CarStateBase):
     # FrogPilot variables
     fp_ret = custom.FrogPilotCarState.new_message()
 
+    buttonEvents += [
+      *create_button_events(self.lkas_button, self.prev_lkas_button, {1: ButtonType.lkas}),
+    ]
+
     ret.buttonEvents = buttonEvents
 
     return ret, fp_ret
