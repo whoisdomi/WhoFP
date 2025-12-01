@@ -66,6 +66,9 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   }
 
   // FrogPilot variables
+  if (frogpilot_toggles.value("radar_tracks").toBool()) {
+    updateRadarTracks(model.getPosition());
+  }
 
   painter.restore();
 }
@@ -305,6 +308,30 @@ void ModelRenderer::updateAdjacentLeads(const cereal::FrogPilotRadarState::Reade
     if (lead_data.getStatus()) {
       float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
       mapToScreen(lead_data.getDRel(), -lead_data.getYRel(), z + path_offset_z, &adjacent_lead_vertices[i]);
+    }
+  }
+}
+
+void ModelRenderer::updateRadarTracks(const cereal::XYZTData::Reader &line) {
+  frogpilot_nvg->radar_tracks.clear();
+
+  SubMaster &fpsm = *(frogpilotUIState()->sm);
+  cereal::RadarData::Reader radar_data = fpsm["liveTracks"].getLiveTracks();
+
+  capnp::List<cereal::RadarData::RadarPoint>::Reader tracks_msg = radar_data.getPoints();
+  std::size_t num_tracks = tracks_msg.size();
+  frogpilot_nvg->radar_tracks.reserve(num_tracks);
+
+  for (std::size_t i = 0; i < num_tracks; i++) {
+    cereal::RadarData::RadarPoint::Reader track_msg = tracks_msg[i];
+
+    float dRel = track_msg.getDRel();
+    float yRel = track_msg.getYRel();
+    float z = line.getZ()[get_path_length_idx(line, dRel)];
+
+    QPointF calibrated_point;
+    if (mapToScreen(dRel, -yRel, z + path_offset_z, &calibrated_point)) {
+      frogpilot_nvg->radar_tracks.push_back({calibrated_point});
     }
   }
 }
