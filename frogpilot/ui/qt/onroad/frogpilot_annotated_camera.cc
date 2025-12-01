@@ -4,6 +4,8 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   animationTimer = new QTimer(this);
 
   curveSpeedIcon = loadPixmap("../../frogpilot/assets/other_images/curve_speed.png", {btn_size, btn_size});
+  pausedIcon = loadPixmap("../../frogpilot/assets/other_images/paused_icon.png", {btn_size / 2, btn_size / 2});
+  speedIcon = loadPixmap("../../frogpilot/assets/other_images/speed_icon.png", {btn_size / 2, btn_size / 2});
   stopSignImg = loadPixmap("../../frogpilot/assets/other_images/stop_sign.png", {btn_size, btn_size});
 
   loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(btn_size / 2, btn_size / 2), this);
@@ -190,6 +192,10 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     }
   } else {
     glowTimer.invalidate();
+  }
+
+  if (!hideBottomIcons && (frogpilotCarState.getForceCoast())) {
+    paintLongitudinalPaused(p);
   }
 
   if (frogpilot_toggles.value("radar_tracks").toBool()) {
@@ -444,6 +450,36 @@ void FrogPilotAnnotatedCameraWidget::paintCurveSpeedControlTraining(QPainter &p,
   p.setFont(InterFont(35, QFont::Bold));
   p.setPen(QPen(whiteColor(), 6));
   p.drawText(textRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft, "Training...");
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintLongitudinalPaused(QPainter &p) {
+  if (dmIconPosition == QPoint(0, 0)) {
+    return;
+  }
+
+  p.save();
+
+  QPoint longitudinalIconPosition;
+  if (cemStatusPosition != QPoint(0, 0)) {
+    longitudinalIconPosition = cemStatusPosition;
+  } else {
+    longitudinalIconPosition.rx() = dmIconPosition.x();
+    longitudinalIconPosition.ry() = dmIconPosition.y() - widget_size / 2;
+  }
+  longitudinalIconPosition.rx() += rightHandDM ? -UI_BORDER_SIZE - widget_size - UI_BORDER_SIZE : UI_BORDER_SIZE + widget_size + UI_BORDER_SIZE;
+
+  QRect longitudinalWidget(longitudinalIconPosition, QSize(widget_size, widget_size));
+
+  p.setBrush(blackColor(166));
+  p.setPen(QPen(QColor(bg_colors[STATUS_TRAFFIC_MODE_ENABLED]), 10));
+  p.drawRoundedRect(longitudinalWidget, 24, 24);
+
+  p.setOpacity(0.5);
+  p.drawPixmap(longitudinalWidget, speedIcon);
+  p.setOpacity(0.75);
+  p.drawPixmap(longitudinalWidget, pausedIcon);
 
   p.restore();
 }
