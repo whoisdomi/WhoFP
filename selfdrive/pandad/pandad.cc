@@ -42,6 +42,8 @@
 
 ExitHandler do_exit;
 
+// FrogPilot variables
+
 bool check_all_connected(const std::vector<Panda *> &pandas) {
   for (const auto& panda : pandas) {
     if (!panda->connected()) {
@@ -106,6 +108,8 @@ void can_send_thread(std::vector<Panda *> pandas, bool fake_send) {
     } else {
       LOGE("sendcan too old to send: %" PRIu64 ", %" PRIu64, nanos_since_boot(), event.getLogMonoTime());
     }
+
+    // FrogPilot variables
   }
 }
 
@@ -408,9 +412,9 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
     }
 
     if (ir_pwr != prev_ir_pwr || sm.frame % 100 == 0) {
-      int16_t ir_panda = util::map_val(ir_pwr, 0, 100, 0, MAX_IR_PANDA_VAL); 
+      int16_t ir_panda = util::map_val(ir_pwr, 0, 100, 0, MAX_IR_PANDA_VAL);
       panda->set_ir_pwr(ir_panda);
-      Hardware::set_ir_power(ir_pwr); 
+      Hardware::set_ir_power(ir_pwr);
       prev_ir_pwr = ir_pwr;
     }
   }
