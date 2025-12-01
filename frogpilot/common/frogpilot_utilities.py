@@ -15,7 +15,7 @@ import openpilot.system.sentry as sentry
 from cereal import messaging
 from openpilot.system.hardware import HARDWARE
 
-from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS
+from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH
 
 class ThreadManager:
   def __init__(self):
@@ -103,6 +103,11 @@ def extract_zip(zip_file, extract_path):
 
   zip_file.unlink()
   print(f"Extraction completed!")
+
+
+@cache
+def is_FrogsGoMoo():
+  return FROGS_GO_MOO_PATH.is_file()
 
 
 def is_url_pingable(url):
