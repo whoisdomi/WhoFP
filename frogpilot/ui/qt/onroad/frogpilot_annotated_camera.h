@@ -51,6 +51,7 @@ public:
   QPolygonF track_edge_vertices;
   QPolygonF track_vertices;
 
+  QRect leadTextRect;
   QRect setSpeedRect;
 
   QSize defaultSize;
@@ -122,7 +123,6 @@ private:
   QPoint compassPosition;
   QPoint lateralPausedPosition;
 
-  QRect leadTextRect;
   QRect newSpeedLimitRect;
   QRect speedLimitRect;
 

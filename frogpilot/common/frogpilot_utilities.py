@@ -25,30 +25,30 @@ from panda import Panda
 from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
 
 running_threads = {}
+thread_lock = threading.Lock()
 
-locks = {
-  "backup_toggles": threading.Lock(),
-  "download_theme": threading.Lock(),
-  "flash_panda": threading.Lock(),
-  "lock_doors": threading.Lock(),
-  "update_checks": threading.Lock(),
-  "update_maps": threading.Lock(),
-  "update_openpilot": threading.Lock(),
-}
+def run_thread_with_lock(target, args=(), report=True):
+  name = target.__name__
 
-def run_thread_with_lock(name, target, args=(), report=True):
-  if not running_threads.get(name, threading.Thread()).is_alive():
-    with locks[name]:
-      def wrapped_target(*t_args):
-        try:
-          target(*t_args)
-        except Exception as exception:
-          print(f"Error in thread '{name}': {exception}")
-          if report:
-            sentry.capture_exception(exception)
-      thread = threading.Thread(args=args, daemon=True, target=wrapped_target)
-      thread.start()
-      running_threads[name] = thread
+  with thread_lock:
+    dead_threads = [key for key, thread in running_threads.items() if not thread.is_alive()]
+    for key in dead_threads:
+      del running_threads[key]
+
+    if name in running_threads and running_threads[name].is_alive():
+      return
+
+    def wrapped_target(*t_args):
+      try:
+        target(*t_args)
+      except Exception as exception:
+        print(f"Error in thread '{name}': {exception}")
+        if report:
+          sentry.capture_exception(exception)
+
+    thread = threading.Thread(target=wrapped_target, args=args, daemon=True)
+    thread.start()
+    running_threads[name] = thread
 
 
 def calculate_bearing_offset(latitude, longitude, current_bearing, distance):
@@ -78,13 +78,13 @@ def calculate_lane_width(lane, current_lane, road_edge=None):
   current_y = np.asarray(current_lane.y)
 
   lane_y_interp = np.interp(current_x, np.asarray(lane.x), np.asarray(lane.y))
-  distance_to_lane = np.mean(np.abs(current_y - lane_y_interp))
+  distance_to_lane = np.median(np.abs(current_y - lane_y_interp))
 
   if road_edge is None:
     return float(distance_to_lane)
 
   road_edge_y_interp = np.interp(current_x, np.asarray(road_edge.x), np.asarray(road_edge.y))
-  distance_to_road_edge = np.mean(np.abs(current_y - road_edge_y_interp))
+  distance_to_road_edge = np.median(np.abs(current_y - road_edge_y_interp))
 
   if distance_to_road_edge < distance_to_lane:
     return 0.0

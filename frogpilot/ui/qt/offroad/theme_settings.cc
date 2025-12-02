@@ -745,14 +745,22 @@ void FrogPilotThemesPanel::updateState(const UIState &s, const FrogPilotUIState 
 
    if (progress != "Downloading...") {
       static const QMap<QString, QString> progressTranslations = {
-        {"Unpacking theme...", tr("Unpacking theme...")},
-        {"Downloaded!", tr("Downloaded!")},
         {"Download cancelled...", tr("Download cancelled...")},
         {"Download failed...", tr("Download failed...")},
+        {"Downloaded!", tr("Downloaded!")},
+        {"GitHub and GitLab are offline...", tr("GitHub and GitLab are offline...")},
         {"Repository unavailable", tr("Repository unavailable")},
-        {"GitHub and GitLab are offline...", tr("GitHub and GitLab are offline...")}
+        {"Unpacking theme...", tr("Unpacking theme...")},
+        {"Verifying authenticity...", tr("Verifying authenticity...")}
       };
-      downloadStatusLabel->setText(progressTranslations.value(progress, tr("Idle")));
+
+      if (progressTranslations.contains(progress)) {
+        downloadStatusLabel->setText(progressTranslations[progress]);
+      } else if (progress.endsWith("%")) {
+        downloadStatusLabel->setText(progress);
+      } else {
+        downloadStatusLabel->setText(tr("Idle"));
+      }
     }
 
     if (progress == "Downloaded!" || downloadFailed) {

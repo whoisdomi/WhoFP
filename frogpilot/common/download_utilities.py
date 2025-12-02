@@ -17,16 +17,16 @@ def download_file(cancel_param: str, destination: Path, progress_param: str, url
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     with session.get(url, stream=True, timeout=10) as response:
+      if response.status_code == 404 and url.endswith(".gif"):
+        print(f"GIF download failed (404). Attempting fallback to PNG for {destination.name}")
+        return download_file(cancel_param, destination.with_suffix(".png"), progress_param, url.replace(".gif", ".png"), download_param, session, params_memory, offset_bytes, total_bytes)
+
       response.raise_for_status()
 
       total_size = int(response.headers.get("Content-Length", 0))
       if total_size == 0:
-        if url.endswith(".gif"):
-          print(f"GIF download failed (0 bytes). Attempting fallback to PNG for {destination.name}")
-          return download_file(cancel_param, destination.with_suffix(".png"), progress_param, url.replace(".gif", ".png"), download_param, session, params_memory, offset_bytes, total_bytes)
-        else:
-          handle_error(None, "Download invalid...", "Download invalid...", download_param, progress_param, params_memory)
-          return
+        handle_error(None, "Download invalid...", "Download invalid...", download_param, progress_param, params_memory)
+        return
 
       with tempfile.NamedTemporaryFile(delete=False, dir=destination.parent, suffix=".tmp") as temp_file:
         downloaded_size = 0

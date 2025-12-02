@@ -32,7 +32,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   // automatic updates toggle
   ParamControl *automaticUpdatesToggle = new ParamControl("AutomaticUpdates", tr("Automatically Update FrogPilot"),
                                                        tr("Automatically download new updates when connected to Wi-Fi and the update will install the next time you are offroad (parked)."), "");
-  automaticUpdatesToggle->setVisible(params.getBool("IsReleaseBranch"));
+  automaticUpdatesToggle->setVisible(params.getBool("IsReleaseBranch") || std::filesystem::exists("/persist/frogsgomoo.py"));
   addItem(automaticUpdatesToggle);
 
   // download update btn
