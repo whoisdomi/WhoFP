@@ -17,7 +17,7 @@ from openpilot.system.hardware import HARDWARE
 
 from openpilot.frogpilot.assets.theme_manager import ThemeManager
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, run_cmd
-from openpilot.frogpilot.common.frogpilot_variables import EXCLUDED_KEYS, THEME_SAVE_PATH, FrogPilotVariables, get_frogpilot_toggles
+from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, EXCLUDED_KEYS, THEME_SAVE_PATH, FrogPilotVariables, get_frogpilot_toggles
 
 
 def cleanup_backups(directory, limit):
@@ -122,6 +122,7 @@ def frogpilot_boot_functions(build_metadata, params):
 
 def install_frogpilot(build_metadata, params):
   paths = [
+    ERROR_LOGS_PATH,
     THEME_SAVE_PATH
   ]
   for path in paths:
