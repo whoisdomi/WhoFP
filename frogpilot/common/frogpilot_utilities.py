@@ -5,6 +5,7 @@ import os
 import requests
 import subprocess
 import threading
+import time
 import zipfile
 
 from pathlib import Path
@@ -12,6 +13,7 @@ from pathlib import Path
 import openpilot.system.sentry as sentry
 
 from cereal import messaging
+from openpilot.system.hardware import HARDWARE
 
 from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS
 
@@ -173,3 +175,42 @@ def update_json_file(path, data):
     os.fsync(file.fileno())
 
   os.replace(temp_path, path)
+
+
+def update_openpilot(thread_manager, params):
+  def update_available():
+    run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Checking for updates...", "Failed to check for update...", report=False)
+
+    while params.get("UpdaterState") != "checking...":
+      time.sleep(1)
+
+    while params.get("UpdaterState") == "checking...":
+      time.sleep(1)
+
+    if not params.get_bool("UpdaterFetchAvailable"):
+      return False
+
+    while params.get("UpdaterState") != "idle":
+      time.sleep(60)
+
+    run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Update available, downloading...", "Failed to download update...", report=False)
+
+    while not params.get_bool("UpdateAvailable"):
+      time.sleep(60)
+
+    return True
+
+  if params.get("UpdaterState") != "idle":
+    return
+
+  if not update_available():
+    return
+
+  while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
+    time.sleep(60)
+
+  while True:
+    if not update_available():
+      break
+
+  HARDWARE.reboot()
