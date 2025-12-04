@@ -143,11 +143,11 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *msg) {
 
 static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
   const TorqueSteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
-    .max_torque = 270,
+    .max_torque = 400,
     .max_rt_delta = 112,
-    .max_rate_up = 2,
-    .max_rate_down = 3,
-    .driver_torque_allowance = 250,
+    .max_rate_up = 3,
+    .max_rate_down = 4,
+    .driver_torque_allowance = 370,
     .driver_torque_multiplier = 2,
     .type = TorqueDriverLimited,
 
