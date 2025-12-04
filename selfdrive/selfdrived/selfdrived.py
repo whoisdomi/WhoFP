@@ -194,7 +194,7 @@ class SelfdriveD:
 
     # Add startup event
     if self.startup_event is not None:
-      if self.startup_event == FrogPilotEventName.customStartupAlert:
+      if self.startup_event in (FrogPilotEventName.blockUser, FrogPilotEventName.customStartupAlert):
         self.frogpilot_events.add(self.startup_event)
       else:
         self.events.add(self.startup_event)

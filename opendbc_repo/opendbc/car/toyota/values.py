@@ -58,10 +58,6 @@ class ToyotaSafetyFlags(IntFlag):
   SECOC = (8 << 8)
 
 
-# FrogPilot variables
-#class ToyotaFrogPilotSafetyFlags(IntFlag):
-
-
 class ToyotaFlags(IntFlag):
   # Detected flags
   HYBRID = 1

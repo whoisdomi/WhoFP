@@ -93,6 +93,8 @@ private:
 
 Params::Params(const std::string &path, bool cache, bool memory) {
   params_prefix = "/" + util::getenv("OPENPILOT_PREFIX", "d");
+
+  // FrogPilot variables
   std::string params_folder;
   if (cache) {
     params_folder = "/cache/params";

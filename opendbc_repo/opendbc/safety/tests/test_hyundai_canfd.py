@@ -328,8 +328,6 @@ class TestHyundaiCanfdLFASteeringLongAltButtons(TestHyundaiCanfdLFASteeringLongB
     pass
 
 
-# FrogPilot variables
-
 
 if __name__ == "__main__":
   unittest.main()

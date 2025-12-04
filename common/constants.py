@@ -22,8 +22,6 @@ class CV:
   # FrogPilot variables
   METER_TO_FOOT = 3.28084
   FOOT_TO_METER = 1. / METER_TO_FOOT
-  METER_TO_MILE = METER_TO_FOOT / 5280
-  MILE_TO_METER = 1. / METER_TO_MILE
   CM_TO_INCH = 1. / 2.54
   INCH_TO_CM = 1. / CM_TO_INCH
 

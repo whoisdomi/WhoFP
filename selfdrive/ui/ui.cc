@@ -125,6 +125,7 @@ void UIState::updateStatus(FrogPilotUIState *fs) {
     started_prev = scene.started;
     emit offroadTransition(!scene.started);
 
+    // FrogPilot variables
     if (frogpilot_toggles.value("tethering_config").toInt() == 2) {
       fs->wifi->setTetheringEnabled(scene.started);
     }

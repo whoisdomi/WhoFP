@@ -132,10 +132,6 @@ class HyundaiFlags(IntFlag):
   ALT_LIMITS_2 = 2 ** 26
 
 
-# FrogPilot variables
-#class HyundaiFrogPilotFlags(IntFlag):
-
-
 @dataclass
 class HyundaiCarDocs(CarDocs):
   package: str = "Smart Cruise Control (SCC)"

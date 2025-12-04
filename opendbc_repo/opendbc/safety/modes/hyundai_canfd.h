@@ -48,8 +48,6 @@
 static bool hyundai_canfd_alt_buttons = false;
 static bool hyundai_canfd_lka_steering_alt = false;
 
-// FrogPilot variables
-
 static unsigned int hyundai_canfd_get_lka_addr(void) {
   return hyundai_canfd_lka_steering_alt ? 0x110U : 0x50U;
 }
@@ -129,8 +127,6 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *msg) {
 
       // average of all 4 wheel speeds. Conversion: raw * 0.03125 / 3.6 = m/s
       UPDATE_VEHICLE_SPEED((fr + rr + rl + fl) / 4.0 * 0.03125 * KPH_TO_MS);
-
-      // FrogPilot variables
     }
   }
 
@@ -171,7 +167,6 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     int desired_torque = (((msg->data[6] & 0xFU) << 7U) | (msg->data[5] >> 1U)) - 1024U;
     bool steer_req = GET_BIT(msg, 52U);
 
-    // FrogPilot variables
     if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
       tx = false;
     }
@@ -379,8 +374,6 @@ static safety_config hyundai_canfd_init(uint16_t param) {
       }
     }
   }
-
-  // FrogPilot variables
 
   return ret;
 }

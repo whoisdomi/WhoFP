@@ -129,9 +129,9 @@ procs = [
 
 # FrogPilot variables
 if HARDWARE.get_device_type() == "mici":
-  procs.append(PythonProcess("ui", "selfdrive.ui.ui", always_run, enabled=True))
+  procs.append(PythonProcess("ui", "selfdrive.ui.ui", always_run))
 elif TICI:
-  procs.append(NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run, watchdog_max_dt=(5 if not PC else None), enabled=True))
+  procs.append(NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run, watchdog_max_dt=(5 if not PC else None))),
 procs += [
   PythonProcess("frogpilot_process", "frogpilot.frogpilot_process", always_run),
   PythonProcess("mapd", "frogpilot.navigation.mapd", always_run),

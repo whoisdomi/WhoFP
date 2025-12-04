@@ -400,8 +400,6 @@ class TestToyotaSecOcSafety(TestToyotaSecOcSafetyBase):
         self.assertEqual(should_tx, self._tx(self._accel_msg_343(accel, cancel_req=1)))
 
 
-# FrogPilot variables
-
 
 if __name__ == "__main__":
   unittest.main()

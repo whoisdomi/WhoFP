@@ -8,6 +8,16 @@ FrogPilotOnroadWindow::FrogPilotOnroadWindow(QWidget *parent) : QWidget(parent) 
   });
 }
 
+void FrogPilotOnroadWindow::resizeEvent(QResizeEvent *event) {
+  rect = QWidget::rect();
+
+  marginRegion = QRegion();
+  marginRegion += QRegion(0, 0, rect.width(), UI_BORDER_SIZE);
+  marginRegion += QRegion(0, rect.height() - UI_BORDER_SIZE, rect.width(), UI_BORDER_SIZE);
+  marginRegion += QRegion(0, UI_BORDER_SIZE, UI_BORDER_SIZE, rect.height() - 2 * UI_BORDER_SIZE);
+  marginRegion += QRegion(rect.width() - UI_BORDER_SIZE, UI_BORDER_SIZE, UI_BORDER_SIZE, rect.height() - 2 * UI_BORDER_SIZE);
+}
+
 void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
   const SubMaster &sm = *(s.sm);
   const SubMaster &fpsm = *(fs.sm);
@@ -31,19 +41,12 @@ void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState
 
 void FrogPilotOnroadWindow::paintEvent(QPaintEvent *event) {
   QPainter p(this);
+
+  p.setClipRegion(marginRegion);
   p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-  QRect rect = this->rect();
-
-  QRegion marginRegion;
-  marginRegion += QRegion(0, 0, rect.width(), UI_BORDER_SIZE);
-  marginRegion += QRegion(0, rect.height() - UI_BORDER_SIZE, rect.width(), UI_BORDER_SIZE);
-  marginRegion += QRegion(0, UI_BORDER_SIZE, UI_BORDER_SIZE, rect.height() - 2 * UI_BORDER_SIZE);
-  marginRegion += QRegion(rect.width() - UI_BORDER_SIZE, UI_BORDER_SIZE, UI_BORDER_SIZE, rect.height() - 2 * UI_BORDER_SIZE);
-  p.setClipRegion(marginRegion);
-
   if (showSteering) {
-    paintSteeringTorqueBorder(p, rect);
+    paintSteeringTorqueBorder(p);
   }
 
   if (showBlindspot || showSignal) {
@@ -56,17 +59,17 @@ void FrogPilotOnroadWindow::paintEvent(QPaintEvent *event) {
       signalTimer->start(interval);
     }
 
-    paintTurnSignalBorder(p, rect);
+    paintTurnSignalBorder(p);
   } else if (signalTimer->isActive()) {
     signalTimer->stop();
   }
 
   if (showFPS) {
-    paintFPS(p, rect);
+    paintFPS(p);
   }
 }
 
-void FrogPilotOnroadWindow::paintFPS(QPainter &p, const QRect &rect) {
+void FrogPilotOnroadWindow::paintFPS(QPainter &p) {
   p.save();
 
   qint64 now = QDateTime::currentMSecsSinceEpoch();
@@ -107,7 +110,7 @@ void FrogPilotOnroadWindow::paintFPS(QPainter &p, const QRect &rect) {
   p.restore();
 }
 
-void FrogPilotOnroadWindow::paintSteeringTorqueBorder(QPainter &p, const QRect &rect) {
+void FrogPilotOnroadWindow::paintSteeringTorqueBorder(QPainter &p) {
   p.save();
 
   static float smoothedSteer = 0.0;
@@ -139,7 +142,7 @@ void FrogPilotOnroadWindow::paintSteeringTorqueBorder(QPainter &p, const QRect &
   p.restore();
 }
 
-void FrogPilotOnroadWindow::paintTurnSignalBorder(QPainter &p, const QRect &rect) {
+void FrogPilotOnroadWindow::paintTurnSignalBorder(QPainter &p) {
   p.save();
 
   std::function<QColor(bool, bool)> getBorderColor = [&](bool blindSpot, bool turnSignal) {

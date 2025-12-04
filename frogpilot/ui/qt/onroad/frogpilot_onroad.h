@@ -20,9 +20,10 @@ public:
 
 private:
   void paintEvent(QPaintEvent *event);
-  void paintFPS(QPainter &p, const QRect &rect);
-  void paintSteeringTorqueBorder(QPainter &p, const QRect &rect);
-  void paintTurnSignalBorder(QPainter &p, const QRect &rect);
+  void paintFPS(QPainter &p);
+  void paintSteeringTorqueBorder(QPainter &p);
+  void paintTurnSignalBorder(QPainter &p);
+  void resizeEvent(QResizeEvent *event);
 
   bool blindSpotLeft;
   bool blindSpotRight;
@@ -35,6 +36,10 @@ private:
   bool turnSignalRight;
 
   float torque;
+
+  QRect rect;
+
+  QRegion marginRegion;
 
   QTimer *signalTimer;
 };

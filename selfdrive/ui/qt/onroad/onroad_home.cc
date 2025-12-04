@@ -102,13 +102,13 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // FrogPilot variables
-void OnroadWindow::mousePressEvent(QMouseEvent* e) {
-  frogpilot_nvg->mousePressEvent(e);
+void OnroadWindow::mousePressEvent(QMouseEvent* mouseEvent) {
+  frogpilot_nvg->mousePressEvent(mouseEvent);
 
-  if (e->isAccepted()) {
+  if (mouseEvent->isAccepted()) {
     return;
   }
 
   // propagation event to parent(HomeWindow)
-  QWidget::mousePressEvent(e);
+  QWidget::mousePressEvent(mouseEvent);
 }

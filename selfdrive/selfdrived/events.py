@@ -68,8 +68,6 @@ class Events:
     # FrogPilot variables
     self.frogpilot = frogpilot
 
-    # FrogPilot variables
-
   @property
   def names(self) -> list[int]:
     return self.events

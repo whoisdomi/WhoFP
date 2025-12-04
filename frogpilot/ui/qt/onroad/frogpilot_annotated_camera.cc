@@ -48,7 +48,6 @@ void FrogPilotAnnotatedCameraWidget::showEvent(QShowEvent *event) {
   UIScene &scene = s.scene;
 
   if (scene.is_metric || frogpilot_toggles.value("use_si_metrics").toBool()) {
-    accelerationUnit = tr(" m/s²");
     leadDistanceUnit = tr(" meters");
     leadSpeedUnit = frogpilot_toggles.value("use_si_metrics").toBool() ? tr(" m/s") : tr(" km/h");
     speedUnit = scene.is_metric ? tr("km/h") : tr("mph");
@@ -57,7 +56,6 @@ void FrogPilotAnnotatedCameraWidget::showEvent(QShowEvent *event) {
     speedConversion = scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
     speedConversionMetrics = frogpilot_toggles.value("use_si_metrics").toBool() ? 1.0f : MS_TO_KPH;
   } else {
-    accelerationUnit = tr(" ft/s²");
     leadDistanceUnit = tr(" feet");
     leadSpeedUnit = tr(" mph");
     speedUnit = tr("mph");
@@ -179,18 +177,19 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   update();
 }
 
-void FrogPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *e) {
-  if (speedLimitChanged && newSpeedLimitRect.contains(e->pos())) {
+void FrogPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *mouseEvent) {
+  if (speedLimitChanged && newSpeedLimitRect.contains(mouseEvent->pos())) {
     params_memory.putBool("SpeedLimitAccepted", true);
-    e->accept();
+    mouseEvent->accept();
     return;
   }
 
-  e->ignore();
+  mouseEvent->ignore();
 }
 
 void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState &s, SubMaster &sm) {
   FrogPilotUIState *fs = frogpilotUIState();
+
   SubMaster &fpsm = *(fs->sm);
 
   const cereal::CarState::Reader &carState = sm["carState"].getCarState();

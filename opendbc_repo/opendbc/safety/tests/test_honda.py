@@ -605,8 +605,6 @@ class TestHondaBoschCANFDAltBrakeSafety(HondaPcmEnableBase, TestHondaBoschCANFDS
     self.safety.init_tests()
 
 
-# FrogPilot variables
-
 
 if __name__ == "__main__":
   unittest.main()

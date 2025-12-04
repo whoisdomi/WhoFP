@@ -97,3 +97,4 @@ class StateMachine:
     if active or alwaysOnLateralEnabled:
       self.current_alert_types.append(ET.WARNING)
     return enabled, active
+

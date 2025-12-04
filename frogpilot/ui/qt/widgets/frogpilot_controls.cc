@@ -42,11 +42,11 @@ void loadGif(const QString &gifPath, QSharedPointer<QMovie> &movie, const QSize 
 }
 
 void loadImage(const QString &basePath, QPixmap &pixmap, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent) {
-  const QString gifPath = basePath + ".gif";
+  QString gifPath = basePath + ".gif";
 
   if (QFileInfo::exists(gifPath)) {
-    pixmap = QPixmap();
     loadGif(gifPath, movie, size, parent);
+    pixmap = QPixmap();
   } else {
     clearMovie(movie, parent);
     pixmap = QPixmap(basePath + ".png").scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
