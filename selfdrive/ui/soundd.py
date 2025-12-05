@@ -94,7 +94,7 @@ class Soundd:
     self.spl_filter_weighted = FirstOrderFilter(0, 2.5, FILTER_DT, initialized=False)
 
     # FrogPilot variables
-    self.params_memory = Params(memory=True, return_defaults=True)
+    self.params_memory = Params(memory=True)
 
     self.frogpilot_toggles = get_frogpilot_toggles()
 

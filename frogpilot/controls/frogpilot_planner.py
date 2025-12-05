@@ -23,7 +23,7 @@ from openpilot.frogpilot.controls.lib.weather_checker import WeatherChecker
 class FrogPilotPlanner:
   def __init__(self, error_log, ThemeManager):
     self.params = Params(return_defaults=True)
-    self.params_memory = Params(memory=True, return_defaults=True)
+    self.params_memory = Params(memory=True)
 
     self.frogpilot_acceleration = FrogPilotAcceleration(self)
     self.frogpilot_cem = ConditionalExperimentalMode(self)

@@ -110,7 +110,7 @@ def backup_toggles(params, params_cache):
 
 
 def frogpilot_boot_functions(build_metadata, params, params_cache):
-  params_memory = Params(memory=True, return_defaults=True)
+  params_memory = Params(memory=True)
 
   FrogPilotVariables()
   ThemeManager(params, params_memory, boot_run=True).update_active_theme(time_validated=system_time_valid(), frogpilot_toggles=get_frogpilot_toggles(), boot_run=True)
@@ -150,8 +150,7 @@ def install_frogpilot(build_metadata):
   for path in paths:
     path.mkdir(parents=True, exist_ok=True)
 
-  frogpilot_boot_logo = Path(__file__).resolve().parents[1] / "assets/other_images/frogpilot_boot_logo.jpg"
-  update_boot_logo(frogpilot_boot_logo)
+  update_boot_logo(frogpilot=True)
 
   if build_metadata.channel == "FrogPilot-Development" and Path("/persist/frogsgomoo.py").is_file():
     mount_options = run_cmd(["findmnt", "-n", "-o", "OPTIONS", "/persist"], "Successfully retrieved mount options", "Failed to retrieve mount options")
@@ -161,17 +160,28 @@ def install_frogpilot(build_metadata):
 
 
 def uninstall_frogpilot():
-  stock_boot_logo = Path(__file__).resolve().parents[1] / "assets/other_images/stock_bg.jpg"
-  update_boot_logo(stock_boot_logo)
+  update_boot_logo(stock=True)
 
   HARDWARE.uninstall()
 
 
-def update_boot_logo(target_logo):
-  boot_logo_location = Path("/usr/comma/bg.jpg")
+def update_boot_logo(frogpilot=False, stock=False):
+  boot_logo = Path("/usr/comma/bg.jpg")
 
-  if target_logo.read_bytes() != boot_logo_location.read_bytes():
+  if frogpilot:
+    target_logo = Path(__file__).resolve().parents[1] / "assets/other_images/frogpilot_boot_logo.jpg"
+  elif stock:
+    target_logo = Path(__file__).resolve().parents[1] / "assets/other_images/stock_bg.jpg"
+  else:
+    print("Error: Must specify either stock=True or frogpilot=True")
+    return
+
+  if not target_logo.is_file():
+    print(f"Error: Target logo file not found at {target_logo}")
+    return
+
+  if target_logo.read_bytes() != boot_logo.read_bytes():
     mount_options = run_cmd(["findmnt", "-n", "-o", "OPTIONS", "/"], "Successfully retrieved mount options", "Failed to retrieve mount options")
     run_cmd(["sudo", "mount", "-o", "remount,rw", "/"], "Successfully remounted / as read-write", "Failed to remount /")
-    run_cmd(["sudo", "cp", target_logo, boot_logo_location], "Successfully replaced boot logo", "Failed to replace boot logo")
+    run_cmd(["sudo", "cp", target_logo, boot_logo], "Successfully replaced boot logo", "Failed to replace boot logo")
     run_cmd(["sudo", "mount", "-o", f"remount,{mount_options}", "/"], "Successfully restored / mount options", "Failed to restore / mount options")

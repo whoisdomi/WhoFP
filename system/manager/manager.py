@@ -41,7 +41,7 @@ def manager_init() -> None:
     params.put_bool("RecordFront", True)
 
   # FrogPilot variables
-  params_cache = Params(cache=True, return_defaults=True)
+  params_cache = Params(cache=True)
   params_cache.clear_all(ParamKeyFlag.CLEAR_ON_MANAGER_START)
   params_cache.clear_all(ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION)
   params_cache.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
@@ -151,7 +151,7 @@ def manager_thread() -> None:
   # FrogPilot variables
   sm = sm.extend(['frogpilotPlan'])
 
-  params_memory = Params(memory=True, return_defaults=True)
+  params_memory = Params(memory=True)
 
   frogpilot_toggles = get_frogpilot_toggles()
 

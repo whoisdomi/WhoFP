@@ -178,20 +178,20 @@ def nnff_supported(car_fingerprint):
 
 def get_frogpilot_toggles():
   if not hasattr(get_frogpilot_toggles, "_params_memory"):
-    get_frogpilot_toggles._params_memory = Params(memory=True, return_defaults=True)
+    get_frogpilot_toggles._params_memory = Params(memory=True)
 
   return SimpleNamespace(**get_frogpilot_toggles._params_memory.get("FrogPilotToggles"))
 
 def update_frogpilot_toggles():
   if not hasattr(update_frogpilot_toggles, "_params_memory"):
-    update_frogpilot_toggles._params_memory = Params(memory=True, return_defaults=True)
+    update_frogpilot_toggles._params_memory = Params(memory=True)
 
   update_frogpilot_toggles._params_memory.put_bool("FrogPilotTogglesUpdated", True)
 
 class FrogPilotVariables:
   def __init__(self):
     self.params = Params(return_defaults=True)
-    self.params_memory = Params(memory=True, return_defaults=True)
+    self.params_memory = Params(memory=True)
 
     self.frogpilot_toggles = get_frogpilot_toggles()
     toggle = self.frogpilot_toggles

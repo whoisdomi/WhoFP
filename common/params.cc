@@ -253,11 +253,11 @@ void Params::asyncWriteThread() {
 
 // FrogPilot variables
 int Params::getTuningLevel(const std::string &key) {
-  return keys.at(key).tuning_level;
+  return keys[key].tuning_level;
 }
 
 std::optional<std::string> Params::getStockValue(const std::string &key) {
-  const ParamKeyAttributes &attributes = keys.at(key);
+  ParamKeyAttributes &attributes = keys[key];
   if (attributes.stock_value) {
     return attributes.stock_value;
   }

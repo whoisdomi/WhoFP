@@ -123,7 +123,7 @@ def update_mapd():
   return True
 
 def mapd_thread():
-  params_memory = Params(memory=True, return_defaults=True)
+  params_memory = Params(memory=True)
 
   params_memory.put("MapdLogLevel", "disabled")
 

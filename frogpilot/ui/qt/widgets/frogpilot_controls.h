@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <set>
 
 #include <QElapsedTimer>
 #include <QJsonObject>

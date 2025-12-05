@@ -147,7 +147,7 @@ FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent
 
         std::vector<std::string> all_keys = params.allKeys();
         for (const std::string &key : all_keys) {
-          if (key == "FrogPilotStats") {
+          if (excluded_keys.count(key)) {
             continue;
           }
           std::optional<std::string> default_value = params.getKeyDefaultValue(key);
@@ -182,7 +182,7 @@ FrogPilotUtilitiesPanel::FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent
 
         std::vector<std::string> all_keys = params.allKeys();
         for (const std::string &key : all_keys) {
-          if (key == "FrogPilotStats") {
+          if (excluded_keys.count(key)) {
             continue;
           }
           std::optional<std::string> stock_value = params.getStockValue(key);

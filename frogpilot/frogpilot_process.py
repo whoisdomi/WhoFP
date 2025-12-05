@@ -93,8 +93,8 @@ def frogpilot_thread():
                             poll="modelV2")
 
   params = Params(return_defaults=True)
-  params_cache = Params(cache=True, return_defaults=True)
-  params_memory = Params(memory=True, return_defaults=True)
+  params_cache = Params(cache=True)
+  params_memory = Params(memory=True)
 
   frogpilot_variables = FrogPilotVariables()
   theme_manager = ThemeManager(params, params_memory)

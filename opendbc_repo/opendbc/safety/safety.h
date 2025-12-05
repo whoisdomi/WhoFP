@@ -497,6 +497,12 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
   // OPGM variables
   enable_gas_interceptor = false;
 
+  // FrogPilot variables
+  aol_allowed = false;
+  lkas_button_prev = false;
+  lkas_on = false;
+  main_button_prev = false;
+
   return set_status;
 }
 

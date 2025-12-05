@@ -84,26 +84,27 @@ public:
   }
 
   // FrogPilot variables
-  inline int getInt(const std::string &key, bool block = false) {
+  int getInt(const std::string &key, bool block = false) {
     std::string value = get(key, block);
     return value.empty() ? 0 : std::stoi(value);
   }
-  inline float getFloat(const std::string &key, bool block = false) {
+  float getFloat(const std::string &key, bool block = false) {
     std::string value = get(key, block);
-    return value.empty() ? 0.0 : std::stof(value);
+    return value.empty() ? 0.0f : std::stof(value);
   }
 
-  inline int putInt(const std::string &key, int val) {
-    return put(key.c_str(), std::to_string(val).c_str(), std::to_string(val).size());
+  int putInt(const std::string &key, int val) {
+    std::string str = std::to_string(val);
+    return put(key.c_str(), str.c_str(), str.size());
   }
-  inline int putFloat(const std::string &key, float val) {
-    return put(key.c_str(), std::to_string(val).c_str(), std::to_string(val).size());
+  int putFloat(const std::string &key, float val) {
+    std::string str = std::to_string(val);
+    return put(key.c_str(), str.c_str(), str.size());
   }
-
-  inline void putIntNonBlocking(const std::string &key, int val) {
+  void putIntNonBlocking(const std::string &key, int val) {
     putNonBlocking(key, std::to_string(val));
   }
-  inline void putFloatNonBlocking(const std::string &key, float val) {
+  void putFloatNonBlocking(const std::string &key, float val) {
     putNonBlocking(key, std::to_string(val));
   }
 

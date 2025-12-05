@@ -15,4 +15,11 @@ private:
 
   Params params;
   Params params_memory{"", false, true};
+
+  std::set<std::string> excluded_keys = {
+    "AvailableModels", "AvailableModelNames", "FrogPilotStats",
+    "GithubSshKeys", "GithubUsername", "MapBoxRequests",
+    "ModelDrivesAndScores", "OverpassRequests", "SpeedLimits",
+    "SpeedLimitsFiltered", "UpdaterAvailableBranches",
+  };
 };

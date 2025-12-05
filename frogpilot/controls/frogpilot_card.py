@@ -12,7 +12,7 @@ class FrogPilotCard:
     self.CP = CP
 
     self.params = Params(return_defaults=True)
-    self.params_memory = Params(memory=True, return_defaults=True)
+    self.params_memory = Params(memory=True)
 
     self.accel_pressed = False
     self.always_on_lateral_allowed = False

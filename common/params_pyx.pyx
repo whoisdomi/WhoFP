@@ -47,6 +47,7 @@ cdef extern from "common/params.h":
 
     # FrogPilot variables
     optional[string] getStockValue(string) nogil
+
     int getTuningLevel(string) nogil
 
 PYTHON_2_CPP = {
@@ -98,7 +99,8 @@ cdef class Params:
     # FrogPilot variables
     self.c = cache
     self.m = memory
-    self.return_defaults = return_defaults
+
+    self.return_defaults = return_defaults or (cache or memory)
 
   def __reduce__(self):
     return (type(self), (self.d, self.c, self.m, self.return_defaults))
@@ -223,7 +225,5 @@ cdef class Params:
 
   def get_tuning_level(self, key):
     cdef string k = self.check_key(key)
-    cdef int level
-    with nogil:
-      level = self.p.getTuningLevel(k)
-    return level
+    cdef optional[int] level = self.p.getTuningLevel(k)
+    return level.value() if level.has_value() else 0
