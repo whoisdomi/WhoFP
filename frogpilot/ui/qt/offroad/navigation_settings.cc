@@ -18,7 +18,6 @@ FrogPilotNavigationPanel::FrogPilotNavigationPanel(FrogPilotSettingsWindow *pare
       if (mapboxPublicKeySet) {
         if (FrogPilotConfirmationDialog::yesorno(tr("Remove your Public Mapbox Key?"), this)) {
           params.remove("MapboxPublicKey");
-          params_cache.remove("MapboxPublicKey");
 
           updateButtons();
         }
@@ -65,7 +64,6 @@ FrogPilotNavigationPanel::FrogPilotNavigationPanel(FrogPilotSettingsWindow *pare
       if (mapboxSecretKeySet) {
         if (FrogPilotConfirmationDialog::yesorno(tr("Remove your Secret Mapbox Key?"), this)) {
           params.remove("MapboxSecretKey");
-          params_cache.remove("MapboxSecretKey");
 
           updateButtons();
         }

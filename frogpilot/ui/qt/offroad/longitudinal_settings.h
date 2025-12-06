@@ -65,7 +65,6 @@ private:
   LabelControl *calibrationProgressLabel;
 
   Params params;
-  Params params_cache{"", true};
   Params params_memory{"", false, true};
 
   QNetworkAccessManager *networkManager;

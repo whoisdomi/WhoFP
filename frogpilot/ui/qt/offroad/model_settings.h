@@ -41,7 +41,6 @@ private:
   FrogPilotSettingsWindow *parent;
 
   Params params;
-  Params params_cache{"", true};
   Params params_memory{"", false, true};
 
   QDir modelDir{"/data/models/"};

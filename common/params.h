@@ -121,4 +121,9 @@ private:
   // for nonblocking write
   std::future<void> future;
   SafeQueue<std::pair<std::string, std::string>> queue;
+
+  // FrogPilot variables
+  bool standard_param;
+
+  std::string cache_path;
 };

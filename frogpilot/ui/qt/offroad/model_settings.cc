@@ -217,7 +217,6 @@ FrogPilotModelPanel::FrogPilotModelPanel(FrogPilotSettingsWindow *parent, bool f
         } else if (id == 2) {
           if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to remove all of your blacklisted driving models?"), this)) {
             params.remove("BlacklistedModels");
-            params_cache.remove("BlacklistedModels");
           }
         }
       });
@@ -228,7 +227,6 @@ FrogPilotModelPanel::FrogPilotModelPanel(FrogPilotSettingsWindow *parent, bool f
         if (id == 0) {
           if (FrogPilotConfirmationDialog::yesorno(tr("Reset all model drives and ratings? This clears your drive history and collected feedback!"), this)) {
             params.remove("ModelDrivesAndScores");
-            params_cache.remove("ModelDrivesAndScores");
           }
         } else if (id == 1) {
           openSubPanel();

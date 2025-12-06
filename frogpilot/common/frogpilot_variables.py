@@ -602,7 +602,7 @@ class FrogPilotVariables:
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
 
     toggle.model = self.default_values["DrivingModel"]
-    toggle.model_name = "Firehose"
+    toggle.model_name = "Dark Souls"
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)

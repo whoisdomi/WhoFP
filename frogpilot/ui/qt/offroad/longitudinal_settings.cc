@@ -285,10 +285,6 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
           params.remove("CalibrationProgress");
           params.remove("CurvatureData");
 
-          params_cache.putFloat("CalibratedLateralAcceleration", 2.00);
-          params_cache.remove("CalibrationProgress");
-          params_cache.remove("CurvatureData");
-
           calibratedLateralAccelerationLabel->setText(QString::number(2.00, 'f', 2) + tr(" m/s²"));
           calibrationProgressLabel->setText(QString::number(0.00, 'f', 2) + "%");
         }
@@ -411,7 +407,6 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
           if (!params.get("WeatherToken").empty()) {
             if (FrogPilotConfirmationDialog::yesorno(tr("Are you sure you want to remove your key?"), this)) {
               params.remove("WeatherToken");
-              params_cache.remove("WeatherToken");
 
               weatherKeyControl->setText(0, tr("ADD"));
               weatherKeyControl->setVisibleButton(1, false);

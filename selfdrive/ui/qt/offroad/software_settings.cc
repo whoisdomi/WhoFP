@@ -102,8 +102,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to uninstall?"), tr("Uninstall"), this)) {
       if (FrogPilotConfirmationDialog::yesorno(tr("Do you want to perform a full factory reset? All saved assets and settings will be permanently deleted!"), this)) {
         if (FrogPilotConfirmationDialog::yesorno(tr("This is a complete factory reset and cannot be undone. Are you absolutely sure you want to continue?"), this)) {
-          Params params_cache{"", true};
-          params_cache.clearAll(ParamKeyFlag::ALL);
+          Params().clearAll(ParamKeyFlag::ALL);
         }
       }
       params.putBool("DoUninstall", true);

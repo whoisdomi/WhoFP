@@ -42,10 +42,6 @@ def manager_init() -> None:
 
   # FrogPilot variables
   params_cache = Params(cache=True)
-  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_MANAGER_START)
-  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION)
-  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
-  params_cache.clear_all(ParamKeyFlag.CLEAR_ON_IGNITION_ON)
 
   # set unset params to their default value
   for k in params.all_keys():

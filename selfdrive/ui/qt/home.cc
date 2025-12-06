@@ -185,7 +185,6 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     QWidget *left_widget = new QWidget(this);
     QStackedLayout *left_stack = new QStackedLayout(left_widget);
     left_stack->setContentsMargins(0, 0, 0, 0);
-    left_stack->setSpacing(30);
 
     left_stack->addWidget(new DriveStats());
     FrogPilotDriveSummary *drive_summary = new FrogPilotDriveSummary(this);

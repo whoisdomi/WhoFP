@@ -64,7 +64,7 @@ We have detailed instructions for [how to install the harness and device in a ca
 
 ------
 
-**FrogPilot** is a custom frog-themed fork of openpilot that embraces a collaborative, community-driven approach to push the project forward. It delivers bleeding-edge features and experimental improvements far ahead of official releases. As an unofficial and highly experimental version of openpilot, **FrogPilot** should always be used with caution!
+**FrogPilot** is a custom, community-driven, frog-themed fork of openpilot that grows and improves through the ideas and contributions of its users. It offers exciting new features and cutting-edge experiments that often arrive long before official releases. As an unofficial and highly experimental version of openpilot, **FrogPilot** should *always* be used with caution!
 
 openpilot vs **FrogPilot**
 ------
@@ -197,8 +197,8 @@ And lots more! From safety enhancements to personalization options, **FrogPilot*
 | FrogPilot                  | frogpilot.download        | The main release branch.                               | Everyone                 |
 | FrogPilot&#8209;Staging    | staging.frogpilot.download| Beta branch with upcoming features. Expect bugs!       | Early&nbsp;Adopters      |
 | FrogPilot&#8209;Testing    | testing.frogpilot.download| Alpha branch with bleeding-edge features. Breaks often!| Advanced&nbsp;Testers    |
-| FrogPilot&#8209;Development| No :)                     | Active development branch. Don't use!                  | **FrogPilot**&nbsp;Developers|
-| MAKE&#8209;PRS&#8209;HERE  | No :)                     | Workspace for pull requests. Don't use!                | Contributors             |
+| FrogPilot&#8209;Development| No :)                     | Active development branch. Do not use!                 | **FrogPilot**&nbsp;Developers|
+| MAKE&#8209;PRS&#8209;HERE  | No :)                     | Workspace for pull requests. Do not use!               | Contributors             |
 
 🧰 How to Install
 ------
@@ -211,7 +211,7 @@ frogpilot.download
 
 **DO NOT** install the **FrogPilot-Development** branch. I'm constantly breaking things on there, so unless you don't want to use **FrogPilot**, **NEVER** install it!
 
-![](https://i.imgur.com/LTCqRqB.png)
+![](https://i.imgur.com/FsufQtO.png)
 
 🐞 Bug Reports / Feature Requests
 ------
