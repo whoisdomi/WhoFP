@@ -11,6 +11,8 @@ from openpilot.frogpilot.common.frogpilot_utilities import run_cmd
 
 
 def frogpilot_boot_functions():
+  params_memory = Params(memory=True)
+
   def boot_thread():
     while not system_time_valid():
       print("Waiting for system time to become valid...")
