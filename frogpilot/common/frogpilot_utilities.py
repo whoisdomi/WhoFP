@@ -9,6 +9,7 @@ import threading
 import time
 import zipfile
 
+from functools import cache
 from pathlib import Path
 
 import openpilot.system.sentry as sentry
@@ -18,7 +19,7 @@ from openpilot.common.realtime import DT_DMON, DT_HW
 from openpilot.system.hardware import HARDWARE
 from panda import Panda
 
-from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH
+from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH, KONIK_PATH
 
 class ThreadManager:
   def __init__(self):
@@ -249,6 +250,11 @@ def update_openpilot(thread_manager, params):
       break
 
   HARDWARE.reboot()
+
+
+@cache
+def use_konik_server():
+  return KONIK_PATH.is_file()
 
 
 def wait_for_no_driver(params, sm, time_threshold=60):
