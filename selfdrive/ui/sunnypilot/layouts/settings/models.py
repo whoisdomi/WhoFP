@@ -76,7 +76,7 @@ class ModelsLayout(Widget):
 
     self.cancel_download_item = button_item(tr("Cancel Download"), tr("Cancel"), "", lambda: ui_state.params.remove("ModelManager_DownloadIndex"))
 
-    self.lane_turn_value_control = option_item_sp(tr("Adjust Lane Turn Speed"), "LaneTurnValue", 500, 2000,
+    self.lane_turn_value_control = option_item_sp(tr("Adjust Lane Turn Speed"), "LaneTurnValue", 500, 4000,
                                                   tr("Set the maximum speed for lane turn desires. Default is 19 mph."),
                                                   int(round(100 / CV.MPH_TO_KPH)), None, True, "", style.BUTTON_WIDTH, None, True,
                                                   lambda v: f"{int(round(v / 100 * (CV.MPH_TO_KPH if ui_state.is_metric else 1)))}" +
