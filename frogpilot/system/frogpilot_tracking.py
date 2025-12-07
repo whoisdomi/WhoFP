@@ -19,6 +19,7 @@ class FrogPilotTracking:
     self.frogpilot_weather = frogpilot_planner.frogpilot_weather
 
     self.frogpilot_stats = self.params.get("FrogPilotStats")
+    self.frogpilot_stats.pop("CurrentMonthsKilometers", None)
     self.frogpilot_stats.pop("ResetStats", None)
 
     self.drive_added = False
@@ -56,7 +57,7 @@ class FrogPilotTracking:
       total_cruise_speed_times[key] = total_cruise_speed_times.get(key, 0) + DT_MDL
       self.frogpilot_stats["CruiseSpeedTimes"] = total_cruise_speed_times
 
-    self.frogpilot_stats["CurrentMonthsKilometers"] = self.frogpilot_stats.get("CurrentMonthsKilometers", 0) + (distance_driven / 1000)
+    self.frogpilot_stats["CurrentMonthsKilometers"] = self.frogpilot_stats.get("CurrentMonthsKilometers", 0) + distance_driven
 
     if self.frogpilot_weather.sunrise != 0 and self.frogpilot_weather.sunset != 0:
       if self.frogpilot_weather.is_daytime:

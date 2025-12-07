@@ -30,7 +30,7 @@ cdef extern from "common/params.h":
     BYTES
 
   cdef cppclass c_Params "Params":
-    c_Params(string, bool, bool) except + nogil
+    c_Params(string, bool) except + nogil
     string get(string, bool) nogil
     bool getBool(string, bool) nogil
     int remove(string) nogil
@@ -81,29 +81,26 @@ cdef class Params:
   cdef str d
 
   # FrogPilot variables
-  cdef bool c
   cdef bool m
   cdef bool return_defaults
 
-  def __cinit__(self, d="", *, cache=False, memory=False, return_defaults=False):
+  def __cinit__(self, d="", *, memory=False, return_defaults=False):
     cdef string path = <string>d.encode()
 
     # FrogPilot variables
-    cdef bool c_cache = cache
     cdef bool c_memory = memory
 
     with nogil:
-      self.p = new c_Params(path, c_cache, c_memory)
+      self.p = new c_Params(path, c_memory)
     self.d = d
 
     # FrogPilot variables
-    self.c = cache
     self.m = memory
 
-    self.return_defaults = return_defaults or (cache or memory)
+    self.return_defaults = return_defaults or memory
 
   def __reduce__(self):
-    return (type(self), (self.d, self.c, self.m, self.return_defaults))
+    return (type(self), (self.d, self.m, self.return_defaults))
 
   def __dealloc__(self):
     del self.p

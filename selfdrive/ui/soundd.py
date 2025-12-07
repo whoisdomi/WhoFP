@@ -29,7 +29,7 @@ AMBIENT_DB = 30 # DB where MIN_VOLUME is applied
 DB_SCALE = 30 # AMBIENT_DB + DB_SCALE is where MAX_VOLUME is applied
 
 VOLUME_BASE = 20
-if HARDWARE.get_device_type() == "tizi":
+if HARDWARE.get_device_type() in ("tici", "tizi"):
   VOLUME_BASE = 10
 
 AudibleAlert = car.CarControl.HUDControl.AudibleAlert
@@ -67,7 +67,7 @@ sound_list: dict[int, tuple[str, int | None, float]] = {
   FrogPilotAudibleAlert.thisIsFine: ("this_is_fine.wav", 1, MAX_VOLUME),
   FrogPilotAudibleAlert.uwu: ("uwu.wav", 1, MAX_VOLUME),
 }
-if HARDWARE.get_device_type() == "tizi":
+if HARDWARE.get_device_type() in ("tici", "tizi"):
   sound_list.update({
     AudibleAlert.engage: ("engage_tizi.wav", 1, MAX_VOLUME),
     AudibleAlert.disengage: ("disengage_tizi.wav", 1, MAX_VOLUME),
@@ -118,6 +118,11 @@ class Soundd:
 
       random_events_path = self.random_events_directory / filename
       sounds_path = self.sound_directory / filename
+
+      if not sounds_path.exists() and "_tizi" in filename:
+        standard_path = self.sound_directory / filename.replace("_tizi", "")
+        if standard_path.exists():
+          sounds_path = standard_path
 
       if random_events_path.exists():
         wavefile = wave.open(str(random_events_path), 'r')

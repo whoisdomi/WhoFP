@@ -98,7 +98,7 @@ private:
   float speedLimit;
 
   Params params;
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   QColor blackColor(int alpha = 255) { return QColor(0, 0, 0, alpha); }
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }

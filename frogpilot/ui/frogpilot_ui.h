@@ -39,7 +39,7 @@ public:
 
   FrogPilotUIScene frogpilot_scene;
 
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   WifiManager *wifi;
 

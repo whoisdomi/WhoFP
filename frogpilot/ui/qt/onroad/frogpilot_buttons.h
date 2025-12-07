@@ -19,7 +19,7 @@ private:
 
   int personality;
 
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   QMap<int, QPair<QPixmap, QSharedPointer<QMovie>>> icon_map;
 };

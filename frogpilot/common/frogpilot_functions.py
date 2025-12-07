@@ -83,7 +83,7 @@ def backup_frogpilot(build_metadata, params):
     create_backup(Path(BASEDIR), destination, "Successfully backed up FrogPilot!", "Failed to backup FrogPilot...", params, minimum_backup_size, compressed=True)
 
 
-def backup_toggles(params, params_cache):
+def backup_toggles(params):
   params_backup = Params("/data/params_backup", return_defaults=True)
 
   changes_found = False
@@ -94,7 +94,6 @@ def backup_toggles(params, params_cache):
     if new_value != current_value:
       if new_value is not None:
         params_backup.put(key, new_value)
-        params_cache.put(key, new_value)
       changes_found |= key not in EXCLUDED_KEYS
 
   backup_path = Path("/data/toggle_backups")
@@ -109,7 +108,7 @@ def backup_toggles(params, params_cache):
   create_backup(Path(params_backup.get_param_path()), destination, "Successfully backed up toggles!", "Failed to backup toggles...", params)
 
 
-def frogpilot_boot_functions(build_metadata, params, params_cache):
+def frogpilot_boot_functions(build_metadata, params):
   params_memory = Params(memory=True)
 
   FrogPilotVariables()
@@ -133,7 +132,7 @@ def frogpilot_boot_functions(build_metadata, params, params_cache):
       time.sleep(1)
 
     backup_frogpilot(build_metadata, params)
-    backup_toggles(params, params_cache)
+    backup_toggles(params)
 
     send_stats(params)
 

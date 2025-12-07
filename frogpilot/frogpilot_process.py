@@ -62,7 +62,7 @@ def update_checks(now, theme_manager, params, params_memory, frogpilot_toggles, 
 
   time.sleep(1)
 
-def update_toggles(frogpilot_toggles, frogpilot_variables, params, params_cache, started, theme_manager, time_validated):
+def update_toggles(frogpilot_toggles, frogpilot_variables, params, started, theme_manager, time_validated):
   previous_holiday_themes = frogpilot_toggles.holiday_themes
   previous_random_themes = frogpilot_toggles.random_themes
 
@@ -76,7 +76,7 @@ def update_toggles(frogpilot_toggles, frogpilot_variables, params, params_cache,
   theme_manager.update_active_theme(time_validated, frogpilot_toggles, randomize_theme=randomize_theme)
 
   if time_validated:
-    run_thread_with_lock(backup_toggles, (params, params_cache), report=False)
+    run_thread_with_lock(backup_toggles, (params), report=False)
 
   return frogpilot_toggles
 
@@ -93,7 +93,6 @@ def frogpilot_thread():
                             poll="modelV2")
 
   params = Params(return_defaults=True)
-  params_cache = Params(cache=True)
   params_memory = Params(memory=True)
 
   frogpilot_variables = FrogPilotVariables()
@@ -149,7 +148,7 @@ def frogpilot_thread():
       check_assets(theme_manager, params_memory, frogpilot_toggles)
 
     if params_memory.get_bool("FrogPilotTogglesUpdated") or theme_manager.theme_updated:
-      frogpilot_toggles = update_toggles(frogpilot_toggles, frogpilot_variables, params, params_cache, started, theme_manager, time_validated)
+      frogpilot_toggles = update_toggles(frogpilot_toggles, frogpilot_variables, params, started, theme_manager, time_validated)
 
       toggles_last_updated = now
 

@@ -42,6 +42,9 @@
 
 ExitHandler do_exit;
 
+// FrogPilot variables
+static uint64_t last_door_lock_command_time = 0;
+
 bool check_all_connected(const std::vector<Panda *> &pandas) {
   for (const auto& panda : pandas) {
     if (!panda->connected()) {
@@ -105,6 +108,19 @@ void can_send_thread(std::vector<Panda *> pandas, bool fake_send) {
       }
     } else {
       LOGE("sendcan too old to send: %" PRIu64 ", %" PRIu64, nanos_since_boot(), event.getLogMonoTime());
+    }
+
+    // FrogPilot variables
+    for (const cereal::CanData::Reader &can : event.getSendcan()) {
+      if (can.getAddress() == 0x750) {
+        last_door_lock_command_time = nanos_since_boot();
+        Panda *internal_panda = pandas[0];
+        const std::optional<health_t> state = internal_panda->get_state();
+        if (state && state->safety_mode_pkt == (uint8_t)cereal::CarParams::SafetyModel::NO_OUTPUT) {
+          internal_panda->set_safety_model(cereal::CarParams::SafetyModel::TOYOTA);
+        }
+        break;
+      }
     }
   }
 }
@@ -255,7 +271,7 @@ std::optional<bool> send_panda_states(PubMaster *pm, const std::vector<Panda *> 
     }
 
     // set safety mode to NO_OUTPUT when car is off or we're not onroad. ELM327 is an alternative if we want to leverage athenad/connect
-    bool should_close_relay = !ignition_local || !is_onroad;
+    bool should_close_relay = (!ignition_local || !is_onroad) && (nanos_since_boot() - last_door_lock_command_time >= 2e9);
     if (should_close_relay && (health.safety_mode_pkt != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
       panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
@@ -408,9 +424,9 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
     }
 
     if (ir_pwr != prev_ir_pwr || sm.frame % 100 == 0) {
-      int16_t ir_panda = util::map_val(ir_pwr, 0, 100, 0, MAX_IR_PANDA_VAL); 
+      int16_t ir_panda = util::map_val(ir_pwr, 0, 100, 0, MAX_IR_PANDA_VAL);
       panda->set_ir_pwr(ir_panda);
-      Hardware::set_ir_power(ir_pwr); 
+      Hardware::set_ir_power(ir_pwr);
       prev_ir_pwr = ir_pwr;
     }
   }

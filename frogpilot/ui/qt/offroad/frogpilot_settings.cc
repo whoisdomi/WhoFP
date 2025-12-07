@@ -465,8 +465,6 @@ void FrogPilotSettingsWindow::updateVariables() {
     hasAutoTune = LTP.getUseParams();
   }
 
-  isC3 = util::read_file("/sys/firmware/devicetree/base/model").find("tici") != std::string::npos;
-
   drivingPanelButtons->setVisibleButton(0, tuningLevel >= frogpilotToggleLevels.value("DrivingModel").toDouble());
   drivingPanelButtons->setVisibleButton(1, hasOpenpilotLongitudinal);
 

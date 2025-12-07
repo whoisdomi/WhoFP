@@ -42,7 +42,7 @@ private:
   LabelControl *mapsSize;
 
   Params params;
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   QDateTime startTime;
 

@@ -44,7 +44,7 @@ struct ParamKeyAttributes {
 
 class Params {
 public:
-  explicit Params(const std::string &path = {}, bool cache = false, bool memory = false);
+  explicit Params(const std::string &path = {}, bool memory = false);
   ~Params();
   // Not copyable.
   Params(const Params&) = delete;
@@ -123,7 +123,5 @@ private:
   SafeQueue<std::pair<std::string, std::string>> queue;
 
   // FrogPilot variables
-  bool standard_param;
-
   std::string cache_path;
 };

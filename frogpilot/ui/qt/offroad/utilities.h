@@ -14,7 +14,7 @@ private:
   FrogPilotSettingsWindow *parent;
 
   Params params;
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   std::set<std::string> excluded_keys = {
     "AvailableModels", "AvailableModelNames", "FrogPilotStats",

@@ -389,10 +389,6 @@ void FrogPilotVehiclesPanel::updateToggles() {
       setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
-    if (key == "LockDoorsTimer") {
-      setVisible &= !parent->isC3;
-    }
-
     else if (key == "SNGHack") {
       setVisible &= !parent->hasSNG;
     }

@@ -15,7 +15,7 @@ from pathlib import Path
 
 import openpilot.system.sentry as sentry
 
-from cereal import car, log, messaging
+from cereal import log, messaging
 from opendbc.can.parser import CANParser
 from opendbc.car.toyota.carcontroller import LOCK_CMD
 from openpilot.common.realtime import DT_DMON, DT_HW
@@ -29,6 +29,9 @@ thread_lock = threading.Lock()
 
 def run_thread_with_lock(target, args=(), report=True):
   name = target.__name__
+
+  if not isinstance(args, (tuple, list)):
+    args = (args,)
 
   with thread_lock:
     dead_threads = [key for key, thread in running_threads.items() if not thread.is_alive()]
@@ -235,15 +238,19 @@ def lock_doors(params, lock_doors_timer, sm):
   can_parser = CANParser("toyota_nodsu_pt_generated", [("DOOR_LOCKS", 3)], bus=0)
   can_sock = messaging.sub_sock("can", timeout=100)
 
+  pm = messaging.PubMaster(["sendcan"])
+
   while True:
     sm.update()
 
     if any(ps.ignitionLine or ps.ignitionCan for ps in sm["pandaStates"] if ps.pandaType != log.PandaState.PandaType.unknown):
       break
 
-    with Panda(disable_checks=True) as panda:
-      panda.set_safety_mode(car.CarParams.SafetyModel.toyota)
-      panda.can_send(0x750, LOCK_CMD, 0)
+    sendcan_send = messaging.new_message("sendcan", 1)
+    sendcan_send.sendcan[0].address = 0x750
+    sendcan_send.sendcan[0].dat = LOCK_CMD
+    sendcan_send.sendcan[0].src = 0
+    pm.send("sendcan", sendcan_send)
 
     time.sleep(1)
 

@@ -34,7 +34,6 @@ public:
   bool hasZSS = false;
   bool isAngleCar = false;
   bool isBolt = false;
-  bool isC3 = false;
   bool isFrogsGoMoo = false;
   bool isGM = true;
   bool isHKG = true;
@@ -96,7 +95,7 @@ private:
   FrogPilotButtonsControl *vehiclePanelButtons;
 
   Params params;
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   QJsonObject shownDescriptions;
 

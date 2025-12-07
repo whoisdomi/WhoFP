@@ -36,7 +36,7 @@ private:
 
   int steering_angle_deg;
 
-  Params params_memory{"", false, true};
+  Params params_memory{"", true};
 
   QColor background_color;
 
