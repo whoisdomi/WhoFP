@@ -22,7 +22,6 @@ from openpilot.frogpilot.common.frogpilot_variables import (
   ERROR_LOGS_PATH, EXCLUDED_KEYS, HD_LOGS_PATH, KONIK_LOGS_PATH,
   THEME_SAVE_PATH, FrogPilotVariables, get_frogpilot_toggles
 )
-from openpilot.frogpilot.system.frogpilot_stats import send_stats
 
 
 def cleanup_backups(directory, limit):
@@ -123,9 +122,6 @@ def frogpilot_boot_functions(build_metadata, params):
   elif params.get("DongleId") == params.get("KonikDongleId"):
     params.put("DongleId", params.get("StockDongleId"))
 
-  if params.get("FrogPilotDongleId") == None:
-    params.put("FrogPilotDongleId", ''.join(random.choices(string.ascii_lowercase + string.digits, k=16)))
-
   def boot_thread():
     while not system_time_valid():
       print("Waiting for system time to become valid...")
@@ -134,12 +130,10 @@ def frogpilot_boot_functions(build_metadata, params):
     backup_frogpilot(build_metadata, params)
     backup_toggles(params)
 
-    send_stats(params)
-
   threading.Thread(target=boot_thread, daemon=True).start()
 
 
-def install_frogpilot(build_metadata):
+def install_frogpilot(build_metadata, params):
   paths = [
     ERROR_LOGS_PATH,
     HD_LOGS_PATH,
@@ -148,6 +142,9 @@ def install_frogpilot(build_metadata):
   ]
   for path in paths:
     path.mkdir(parents=True, exist_ok=True)
+
+  if params.get("FrogPilotDongleId") is None:
+    params.put("FrogPilotDongleId", ''.join(random.choices(string.ascii_lowercase + string.digits, k=16)))
 
   update_boot_logo(frogpilot=True)
 

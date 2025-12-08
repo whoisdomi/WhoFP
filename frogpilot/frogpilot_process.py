@@ -43,7 +43,7 @@ def transition_offroad(frogpilot_planner, frogpilot_toggles, params, sm, theme_m
     theme_manager.update_active_theme(time_validated, frogpilot_toggles, randomize_theme=True)
 
   if time_validated and is_url_pingable(os.environ.get("STATS_URL", "")):
-    send_stats(params)
+    run_thread_with_lock(send_stats, (params))
 
 def transition_onroad(error_log):
   if error_log.is_file():
@@ -168,6 +168,7 @@ def frogpilot_thread():
       if not time_validated:
         continue
 
+      run_thread_with_lock(send_stats, (params))
       theme_manager.update_active_theme(time_validated, frogpilot_toggles)
       run_thread_with_lock(update_checks, (now, theme_manager, params, params_memory, frogpilot_toggles, True))
 

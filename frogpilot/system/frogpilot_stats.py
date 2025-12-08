@@ -15,191 +15,206 @@ from openpilot.system.version import get_build_metadata
 from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
+BUCKET = os.environ.get("STATS_BUCKET", "")
+ORG_ID = os.environ.get("STATS_ORG_ID", "")
+TOKEN = os.environ.get("STATS_TOKEN", "")
+STATS_URL = os.environ.get("STATS_URL", "")
+
 BASE_URL = "https://nominatim.openstreetmap.org"
+GITHUB_API_URL = "https://api.github.com/repos/FrogAi/FrogPilot/commits"
+
 MINIMUM_POPULATION = 100_000
+
+TRACKED_BRANCHES = ["FrogPilot", "FrogPilot-Staging", "FrogPilot-Testing"]
+
+def get_branch_commits(now):
+  commits = []
+
+  with requests.Session() as session:
+    session.headers.update({
+      "Accept": "application/vnd.github.v3+json",
+      "Accept-Language": "en",
+      "User-Agent": "frogpilot-stats-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
+     })
+
+    for branch in TRACKED_BRANCHES:
+      try:
+        response = session.get(f"{GITHUB_API_URL}/{branch}", timeout=10)
+        response.raise_for_status()
+
+        sha = response.json().get("sha")
+        if sha:
+          commits.append(Point("branch_commits").field("commit", sha).tag("branch", branch).time(now))
+      except Exception as exception:
+        print(f"An unexpected error occurred for {branch}: {exception}")
+
+  return commits
 
 def get_city_center(latitude, longitude):
   try:
     with requests.Session() as session:
-      session.headers.update({"Accept-Language": "en"})
-      session.headers.update({"User-Agent": "frogpilot-city-center-checker/1.0 (https://github.com/FrogAi/FrogPilot)"})
+      session.headers.update({
+        "Accept-Language": "en",
+        "User-Agent": "frogpilot-city-center-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
+      })
 
-      response = session.get(f"{BASE_URL}/reverse", params={"addressdetails": 1, "extratags": 0, "format": "jsonv2", "lat": latitude, "lon": longitude, "namedetails": 0, "zoom": 14}, timeout=10)
+      location_params = {
+        "addressdetails": 1, "format": "jsonv2",
+        "lat": latitude, "lon": longitude, "zoom": 14
+      }
+      response = session.get(f"{BASE_URL}/reverse", params=location_params, timeout=10)
       response.raise_for_status()
-      data = response.json() or {}
+      address = response.json().get("address", {})
 
-      address = data.get("address") or {}
-      city_name = address.get("city") or address.get("hamlet") or address.get("town") or address.get("village")
-      country_code = (address.get("country_code") or "").lower()
-      country_name = address.get("country") or "N/A"
+      city_name = address.get("city") or address.get("town") or address.get("village") or address.get("hamlet")
       state_name = address.get("province") or address.get("region") or address.get("state") or address.get("state_district") or "N/A"
+      country_name = address.get("country", "N/A")
+      country_code = (address.get("country_code") or "").lower()
 
       if city_name:
-        response = session.get(f"{BASE_URL}/search", params={"addressdetails": 1, "extratags": 1, "format": "jsonv2", "limit": 1, "q": f"{city_name}, {state_name}, {country_name}"}, timeout=10)
+        city_query_params = {
+          "q": f"{city_name}, {state_name}, {country_name}",
+          "addressdetails": 1, "extratags": 1,
+          "format": "jsonv2", "limit": 1
+        }
+        response = session.get(f"{BASE_URL}/search", params=city_query_params, timeout=10)
         response.raise_for_status()
-        data = response.json() or []
+        city_results = response.json()
 
-        if data:
-          tags = data[0]
-          population = (tags.get("extratags") or {}).get("population")
+        if city_results:
+          city_result = city_results[0]
 
-          population_value = None
-          if population is not None:
-            try:
-              population_value = int(str(population).replace(",", "").split(";")[0].strip())
-            except Exception:
-              population_value = None
+          try:
+            population = int(str(city_result.get("extratags", {}).get("population", "0")).replace(",", "").split(";")[0])
+          except:
+            population = 0
 
-          if population_value is not None and population_value >= MINIMUM_POPULATION:
-            latitude_value = float(tags["lat"])
-            longitude_value = float(tags["lon"])
+          if population >= MINIMUM_POPULATION:
+            city_address = city_result.get("address", {})
+            display_city_name = city_address.get("city") or city_address.get("town") or city_name
+            return (float(city_result["lat"]), float(city_result["lon"]), display_city_name, state_name, country_name)
 
-            resolved_address = tags.get("address") or {}
-            city_label = resolved_address.get("city") or resolved_address.get("town") or city_name
-
-            return latitude_value, longitude_value, city_label, state_name, country_name
-
-      query = f"{state_name} state capital" if country_code == "us" else f"capital of {state_name}, {country_name}"
-      response = session.get(f"{BASE_URL}/search", params={"addressdetails": 1, "extratags": 1, "format": "jsonv2", "limit": 5, "q": query}, timeout=10)
+      capital_query = (f"{state_name} state capital" if country_code == "us" else f"capital of {state_name}, {country_name}")
+      capital_query_params = {
+        "q": capital_query,
+        "addressdetails": 1, "extratags": 1,
+        "format": "jsonv2", "limit": 5
+      }
+      response = session.get(f"{BASE_URL}/search", params=capital_query_params, timeout=10)
       response.raise_for_status()
-      candidates = response.json() or []
+      capital_results = response.json()
 
-      chosen_candidate = None
-      for candidate in candidates:
-        address = candidate.get("address") or {}
-        capital = (candidate.get("extratags") or {}).get("capital")
-        country = address.get("country")
-        state = address.get("province") or address.get("region") or address.get("state") or address.get("state_district")
+      selected_capital = None
+      for capital_result in capital_results:
+        capital_address = capital_result.get("address", {})
+        capital_country = capital_address.get("country")
+        capital_state = (capital_address.get("province") or capital_address.get("region") or capital_address.get("state") or capital_address.get("state_district"))
 
-        if (state == state_name or state_name == "N/A") and country == country_name and (capital in ("administrative", "state", "yes") or address.get("city") or address.get("town")):
-          chosen_candidate = candidate
+        if capital_country != country_name:
+          continue
+        if state_name != "N/A" and capital_state != state_name:
+          continue
+
+        is_tagged_capital = capital_result.get("extratags", {}).get("capital") in ("administrative", "state", "yes")
+        if is_tagged_capital:
+          selected_capital = capital_result
           break
 
-      if not chosen_candidate and candidates:
-        chosen_candidate = candidates[0]
+        if selected_capital is None:
+          selected_capital = capital_result
 
-      if chosen_candidate:
-        latitude_value = float(chosen_candidate["lat"])
-        longitude_value = float(chosen_candidate["lon"])
+      if selected_capital:
+        selected_capital_address = selected_capital.get("address", {})
+        display_city_name = (selected_capital_address.get("city") or selected_capital_address.get("town") or selected_capital.get("display_name", "").split(",")[0])
+        return (float(selected_capital["lat"]), float(selected_capital["lon"]), display_city_name, state_name, country_name)
 
-        chosen_address = chosen_candidate.get("address") or {}
-        city_label = chosen_address.get("city") or chosen_address.get("town") or (chosen_candidate.get("display_name") or "").split(",")[0]
+  except:
+    pass
 
-        return latitude_value, longitude_value, city_label, state_name, country_name
-
-      print(f"Falling back to (0, 0) for {latitude}, {longitude}")
-      return float(0.0), float(0.0), "N/A", "N/A", "N/A"
-
-  except Exception:
-    print(f"Falling back to (0, 0) for {latitude}, {longitude}")
-    return float(0.0), float(0.0), "N/A", "N/A", "N/A"
-
-def update_branch_commits(now):
-  points = []
-  for branch in ["FrogPilot", "FrogPilot-Staging", "FrogPilot-Testing"]:
-    try:
-      response = requests.get(f"https://api.github.com/repos/FrogAi/FrogPilot/commits/{branch}")
-      response.raise_for_status()
-      sha = response.json()["sha"]
-      points.append(Point("branch_commits").field("commit", sha).tag("branch", branch).time(now))
-    except Exception as e:
-      print(f"Failed to fetch commit for {branch}: {e}")
-  return points
+  return (0.0, 0.0, "N/A", "N/A", "N/A")
 
 def send_stats(params):
-  try:
-    build_metadata = get_build_metadata()
-    frogpilot_toggles = get_frogpilot_toggles()
+  build_metadata = get_build_metadata()
+  frogpilot_toggles = get_frogpilot_toggles()
 
-    if frogpilot_toggles.car_make == "mock":
-      return
+  car_params = "{}"
+  msg_bytes = params.get("CarParamsPersistent")
+  if msg_bytes:
+    with car.CarParams.from_bytes(msg_bytes) as CP:
+      cp_dict = CP.to_dict()
+      cp_dict.pop("carFw", None)
+      cp_dict.pop("carVin", None)
+      car_params = json.dumps(cp_dict)
 
-    bucket = os.environ.get("STATS_BUCKET", "")
-    org_ID = os.environ.get("STATS_ORG_ID", "")
-    token = os.environ.get("STATS_TOKEN", "")
-    url = os.environ.get("STATS_URL", "")
+  frogpilot_car_params = "{}"
+  frogpilot_msg_bytes = params.get("FrogPilotCarParamsPersistent")
+  if frogpilot_msg_bytes:
+    with custom.FrogPilotCarParams.from_bytes(frogpilot_msg_bytes) as FPCP:
+      fpcp_dict = FPCP.to_dict()
+      fpcp_dict.pop("carFw", None)
+      fpcp_dict.pop("carVin", None)
+      frogpilot_car_params = json.dumps(fpcp_dict)
 
-    car_params = "{}"
-    msg_bytes = params.get("CarParamsPersistent")
-    if msg_bytes:
-      with car.CarParams.from_bytes(msg_bytes) as CP:
-        cp_dict = CP.to_dict()
-        cp_dict.pop("carFw", None)
-        cp_dict.pop("carVin", None)
-        car_params = json.dumps(cp_dict)
+  dongle_id = params.get("FrogPilotDongleId")
+  frogpilot_stats = params.get("FrogPilotStats")
 
-    frogpilot_car_params = "{}"
-    frogpilot_msg_bytes = params.get("FrogPilotCarParamsPersistent")
-    if frogpilot_msg_bytes:
-      with custom.FrogPilotCarParams.from_bytes(frogpilot_msg_bytes) as FPCP:
-        fpcp_dict = FPCP.to_dict()
-        fpcp_dict.pop("carFw", None)
-        fpcp_dict.pop("carVin", None)
-        frogpilot_car_params = json.dumps(fpcp_dict)
+  location = json.loads(params.get("LastGPSPosition")) or {}
+  original_latitude = location.get("latitude", 0.0)
+  original_longitude = location.get("longitude", 0.0)
+  latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
 
-    dongle_id = params.get("FrogPilotDongleId")
-    frogpilot_stats = params.get("FrogPilotStats") or {}
+  now = datetime.now(timezone.utc)
 
-    location = json.loads(params.get("LastGPSPosition")) or {}
-    original_latitude = location.get("latitude", 0.0)
-    original_longitude = location.get("longitude", 0.0)
-    latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)
+  theme_attributes = sorted(["color_scheme", "distance_icons", "icon_pack", "signal_icons", "sound_pack"])
+  theme_counts = Counter(getattr(frogpilot_toggles, attribute).replace("-animated", "") for attribute in theme_attributes)
+  winners = [theme for theme, count in theme_counts.items() if count == max(theme_counts.values(), default=0)]
+  if len(winners) > 1 and "stock" in winners:
+    winners.remove("stock")
+  selected_theme = random.choice(winners).replace("-user_created", "").replace("_", " ") if winners else "stock"
 
-    now = datetime.now(timezone.utc)
+  user_point = (
+    Point("user_stats")
+    .field("calibrated_lateral_acceleration", params.get("CalibratedLateralAcceleration"))
+    .field("calibration_progress", params.get("CalibrationProgress"))
+    .field("car_params", car_params)
+    .field("city", city)
+    .field("commit", build_metadata.openpilot.git_commit)
+    .field("country", country)
+    .field("device", HARDWARE.get_device_type())
+    .field("event", 1)
+    .field("frogpilot_car_params", frogpilot_car_params)
+    .field("frogpilot_stats", json.dumps(frogpilot_stats))
+    .field("latitude", latitude)
+    .field("longitude", longitude)
+    .field("state", state)
+    .field("stats", json.dumps(frogpilot_stats))  # Remove in the future
+    .field("theme", selected_theme.title())
+    .field("toggles", json.dumps(frogpilot_toggles.__dict__))
+    .field("tuning_level", params.get("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
+    .field("using_default_model", params.get("DrivingModel").endswith("_default"))
+    .tag("branch", build_metadata.channel)
+    .tag("dongle_id", dongle_id)
+    .time(now)
+  )
 
-    theme_attributes = sorted(["color_scheme", "distance_icons", "icon_pack", "signal_icons", "sound_pack"])
-    theme_counts = Counter(getattr(frogpilot_toggles, attribute).replace("-animated", "") for attribute in theme_attributes)
-    winners = [theme for theme, count in theme_counts.items() if count == max(theme_counts.values(), default=0)]
-    if len(winners) > 1 and "stock" in winners:
-      winners.remove("stock")
-    selected_theme = random.choice(winners).replace("-user_created", "").replace("_", " ") if winners else "stock"
+  model_points = []
+  for model_name, data in sorted(params.get("ModelDrivesAndScores").items()):
+    drives = data.get("Drives", 0)
+    score = data.get("Score", 0)
 
-    user_point = (
-      Point("user_stats")
-      .field("calibrated_lateral_acceleration", params.get("CalibratedLateralAcceleration"))
-      .field("calibration_progress", params.get("CalibrationProgress"))
-      .field("car_params", car_params)
-      .field("city", city)
-      .field("commit", build_metadata.openpilot.git_commit)
-      .field("country", country)
-      .field("device", HARDWARE.get_device_type())
-      .field("event", 1)
-      .field("frogpilot_car_params", frogpilot_car_params)
-      .field("latitude", latitude)
-      .field("longitude", longitude)
-      .field("state", state)
-      .field("stats", json.dumps(frogpilot_stats))
-      .field("theme", selected_theme.title())
-      .field("toggles", json.dumps(frogpilot_toggles.__dict__))
-      .field("tuning_level", params.get("TuningLevel") + 1 if params.get_bool("TuningLevelConfirmed") else 0)
-      .field("using_default_model", params.get("DrivingModel").endswith("_default"))
-      .tag("branch", build_metadata.channel)
-      .tag("dongle_id", dongle_id)
-      .time(now)
-    )
+    if drives > 0:
+      point = (
+        Point("model_scores")
+        .field("drives", int(drives))
+        .field("score", int(score))
+        .tag("dongle_id", dongle_id)
+        .tag("model_name", clean_model_name(model_name))
+        .time(now)
+      )
+      model_points.append(point)
 
-    model_scores = params.get("ModelDrivesAndScores") or {}
-    model_points = []
-    for model_name, data in sorted(model_scores.items()):
-      drives = data.get("Drives", 0)
-      score = data.get("Score", 0)
+  all_points = get_branch_commits(now) + model_points + [user_point]
 
-      if drives > 0:
-        point = (
-          Point("model_scores")
-          .field("drives", int(drives))
-          .field("score", int(score))
-          .tag("dongle_id", dongle_id)
-          .tag("model_name", clean_model_name(model_name))
-          .time(now)
-        )
-        model_points.append(point)
-
-    all_points = model_points + [user_point] + update_branch_commits(now)
-
-    client = InfluxDBClient(org=org_ID, token=token, url=url)
-    client.write_api(write_options=SYNCHRONOUS).write(bucket=bucket, org=org_ID, record=all_points)
-    print("Successfully sent FrogPilot stats!")
-
-  except Exception as exception:
-    print(f"Failed to send FrogPilot stats: {exception}")
+  client = InfluxDBClient(org=ORG_ID, token=TOKEN, url=STATS_URL)
+  client.write_api(write_options=SYNCHRONOUS).write(bucket=BUCKET, record=all_points)
+  print("Successfully sent FrogPilot stats!")

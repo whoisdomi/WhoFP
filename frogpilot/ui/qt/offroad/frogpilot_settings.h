@@ -95,7 +95,6 @@ private:
   FrogPilotButtonsControl *vehiclePanelButtons;
 
   Params params;
-  Params params_memory{"", true};
 
   QJsonObject shownDescriptions;
 

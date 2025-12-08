@@ -23,14 +23,14 @@ class FrogPilotTracking:
     self.frogpilot_stats.pop("ResetStats", None)
 
     self.drive_added = False
-    self.enabled = False
+    self.previously_enabled = False
 
     self.distance_since_override = 0
     self.tracked_time = 0
 
     self.previous_random_events = set()
 
-    self.previous_alert = ""
+    self.previous_alert = None
     self.previous_sound = FrogPilotAudibleAlert.none
     self.previous_state = State.disabled
 
@@ -41,7 +41,7 @@ class FrogPilotTracking:
     v_ego = max(sm["carState"].vEgo, 0)
 
     distance_driven = v_ego * DT_MDL
-    self.enabled |= sm["selfdriveState"].enabled or sm["frogpilotCarState"].alwaysOnLateralEnabled
+    self.previously_enabled |= sm["selfdriveState"].enabled or sm["frogpilotCarState"].alwaysOnLateralEnabled
     self.tracked_time += DT_MDL
 
     if sm["selfdriveState"].alertType not in (self.previous_alert, ""):
@@ -57,7 +57,7 @@ class FrogPilotTracking:
       total_cruise_speed_times[key] = total_cruise_speed_times.get(key, 0) + DT_MDL
       self.frogpilot_stats["CruiseSpeedTimes"] = total_cruise_speed_times
 
-    self.frogpilot_stats["CurrentMonthsKilometers"] = self.frogpilot_stats.get("CurrentMonthsKilometers", 0) + distance_driven
+    self.frogpilot_stats["CurrentMonthsMeters"] = self.frogpilot_stats.get("CurrentMonthsMeters", 0) + distance_driven
 
     if self.frogpilot_weather.sunrise != 0 and self.frogpilot_weather.sunset != 0:
       if self.frogpilot_weather.is_daytime:
@@ -116,7 +116,6 @@ class FrogPilotTracking:
     current_random_events = {event for event in self.frogpilot_events.events.names if RANDOM_EVENT_START <= event <= RANDOM_EVENT_END}
     if len(current_random_events) > 0:
       new_events = current_random_events - self.previous_random_events
-
       if new_events:
         total_random_events = self.frogpilot_stats.get("RandomEvents", {})
         for event in new_events:
@@ -149,12 +148,12 @@ class FrogPilotTracking:
     weather_times[suffix] = weather_times.get(suffix, 0) + DT_MDL
     self.frogpilot_stats["WeatherTimes"] = weather_times
 
-    if self.tracked_time > 60 and sm["carState"].standstill and self.enabled:
+    if self.tracked_time >= 60 and sm["carState"].standstill and self.previously_enabled:
       if time_validated:
         current_month = now.month
         if current_month != self.frogpilot_stats.get("Month"):
           self.frogpilot_stats.update({
-            "CurrentMonthsKilometers": 0,
+            "CurrentMonthsMeters": 0,
             "Month": current_month
           })
 

@@ -623,7 +623,7 @@ void FrogPilotDataPanel::updateStatsLabels(FrogPilotListWidget *labelsList) {
     {"AEBEvents", {tr("Total Emergency Brake Alerts"), "count"}},
     {"AOLTime", {tr("Time Using \"Always On Lateral\""), "timePercent"}},
     {"CruiseSpeedTimes", {tr("Favorite Set Speed"), "speed"}},
-    {"CurrentMonthsKilometers", {tr("Distance Driven This Month"), "distance"}},
+    {"CurrentMonthsMeters", {tr("Distance Driven This Month"), "distance"}},
     {"DayTime", {tr("Time Driving (Daytime)"), "timePercent"}},
     {"Disengages", {tr("Total Disengagements"), "count"}},
     {"Engages", {tr("Total Engagements"), "count"}},
