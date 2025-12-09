@@ -59,3 +59,8 @@ void openDescriptions(bool forceOpenDescriptions, std::map<QString, AbstractCont
     }
   }
 }
+
+void updateFrogPilotToggles() {
+  static Params params_memory{"", true};
+  params_memory.putBool("FrogPilotTogglesUpdated", true);
+}

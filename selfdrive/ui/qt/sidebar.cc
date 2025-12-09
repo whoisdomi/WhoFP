@@ -83,6 +83,7 @@ void Sidebar::updateState(const UIState &s, const FrogPilotUIState &fs) {
 
   // FrogPilot variables
   const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  const QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
   const SubMaster &fpsm = *(fs.sm);
 
@@ -183,4 +184,5 @@ void Sidebar::showEvent(QShowEvent *event) {
 void Sidebar::updateToggles() {
   FrogPilotUIState &fs = *frogpilotUIState();
   FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
+  QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 }
