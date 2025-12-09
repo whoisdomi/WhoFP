@@ -12,7 +12,7 @@ from cereal import car, custom
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
-from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name
+from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name, is_url_pingable
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
 BUCKET = os.environ.get("STATS_BUCKET", "")
@@ -34,7 +34,7 @@ def get_branch_commits(now):
     session.headers.update({
       "Accept": "application/vnd.github.v3+json",
       "Accept-Language": "en",
-      "User-Agent": "frogpilot-stats-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
+      "User-Agent": "frogpilot-branch-commits-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
      })
 
     for branch in TRACKED_BRANCHES:
@@ -45,95 +45,93 @@ def get_branch_commits(now):
         sha = response.json().get("sha")
         if sha:
           commits.append(Point("branch_commits").field("commit", sha).tag("branch", branch).time(now))
-      except Exception as exception:
-        print(f"An unexpected error occurred for {branch}: {exception}")
+      except requests.exceptions.RequestException as exception:
+        print(f"Failed to get commit for {branch}: {exception}")
 
   return commits
 
 def get_city_center(latitude, longitude):
-  try:
-    with requests.Session() as session:
-      session.headers.update({
-        "Accept-Language": "en",
-        "User-Agent": "frogpilot-city-center-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
-      })
+  with requests.Session() as session:
+    session.headers.update({
+      "Accept-Language": "en",
+      "User-Agent": "frogpilot-city-center-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
+    })
 
-      location_params = {
-        "addressdetails": 1, "format": "jsonv2",
-        "lat": latitude, "lon": longitude, "zoom": 14
-      }
-      response = session.get(f"{BASE_URL}/reverse", params=location_params, timeout=10)
-      response.raise_for_status()
-      address = response.json().get("address", {})
+    location_params = {
+      "addressdetails": 1, "format": "jsonv2",
+      "lat": latitude, "lon": longitude, "zoom": 13
+    }
+    response = session.get(f"{BASE_URL}/reverse", params=location_params, timeout=10)
+    response.raise_for_status()
+    address = response.json().get("address", {})
 
-      city_name = address.get("city") or address.get("town") or address.get("village") or address.get("hamlet")
-      state_name = address.get("province") or address.get("region") or address.get("state") or address.get("state_district") or "N/A"
-      country_name = address.get("country", "N/A")
-      country_code = (address.get("country_code") or "").lower()
+    city_name = address.get("city") or address.get("town") or address.get("village") or address.get("hamlet")
+    state_name = address.get("province") or address.get("region") or address.get("state") or address.get("state_district") or "N/A"
+    country_name = address.get("country", "N/A")
+    country_code = (address.get("country_code") or "").lower()
 
-      if city_name:
-        city_query_params = {
-          "q": f"{city_name}, {state_name}, {country_name}",
-          "addressdetails": 1, "extratags": 1,
-          "format": "jsonv2", "limit": 1
-        }
-        response = session.get(f"{BASE_URL}/search", params=city_query_params, timeout=10)
-        response.raise_for_status()
-        city_results = response.json()
-
-        if city_results:
-          city_result = city_results[0]
-
-          try:
-            population = int(str(city_result.get("extratags", {}).get("population", "0")).replace(",", "").split(";")[0])
-          except:
-            population = 0
-
-          if population >= MINIMUM_POPULATION:
-            city_address = city_result.get("address", {})
-            display_city_name = city_address.get("city") or city_address.get("town") or city_name
-            return (float(city_result["lat"]), float(city_result["lon"]), display_city_name, state_name, country_name)
-
-      capital_query = (f"{state_name} state capital" if country_code == "us" else f"capital of {state_name}, {country_name}")
-      capital_query_params = {
-        "q": capital_query,
+    if city_name:
+      city_query_params = {
+        "q": f"{city_name}, {state_name}, {country_name}",
         "addressdetails": 1, "extratags": 1,
-        "format": "jsonv2", "limit": 5
+        "format": "jsonv2", "limit": 1
       }
-      response = session.get(f"{BASE_URL}/search", params=capital_query_params, timeout=10)
+      response = session.get(f"{BASE_URL}/search", params=city_query_params, timeout=10)
       response.raise_for_status()
-      capital_results = response.json()
+      city_results = response.json()
 
-      selected_capital = None
-      for capital_result in capital_results:
-        capital_address = capital_result.get("address", {})
-        capital_country = capital_address.get("country")
-        capital_state = (capital_address.get("province") or capital_address.get("region") or capital_address.get("state") or capital_address.get("state_district"))
+      if city_results:
+        city_result = city_results[0]
+        population = int(str(city_result.get("extratags", {}).get("population", "0")).replace(",", "").split(";")[0])
 
-        if capital_country != country_name:
-          continue
-        if state_name != "N/A" and capital_state != state_name:
-          continue
+        if population >= MINIMUM_POPULATION:
+          city_address = city_result.get("address", {})
+          selected_city_name = city_address.get("city") or city_address.get("town") or city_name
+          return (float(city_result["lat"]), float(city_result["lon"]), selected_city_name, state_name, country_name)
 
-        is_tagged_capital = capital_result.get("extratags", {}).get("capital") in ("administrative", "state", "yes")
-        if is_tagged_capital:
-          selected_capital = capital_result
-          break
+    capital_query = (f"{state_name} state capital" if country_code == "us" else f"capital of {state_name}, {country_name}")
+    capital_query_params = {
+      "q": capital_query,
+      "addressdetails": 1, "extratags": 1,
+      "format": "jsonv2", "limit": 5
+    }
+    response = session.get(f"{BASE_URL}/search", params=capital_query_params, timeout=10)
+    response.raise_for_status()
+    capital_results = response.json()
 
-        if selected_capital is None:
-          selected_capital = capital_result
+    selected_capital = None
+    for capital_result in capital_results:
+      if capital_result is None:
+        continue
 
-      if selected_capital:
-        selected_capital_address = selected_capital.get("address", {})
-        display_city_name = (selected_capital_address.get("city") or selected_capital_address.get("town") or selected_capital.get("display_name", "").split(",")[0])
-        return (float(selected_capital["lat"]), float(selected_capital["lon"]), display_city_name, state_name, country_name)
+      capital_address = capital_result.get("address", {})
+      capital_state = (capital_address.get("province") or capital_address.get("region") or capital_address.get("state") or capital_address.get("state_district"))
+      capital_country = capital_address.get("country")
 
-  except:
-    pass
+      if capital_country != country_name:
+        continue
+      if state_name != "N/A" and capital_state != state_name:
+        continue
+
+      is_tagged_capital = capital_result.get("extratags", {}).get("capital") in ("administrative", "state", "yes")
+      if is_tagged_capital:
+        selected_capital = capital_result
+        break
+
+      if selected_capital is None:
+        selected_capital = capital_result
+
+    if selected_capital:
+      selected_capital_address = selected_capital.get("address", {})
+      selected_city_name = (selected_capital_address.get("city") or selected_capital_address.get("town") or selected_capital.get("display_name", "").split(",")[0])
+      return (float(selected_capital["lat"]), float(selected_capital["lon"]), selected_city_name, state_name, country_name)
 
   return (0.0, 0.0, "N/A", "N/A", "N/A")
 
 def send_stats(params):
+  if not is_url_pingable(os.environ.get("STATS_URL", "")):
+    return
+
   build_metadata = get_build_metadata()
   frogpilot_toggles = get_frogpilot_toggles()
 
@@ -158,7 +156,7 @@ def send_stats(params):
   dongle_id = params.get("FrogPilotDongleId")
   frogpilot_stats = params.get("FrogPilotStats")
 
-  location = json.loads(params.get("LastGPSPosition")) or {}
+  location = json.loads(params.get("LastGPSPosition") or "{}")
   original_latitude = location.get("latitude", 0.0)
   original_longitude = location.get("longitude", 0.0)
   latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)

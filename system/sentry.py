@@ -34,7 +34,7 @@ def report_tombstone(fn: str, message: str, contents: str) -> None:
 
 def capture_block() -> None:
   with sentry_sdk.push_scope() as scope:
-    sentry_sdk.capture_message("Blocked user from using the development branch", level='info')
+    sentry_sdk.capture_message("Blocked user from using the development branch", level="info")
     sentry_sdk.flush()
 
 

@@ -18,10 +18,7 @@ from openpilot.system.hardware import HARDWARE
 
 from openpilot.frogpilot.assets.theme_manager import ThemeManager
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, run_cmd, use_konik_server
-from openpilot.frogpilot.common.frogpilot_variables import (
-  ERROR_LOGS_PATH, EXCLUDED_KEYS, HD_LOGS_PATH, KONIK_LOGS_PATH,
-  THEME_SAVE_PATH, FrogPilotVariables, get_frogpilot_toggles
-)
+from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, EXCLUDED_KEYS, HD_LOGS_PATH, KONIK_LOGS_PATH, THEME_SAVE_PATH, FrogPilotVariables, get_frogpilot_toggles
 
 
 def cleanup_backups(directory, limit):

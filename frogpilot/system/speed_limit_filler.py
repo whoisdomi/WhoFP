@@ -232,10 +232,10 @@ class MapSpeedLogger:
       return
 
     distance = calculate_distance_to_point(
-      self.previous_coordinates["latitude"] * CV.DEG_TO_RAD,
-      self.previous_coordinates["longitude"] * CV.DEG_TO_RAD,
-      current_latitude * CV.DEG_TO_RAD,
-      current_longitude * CV.DEG_TO_RAD
+      self.previous_coordinates["latitude"],
+      self.previous_coordinates["longitude"],
+      current_latitude,
+      current_longitude
     )
     if distance < 1:
       return

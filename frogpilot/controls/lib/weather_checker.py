@@ -96,10 +96,10 @@ class WeatherChecker:
 
     if self.last_gps_position and self.last_updated:
       distance = calculate_distance_to_point(
-        self.last_gps_position["latitude"] * CV.DEG_TO_RAD,
-        self.last_gps_position["longitude"] * CV.DEG_TO_RAD,
-        self.frogpilot_planner.gps_position.get("latitude") * CV.DEG_TO_RAD,
-        self.frogpilot_planner.gps_position.get("longitude") * CV.DEG_TO_RAD
+        self.last_gps_position["latitude"],
+        self.last_gps_position["longitude"],
+        self.frogpilot_planner.gps_position.get("latitude"),
+        self.frogpilot_planner.gps_position.get("longitude")
       )
       if distance / 1000 > CACHE_DISTANCE:
         self.hourly_forecast = None

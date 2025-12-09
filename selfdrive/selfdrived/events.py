@@ -1101,8 +1101,8 @@ FROGPILOT_EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.PERMANENT: Alert(
       "Don't use the 'Development' branch!",
       "Forcing you into 'Dashcam Mode' for your safety...",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.HIGHEST, VisualAlert.none, AudibleAlert.none, 1.),
+      AlertStatus.critical, AlertSize.mid,
+      Priority.HIGHEST, VisualAlert.none, AudibleAlert.warningImmediate, 1.),
   },
 
   FrogPilotEventName.customStartupAlert: {

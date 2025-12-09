@@ -3,9 +3,9 @@ import io
 import json
 import math
 import numpy as np
+import os
 import requests
 import subprocess
-import tarfile
 import threading
 import time
 import zipfile
@@ -24,34 +24,42 @@ from panda import Panda
 
 from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
 
-running_threads = {}
-thread_lock = threading.Lock()
+class ThreadManager:
+  def __init__(self):
+    self.thread_lock = threading.Lock()
 
-def run_thread_with_lock(target, args=(), report=True):
-  name = target.__name__
+    self.running_threads = {}
 
-  if not isinstance(args, (tuple, list)):
-    args = (args,)
+  def run_with_lock(self, target, args=(), report=True):
+    name = target.__name__
 
-  with thread_lock:
-    dead_threads = [key for key, thread in running_threads.items() if not thread.is_alive()]
-    for key in dead_threads:
-      del running_threads[key]
+    if not isinstance(args, (tuple, list)):
+      args = (args,)
 
-    if name in running_threads and running_threads[name].is_alive():
-      return
+    with self.thread_lock:
+      dead_threads = [key for key, thread in self.running_threads.items() if not thread.is_alive()]
+      for key in dead_threads:
+        del self.running_threads[key]
 
-    def wrapped_target(*t_args):
-      try:
-        target(*t_args)
-      except Exception as exception:
-        print(f"Error in thread '{name}': {exception}")
-        if report:
-          sentry.capture_exception(exception)
+      if name in self.running_threads and self.running_threads[name].is_alive():
+        return
 
-    thread = threading.Thread(target=wrapped_target, args=args, daemon=True)
-    thread.start()
-    running_threads[name] = thread
+      def wrapped_target(*t_args):
+        try:
+          target(*t_args)
+        except Exception as exception:
+          print(f"Error in thread '{name}': {exception}")
+          if report:
+            sentry.capture_exception(exception)
+
+      thread = threading.Thread(args=args, daemon=True, target=wrapped_target)
+      thread.start()
+      self.running_threads[name] = thread
+
+  def is_thread_alive(self, name):
+    with self.thread_lock:
+      thread = self.running_threads.get(name)
+      return thread is not None and thread.is_alive()
 
 
 def calculate_bearing_offset(latitude, longitude, current_bearing, distance):
@@ -61,16 +69,21 @@ def calculate_bearing_offset(latitude, longitude, current_bearing, distance):
 
   delta = distance / EARTH_RADIUS
 
-  new_latitude = math.asin(math.sin(lat_rad) * math.cos(delta) + math.cos(lat_rad) * math.sin(delta) * math.cos(bearing))
-  new_longitude = lon_rad + math.atan2(math.sin(bearing) * math.sin(delta) * math.cos(lat_rad),  math.cos(delta) - math.sin(lat_rad) * math.sin(new_latitude))
-  return math.degrees(new_latitude), math.degrees(new_longitude)
+  new_lat = math.asin(math.sin(lat_rad) * math.cos(delta) + math.cos(lat_rad) * math.sin(delta) * math.cos(bearing))
+  new_lon = lon_rad + math.atan2(math.sin(bearing) * math.sin(delta) * math.cos(lat_rad),  math.cos(delta) - math.sin(lat_rad) * math.sin(new_lat))
+  return math.degrees(new_lat), math.degrees(new_lon)
 
 
 def calculate_distance_to_point(lat1, lon1, lat2, lon2):
-  delta_lat = lat2 - lat1
-  delta_lon = lon2 - lon1
+  lat1_rad = math.radians(lat1)
+  lon1_rad = math.radians(lon1)
+  lat2_rad = math.radians(lat2)
+  lon2_rad = math.radians(lon2)
 
-  a = (math.sin(delta_lat / 2) ** 2) + math.cos(lat1) * math.cos(lat2) * (math.sin(delta_lon / 2) ** 2)
+  delta_lat = lat2_rad - lat1_rad
+  delta_lon = lon2_rad - lon1_rad
+
+  a = (math.sin(delta_lat / 2) ** 2) + math.cos(lat1_rad) * math.cos(lat2_rad) * (math.sin(delta_lon / 2) ** 2)
   c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
   return EARTH_RADIUS * c
@@ -118,7 +131,7 @@ def capture_report(discord_user, report, frogpilot_toggles):
   if error_file_path.exists():
     error_content = error_file_path.read_text()[:1000]
 
-  toggles_bytes = io.BytesIO(json.dumps(frogpilot_toggles, indent=2).encode("utf-8"))
+  toggles_bytes = io.BytesIO(json.dumps(frogpilot_toggles.__dict__, indent=2).encode("utf-8"))
 
   message = (
     f"**🚨 New Error Report**\n\n"
@@ -131,21 +144,21 @@ def capture_report(discord_user, report, frogpilot_toggles):
   )
 
   try:
-    resp = requests.post(
+    main_message = requests.post(
       DISCORD_WEBHOOK_URL_REPORT,
       data={"content": message},
       files={"file": ("frogpilot_toggles.json", toggles_bytes, "application/json")}
     )
-    if resp.status_code not in (200, 204):
-      print(f"Discord notification failed: {resp.status_code} {resp.text}")
+    if main_message.status_code not in (200, 204):
+      print(f"Discord notification failed: {main_message.status_code} {main_message.text}")
       return
 
-    mention_resp = requests.post(
+    mention_message = requests.post(
       DISCORD_WEBHOOK_URL_REPORT,
       json={"content": "<@&1198482895342411846>"}
     )
-    if mention_resp.status_code not in (200, 204):
-      print(f"Discord mention failed: {mention_resp.status_code} {mention_resp.text}")
+    if mention_message.status_code not in (200, 204):
+      print(f"Discord mention failed: {mention_message.status_code} {mention_message.text}")
   except Exception as exception:
     print(f"Error sending Discord message: {exception}")
 
@@ -168,15 +181,6 @@ def delete_file(path, print_error=True, report=True):
     print(f"File not found: {path}")
 
 
-def extract_tar(tar_file, extract_path):
-  with tarfile.open(tar_file, "r:gz") as tar:
-    print(f"Extracting {tar_file} to {extract_path}")
-    tar.extractall(path=extract_path)
-
-  tar_file.unlink()
-  print(f"Extraction completed!")
-
-
 def extract_zip(zip_file, extract_path):
   with zipfile.ZipFile(zip_file, "r") as zip:
     print(f"Extracting {zip_file} to {extract_path}")
@@ -191,7 +195,6 @@ def flash_panda(params_memory):
     try:
       with Panda(serial=serial) as panda:
         print(f"Flashing Panda {serial}")
-        panda.reset(enter_bootstub=True)
         panda.flash()
     except Exception as exception:
       print(f"Failed to flash Panda {serial}: {exception}")
@@ -206,6 +209,9 @@ def get_lock_status(can_parser, can_sock):
 
 
 def is_url_pingable(url):
+  if not url:
+    return False
+
   if not hasattr(is_url_pingable, "session"):
     is_url_pingable.session = requests.Session()
     is_url_pingable.session.headers.update({"User-Agent": "frogpilot-ping-test/1.0 (https://github.com/FrogAi/FrogPilot)"})
@@ -214,7 +220,11 @@ def is_url_pingable(url):
     response = is_url_pingable.session.head(url, timeout=10, allow_redirects=True)
     if response.status_code in (405, 501):
       response = is_url_pingable.session.get(url, timeout=10, allow_redirects=True, stream=True)
-    return response.ok
+
+    is_accessible = response.ok
+    response.close()
+    return is_accessible
+
   except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
     return False
   except requests.exceptions.RequestException as error:
@@ -227,12 +237,16 @@ def is_url_pingable(url):
 
 def load_json_file(path):
   if path.is_file():
-    with open(path) as file:
-      return json.load(file)
+    try:
+      with open(path) as file:
+        return json.load(file)
+    except json.JSONDecodeError:
+      print(f"Failed to load JSON file: {path}")
+      return {}
   return {}
 
 
-def lock_doors(params, lock_doors_timer, sm):
+def lock_doors(lock_doors_timer, sm, params):
   wait_for_no_driver(params, sm, door_checks=True, time_threshold=lock_doors_timer)
 
   can_parser = CANParser("toyota_nodsu_pt_generated", [("DOOR_LOCKS", 3)], bus=0)
@@ -264,6 +278,12 @@ def run_cmd(cmd, success_message, fail_message, env=None, report=True):
     result = subprocess.run(cmd, capture_output=True, check=True, env=env, text=True)
     print(success_message)
     return result.stdout.strip()
+  except subprocess.CalledProcessError as exception:
+    print(f"Command failed with error: {exception.stderr}")
+    print(fail_message)
+    if report:
+      sentry.capture_exception(exception.stderr)
+    return None
   except Exception as exception:
     print(f"Unexpected error occurred: {exception}")
     print(fail_message)
@@ -278,8 +298,13 @@ def update_can_parser(can_parser, can_sock):
 
 
 def update_json_file(path, data):
-  with open(path, "w") as file:
+  temp_path = f"{path}.tmp"
+  with open(temp_path, "w") as file:
     json.dump(data, file, indent=2, sort_keys=True)
+    file.flush()
+    os.fsync(file.fileno())
+
+  os.replace(temp_path, path)
 
 
 def update_maps(now, params, params_memory):
@@ -314,7 +339,7 @@ def update_maps(now, params, params_memory):
   params.put("LastMapsUpdate", todays_date)
 
 
-def update_openpilot(params, params_memory):
+def update_openpilot(thread_manager, params, params_memory):
   def update_available():
     run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Updater check signal sent", "Failed to send updater check signal", report=False)
 
@@ -343,7 +368,7 @@ def update_openpilot(params, params_memory):
   if not update_available():
     return
 
-  while params.get_bool("IsOnroad") or params_memory.get_bool("UpdateSpeedLimits") or running_threads.get("lock_doors", threading.Thread()).is_alive():
+  while params.get_bool("IsOnroad") or params_memory.get_bool("UpdateSpeedLimits") or thread_manager.is_thread_alive("lock_doors"):
     time.sleep(60)
 
   while True:
