@@ -9,15 +9,16 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL, Priority, Ratekeeper, config_realtime_process
 from openpilot.common.time_helpers import system_time_valid
 
+from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, is_url_pingable
 from openpilot.frogpilot.controls.frogpilot_planner import FrogPilotPlanner
 from openpilot.frogpilot.system.frogpilot_stats import send_stats
 from openpilot.frogpilot.system.frogpilot_tracking import FrogPilotTracking
 
 ASSET_CHECK_RATE = (1 / DT_MDL)
 
-def check_assets(params_memory):
+def check_assets(thread_manager, params_memory):
 
-def transition_offroad(frogpilot_planner, time_validated, sm, params):
+def transition_offroad(frogpilot_planner, thread_manager, time_validated, sm, params):
   params.put("LastGPSPosition", json.dumps(frogpilot_planner.gps_position))
 
   if time_validated:
@@ -25,7 +26,7 @@ def transition_offroad(frogpilot_planner, time_validated, sm, params):
 
 def transition_onroad():
 
-def update_checks(now, params, params_memory, boot_run=False):
+def update_checks(now, thread_manager, params, params_memory, boot_run=False):
   while not (is_url_pingable("https://github.com") or is_url_pingable("https://gitlab.com")):
     time.sleep(60)
 
@@ -46,6 +47,8 @@ def frogpilot_thread():
   params = Params(return_defaults=True)
   params_memory = Params(memory=True)
 
+  thread_manager = ThreadManager()
+
   run_update_checks = False
   started_previously = False
   time_validated = False
@@ -58,7 +61,7 @@ def frogpilot_thread():
     started = sm["deviceState"].started
 
     if not started and started_previously:
-      transition_offroad(frogpilot_planner, time_validated, sm, params)
+      transition_offroad(frogpilot_planner, thread_manager, time_validated, sm, params)
 
       run_update_checks = True
     elif started and not started_previously:
@@ -79,13 +82,13 @@ def frogpilot_thread():
     started_previously = started
 
     if rate_keeper.frame % ASSET_CHECK_RATE == 0:
-      check_assets(params_memory)
+      check_assets(thread_manager, params_memory)
 
     run_update_checks |= now.second == 0 and (now.minute % 60 == 0 or (now.minute % 5 == 0 and frogpilot_toggles.frogs_go_moo))
     run_update_checks &= time_validated
 
     if run_update_checks:
-      thread_manager.run_with_lock(update_checks, (now, params, params_memory))
+      thread_manager.run_with_lock(update_checks, (now, thread_manager, params, params_memory))
 
       run_update_checks = False
     elif not time_validated:
@@ -94,7 +97,7 @@ def frogpilot_thread():
         continue
 
       thread_manager.run_with_lock(send_stats, (params))
-      thread_manager.run_with_lock(update_checks, (now, params, params_memory, True))
+      thread_manager.run_with_lock(update_checks, (now, thread_manager, params, params_memory, True))
 
     rate_keeper.keep_time()
 
