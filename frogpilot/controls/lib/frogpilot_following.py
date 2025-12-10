@@ -70,12 +70,12 @@ class FrogPilotFollowing:
 
     if long_control_active and self.frogpilot_planner.tracking_lead:
       if not sm["frogpilotCarState"].trafficModeEnabled and frogpilot_toggles.human_following:
-        self.update_follow_values(self.frogpilot_planner.lead_one.dRel, v_ego, self.frogpilot_planner.lead_one.vLead, frogpilot_toggles)
+        self.update_follow_values(self.frogpilot_planner.lead_one.dRel, v_ego, self.frogpilot_planner.lead_one.vLead)
       self.desired_follow_distance = desired_follow_distance(v_ego, self.frogpilot_planner.lead_one.vLead, self.t_follow)
     else:
       self.desired_follow_distance = 0
 
-  def update_follow_values(self, lead_distance, v_ego, v_lead, frogpilot_toggles):
+  def update_follow_values(self, lead_distance, v_ego, v_lead):
     # Offset by FrogAi for FrogPilot for a more natural approach to a faster lead
     if v_lead > v_ego:
       distance_factor = max(lead_distance - (v_ego * self.t_follow), 1)

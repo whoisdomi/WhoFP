@@ -108,30 +108,24 @@ FrogPilotSoundsPanel::FrogPilotSoundsPanel(FrogPilotSettingsWindow *parent, bool
 
   for (const QString &key : alertVolumeControlKeys) {
     FrogPilotParamValueButtonControl *toggle = static_cast<FrogPilotParamValueButtonControl*>(toggles[key]);
-    QObject::connect(toggle, &FrogPilotParamValueButtonControl::buttonClicked, [key, toggle, this]() {
+
+    QString baseName = QString(key).remove("Volume");
+    QString camelCaseAlert = QString(baseName).replace(0, 1, baseName[0].toLower());
+    QString snakeCaseAlert = QString(baseName).replace(QRegularExpression("([A-Z])"), "_\\1").toLower().mid(1);
+
+    QObject::connect(toggle, &FrogPilotParamValueButtonControl::buttonClicked, [camelCaseAlert, key, snakeCaseAlert, toggle, this]() {
       toggle->updateParam();
 
       updateFrogPilotToggles();
 
       util::sleep_for(UI_FREQ);
 
-      QString keyWithoutVolume = QString(key).remove("Volume");
-      QString camelCaseAlert = keyWithoutVolume.mid(0, 1).toLower() + keyWithoutVolume.mid(1);
-
-      QString snakeCaseAlert;
-      for (int i = 0; i < keyWithoutVolume.size(); ++i) {
-        QChar currentChar = keyWithoutVolume[i];
-        if (currentChar.isUpper() && i > 0) {
-          snakeCaseAlert += '_';
-        }
-        snakeCaseAlert += currentChar.toLower();
-      }
-
       if (started) {
         params_memory.put("TestAlert", camelCaseAlert.toStdString());
       } else {
-        std::thread([key, snakeCaseAlert, this]() {
-          playSound(snakeCaseAlert, params.getInt(key.toStdString()));
+        int volume = params.getInt(key.toStdString());
+        std::thread([snakeCaseAlert, volume]() {
+          playSound(snakeCaseAlert, volume);
         }).detach();
       }
     });

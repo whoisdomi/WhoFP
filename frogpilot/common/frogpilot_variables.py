@@ -305,7 +305,6 @@ class FrogPilotVariables:
     alpha_longitudinal = CP.alphaLongitudinalAvailable
     toggle.car_make = CP.brand
     toggle.car_model = CP.carFingerprint
-    toggle.disable_always_on_lateral = toggle.car_make in ("psa", "rivian", "tesla")
     toggle.disable_openpilot_long = self.get_value("DisableOpenpilotLongitudinal", condition=not alpha_longitudinal)
     friction = CP.lateralTuning.torque.friction
     has_bsm = CP.enableBsm
@@ -389,7 +388,7 @@ class FrogPilotVariables:
     toggle.warningSoft_volume = self.get_value("WarningSoftVolume", cast=float, condition=toggle.alert_volume_controller)
     toggle.warningImmediate_volume = max(self.get_value("WarningImmediateVolume", cast=float, condition=toggle.alert_volume_controller, default=25), 25)
 
-    toggle.always_on_lateral = self.get_value("AlwaysOnLateral", condition=not toggle.disable_always_on_lateral)
+    toggle.always_on_lateral = self.get_value("AlwaysOnLateral")
     toggle.always_on_lateral_lkas = toggle.always_on_lateral and toggle.lkas_allowed_for_aol and self.get_value("AlwaysOnLateralLKAS")
     toggle.always_on_lateral_main = toggle.always_on_lateral and not prohibited_main_aol and not toggle.always_on_lateral_lkas
     toggle.always_on_lateral_pause_speed = self.get_value("PauseAOLOnBrake", cast=float, condition=toggle.always_on_lateral)

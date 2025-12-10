@@ -159,6 +159,9 @@ static void tesla_rx_hook(const CANPacket_t *msg) {
       cruise_engaged = cruise_engaged && !tesla_autopark;
 
       pcm_cruise_check(cruise_engaged);
+
+      // FrogPilot variables
+      acc_main_on = ((cruise_state == 1) || cruise_engaged) && !tesla_autopark;
     }
 
     if (msg->addr == 0x155U) {

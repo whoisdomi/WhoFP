@@ -319,7 +319,6 @@ void FrogPilotSettingsWindow::updateVariables() {
     std::string carFingerprint = CP.getCarFingerprint();
     carMake = CP.getBrand();
 
-    canUseAOL = !frogpilot_toggles.value("disable_always_on_lateral").toBool();
     friction = CP.getLateralTuning().getTorque().getFriction();
     hasAlphaLongitudinal = CP.getAlphaLongitudinalAvailable();
     hasBSM = CP.getEnableBsm();
