@@ -454,6 +454,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"TetheringEnabled", {PERSISTENT, INT, "0", "0", 0}},
     {"ThemeDownloadProgress", {CLEAR_ON_MANAGER_START, STRING, "", ""}},
     {"ThemesDownloaded", {PERSISTENT, JSON, "{}", "{}"}},
+    {"Timezone", {PERSISTENT, STRING, "", ""}},
     {"TinygradUpdateAvailable", {PERSISTENT, BOOL, "0", "0", 1}},
     {"ToyotaDoors", {PERSISTENT, BOOL, "1", "0", 0}},
     {"TrafficFollow", {PERSISTENT, FLOAT, "0.5", "0.5", 2}},

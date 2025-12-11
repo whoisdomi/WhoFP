@@ -160,7 +160,7 @@ def send_stats(params):
   dongle_id = params.get("FrogPilotDongleId")
   frogpilot_stats = params.get("FrogPilotStats")
 
-  location = json.loads(params.get("LastGPSPosition") or "{}")
+  location = json.loads(params.get("LastGPSPosition") or "{}") or {}
   original_latitude = location.get("latitude", 0.0)
   original_longitude = location.get("longitude", 0.0)
   latitude, longitude, city, state, country = get_city_center(original_latitude, original_longitude)

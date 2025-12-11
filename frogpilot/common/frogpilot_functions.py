@@ -100,7 +100,7 @@ def backup_toggles(params):
     print("Toggles are identical to the previous backup. Aborting...")
     return
 
-  destination = backup_path / f"{datetime.datetime.now().strftime('%Y-%m-%d_%I-%M%p').lower()}_auto"
+  destination = backup_path / f"{datetime.datetime.now().strftime('%Y-%m-%d_%I-%M-%S%p').lower()}_auto"
   create_backup(Path(params_backup.get_param_path()), destination, "Successfully backed up toggles!", "Failed to backup toggles...", params)
 
 
