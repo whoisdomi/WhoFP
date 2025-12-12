@@ -9,6 +9,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL, Priority, Ratekeeper, config_realtime_process
 from openpilot.common.time_helpers import system_time_valid
 
+from openpilot.frogpilot.common.frogpilot_functions import backup_toggles
 from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, is_url_pingable
 from openpilot.frogpilot.common.frogpilot_variables import FrogPilotVariables
 from openpilot.frogpilot.controls.frogpilot_planner import FrogPilotPlanner
@@ -33,9 +34,12 @@ def update_checks(now, thread_manager, params, params_memory, frogpilot_toggles,
 
   time.sleep(1)
 
-def update_toggles(frogpilot_variables, started):
+def update_toggles(frogpilot_variables, started, thread_manager, time_validated, params):
   frogpilot_variables.update(started)
   frogpilot_toggles = frogpilot_variables.frogpilot_toggles
+
+  if time_validated:
+    thread_manager.run_with_lock(backup_toggles, (params))
 
   return frogpilot_toggles
 
@@ -74,7 +78,7 @@ def frogpilot_thread():
     started = sm["deviceState"].started
 
     if not started and started_previously:
-      frogpilot_toggles = update_toggles(frogpilot_variables, started)
+      frogpilot_toggles = update_toggles(frogpilot_variables, started, thread_manager, time_validated, params)
       transition_offroad(frogpilot_planner, thread_manager, time_validated, sm, params, frogpilot_toggles)
 
       run_update_checks = True
@@ -100,7 +104,7 @@ def frogpilot_thread():
       check_assets(thread_manager, params_memory, frogpilot_toggles)
 
     if params_memory.get_bool("FrogPilotTogglesUpdated"):
-      frogpilot_toggles = update_toggles(frogpilot_variables, started)
+      frogpilot_toggles = update_toggles(frogpilot_variables, started, thread_manager, time_validated, params)
 
       toggles_last_updated = now
 
