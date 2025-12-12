@@ -1,4 +1,4 @@
-""" 'transparent' numba functionality replacements
+"""'transparent' numba functionality replacements
 
 njit decorator
 data types
@@ -9,6 +9,7 @@ dtype_2int_tuple = typeof((1, 1))
 """
 
 
+# decorator
 def njit(*args, **kwargs):
     def wrapper(f):
         return f
@@ -16,27 +17,26 @@ def njit(*args, **kwargs):
     return wrapper
 
 
-class SubscriptAndCallable(object):
+class SubscriptAndCallable:
     def __init__(self, *args, **kwargs):
         pass
 
     def __class_getitem__(cls, item):
         return None
 
+    def __call__(self, arg):
+        # for example int64(1) must work
+        return arg
+
 
 # DTYPES
-# @njit(b1(i4, i4, i4[:, :]), cache=True)
-
-
-class b1(SubscriptAndCallable):
-    pass
 
 
 class f8(SubscriptAndCallable):
     pass
 
 
-class i2(SubscriptAndCallable):
+class i8(SubscriptAndCallable):
     pass
 
 
@@ -44,9 +44,9 @@ class i4(SubscriptAndCallable):
     pass
 
 
-class u2(SubscriptAndCallable):
+class boolean(SubscriptAndCallable):
     pass
 
 
-def typeof(*args):
-    return b1
+class Array(SubscriptAndCallable):
+    pass

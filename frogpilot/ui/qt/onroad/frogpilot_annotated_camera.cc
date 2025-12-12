@@ -146,6 +146,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   hideBottomIcons = selfdriveState.getAlertSize() != cereal::SelfdriveState::AlertSize::NONE;
   hideBottomIcons |= frogpilotSelfdriveState.getAlertSize() != cereal::FrogPilotSelfdriveState::AlertSize::NONE;
   hideBottomIcons |= signalStyle.startsWith("traditional") && (carState.getLeftBlinker() || carState.getRightBlinker());
+
   speedLimit = frogpilotPlan.getSlcOverriddenSpeed() != 0 ? frogpilotPlan.getSlcOverriddenSpeed() : frogpilotPlan.getSlcSpeedLimit();
   speedLimitChanged = frogpilotPlan.getSpeedLimitChanged();
   if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && !frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
@@ -786,13 +787,17 @@ void FrogPilotAnnotatedCameraWidget::paintPendingSpeedLimit(QPainter &p, SubMast
 void FrogPilotAnnotatedCameraWidget::paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point) {
   p.save();
 
-  static float hueOffset = 0.0;
+  static float hueOffset = 0.0f;
   if (speed > 0) {
-    hueOffset += powf(speed / speedConversion, 0.5f) / sqrtf(145.0f / MS_TO_KPH);
+    hueOffset += speed / speedConversion * 0.02f;
+
+    if (hueOffset >= 360.0f) {
+      hueOffset = fmodf(hueOffset, 360.0f);
+    }
   }
 
   float alpha = util::map_val(lin_grad_point, 0.0f, 1.0f, 0.5f, 0.1f);
-  float pathHue = fmodf((lin_grad_point * 360.0f) + hueOffset, 360.0f);
+  float pathHue = fmodf(lin_grad_point * 120.0f + hueOffset, 360.0f);
 
   bg.setColorAt(lin_grad_point, QColor::fromHslF(pathHue / 360.0f, 1.0f, 0.5f, alpha));
   bg.setSpread(QGradient::RepeatSpread);

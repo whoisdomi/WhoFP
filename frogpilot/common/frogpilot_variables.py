@@ -59,6 +59,8 @@ SCREEN_RECORDINGS_PATH = Path("/data/media/screen_recordings")
 VIDEO_CACHE_PATH = Path("/data/video_cache")
 
 BACKUP_PATH = Path("/cache/on_backup")
+FROGPILOT_BACKUPS = Path("/data/backups")
+TOGGLE_BACKUPS = Path("/data/toggle_backups")
 
 HD_LOGS_PATH = Path("/data/media/0/realdata_HD")
 HD_PATH = Path("/cache/use_HD")
@@ -418,12 +420,12 @@ class FrogPilotVariables:
     toggle.curve_speed_controller = toggle.openpilot_longitudinal and self.get_value("CurveSpeedController")
     toggle.csc_status = self.get_value("ShowCSCStatus", condition=toggle.curve_speed_controller) or toggle.debug_mode
 
-    toggle.custom_alerts = self.get_value("CustomAlerts")
-    toggle.goat_scream_alert = self.get_value("GoatScream", condition=toggle.custom_alerts)
-    toggle.green_light_alert = self.get_value("GreenLightAlert", condition=toggle.custom_alerts)
-    toggle.lead_departing_alert = self.get_value("LeadDepartingAlert", condition=toggle.custom_alerts)
-    toggle.loud_blindspot_alert = has_bsm and self.get_value("LoudBlindspotAlert", condition=toggle.custom_alerts)
-    toggle.speed_limit_changed_alert = self.get_value("SpeedLimitChangedAlert", condition=toggle.custom_alerts)
+    custom_alerts = self.get_value("CustomAlerts")
+    toggle.goat_scream_alert = self.get_value("GoatScream", condition=custom_alerts)
+    toggle.green_light_alert = self.get_value("GreenLightAlert", condition=custom_alerts)
+    toggle.lead_departing_alert = self.get_value("LeadDepartingAlert", condition=custom_alerts)
+    toggle.loud_blindspot_alert = has_bsm and self.get_value("LoudBlindspotAlert", condition=custom_alerts)
+    toggle.speed_limit_changed_alert = self.get_value("SpeedLimitChangedAlert", condition=custom_alerts)
 
     toggle.custom_personalities = toggle.openpilot_longitudinal and self.get_value("CustomPersonalities")
     toggle.aggressive_jerk_acceleration = self.get_value("AggressiveJerkAcceleration", cast=float, condition=toggle.custom_personalities, conversion=0.01, min=0.25, max=2.0)
@@ -598,7 +600,8 @@ class FrogPilotVariables:
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
 
     toggle.model = self.default_values["DrivingModel"]
-    toggle.model_name = "Dark Souls"
+    toggle.model_name = self.default_values["DrivingModelName"]
+    toggle.model_version = self.default_values["DrivingModelVersion"]
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)
@@ -607,10 +610,10 @@ class FrogPilotVariables:
     toggle.path_width = self.get_value("PathWidth", cast=float, condition=toggle.model_ui, conversion=distance_conversion / 2)
     toggle.road_edge_width = self.get_value("RoadEdgesWidth", cast=float, condition=toggle.model_ui, conversion=small_distance_conversion / 200)
 
-    toggle.navigation_ui = self.get_value("NavigationUI")
-    toggle.road_name_ui = self.get_value("RoadNameUI", condition=toggle.navigation_ui)
-    toggle.show_speed_limits = self.get_value("ShowSpeedLimits", condition=toggle.navigation_ui)
-    toggle.speed_limit_vienna = self.get_value("UseVienna", condition=toggle.navigation_ui)
+    navigation_ui = self.get_value("NavigationUI")
+    toggle.road_name_ui = self.get_value("RoadNameUI", condition=navigation_ui)
+    toggle.show_speed_limits = self.get_value("ShowSpeedLimits", condition=navigation_ui)
+    toggle.speed_limit_vienna = self.get_value("UseVienna", condition=navigation_ui)
 
     quality_of_life_lateral = self.get_value("QOLLateral")
     toggle.pause_lateral_below_speed = self.get_value("PauseLateralSpeed", cast=float, condition=quality_of_life_lateral, conversion=speed_conversion)
@@ -674,9 +677,9 @@ class FrogPilotVariables:
     toggle.slc_fallback_previous_speed_limit = slc_fallback_method == 2
     toggle.slc_fallback_set_speed = slc_fallback_method == 0
     toggle.slc_mapbox_filler = (toggle.show_speed_limits or toggle.speed_limit_controller) and self.params.get("MapboxSecretKey") is not None and self.get_value("SLCMapboxFiller")
-    toggle.speed_limit_confirmation = self.get_value("SLCConfirmation", condition=toggle.speed_limit_controller)
-    toggle.speed_limit_confirmation_higher = self.get_value("SLCConfirmationHigher", condition=toggle.speed_limit_confirmation)
-    toggle.speed_limit_confirmation_lower = self.get_value("SLCConfirmationLower", condition=toggle.speed_limit_confirmation)
+    speed_limit_confirmation = self.get_value("SLCConfirmation", condition=toggle.speed_limit_controller)
+    toggle.speed_limit_confirmation_higher = self.get_value("SLCConfirmationHigher", condition=speed_limit_confirmation)
+    toggle.speed_limit_confirmation_lower = self.get_value("SLCConfirmationLower", condition=speed_limit_confirmation)
     slc_override_method = self.get_value("SLCOverride", cast=float, condition=toggle.speed_limit_controller)
     toggle.speed_limit_controller_override_manual = slc_override_method == 1
     toggle.speed_limit_controller_override_set_speed = slc_override_method == 2

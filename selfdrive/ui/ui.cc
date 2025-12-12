@@ -108,6 +108,7 @@ void UIState::updateStatus(FrogPilotUIState *fs) {
       status = ss.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
     }
 
+    // FrogPilot variables
     frogpilot_scene.wake_up_screen = ss.getAlertStatus() != cereal::SelfdriveState::AlertStatus::NORMAL || (status != previous_status && status != STATUS_OVERRIDE);
   }
 
@@ -244,26 +245,24 @@ void Device::updateWakefulness(const UIState &s, const FrogPilotUIState &fs) {
   const FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
   const QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
-  bool ignition_state_changed = s.scene.ignition != ignition_on;
+  bool ignition_just_turned_off = !s.scene.ignition && ignition_on;
   ignition_on = s.scene.ignition;
 
   if (ignition_on && frogpilot_toggles.value("standby_mode").toBool()) {
     if (frogpilot_scene.wake_up_screen) {
       resetInteractiveTimeout(frogpilot_toggles.value("screen_timeout").toInt(), frogpilot_toggles.value("screen_timeout_onroad").toInt());
-    }
-  }
-
-  if (ignition_state_changed) {
-    if (ignition_on && frogpilot_toggles.value("screen_brightness_onroad").toInt() == 0 && !frogpilot_toggles.value("standby_mode").toBool()) {
-      resetInteractiveTimeout(0, 0);
     } else {
-      resetInteractiveTimeout(frogpilot_toggles.value("screen_timeout").toInt(), frogpilot_toggles.value("screen_timeout_onroad").toInt());
+      resetInteractiveTimeout(0, 0);
     }
+  } else if (ignition_just_turned_off) {
+    resetInteractiveTimeout(frogpilot_toggles.value("screen_timeout").toInt(), frogpilot_toggles.value("screen_timeout_onroad").toInt());
+  } else if (ignition_on && frogpilot_toggles.value("screen_brightness_onroad").toInt() == 0) {
+    resetInteractiveTimeout(0, 0);
   } else if (interactive_timeout > 0 && --interactive_timeout == 0) {
     emit interactiveTimeout();
   }
 
-  setAwake(s.scene.started || interactive_timeout > 0);
+  setAwake(s.scene.ignition || interactive_timeout > 0);
 }
 
 UIState *uiState() {

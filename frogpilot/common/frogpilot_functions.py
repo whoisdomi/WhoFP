@@ -18,7 +18,9 @@ from openpilot.system.hardware import HARDWARE
 
 from openpilot.frogpilot.assets.theme_manager import ThemeManager
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, run_cmd, use_konik_server
-from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, EXCLUDED_KEYS, HD_LOGS_PATH, KONIK_LOGS_PATH, THEME_SAVE_PATH, FrogPilotVariables, get_frogpilot_toggles
+from openpilot.frogpilot.common.frogpilot_variables import (
+  ERROR_LOGS_PATH, EXCLUDED_KEYS, FROGPILOT_BACKUPS, HD_LOGS_PATH, KONIK_LOGS_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS, FrogPilotVariables, get_frogpilot_toggles
+)
 
 
 def cleanup_backups(directory, limit):
@@ -33,74 +35,81 @@ def cleanup_backups(directory, limit):
 
 
 def create_backup(backup, destination, success_message, fail_message, params, minimum_backup_size=0, compressed=False):
-  in_progress_destination = destination.parent / f"{destination.name}_in_progress"
   final_destination = destination.parent / f"{destination.name}.tar.zst" if compressed else destination
 
   if final_destination.exists():
     print("Backup already exists. Aborting...")
-    return False
-
-  in_progress_destination.mkdir(parents=True, exist_ok=True)
-  run_cmd(["sudo", "rsync", "-avq", f"{backup}/.", str(in_progress_destination)], "" if compressed else success_message, fail_message, report=False)
+    return
 
   if compressed:
-    compressed_file = destination.parent / f"{destination.name}_in_progress.tar.zst"
+    compressed_temp = destination.parent / f"{destination.name}_in_progress.tar.zst"
 
-    with open(compressed_file, "wb") as f_out:
-      cctx = zstd.ZstdCompressor(level=2)
+    with open(compressed_temp, "wb") as f_out:
+      cctx = zstd.ZstdCompressor()
       with cctx.stream_writer(f_out) as compressor:
         with tarfile.open(fileobj=compressor, mode="w") as tar:
-          tar.add(in_progress_destination, arcname=destination.name)
+          try:
+            tar.add(backup, arcname=destination.name)
+          except OSError:
+            pass
 
-    delete_file(in_progress_destination, report=False)
-
-    compressed_file.rename(final_destination)
-    print(f"Backup saved: {final_destination}")
+    compressed_temp.rename(final_destination)
 
     compressed_backup_size = final_destination.stat().st_size
     if minimum_backup_size == 0 or compressed_backup_size < minimum_backup_size:
-      params.put("MinimumBackupSize", compressed_backup_size)
+      params.put("MinimumBackupSize", int(compressed_backup_size))
   else:
-    if in_progress_destination.exists():
-      if destination.exists():
-        delete_file(destination, report=False)
-      in_progress_destination.replace(destination)
+    in_progress_destination = destination.parent / f"{destination.name}_in_progress"
+
+    shutil.copytree(backup, in_progress_destination, symlinks=True)
+
+    in_progress_destination.rename(destination)
+
+  print(success_message)
 
 
 def backup_frogpilot(build_metadata, params):
-  backup_path = Path("/data/backups")
   maximum_backups = 3
-  cleanup_backups(backup_path, maximum_backups)
+  cleanup_backups(FROGPILOT_BACKUPS, maximum_backups)
 
-  _, _, free = shutil.disk_usage(backup_path)
+  today = datetime.datetime.now().date()
+  for backup in FROGPILOT_BACKUPS.glob("*_auto.tar.zst"):
+    if backup.name.endswith(f"_{build_metadata.channel}_auto.tar.zst"):
+      if datetime.datetime.fromtimestamp(backup.stat().st_mtime).date() == today:
+        if not backup.name.startswith(f"{build_metadata.openpilot.git_commit[:6]}_"):
+          delete_file(backup, report=False)
+
+  _, _, free = shutil.disk_usage(FROGPILOT_BACKUPS)
   minimum_backup_size = params.get("MinimumBackupSize")
   if free > minimum_backup_size * maximum_backups:
-    destination = backup_path / f"{build_metadata.channel}_{build_metadata.openpilot.git_commit_date[12:-16]}_auto"
+    destination = FROGPILOT_BACKUPS / f"{build_metadata.openpilot.git_commit}_{build_metadata.channel}_auto"
     create_backup(Path(BASEDIR), destination, "Successfully backed up FrogPilot!", "Failed to backup FrogPilot...", params, minimum_backup_size, compressed=True)
 
 
-def backup_toggles(params):
-  params_backup = Params("/data/params_backup", return_defaults=True)
+def backup_toggles(params, boot_run=False):
+  params_backup = Params("/dev/shm/params_backup", return_defaults=True)
 
   changes_found = False
   for key in params.all_keys():
-    current_value = params_backup.get(key)
-    new_value = params.get(key)
+    current_value = params.get(key)
+    if current_value is None:
+      continue
 
-    if new_value != current_value:
-      if new_value is not None:
-        params_backup.put(key, new_value)
+    if boot_run:
+      params_backup.put(key, current_value)
+      changes_found = True
+    elif current_value != params_backup.get(key):
+      params_backup.put(key, current_value)
       changes_found |= key not in EXCLUDED_KEYS
 
-  backup_path = Path("/data/toggle_backups")
   maximum_backups = 5
-  cleanup_backups(backup_path, maximum_backups)
+  cleanup_backups(TOGGLE_BACKUPS, maximum_backups)
 
-  if not changes_found and list(backup_path.glob("*")):
+  if not changes_found:
     print("Toggles are identical to the previous backup. Aborting...")
     return
 
-  destination = backup_path / f"{datetime.datetime.now().strftime('%Y-%m-%d_%I-%M-%S%p').lower()}_auto"
+  destination = TOGGLE_BACKUPS / f"{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_auto"
   create_backup(Path(params_backup.get_param_path()), destination, "Successfully backed up toggles!", "Failed to backup toggles...", params)
 
 
@@ -111,7 +120,7 @@ def frogpilot_boot_functions(build_metadata, params):
   ThemeManager(params, params_memory, boot_run=True).update_active_theme(time_validated=system_time_valid(), frogpilot_toggles=get_frogpilot_toggles(), boot_run=True)
 
   if use_konik_server():
-    if params.get("KonikDongleId") != None:
+    if params.get("KonikDongleId") is not None:
       params.put("DongleId", params.get("KonikDongleId"))
     else:
       params.put("KonikDongleId", register(show_spinner=True, register_konik=True))
@@ -125,7 +134,6 @@ def frogpilot_boot_functions(build_metadata, params):
       time.sleep(1)
 
     backup_frogpilot(build_metadata, params)
-    backup_toggles(params)
 
   threading.Thread(target=boot_thread, daemon=True).start()
 
@@ -141,7 +149,7 @@ def install_frogpilot(build_metadata, params):
     path.mkdir(parents=True, exist_ok=True)
 
   if params.get("FrogPilotDongleId") is None:
-    params.put("FrogPilotDongleId", ''.join(random.choices(string.ascii_lowercase + string.digits, k=16)))
+    params.put("FrogPilotDongleId", "".join(random.choices(string.ascii_lowercase + string.digits, k=16)))
 
   update_boot_logo(frogpilot=True)
 

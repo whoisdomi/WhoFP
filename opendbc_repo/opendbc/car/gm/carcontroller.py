@@ -4,7 +4,7 @@ from opendbc.car import Bus, DT_CTRL, create_gas_interceptor_command, structs
 from opendbc.car.lateral import apply_driver_steer_torque_limits
 from opendbc.car.gm import gmcan
 from opendbc.car.common.conversions import Conversions as CV
-from opendbc.car.gm.values import CC_ONLY_CAR, DBC, AccState, CanBus, CarControllerParams, CruiseButtons, GMFlags
+from opendbc.car.gm.values import CC_ONLY_CAR, DBC, CanBus, CarControllerParams, CruiseButtons, GMFlags
 from opendbc.car.interfaces import CarControllerBase
 
 VisualAlert = structs.CarControl.HUDControl.VisualAlert
@@ -141,7 +141,8 @@ class CarController(CarControllerBase):
             at_full_stop = at_full_stop and stopping
             friction_brake_bus = CanBus.POWERTRAIN
 
-          if CC.cruiseControl.resume and CS.pcm_acc_status == AccState.STANDSTILL and frogpilot_toggles.volt_sng:
+          # FrogPilot variables
+          if CC.cruiseControl.resume and CS.out.cruiseState.standstill and frogpilot_toggles.volt_sng:
             acc_engaged = False
           else:
             acc_engaged = CC.enabled

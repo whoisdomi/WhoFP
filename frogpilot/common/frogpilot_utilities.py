@@ -131,36 +131,34 @@ def capture_report(discord_user, report, frogpilot_toggles):
   if error_file_path.exists():
     error_content = error_file_path.read_text()[:1000]
 
-  toggles_bytes = io.BytesIO(json.dumps(frogpilot_toggles.__dict__, indent=2).encode("utf-8"))
-
   message = (
     f"**🚨 New Error Report**\n\n"
     f"**User:** `{discord_user}`\n\n"
-    f"**Report:**\n"
-    f"```{report}```\n"
-    f"**Error Log:**\n"
-    f"```{error_content}```\n"
-    f"**Toggle Settings:**\n"
+    f"**Report:**\n```{report}```\n\n"
+    f"**Error Log:**\n```{error_content}```\n\n"
+    f"**Toggle Settings:**"
   )
 
   try:
-    main_message = requests.post(
+    main_response = requests.post(
       DISCORD_WEBHOOK_URL_REPORT,
       data={"content": message},
-      files={"file": ("frogpilot_toggles.json", toggles_bytes, "application/json")}
+      files={"file": ("frogpilot_toggles.json", io.BytesIO(json.dumps(frogpilot_toggles, indent=2).encode("utf-8")), "application/json")},
+      timeout=10
     )
-    if main_message.status_code not in (200, 204):
-      print(f"Discord notification failed: {main_message.status_code} {main_message.text}")
-      return
+    main_response.raise_for_status()
 
-    mention_message = requests.post(
+    mention_response = requests.post(
       DISCORD_WEBHOOK_URL_REPORT,
-      json={"content": "<@&1198482895342411846>"}
+      json={"content": "<@&1198482895342411846>"},
+      timeout=10
     )
-    if mention_message.status_code not in (200, 204):
-      print(f"Discord mention failed: {mention_message.status_code} {mention_message.text}")
-  except Exception as exception:
+    mention_response.raise_for_status()
+
+  except requests.exceptions.RequestException as exception:
     print(f"Error sending Discord message: {exception}")
+  except Exception as exception:
+    print(f"Unexpected error: {exception}")
 
 
 def clean_model_name(name):

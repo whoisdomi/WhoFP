@@ -76,7 +76,7 @@ def update_toggles(frogpilot_variables, started, theme_manager, thread_manager, 
   theme_manager.update_active_theme(time_validated, frogpilot_toggles, randomize_theme=randomize_theme)
 
   if time_validated:
-    thread_manager.run_with_lock(backup_toggles, (params), report=False)
+    thread_manager.run_with_lock(backup_toggles, (params))
 
   return frogpilot_toggles
 
@@ -167,8 +167,10 @@ def frogpilot_thread():
       if not time_validated:
         continue
 
-      thread_manager.run_with_lock(send_stats, (params))
       theme_manager.update_active_theme(time_validated, frogpilot_toggles)
+
+      thread_manager.run_with_lock(backup_toggles, (params, True))
+      thread_manager.run_with_lock(send_stats, (params))
       thread_manager.run_with_lock(update_checks, (now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, True))
 
     rate_keeper.keep_time()

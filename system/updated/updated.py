@@ -11,6 +11,7 @@ import time
 import threading
 from collections import defaultdict
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
@@ -204,10 +205,6 @@ def finalize_update(params) -> None:
 
   set_consistent_flag(True)
   cloudlog.info("done finalizing overlay")
-
-  # FrogPilot variables
-  if os.path.isfile(BACKUP_PATH):
-    os.remove(BACKUP_PATH)
 
 
 def handle_agnos_update() -> None:
@@ -409,7 +406,10 @@ class Updater:
     cloudlog.info("finalize success!")
 
     # FrogPilot variables
-    self.params.put("Updated", datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p"))
+    if os.path.isfile(BACKUP_PATH):
+      os.remove(BACKUP_PATH)
+
+    self.params.put("Updated", datetime.datetime.now().astimezone(ZoneInfo("America/Phoenix")).strftime("%B %d, %Y - %I:%M%p"))
 
 def main() -> None:
   params = Params()
@@ -473,8 +473,6 @@ def main() -> None:
           first_run = False
           wait_helper.sleep(60)
           continue
-
-        # FrogPilot variables
 
         update_failed_count += 1
 

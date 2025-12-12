@@ -122,6 +122,8 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Handle sidebar collapsing
   if ((onroad->isVisible() || body->isVisible()) && (!sidebar->isVisible() || e->x() > sidebar->width())) {
     sidebar->setVisible(!sidebar->isVisible());
+
+    // FrogPilot variables
     params.putBool("SidebarOpen", sidebar->isVisible());
   }
 }

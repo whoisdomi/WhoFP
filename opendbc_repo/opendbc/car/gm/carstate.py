@@ -181,12 +181,13 @@ class CarState(CarStateBase):
       ret.cruiseState.speed = pt_cp.vl["ECMCruiseControl"]["CruiseSetSpeed"] * CV.KPH_TO_MS
 
     if self.CP.transmissionType == TransmissionType.direct:
-      self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1 or (ret.regenBraking and GearShifter.manumatic)
+      self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1
 
     # FrogPilot variables
     fp_ret = custom.FrogPilotCarState.new_message()
 
-    self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]["CruiseState"]
+    if self.CP.transmissionType == TransmissionType.direct:
+      self.single_pedal_mode |= ret.regenBraking and ret.gearShifter == GearShifter.manumatic
 
     return ret, fp_ret
 
