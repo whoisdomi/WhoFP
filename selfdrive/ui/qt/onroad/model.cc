@@ -61,11 +61,18 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     const cereal::FrogPilotRadarState::LeadData::Reader &lead_left = frogpilot_radar_state.getLeadLeft();
     const cereal::FrogPilotRadarState::LeadData::Reader &lead_right = frogpilot_radar_state.getLeadRight();
 
-    if (lead_left.getStatus()) {
+    frogpilot_nvg->adjacentLeadTextRect = QRect();
+
+    if (lead_left.getStatus() && lead_right.getStatus() && (lead_left.getDRel() < lead_right.getDRel())) {
       drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_left), adjacent_lead_vertices[0], surface_rect, frogpilot_nvg->blueColor(), true);
-    }
-    if (lead_right.getStatus()) {
       drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_right), adjacent_lead_vertices[1], surface_rect, frogpilot_nvg->purpleColor(), true);
+    } else {
+      if (lead_left.getStatus()) {
+        drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_left), adjacent_lead_vertices[0], surface_rect, frogpilot_nvg->blueColor(), true);
+      }
+      if (lead_right.getStatus()) {
+        drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_right), adjacent_lead_vertices[1], surface_rect, frogpilot_nvg->purpleColor(), true);
+      }
     }
   }
 
@@ -206,7 +213,7 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
   if (frogpilot_toggles.value("adjacent_path_metrics").toBool() || frogpilot_toggles.value("adjacent_paths").toBool()) {
     frogpilot_nvg->paintAdjacentPaths(painter, sm, fpsm);
   } else if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles.value("blind_spot_path").toBool()) {
-    frogpilot_nvg->paintBlindSpotPath(painter, sm, fpsm);
+    frogpilot_nvg->paintBlindSpotPath(painter, sm);
   }
 
   frogpilot_nvg->paintPathEdges(painter, sm);

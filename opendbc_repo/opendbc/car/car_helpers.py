@@ -183,7 +183,7 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
   # FrogPilot variables
   FPCP: FrogPilotCarParams = CarInterface.get_frogpilot_params(candidate, fingerprints, car_fw, CP, frogpilot_toggles)
 
-  if FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU:
+  if CP.brand == "toyota" and FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU.value:
     CP.enableDsu = False
     CP.minEnableSpeed = -1
     CP.openpilotLongitudinalControl = True

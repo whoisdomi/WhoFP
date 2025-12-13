@@ -14,6 +14,7 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/widgets/controls.h"
 
+bool isFrogsGoMoo();
 bool useKonikServer();
 
 void loadGif(const QString &gifPath, QSharedPointer<QMovie> &movie, const QSize &size, QWidget *parent);
@@ -595,6 +596,13 @@ public:
   void showEvent(QShowEvent *event) override {
     refresh();
     FrogPilotParamValueControl::showEvent(event);
+  }
+
+public:
+  void setEnabledButtons(int id, bool enable) {
+    if (QAbstractButton *button = button_group->button(id)) {
+      button->setEnabled(enable);
+    }
   }
 
 signals:

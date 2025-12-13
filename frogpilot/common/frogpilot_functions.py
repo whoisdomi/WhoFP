@@ -17,9 +17,10 @@ from openpilot.system.athena.registration import register
 from openpilot.system.hardware import HARDWARE
 
 from openpilot.frogpilot.assets.theme_manager import ThemeManager
-from openpilot.frogpilot.common.frogpilot_utilities import delete_file, run_cmd, use_konik_server
+from openpilot.frogpilot.common.frogpilot_utilities import delete_file, is_FrogsGoMoo, run_cmd, use_konik_server
 from openpilot.frogpilot.common.frogpilot_variables import (
-  ERROR_LOGS_PATH, EXCLUDED_KEYS, FROGPILOT_BACKUPS, HD_LOGS_PATH, KONIK_LOGS_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS, FrogPilotVariables, get_frogpilot_toggles
+  ERROR_LOGS_PATH, EXCLUDED_KEYS, FROGPILOT_BACKUPS, FROGS_GO_MOO_PATH, HD_LOGS_PATH, KONIK_LOGS_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS,
+  FrogPilotVariables, get_frogpilot_toggles
 )
 
 
@@ -153,10 +154,10 @@ def install_frogpilot(build_metadata, params):
 
   update_boot_logo(frogpilot=True)
 
-  if build_metadata.channel == "FrogPilot-Development" and Path("/persist/frogsgomoo.py").is_file():
+  if build_metadata.channel == "FrogPilot-Development" and is_FrogsGoMoo():
     mount_options = run_cmd(["findmnt", "-n", "-o", "OPTIONS", "/persist"], "Successfully retrieved mount options", "Failed to retrieve mount options")
     run_cmd(["sudo", "mount", "-o", "remount,rw", "/persist"], "Successfully remounted /persist as read-write", "Failed to remount /persist")
-    run_cmd(["sudo", "python3", "/persist/frogsgomoo.py"], "Successfully ran frogsgomoo.py", "Failed to run frogsgomoo.py")
+    run_cmd(["sudo", "python3", FROGS_GO_MOO_PATH], "Successfully ran frogsgomoo.py", "Failed to run frogsgomoo.py")
     run_cmd(["sudo", "mount", "-o", f"remount,{mount_options}", "/persist"], "Successfully restored /persist mount options", "Failed to restore /persist mount options")
 
 

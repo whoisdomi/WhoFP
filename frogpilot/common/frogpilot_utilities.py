@@ -22,7 +22,7 @@ from openpilot.common.realtime import DT_DMON, DT_HW
 from openpilot.system.hardware import HARDWARE
 from panda import Panda
 
-from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
+from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, FROGS_GO_MOO_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
 
 class ThreadManager:
   def __init__(self):
@@ -206,6 +206,11 @@ def get_lock_status(can_parser, can_sock):
   return can_parser.vl["DOOR_LOCKS"]["LOCK_STATUS"]
 
 
+@cache
+def is_FrogsGoMoo():
+  return FROGS_GO_MOO_PATH.is_file()
+
+
 def is_url_pingable(url):
   if not url:
     return False
@@ -337,7 +342,7 @@ def update_maps(now, params, params_memory):
   params.put("LastMapsUpdate", todays_date)
 
 
-def update_openpilot(thread_manager, params, params_memory):
+def update_openpilot(thread_manager, params):
   def update_available():
     run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Updater check signal sent", "Failed to send updater check signal", report=False)
 
@@ -366,7 +371,7 @@ def update_openpilot(thread_manager, params, params_memory):
   if not update_available():
     return
 
-  while params.get_bool("IsOnroad") or params_memory.get_bool("UpdateSpeedLimits") or thread_manager.is_thread_alive("lock_doors"):
+  while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
     time.sleep(60)
 
   while True:

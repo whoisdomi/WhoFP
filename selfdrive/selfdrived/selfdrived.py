@@ -10,7 +10,7 @@ from cereal import car, custom, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
 
-from opendbc.car.gm.values import CC_ONLY_CAR, GMFlags
+from opendbc.car.gm.values import CC_ONLY_CAR
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
@@ -164,6 +164,7 @@ class SelfdriveD:
     self.frogpilot_AM = AlertManager()
     self.frogpilot_events = Events(frogpilot=True)
 
+    self.captured_memory_usage= False
     self.distance_pressed_previously = False
 
     self.display_timer = 0
@@ -248,6 +249,9 @@ class SelfdriveD:
       self.events.add(EventName.outOfSpace)
     if self.sm['deviceState'].memoryUsagePercent > 90 and not SIMULATION:
       self.events.add(EventName.lowMemory)
+      if not self.captured_memory_log:
+        sentry.capture_memory_usage()
+        self.captured_memory_usage= True
 
     # Alert if fan isn't spinning for 5 seconds
     if self.sm['peripheralState'].pandaType != log.PandaState.PandaType.unknown:

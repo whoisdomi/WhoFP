@@ -57,9 +57,9 @@ void ExperimentalButton::updateState(const UIState &s, const FrogPilotUIState &f
   // FrogPilot variables
   const cereal::CarState::Reader &carState = (*s.sm)["carState"].getCarState();
 
-  int current_steering_angle_deg = carState.getSteeringAngleDeg();
-  if (-current_steering_angle_deg != steering_angle_deg && frogpilot_toggles.value("rotating_wheel").toBool()) {
-    steering_angle_deg = -current_steering_angle_deg;
+  int current_steering_angle_deg = -carState.getSteeringAngleDeg();
+  if (current_steering_angle_deg != steering_angle_deg && frogpilot_toggles.value("rotating_wheel").toBool()) {
+    steering_angle_deg = current_steering_angle_deg;
     update();
   } else if (!frogpilot_toggles.value("rotating_wheel").toBool()) {
     steering_angle_deg = 0;
@@ -77,9 +77,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing);
 
-  QPainterPath clip_path;
-  clip_path.addEllipse(QPoint(btn_size / 2, btn_size / 2), btn_size / 2, btn_size / 2);
-  p.setClipPath(clip_path);
+  p.setClipRegion(QRegion(QRect(0, 0, btn_size, btn_size), QRegion::Ellipse));
 
   if (frogpilot_toggles.value("wheel_image").toString() == "stock") {
     QPixmap img = experimental_mode ? experimental_img : engage_img;
@@ -89,8 +87,6 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   } else if (!wheel_img.isNull()) {
     drawIcon(p, QPoint(btn_size / 2, btn_size / 2), wheel_img, background_color, (isDown() || !engageable) ? 0.6 : 1.0, steering_angle_deg);
   }
-
-  p.setClipping(false);
 }
 
 // FrogPilot variables
@@ -103,20 +99,20 @@ void ExperimentalButton::updateBackgroundColor() {
     {"default", QColor(0, 0, 0, 166)},
     {"always_on_lateral_active", bg_colors[STATUS_ALWAYS_ON_LATERAL_ACTIVE]},
     {"conditional_overridden", bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]},
-    {"experimental_mode_enabled", bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]}
+    {"experimental_mode_enabled", bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]},
+    {"traffic_mode_enabled", bg_colors[STATUS_TRAFFIC_MODE_ENABLED]}
   };
 
   if (isDown() || !engageable) {
     background_color = status_color_map["default"];
-    return;
-  }
-
-  if (frogpilot_scene.always_on_lateral_active) {
+  } else if (frogpilot_scene.always_on_lateral_active) {
     background_color = status_color_map["always_on_lateral_active"];
   } else if (frogpilot_scene.conditional_status == 1) {
     background_color = status_color_map["conditional_overridden"];
   } else if (experimental_mode) {
     background_color = status_color_map["experimental_mode_enabled"];
+  } else if (frogpilot_scene.traffic_mode_enabled) {
+    background_color = status_color_map["traffic_mode_enabled"];
   } else {
     background_color = status_color_map["default"];
   }

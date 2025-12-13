@@ -155,7 +155,14 @@ void FrogPilotSoundsPanel::updateState(const UIState &s) {
     return;
   }
 
-  started = s.scene.started;
+  if (started != s.scene.started) {
+    started = s.scene.started;
+
+    for (const QString &key : alertVolumeControlKeys) {
+      FrogPilotParamValueButtonControl *toggle = static_cast<FrogPilotParamValueButtonControl*>(toggles[key]);
+      toggle->setEnabledButtons(0, started);
+    }
+  }
 }
 
 void FrogPilotSoundsPanel::updateToggles() {

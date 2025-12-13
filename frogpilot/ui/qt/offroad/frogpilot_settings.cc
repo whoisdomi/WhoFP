@@ -307,7 +307,7 @@ void FrogPilotSettingsWindow::updateVariables() {
   FrogPilotUIScene &frogpilot_scene = fs.frogpilot_scene;
   QJsonObject &frogpilot_toggles = frogpilot_scene.frogpilot_toggles;
 
-  isFrogsGoMoo = frogpilot_toggles.value("frogs_go_moo").toBool();
+  isFrogsGoMoo = ::isFrogsGoMoo();
 
   std::string carParams = params.get("CarParamsPersistent");
   if (!carParams.empty()) {

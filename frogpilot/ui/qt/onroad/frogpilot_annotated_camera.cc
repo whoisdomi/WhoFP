@@ -335,9 +335,8 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
   }
 }
 
-void FrogPilotAnnotatedCameraWidget::paintBlindSpotPath(QPainter &p, SubMaster &sm, SubMaster &fpsm) {
+void FrogPilotAnnotatedCameraWidget::paintBlindSpotPath(QPainter &p, SubMaster &sm) {
   const cereal::CarState::Reader &carState = sm["carState"].getCarState();
-  const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
   p.save();
 
@@ -345,12 +344,12 @@ void FrogPilotAnnotatedCameraWidget::paintBlindSpotPath(QPainter &p, SubMaster &
   bs.setColorAt(0.0f, QColor::fromHslF(0 / 360.0f, 0.75f, 0.5f, 0.6f));
   bs.setColorAt(0.5f, QColor::fromHslF(0 / 360.0f, 0.75f, 0.5f, 0.4f));
   bs.setColorAt(1.0f, QColor::fromHslF(0 / 360.0f, 0.75f, 0.5f, 0.2f));
-
   p.setBrush(bs);
-  if (frogpilotPlan.getLaneWidthLeft() != 0 && carState.getLeftBlindspot()) {
+
+  if (track_adjacent_vertices[0].boundingRect().width() > 0 && carState.getLeftBlindspot()) {
     p.drawPolygon(track_adjacent_vertices[0]);
   }
-  if (frogpilotPlan.getLaneWidthRight() != 0 && carState.getRightBlindspot()) {
+  if (track_adjacent_vertices[1].boundingRect().width() > 0 && carState.getRightBlindspot()) {
     p.drawPolygon(track_adjacent_vertices[1]);
   }
 
@@ -624,8 +623,8 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
 
   QFontMetrics metrics(p.font());
   int lineHeight = metrics.lineSpacing();
-  int maxTextWidth = 0;
 
+  int maxTextWidth = 0;
   for (QString &line : textLines) {
     maxTextWidth = std::max(maxTextWidth, metrics.horizontalAdvance(line));
   }
@@ -633,14 +632,19 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
   int centerX = (chevron[2].x() + chevron[0].x()) / 2;
   int startY = chevron[0].y() + lineHeight + 5;
 
-  QRect textRect(centerX - maxTextWidth / 2, startY - lineHeight, maxTextWidth, textLines.size() * lineHeight);
+  int xMargin = maxTextWidth * 0.1;
+  int yMargin = lineHeight * 0.1;
 
-  if (!adjacent) {
-    int xMargin = maxTextWidth * 0.25;
-    int yMargin = lineHeight * 0.25;
-    leadTextRect = textRect.adjusted(-xMargin, -yMargin, xMargin, yMargin);
-  } else if (textRect.intersects(leadTextRect)) {
-    return;
+  QRect textRect(centerX - maxTextWidth / 2, startY - lineHeight, maxTextWidth, textLines.size() * lineHeight);
+  textRect.adjust(-xMargin, -yMargin, xMargin, yMargin);
+
+  if (adjacent) {
+    if (textRect.intersects(adjacentLeadTextRect) || textRect.intersects(leadTextRect)) {
+      return;
+    }
+    adjacentLeadTextRect = textRect;
+  } else {
+    leadTextRect = textRect;
   }
 
   for (int i = 0; i < textLines.size(); ++i) {
@@ -697,6 +701,8 @@ void FrogPilotAnnotatedCameraWidget::paintPathEdges(QPainter &p, SubMaster &sm) 
     setPathEdgeColors(pe, bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]);
   } else if (sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
     setPathEdgeColors(pe, bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]);
+  } else if (frogpilot_scene.traffic_mode_enabled) {
+    setPathEdgeColors(pe, bg_colors[STATUS_TRAFFIC_MODE_ENABLED]);
   } else if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
     setPathEdgeColors(pe, QColor(frogpilot_toggles.value("path_edges_color").toString()));
   } else {

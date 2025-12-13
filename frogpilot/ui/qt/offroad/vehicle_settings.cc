@@ -3,7 +3,7 @@
 #include "frogpilot/ui/qt/offroad/vehicle_settings.h"
 
 QStringList getCarNames(const QString &carMake, QMap<QString, QString> &carModels) {
-  static const QMap<QString, QString> makeMap = {
+  static const QHash<QString, QString> makeToFolder = {
     {"acura", "honda"},
     {"audi", "volkswagen"},
     {"buick", "gm"},
@@ -36,53 +36,58 @@ QStringList getCarNames(const QString &carMake, QMap<QString, QString> &carModel
     {"volkswagen", "volkswagen"}
   };
 
-  QStringList carNameList;
-  if (!makeMap.contains(carMake)) {
-    return carNameList;
+  QStringList carNames;
+
+  const QString folder = makeToFolder.value(carMake.toLower());
+  if (folder.isEmpty()) {
+    return carNames;
   }
 
-  QFile valuesFile(QString("../../opendbc/car/%1/values.py").arg(makeMap.value(carMake)));
-  if (!valuesFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    return carNameList;
+  QFile file(QString("../../opendbc/car/%1/values.py").arg(folder));
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    return carNames;
   }
 
-  QString fileContent = valuesFile.readAll();
-  valuesFile.close();
+  QString content = file.readAll();
+  file.close();
 
-  static const QRegularExpression carNameRegex("CarDocs\\w*\\s*\\(\\s*\"([^\"]+)\"");
-  static const QRegularExpression commentRegex("#[^\\n]*");
-  static const QRegularExpression footnoteRegex("footnotes=\\[[^\\]]*\\],\\s*");
-  static const QRegularExpression platformRegex("(\\w+)\\s*=\\s*\\w+\\s*\\(");
+  static const QRegularExpression commentRe("#[^\\n]*");
+  static const QRegularExpression footnoteRe("footnotes=\\[[^\\]]*\\],\\s*");
+  content.remove(commentRe).remove(footnoteRe);
 
-  fileContent.remove(commentRegex);
-  fileContent.remove(footnoteRegex);
+  static const QRegularExpression platformRe("(\\w+)\\s*=\\s*\\w+\\s*\\(");
+  QRegularExpressionMatchIterator platformIt = platformRe.globalMatch(content);
 
-  QRegularExpressionMatchIterator platformMatches = platformRegex.globalMatch(fileContent);
-  QList<QRegularExpressionMatch> matches;
-  while (platformMatches.hasNext()) {
-    matches.append(platformMatches.next());
+  QVector<QPair<int, QString>> platforms;
+  while (platformIt.hasNext()) {
+    QRegularExpressionMatch match = platformIt.next();
+    platforms.append({match.capturedStart(), match.captured(1)});
   }
+  platforms.append({content.length(), QString()});
 
-  for (int i = 0; i < matches.size(); ++i) {
-    QRegularExpressionMatch match = matches[i];
-    QString platformName = match.captured(1);
+  static const QRegularExpression carNameRe("CarDocs\\w*\\s*\\(\\s*\"([^\"]+)\"");
+  const QString lowerMake = carMake.toLower();
 
-    int start = match.capturedEnd();
-    int end = (i + 1 < matches.size()) ? matches[i + 1].capturedStart() : fileContent.length();
+  for (int i = 0; i < platforms.size() - 1; ++i) {
+    int start = platforms[i].first;
+    int end = platforms[i + 1].first;
+    const QString &platformName = platforms[i].second;
 
-    QRegularExpressionMatchIterator carNameMatches = carNameRegex.globalMatch(fileContent.mid(start, end - start));
-    while (carNameMatches.hasNext()) {
-      QString carName = carNameMatches.next().captured(1);
+    QRegularExpressionMatchIterator carIt = carNameRe.globalMatch(
+      content.mid(start, end - start)
+    );
 
+    while (carIt.hasNext()) {
+      QString carName = carIt.next().captured(1);
       if (carName.startsWith(carMake, Qt::CaseInsensitive)) {
         carModels[carName] = platformName;
-        carNameList.append(carName);
+        carNames.append(carName);
       }
     }
   }
 
-  carNameList.sort();
-  return carNameList;
+  carNames.sort(Qt::CaseInsensitive);
+  return carNames;
 }
 
 FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, bool forceOpen) : FrogPilotListWidget(parent), parent(parent) {

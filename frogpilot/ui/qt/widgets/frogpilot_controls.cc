@@ -12,6 +12,11 @@ bool FrogPilotConfirmationDialog::yesorno(const QString &prompt_text, QWidget *p
   return d.exec();
 }
 
+bool isFrogsGoMoo() {
+  static bool is_FrogsGoMoo = QFile::exists("/persist/frogsgomoo.py");
+  return is_FrogsGoMoo;
+}
+
 bool useKonikServer() {
   static bool use_konik = QFile::exists("/cache/use_konik");
   return use_konik;

@@ -4,6 +4,7 @@ from openpilot.common.params import Params
 from openpilot.selfdrive.car.cruise import CRUISE_LONG_PRESS, ButtonType
 from openpilot.selfdrive.selfdrived.events import ET
 
+from openpilot.frogpilot.common.frogpilot_utilities import is_FrogsGoMoo
 from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, NON_DRIVING_GEARS
 from openpilot.frogpilot.controls.lib.conditional_experimental_mode import CEStatus
 
@@ -26,6 +27,7 @@ class FrogPilotCard:
     self.gap_counter = 0
 
     self.always_on_lateral_set = bool(FPCP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
+    self.frogs_go_moo = is_FrogsGoMoo()
 
     self.long_press_threshold = CRUISE_LONG_PRESS * (1.5 if self.CP.brand == "gm" else 1)
     self.very_long_press_threshold = CRUISE_LONG_PRESS * 5
@@ -71,9 +73,9 @@ class FrogPilotCard:
     self.always_on_lateral_enabled &= carState.gearShifter not in NON_DRIVING_GEARS
     self.always_on_lateral_enabled &= sm["frogpilotPlan"].lateralCheck
     self.always_on_lateral_enabled &= sm["liveCalibration"].calPerc >= 1
-    self.always_on_lateral_enabled &= (ET.IMMEDIATE_DISABLE not in sm["selfdriveState"].alertType + sm["frogpilotSelfdriveState"].alertType) or frogpilot_toggles.frogs_go_moo
-    self.always_on_lateral_enabled &= not (carState.brakePressed and carState.vEgo < frogpilot_toggles.always_on_lateral_pause_speed or carState.standstill)
-    self.always_on_lateral_enabled &= not self.error_log.is_file() or frogpilot_toggles.frogs_go_moo
+    self.always_on_lateral_enabled &= (ET.IMMEDIATE_DISABLE not in sm["selfdriveState"].alertType + sm["frogpilotSelfdriveState"].alertType) or self.frogs_go_moo
+    self.always_on_lateral_enabled &= not (carState.brakePressed and carState.vEgo < frogpilot_toggles.always_on_lateral_pause_speed) or carState.standstill
+    self.always_on_lateral_enabled &= not self.error_log.is_file() or self.frogs_go_moo
 
     if sm.updated["frogpilotPlan"] or any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in carState.buttonEvents):
       self.accel_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in carState.buttonEvents)

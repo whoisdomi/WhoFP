@@ -143,7 +143,7 @@ class Track:
     left_lane = np.interp(self.dRel, model_data.laneLines[1].x, model_data.laneLines[1].y)
     right_lane = np.interp(self.dRel, model_data.laneLines[2].x, model_data.laneLines[2].y)
 
-    if left_lane < -self.yRel < right_lane and self.dRel < model_data.position.x[-1] and (self.vLeadK > 1 or lead_msg.prob > 0.25):
+    if left_lane < -self.yRel < right_lane and self.dRel < model_data.position.x[-1] and self.vLeadK > 1:
       self.radarfulFilter.update(1)
       return True
     else:

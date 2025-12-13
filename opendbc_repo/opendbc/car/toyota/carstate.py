@@ -73,9 +73,9 @@ class CarState(CarStateBase):
 
     self.angle_offset_zss = 0
 
-    self.has_can_filter = self.FPCP.flags & ToyotaFrogPilotFlags.RADAR_CAN_FILTER
-    self.has_SDSU = self.FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU
-    self.has_ZSS = self.FPCP.flags & ToyotaFrogPilotFlags.ZSS
+    self.has_can_filter = self.FPCP.flags & ToyotaFrogPilotFlags.RADAR_CAN_FILTER.value
+    self.has_SDSU = self.FPCP.flags & ToyotaFrogPilotFlags.SMART_DSU.value
+    self.has_ZSS = self.FPCP.flags & ToyotaFrogPilotFlags.ZSS.value
 
   def update(self, can_parsers, frogpilot_toggles) -> structs.CarState:
     cp = can_parsers[Bus.pt]

@@ -58,7 +58,7 @@ def update_checks(now, theme_manager, thread_manager, params, params_memory, fro
   theme_manager.update_themes(frogpilot_toggles, boot_run)
 
   if frogpilot_toggles.automatic_updates:
-    thread_manager.run_with_lock(update_openpilot, (thread_manager, params, params_memory))
+    thread_manager.run_with_lock(update_openpilot, (thread_manager, params))
 
   time.sleep(1)
 
@@ -154,7 +154,7 @@ def frogpilot_thread():
     toggles_updated = (now - toggles_last_updated).total_seconds() <= 1
 
     run_update_checks |= params_memory.get_bool("ManualUpdateInitiated")
-    run_update_checks |= now.second == 0 and (now.minute % 60 == 0 or (now.minute % 5 == 0 and frogpilot_toggles.frogs_go_moo))
+    run_update_checks |= now.second == 0 and (now.minute % 60 == 0 or (now.minute % 5 == 0 and frogpilot_variables.frogs_go_moo))
     run_update_checks &= time_validated
 
     if run_update_checks:
