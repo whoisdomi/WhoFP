@@ -10,23 +10,23 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   mapboxIcon = loadPixmap("../../frogpilot/assets/other_images/mapbox_icon.png", {btn_size / 2, btn_size / 2});
   mapDataIcon = loadPixmap("../../frogpilot/assets/other_images/offline_maps_icon.png", {btn_size / 2, btn_size / 2});
   nextMapsIcon = loadPixmap("../../frogpilot/assets/other_images/next_maps_icon.png", {btn_size / 2, btn_size / 2});
-  pausedIcon = loadPixmap("../../frogpilot/assets/other_images/paused_icon.png", {btn_size / 2, btn_size / 2});
-  speedIcon = loadPixmap("../../frogpilot/assets/other_images/speed_icon.png", {btn_size / 2, btn_size / 2});
+  pausedIcon = loadPixmap("../../frogpilot/assets/other_images/paused_icon.png", {widget_size, widget_size});
+  speedIcon = loadPixmap("../../frogpilot/assets/other_images/speed_icon.png", {widget_size, widget_size});
   stopSignImg = loadPixmap("../../frogpilot/assets/other_images/stop_sign.png", {btn_size, btn_size});
-  turnIcon = loadPixmap("../../frogpilot/assets/other_images/turn_icon.png", {btn_size / 2, btn_size / 2});
+  turnIcon = loadPixmap("../../frogpilot/assets/other_images/turn_icon.png", {widget_size, widget_size});
 
-  loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/speed_icon.gif", cemSpeedIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/light_icon.gif", cemStopIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(btn_size / 2, btn_size / 2), this);
-  loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(btn_size / 2, btn_size / 2), this);
+  loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/speed_icon.gif", cemSpeedIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/light_icon.gif", cemStopIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(widget_size, widget_size), this);
+  loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(widget_size, widget_size), this);
 
   QObject::connect(animationTimer, &QTimer::timeout, [this] {
     animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
@@ -326,9 +326,22 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
         text = QString::number(laneWidth * distanceConversion, 'f', 2) + leadDistanceUnit;
       }
 
+      const QPolygonF &path = track_adjacent_vertices[i];
+      int midIndex = path.size() / 2;
+      QPointF anchorPoint = isLeft ? path[midIndex / 2] : path[midIndex + (path.size() - midIndex) / 2];
+
       p.setFont(InterFont(45, QFont::DemiBold));
-      p.setPen(QPen(whiteColor()));
-      p.drawText(track_adjacent_vertices[i].boundingRect(), Qt::AlignCenter, text);
+      QFontMetrics metrics(p.font());
+
+      int textXPosition = isLeft ? anchorPoint.x() - metrics.horizontalAdvance(text) - 10 : anchorPoint.x() + 10;
+      int textYPosition = anchorPoint.y() - metrics.height() / 2 + metrics.ascent();
+
+      QPainterPath textPath;
+      textPath.addText(textXPosition, textYPosition, p.font(), text);
+      p.strokePath(textPath, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+      p.setPen(whiteColor());
+      p.drawText(textXPosition, textYPosition, text);
     }
 
     p.restore();
@@ -411,80 +424,76 @@ void FrogPilotAnnotatedCameraWidget::paintCompass(QPainter &p) {
 
   p.save();
 
-  compassPosition.rx() = rightHandDM ? UI_BORDER_SIZE + widget_size / 2 : width() - UI_BORDER_SIZE - btn_size;
-  compassPosition.ry() = dmIconPosition.y() - widget_size / 2;
+  constexpr double PIXELS_PER_DEGREE = 2.5;
 
-  QRect compassWidget(compassPosition, QSize(widget_size, widget_size));
+  constexpr int BASE_RIBBON_WIDTH = static_cast<int>(360 * PIXELS_PER_DEGREE);
+  constexpr int BORDER_WIDTH = 10;
+  constexpr int MARGIN = 5;
+  constexpr int TRIANGLE_SIZE = 40;
 
-  p.setBrush(blackColor(166));
-  p.setPen(QPen(blackColor(), 10));
-  p.drawRoundedRect(compassWidget, 24, 24);
+  static QPixmap compassRibbon = [&]() {
+    QPixmap ribbon(BASE_RIBBON_WIDTH * 2, widget_size);
+    ribbon.fill(Qt::transparent);
 
-  QPainterPath clipPath;
-  clipPath.addRoundedRect(compassWidget.adjusted(5, 5, -5, -5), 24, 24);
-  p.setClipPath(clipPath);
-
-  QFont font = InterFont(65, QFont::Bold);
-  QFontMetrics fm(font);
-  p.setFont(font);
-  p.setPen(QPen(whiteColor()));
-
-  const double pixelsPerDegree = 2.5;
-
-  const int baseRibbonWidth = qRound(360 * pixelsPerDegree);
-
-  static QPixmap ribbonPixmap;
-  if (!ribbonPixmap) {
-    int ribbonHeight = compassWidget.height();
-    int ribbonWidth = baseRibbonWidth * 2;
-
-    ribbonPixmap = QPixmap(ribbonWidth, ribbonHeight);
-    ribbonPixmap.fill(Qt::transparent);
-
-    QPainter ribbonPainter(&ribbonPixmap);
+    QPainter ribbonPainter(&ribbon);
     ribbonPainter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+    QFont font = InterFont(65, QFont::Bold);
     ribbonPainter.setFont(font);
+    QFontMetrics fm(font);
 
     QMap<int, QString> directionLabels = {{0, "N"}, {45, "NE"}, {90, "E"}, {135, "SE"}, {180, "S"}, {225, "SW"}, {270, "W"}, {315, "NW"}, {360, "N"}};
 
-    for (int i = 0; i < 2; ++i) {
+    for (int cycle = 0; cycle < 2; ++cycle) {
+      int xOffset = cycle * 360;
+
       for (int degree = 0; degree < 360; ++degree) {
-        int x = qRound((i * 360 + degree) * pixelsPerDegree);
+        int x = qRound((xOffset + degree) * PIXELS_PER_DEGREE);
 
         if (directionLabels.contains(degree)) {
-          const QString &label = directionLabels[degree];
-          int textX = x - fm.horizontalAdvance(label) / 2;
-
+          QString label = directionLabels[degree];
           ribbonPainter.setPen(whiteColor());
-          ribbonPainter.drawText(textX, fm.ascent(), label);
+          ribbonPainter.drawText(x - fm.horizontalAdvance(label) / 2, fm.ascent(), label);
         }
 
         int notchHeight = (degree % 45 == 0) ? 35 : (degree % 15 == 0) ? 25 : 15;
         int notchWidth = (degree % 45 == 0) ? 5 : (degree % 15 == 0) ? 4 : 3;
 
         ribbonPainter.setPen(QPen(whiteColor(), notchWidth));
-        ribbonPainter.drawLine(x, ribbonHeight - notchHeight - 5, x, ribbonHeight);
+        ribbonPainter.drawLine(x, widget_size - notchHeight - MARGIN, x, widget_size);
       }
     }
-  }
 
-  double rawBearing = QJsonDocument::fromJson(QString::fromStdString(params_memory.get("LastGPSPosition")).toUtf8()).object().value("bearing").toDouble(0.0);
+    return ribbon;
+  }();
 
+  compassPosition.rx() = rightHandDM ? UI_BORDER_SIZE + widget_size / 2 : width() - UI_BORDER_SIZE - btn_size;
+  compassPosition.ry() = dmIconPosition.y() - widget_size / 2;
+
+  QRect compassWidget(compassPosition, QSize(widget_size, widget_size));
+
+  p.setBrush(blackColor(166));
+  p.setPen(QPen(blackColor(), BORDER_WIDTH));
+  p.drawRoundedRect(compassWidget, 24, 24);
+
+  QPainterPath clipPath;
+  clipPath.addRoundedRect(compassWidget.adjusted(MARGIN, MARGIN, -MARGIN, -MARGIN), 24, 24);
+  p.setClipPath(clipPath);
+
+  double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
   int bearing = qRound(fmod(rawBearing + 360.0, 360.0));
-  int offset = qRound(bearing * pixelsPerDegree) % baseRibbonWidth;
+  int offset = qRound(bearing * PIXELS_PER_DEGREE) % BASE_RIBBON_WIDTH;
   int drawX = compassWidget.center().x() - offset;
 
-  p.drawPixmap(drawX - baseRibbonWidth, compassWidget.top() + 5, ribbonPixmap);
-  p.drawPixmap(drawX, compassWidget.top() + 5, ribbonPixmap);
+  p.drawPixmap(drawX - BASE_RIBBON_WIDTH, compassWidget.top() + MARGIN, compassRibbon);
+  p.drawPixmap(drawX, compassWidget.top() + MARGIN, compassRibbon);
 
-  int triangleSize = 40;
   int triangleX = compassWidget.center().x();
-  int triangleY = compassWidget.bottom() - triangleSize;
-
-  QPolygon triangle(QVector<QPoint>{
-    QPoint(triangleX, triangleY - triangleSize),
-    QPoint(triangleX - triangleSize / 1.5, triangleY),
-    QPoint(triangleX + triangleSize / 1.5, triangleY)
+  int triangleY = compassWidget.bottom() - TRIANGLE_SIZE;
+  QPolygon triangle({
+    QPoint(triangleX, triangleY - TRIANGLE_SIZE),
+    QPoint(triangleX - TRIANGLE_SIZE / 1.5, triangleY),
+    QPoint(triangleX + TRIANGLE_SIZE / 1.5, triangleY)
   });
 
   p.setBrush(whiteColor());
@@ -649,7 +658,14 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
 
   for (int i = 0; i < textLines.size(); ++i) {
     int lineX = centerX - metrics.horizontalAdvance(textLines[i]) / 2;
-    p.drawText(lineX, startY + (i * lineHeight), textLines[i]);
+    int lineY = startY + (i * lineHeight);
+
+    QPainterPath path;
+    path.addText(lineX, lineY, p.font(), textLines[i]);
+    p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+    p.setPen(whiteColor());
+    p.drawText(lineX, lineY, textLines[i]);
   }
 }
 
@@ -706,9 +722,9 @@ void FrogPilotAnnotatedCameraWidget::paintPathEdges(QPainter &p, SubMaster &sm) 
   } else if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
     setPathEdgeColors(pe, QColor(frogpilot_toggles.value("path_edges_color").toString()));
   } else {
-    pe.setColorAt(0.0f, QColor::fromHslF(148 / 360.0f, 0.94f, 0.51f, 1.0f));
-    pe.setColorAt(0.5f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.68f, 0.5f));
-    pe.setColorAt(1.0f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.68f, 0.1f));
+    pe.setColorAt(0.0f, QColor::fromHslF(148 / 360.0f, 0.94f, 0.41f, 1.0f));
+    pe.setColorAt(0.5f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.54f, 0.5f));
+    pe.setColorAt(1.0f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.54f, 0.1f));
   }
 
   QPainterPath path;
@@ -946,7 +962,9 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
   std::function<void(QRect&, QPixmap&, const QString&, const double)> drawSource = [&](QRect &rect, QPixmap &icon, QString title, double speedLimitValue) {
-    if (QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr()) == title && speedLimitValue != 0) {
+    bool isActive = QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr()) == title && speedLimitValue != 0;
+
+    if (isActive) {
       p.setBrush(redColor(166));
       p.setFont(InterFont(35, QFont::Bold));
       p.setPen(QPen(redColor(), 10));
@@ -974,7 +992,18 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
 
     p.setPen(QPen(whiteColor(), 6));
     QRect textRect(iconRect.right() + 10, rect.y(), rect.width() - iconRect.width() - 30, rect.height());
-    p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, fullText);
+
+    if (isActive) {
+      QFontMetrics fm(p.font());
+      int textYPosition = textRect.y() + (textRect.height() - fm.height()) / 2 + fm.ascent();
+
+      QPainterPath path;
+      path.addText(textRect.x(), textYPosition, p.font(), fullText);
+      p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      p.drawText(textRect.x(), textYPosition, fullText);
+    } else {
+      p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, fullText);
+    }
   };
 
   int signMargin = 12;
@@ -1051,18 +1080,26 @@ void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &
 
   const cereal::ModelDataV2::Reader &modelV2 = sm["modelV2"].getModelV2();
 
-  QPointF centerPoint = (track_vertices.first() + track_vertices.last()) / 2.0;
-  QPointF adjustedPoint = centerPoint - QPointF(stopSignImg.width() / 2, stopSignImg.height());
-  p.drawPixmap(adjustedPoint, stopSignImg);
+  QPointF centerPoint = (track_vertices.first() + track_vertices.last()) / 2.0f;
+  QPointF stopSignPosition = centerPoint - QPointF(stopSignImg.width() / 2.0f, stopSignImg.height());
+  p.drawPixmap(stopSignPosition, stopSignImg);
 
   if (frogpilot_toggles.value("show_stopping_point_metrics").toBool()) {
+    float stoppingDistance = modelV2.getPosition().getX()[33 - 1] * distanceConversion;
+    QString distanceText = QString::number(std::nearbyint(stoppingDistance)) + leadDistanceUnit;
+
     QFont font = InterFont(45, QFont::DemiBold);
-    QString text = QString::number(std::nearbyint(modelV2.getPosition().getX()[33 - 1] * distanceConversion)) + leadDistanceUnit;
-    QPointF textPosition = centerPoint - QPointF(QFontMetrics(font).horizontalAdvance(text) / 2, stopSignImg.height() + 35);
+    QFontMetrics fm(font);
+
+    QPointF textPosition(centerPoint.x() - fm.horizontalAdvance(distanceText) / 2.0f, centerPoint.y() - stopSignImg.height() - 35);
+
+    QPainterPath path;
+    path.addText(textPosition, font, distanceText);
+    p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
     p.setFont(font);
-    p.setPen(QPen(whiteColor()));
-    p.drawText(textPosition, text);
+    p.setPen(whiteColor());
+    p.drawText(textPosition, distanceText);
   }
 
   p.restore();

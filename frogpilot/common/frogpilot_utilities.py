@@ -344,7 +344,7 @@ def update_maps(now, params, params_memory):
 
 def update_openpilot(thread_manager, params):
   def update_available():
-    run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Updater check signal sent", "Failed to send updater check signal", report=False)
+    run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Checking for updates...", "Failed to check for update...", report=False)
 
     while params.get("UpdaterState") != "checking...":
       time.sleep(1)
@@ -358,7 +358,7 @@ def update_openpilot(thread_manager, params):
     while params.get("UpdaterState") != "idle":
       time.sleep(60)
 
-    run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Updater refresh signal sent", "Failed to send updater refresh signal", report=False)
+    run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Update available, downloading...", "Failed to download update...", report=False)
 
     while not params.get_bool("UpdateAvailable"):
       time.sleep(60)

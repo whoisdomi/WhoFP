@@ -47,7 +47,7 @@ void ScreenRecorder::toggleRecording() {
 
 void ScreenRecorder::startRecording() {
   encoder = std::make_unique<OmxEncoder>(RECORDINGS_FOLDER.path().toStdString().c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, UI_FREQ * 2, 12 * 1024 * 1024);
-  encoder->encoder_open((QDateTime::currentDateTime().toString("MMMM_dd_yyyy-hh-mmAP").toStdString() + ".mp4").c_str());
+  encoder->encoder_open((QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss").toStdString() + ".mp4").c_str());
 
   if (!encoder->is_open) {
     encoder.reset();

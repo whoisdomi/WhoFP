@@ -34,7 +34,7 @@ class FrogPilotCard:
 
     self.error_log = ERROR_LOGS_PATH / "error.txt"
 
-  def handle_button_event(self, sm, frogpilot_toggles, key):
+  def handle_button_event(self, key, sm, frogpilot_toggles):
     if sm["carControl"].longActive and getattr(frogpilot_toggles, f"experimental_mode_via_{key}"):
       self.handle_experimental_mode(sm, frogpilot_toggles)
     elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"force_coast_via_{key}"):
@@ -93,15 +93,15 @@ class FrogPilotCard:
     self.distancePressed_previously = frogpilotCarState.distancePressed
 
     if not frogpilotCarState.distancePressed and 1 < self.gap_counter < self.long_press_threshold:
-      self.handle_button_event(sm, frogpilot_toggles, "distance")
+      self.handle_button_event("distance", sm, frogpilot_toggles)
     elif self.gap_counter == self.long_press_threshold:
-      self.handle_button_event(sm, frogpilot_toggles, "distance_long")
+      self.handle_button_event("distance_long", sm, frogpilot_toggles)
     elif self.gap_counter == self.very_long_press_threshold:
-      self.handle_button_event(sm, frogpilot_toggles, "distance_long")
-      self.handle_button_event(sm, frogpilot_toggles, "distance_very_long")
+      self.handle_button_event("distance_long", sm, frogpilot_toggles)
+      self.handle_button_event("distance_very_long", sm, frogpilot_toggles)
 
     if any(be.pressed and be.type == ButtonType.lkas for be in carState.buttonEvents):
-      self.handle_button_event(sm, frogpilot_toggles, "lkas")
+      self.handle_button_event("lkas", sm, frogpilot_toggles)
 
     self.force_coast &= not (carState.brakePressed or carState.gasPressed)
 

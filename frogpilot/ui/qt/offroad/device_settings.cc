@@ -64,7 +64,7 @@ FrogPilotDevicePanel::FrogPilotDevicePanel(FrogPilotSettingsWindow *parent, bool
       for (int i = 0; i <= 33; ++i) {
         shutdownLabels[i] = i == 0 ? tr("5 mins") : i <= 3 ? QString::number(i * 15) + tr(" mins") : QString::number(i - 3) + (i == 4 ? tr(" hour") : tr(" hours"));
       }
-      deviceToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 33, QString(), shutdownLabels, 1, true);
+      deviceToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 33, QString(), shutdownLabels);
     } else if (param == "NoUploads") {
       std::vector<QString> uploadsToggles{"DisableOnroadUploads"};
       std::vector<QString> uploadsToggleNames{tr("Disable Onroad Only")};

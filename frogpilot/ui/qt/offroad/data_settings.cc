@@ -91,16 +91,52 @@ FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool for
   QObject::connect(screenRecordingsButton, &FrogPilotButtonsControl::buttonClicked, [=](int id) {
     QDir recordingsDir("/data/media/screen_recordings");
     QStringList recordingsNames = recordingsDir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    std::sort(recordingsNames.begin(), recordingsNames.end(), std::greater<QString>());
 
-    QStringList mp4Recordings;
+    QStringList friendlyNames;
+    QMap<QString, QString> recordingMap;
+
     for (const QString &name : recordingsNames) {
-      if (name.endsWith(".mp4", Qt::CaseInsensitive)) {
-        mp4Recordings << name;
+      if (!name.endsWith(".mp4", Qt::CaseInsensitive)) {
+        continue;
       }
+
+      QString friendlyName = name;
+      QString cleanName = QString(name).remove(".mp4");
+
+      QStringList parts = cleanName.split(cleanName.contains("--") ? "--" : "_");
+
+      if (parts.size() >= 2) {
+        QDate date = QDate::fromString(parts[0], "yyyy-MM-dd");
+        QTime time = QTime::fromString(parts[1], "HH-mm-ss");
+
+        if (date.isValid() && time.isValid()) {
+          int day = date.day();
+          QString suffix = (day >= 11 && day <= 13) ? "th" :
+                           (day % 10 == 1) ? "st" :
+                           (day % 10 == 2) ? "nd" :
+                           (day % 10 == 3) ? "rd" : "th";
+
+          friendlyName = QString("%1 %2%3, %4 (%5)")
+            .arg(date.toString("MMMM"))
+            .arg(day)
+            .arg(suffix)
+            .arg(date.year())
+            .arg(time.toString("h:mm AP"));
+        }
+      }
+
+      if (friendlyName == name) {
+        friendlyName = cleanName;
+        friendlyName.replace("_", " ");
+      }
+
+      friendlyNames.append(friendlyName);
+      recordingMap[friendlyName] = name;
     }
 
     if (id == 0) {
-      QString selection = MultiOptionDialog::getSelection(tr("Choose a screen recording to delete"), mp4Recordings, "", this);
+      QString selection = MultiOptionDialog::getSelection(tr("Choose a screen recording to delete"), friendlyNames, "", this);
       if (!selection.isEmpty()) {
         if (ConfirmationDialog::confirm(tr("Delete this screen recording?"), tr("Delete"), this)) {
           std::thread([=]() {
@@ -112,7 +148,7 @@ FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool for
             screenRecordingsButton->setVisibleButton(1, false);
             screenRecordingsButton->setVisibleButton(2, false);
 
-            QFile::remove(recordingsDir.absoluteFilePath(selection));
+            QFile::remove(recordingsDir.absoluteFilePath(recordingMap[selection]));
 
             screenRecordingsButton->setValue(tr("Deleted!"));
 
@@ -158,7 +194,7 @@ FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool for
       }
 
     } else if (id == 2) {
-      QString selection = MultiOptionDialog::getSelection(tr("Choose a screen recording to rename"), mp4Recordings, "", this);
+      QString selection = MultiOptionDialog::getSelection(tr("Choose a screen recording to rename"), friendlyNames, "", this);
       if (!selection.isEmpty()) {
         QString newBase = InputDialog::getText(tr("Enter a new name"), this, tr("Rename Screen Recording")).trimmed().replace(" ", "_");
         if (!newBase.isEmpty()) {
@@ -177,7 +213,7 @@ FrogPilotDataPanel::FrogPilotDataPanel(FrogPilotSettingsWindow *parent, bool for
             screenRecordingsButton->setVisibleButton(1, false);
 
             QString newPath = recordingsDir.absoluteFilePath(newName);
-            QString oldPath = recordingsDir.absoluteFilePath(selection);
+            QString oldPath = recordingsDir.absoluteFilePath(recordingMap[selection]);
             QFile::rename(oldPath, newPath);
 
             screenRecordingsButton->setValue(tr("Renamed!"));

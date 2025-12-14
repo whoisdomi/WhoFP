@@ -121,6 +121,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
     max_distance = std::clamp((float)(lead_d - fmin(lead_d * 0.35, 10.)), 0.0f, max_distance);
   }
   max_idx = get_path_length_idx(model_position, max_distance);
+  // FrogPilot variables
   float path_width = frogpilot_toggles.value("path_width").toDouble();
   if (frogpilot_toggles.value("dynamic_path_width").toBool()) {
     UIState *s = uiState();
