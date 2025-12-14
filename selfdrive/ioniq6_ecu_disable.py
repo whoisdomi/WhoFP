@@ -29,7 +29,7 @@ def ioniq6_ecu_disable():
     # For Ioniq 6 HDA2 with LKA steering
     ecu_addr = 0x730      # ADAS_DRV ECU TX address
     ecu_rx_addr = 0x738   # ADAS_DRV ECU RX address (usually TX + 8)
-    bus = 4               # ECAN for CANFD
+    bus = 1               # ECAN - where SCC_CONTROL (0x1a0) is seen
 
     def send_isotp_single_frame(p, addr, data, bus):
         """Send a single-frame ISO-TP message (for messages <= 7 bytes)"""
