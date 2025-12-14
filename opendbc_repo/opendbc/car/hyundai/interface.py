@@ -165,7 +165,9 @@ class CarInterface(CarInterfaceBase):
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
 
-      # HDA2 cars with CANFD_NO_RADAR_DISABLE need SecurityAccess handshake before Communication Control
+      # HDA2 cars with CANFD_NO_RADAR_DISABLE need SecurityAccess + state-aware timing
+      # According to field testing: ECU disable must happen in IGN_ON state (park gear)
+      # BEFORE entering READY mode, otherwise it causes dash errors and doesn't stick
       security_access_needed = bool(CP.flags & HyundaiFlags.CANFD_NO_RADAR_DISABLE)
       disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
 
@@ -177,3 +179,4 @@ class CarInterface(CarInterfaceBase):
   def deinit(CP, can_recv, can_send):
     communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.ENABLE_RX_ENABLE_TX, uds.MESSAGE_TYPE.NORMAL])
     CarInterface.init(CP, can_recv, can_send, communication_control)
+
