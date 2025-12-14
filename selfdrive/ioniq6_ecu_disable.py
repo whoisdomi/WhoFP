@@ -26,12 +26,18 @@ def create_boardd_can_wrappers(panda):
 
     def can_send(msgs):
         """Wrapper for can_send"""
-        # Convert format: boardd uses (addr, data, bus) tuples
+        # msgs format from IsoTpParallelQuery: list of (addr, dat, bus) or (addr, bus, dat, src)
         # panda.can_send_many expects (addr, bus, data, src) tuples
         panda_msgs = []
-        for addr, data, bus in msgs:
-            panda_msgs.append((addr, bus, data, 0))
-        panda.can_send_many(panda_msgs, timeout=100)
+        for msg in msgs:
+            if len(msg) == 3:
+                addr, dat, bus = msg
+                panda_msgs.append((addr, bus, dat, 0))
+            elif len(msg) == 4:
+                # Already in correct format
+                panda_msgs.append(msg)
+        if panda_msgs:
+            panda.can_send_many(panda_msgs, timeout=100)
 
     return can_recv, can_send
 
