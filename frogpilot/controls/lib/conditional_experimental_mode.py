@@ -8,19 +8,19 @@ CEStatus = {
   "OFF": 0,              # Off
   "USER_DISABLED": 1,    # "Experimental Mode" disabled by user
   "USER_OVERRIDDEN": 2,  # "Experimental Mode" enabled by user
-  "SPEED": 3,            # Speed condition
-  "SIGNAL": 4,           # Turn signal condition
-  "CURVATURE": 5,        # Road curvature condition
-  "LEAD": 6,             # Slower lead vehicle condition
-  "STOP_LIGHT": 7,       # Stop light or sign condition
-  "SPEED_LIMIT": 8       # Speed limit controller condition
+  "CURVATURE": 3,        # Road curvature condition
+  "LEAD": 4,             # Slower lead vehicle condition
+  "SIGNAL": 5,           # Turn signal condition
+  "SPEED": 6,            # Speed condition
+  "SPEED_LIMIT": 7,      # Speed limit controller condition
+  "STOP_LIGHT": 8        # Stop light or sign condition
 }
 
 class ConditionalExperimentalMode:
   def __init__(self, FrogPilotPlanner):
     self.frogpilot_planner = FrogPilotPlanner
 
-    self.curvature_filter = FirstOrderFilter(0, 1, DT_MDL)
+    self.curvature_filter = FirstOrderFilter(0, 0.5, DT_MDL)
     self.slow_lead_filter = FirstOrderFilter(0, 1, DT_MDL)
     self.stop_light_filter = FirstOrderFilter(0, 0.5, DT_MDL)
 
@@ -30,7 +30,7 @@ class ConditionalExperimentalMode:
 
   def update(self, v_ego, sm, frogpilot_toggles):
     if frogpilot_toggles.experimental_mode_via_press:
-      self.status_value = CEStatus["OFF"]
+      self.status_value = self.frogpilot_planner.params_memory.get("CEStatus")
     else:
       self.status_value = CEStatus["OFF"]
 
@@ -39,25 +39,14 @@ class ConditionalExperimentalMode:
       self.experimental_mode = self.check_conditions(v_ego, sm, frogpilot_toggles)
       self.frogpilot_planner.params_memory.put("CEStatus", self.status_value if self.experimental_mode else CEStatus["OFF"])
     else:
-      self.experimental_mode = self.status_value == CEStatus["USER_OVERRIDDEN"] or sm["carState"].standstill and self.experimental_mode and self.frogpilot_planner.model_stopped
+      self.experimental_mode = sm["carState"].standstill and self.experimental_mode and self.frogpilot_planner.model_stopped
+      self.experimental_mode |= self.status_value == CEStatus["USER_OVERRIDDEN"]
       self.experimental_mode &= self.status_value != CEStatus["USER_DISABLED"]
 
       self.stop_light_detected &= self.status_value not in (CEStatus["USER_DISABLED"], CEStatus["USER_OVERRIDDEN"])
       self.stop_light_filter.x = 0
 
   def check_conditions(self, v_ego, sm, frogpilot_toggles):
-    below_speed = not self.frogpilot_planner.frogpilot_following.following_lead and 1 <= v_ego < frogpilot_toggles.conditional_limit
-    below_speed_with_lead = self.frogpilot_planner.frogpilot_following.following_lead and 1 <= v_ego < frogpilot_toggles.conditional_limit_lead
-    if below_speed or below_speed_with_lead:
-      self.status_value = CEStatus["SPEED"]
-      return True
-
-    desired_lane = self.frogpilot_planner.lane_width_left if sm["carState"].leftBlinker else self.frogpilot_planner.lane_width_right
-    lane_available = desired_lane >= frogpilot_toggles.lane_detection_width or not frogpilot_toggles.conditional_signal_lane_detection
-    if v_ego < frogpilot_toggles.conditional_signal and (sm["carState"].leftBlinker or sm["carState"].rightBlinker) and not lane_available:
-      self.status_value = CEStatus["SIGNAL"]
-      return True
-
     if self.curve_detected and (not self.frogpilot_planner.frogpilot_following.following_lead or frogpilot_toggles.conditional_curves_lead) and frogpilot_toggles.conditional_curves:
       self.status_value = CEStatus["CURVATURE"]
       return True
@@ -66,12 +55,24 @@ class ConditionalExperimentalMode:
       self.status_value = CEStatus["LEAD"]
       return True
 
-    if self.stop_light_detected and frogpilot_toggles.conditional_model_stop_time != 0:
-      self.status_value = CEStatus["STOP_LIGHT"]
+    desired_lane = self.frogpilot_planner.lane_width_left if sm["carState"].leftBlinker else self.frogpilot_planner.lane_width_right
+    lane_available = desired_lane >= frogpilot_toggles.lane_detection_width or not frogpilot_toggles.conditional_signal_lane_detection
+    if v_ego < frogpilot_toggles.conditional_signal and (sm["carState"].leftBlinker or sm["carState"].rightBlinker) and not lane_available:
+      self.status_value = CEStatus["SIGNAL"]
+      return True
+
+    below_speed = not self.frogpilot_planner.frogpilot_following.following_lead and 1 <= v_ego < frogpilot_toggles.conditional_limit
+    below_speed_with_lead = self.frogpilot_planner.frogpilot_following.following_lead and 1 <= v_ego < frogpilot_toggles.conditional_limit_lead
+    if below_speed or below_speed_with_lead:
+      self.status_value = CEStatus["SPEED"]
       return True
 
     if self.frogpilot_planner.frogpilot_vcruise.slc.experimental_mode:
       self.status_value = CEStatus["SPEED_LIMIT"]
+      return True
+
+    if self.stop_light_detected and frogpilot_toggles.conditional_model_stop_time != 0:
+      self.status_value = CEStatus["STOP_LIGHT"]
       return True
 
     return False

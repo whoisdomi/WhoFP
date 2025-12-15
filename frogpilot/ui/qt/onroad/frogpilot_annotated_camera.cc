@@ -376,9 +376,8 @@ void FrogPilotAnnotatedCameraWidget::paintCEMStatus(QPainter &p, SubMaster &sm) 
 
   p.save();
 
-  cemStatusPosition.rx() = dmIconPosition.x();
-  cemStatusPosition.ry() = dmIconPosition.y() - widget_size / 2;
-  cemStatusPosition.rx() += (rightHandDM ? -img_size - widget_size : widget_size);
+  cemStatusPosition.setX(dmIconPosition.x() + (rightHandDM ? -img_size - widget_size : widget_size));
+  cemStatusPosition.setY(dmIconPosition.y() - widget_size / 2);
 
   QRect cemWidget(cemStatusPosition, QSize(widget_size, widget_size));
 
@@ -399,14 +398,14 @@ void FrogPilotAnnotatedCameraWidget::paintCEMStatus(QPainter &p, SubMaster &sm) 
     } else if (frogpilot_scene.conditional_status == 2) {
       icon = experimentalModeIcon;
     } else if (frogpilot_scene.conditional_status == 3) {
-      icon = cemSpeedIcon;
-    } else if (frogpilot_scene.conditional_status == 4) {
-      icon = cemTurnIcon;
-    } else if (frogpilot_scene.conditional_status == 5) {
       icon = cemCurveIcon;
-    } else if (frogpilot_scene.conditional_status == 6) {
+    } else if (frogpilot_scene.conditional_status == 4) {
       icon = cemLeadIcon;
-    } else if (frogpilot_scene.conditional_status == 7) {
+    } else if (frogpilot_scene.conditional_status == 5) {
+      icon = cemTurnIcon;
+    } else if (frogpilot_scene.conditional_status == 6 || frogpilot_scene.conditional_status == 7) {
+      icon = cemSpeedIcon;
+    } else if (frogpilot_scene.conditional_status == 8) {
       icon = cemStopIcon;
     } else {
       icon = experimentalModeIcon;

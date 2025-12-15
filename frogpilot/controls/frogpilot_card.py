@@ -51,9 +51,9 @@ class FrogPilotCard:
       if self.params_memory.get("CEStatus") in (CEStatus["USER_DISABLED"], CEStatus["USER_OVERRIDDEN"]):
         override_value = CEStatus["OFF"]
       elif sm["selfdriveState"].experimentalMode:
-        override_value = CEStatus["USER_OVERRIDDEN"]
-      else:
         override_value = CEStatus["USER_DISABLED"]
+      else:
+        override_value = CEStatus["USER_OVERRIDDEN"]
 
       self.params_memory.put("CEStatus", override_value)
     else:
