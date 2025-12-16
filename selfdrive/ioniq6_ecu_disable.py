@@ -31,6 +31,21 @@ def ioniq6_ecu_disable():
     ecu_rx_addr = 0x738   # ADAS_DRV ECU RX address (usually TX + 8)
     bus = 1               # ECAN - where SCC_CONTROL (0x1a0) is seen
 
+    # Clear any corrupted buffer data
+    print("[Ioniq6 ECU Disable] Clearing CAN buffer...")
+    try:
+        p.can_clear(0xFFFF)
+        time.sleep(0.2)
+        # Drain any remaining messages
+        for _ in range(10):
+            try:
+                p.can_recv()
+            except:
+                pass
+            time.sleep(0.02)
+    except Exception as e:
+        print(f"[Ioniq6 ECU Disable] Buffer clear warning: {e}")
+
     def send_isotp_single_frame(p, addr, data, bus):
         """Send a single-frame ISO-TP message (for messages <= 7 bytes)"""
         # ISO-TP single frame: first byte is 0x0N where N is data length
@@ -43,7 +58,16 @@ def ioniq6_ecu_disable():
         """Wait for ISO-TP response from ECU"""
         start = time.time()
         while time.time() - start < timeout:
-            msgs = p.can_recv()
+            try:
+                msgs = p.can_recv()
+            except Exception as e:
+                # Buffer corruption - clear and retry
+                try:
+                    p.can_clear(0xFFFF)
+                except:
+                    pass
+                time.sleep(0.05)
+                continue
             for msg in msgs:
                 if len(msg) >= 3:
                     addr = msg[0]
