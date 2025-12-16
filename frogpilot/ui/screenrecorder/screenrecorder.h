@@ -26,15 +26,11 @@ private:
 
   bool recording;
 
-  int frameCount;
-
   qint64 startedTime;
 
   std::thread encodingThread;
 
   std::unique_ptr<OmxEncoder> encoder;
-
-  std::vector<uint8_t> rgbScaleBuffer;
 
   BlockingQueue<QImage> imageQueue{UI_FREQ};
 
@@ -42,7 +38,7 @@ private:
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
   QColor whiteColor(int alpha = 255) { return QColor(255, 255, 255, alpha); }
 
-  QImage synthesizeFrame(const QImage &frame1, const QImage &frame2, double alpha);
+  QImage captureBuffer;
 
   QWidget *rootWidget;
 };

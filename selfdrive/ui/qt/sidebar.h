@@ -88,6 +88,10 @@ private:
 
   Params params;
 
+  QColor sidebarColor1;
+  QColor sidebarColor2;
+  QColor sidebarColor3;
+
   QSharedPointer<QMovie> flag_gif;
   QSharedPointer<QMovie> home_gif;
   QSharedPointer<QMovie> settings_gif;

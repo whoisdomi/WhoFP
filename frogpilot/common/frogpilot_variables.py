@@ -143,9 +143,31 @@ DEVICE_SHUTDOWN_TIMES = {
 }
 
 EXCLUDED_KEYS = {
-  "AvailableModels", "AvailableModelNames", "CalibratedLateralAcceleration", "CalibrationProgress", "CarParamsPersistent",
-  "FrogPilotCarParamsPersistent", "CurvatureData", "ExperimentalLongitudinalEnabled", "KonikMinutes", "MapBoxRequests",
-  "ModelDrivesAndScores", "openpilotMinutes", "OverpassRequests", "SpeedLimits", "SpeedLimitsFiltered", "UpdaterAvailableBranches"
+  "AvailableModelNames",
+  "AvailableModels",
+  "CalibratedLateralAcceleration",
+  "CalibrationProgress",
+  "CarBatteryCapacity",
+  "CarParamsPersistent",
+  "CurvatureData",
+  "ExperimentalLongitudinalEnabled",
+  "FrogPilotCarParamsPersistent",
+  "KonikMinutes",
+  "LastUpdateTime",
+  "MapBoxRequests",
+  "ModelDrivesAndScores",
+  "openpilotMinutes",
+  "OverpassRequests",
+  "PandaSignatures",
+  "SpeedLimits",
+  "SpeedLimitsFiltered",
+  "UpdateFailedCount",
+  "UpdaterAvailableBranches",
+  "UpdaterCurrentDescription",
+  "UpdaterCurrentReleaseNotes",
+  "UpdaterFetchAvailable",
+  "UpdaterTargetBranch",
+  "UptimeOffroad"
 }
 
 TUNING_LEVELS = {
@@ -571,7 +593,6 @@ class FrogPilotVariables:
     toggle.lane_changes = self.get_value("LaneChanges")
     toggle.lane_change_delay = self.get_value("LaneChangeTime", cast=float, condition=toggle.lane_changes)
     toggle.lane_detection_width = self.get_value("LaneDetectionWidth", cast=float, condition=toggle.lane_changes, conversion=distance_conversion)
-    toggle.lane_detection = toggle.lane_detection_width > 0
     toggle.minimum_lane_change_speed = self.get_value("MinimumLaneChangeSpeed", cast=float, condition=toggle.lane_changes, conversion=speed_conversion)
     toggle.nudgeless = self.get_value("NudgelessLaneChange", condition=toggle.lane_changes)
     toggle.one_lane_change = self.get_value("OneLaneChange", condition=toggle.lane_changes)

@@ -4,8 +4,8 @@
 
 #include "frogpilot/ui/screenrecorder/screenrecorder.h"
 
+constexpr int BITRATE = 8 * 1024 * 1024;
 constexpr int MAX_DURATION = 1000 * 60 * 5;
-
 constexpr int SCREEN_WIDTH = 2160;
 constexpr int SCREEN_HEIGHT = 1080;
 
@@ -13,8 +13,6 @@ const QDir RECORDINGS_FOLDER("/data/media/screen_recordings");
 
 ScreenRecorder::ScreenRecorder(QWidget *parent) : QPushButton(parent) {
   setFixedSize(btn_size, btn_size);
-
-  rgbScaleBuffer.resize(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
 
   rootWidget = topWidget(this);
 
@@ -34,11 +32,15 @@ void ScreenRecorder::updateState() {
     return;
   }
 
-  if (frameCount % 2 == 0) {
-    imageQueue.push(rootWidget->grab().toImage());
+  if (captureBuffer.size() != QSize(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+    captureBuffer = QImage(SCREEN_WIDTH, SCREEN_HEIGHT, QImage::Format_RGBA8888);
   }
 
-  frameCount += 1;
+  QPainter p(&captureBuffer);
+  rootWidget->render(&p);
+  p.end();
+
+  imageQueue.push(QImage(captureBuffer));
 }
 
 void ScreenRecorder::toggleRecording() {
@@ -46,7 +48,13 @@ void ScreenRecorder::toggleRecording() {
 }
 
 void ScreenRecorder::startRecording() {
-  encoder = std::make_unique<OmxEncoder>(RECORDINGS_FOLDER.path().toStdString().c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, UI_FREQ * 2, 12 * 1024 * 1024);
+  encoder = std::make_unique<OmxEncoder>(
+    RECORDINGS_FOLDER.path().toStdString().c_str(),
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    UI_FREQ,
+    BITRATE
+  );
   encoder->encoder_open((QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss").toStdString() + ".mp4").c_str());
 
   if (!encoder->is_open) {
@@ -56,14 +64,20 @@ void ScreenRecorder::startRecording() {
 
   recording = true;
 
-  frameCount = 0;
-
   startedTime = QDateTime::currentMSecsSinceEpoch();
 
+  imageQueue.clear();
+
   encodingThread = std::thread(&ScreenRecorder::encodeImage, this);
+
+  update();
 }
 
 void ScreenRecorder::stopRecording() {
+  if (!recording) {
+    return;
+  }
+
   recording = false;
 
   if (encodingThread.joinable()) {
@@ -74,55 +88,25 @@ void ScreenRecorder::stopRecording() {
     encoder->encoder_close();
     encoder.reset();
   }
-}
 
-QImage ScreenRecorder::synthesizeFrame(const QImage &frame1, const QImage &frame2, double alpha) {
-  QImage blended(frame1.size(), frame1.format());
-
-  const uint8_t *bits1 = frame1.constBits();
-  const uint8_t *bits2 = frame2.constBits();
-
-  uint8_t *blendedBits = blended.bits();
-
-  int numPixels = frame1.width() * frame1.height();
-
-  for (int i = 0; i < numPixels * 4; ++i) {
-    blendedBits[i] = bits1[i] * (1.0 - alpha) + bits2[i] * alpha;
-  }
-
-  return blended;
+  update();
 }
 
 void ScreenRecorder::encodeImage() {
-  uint64_t previousTimestamp = 0;
-
-  QImage previousImage;
-
   while (recording) {
-    uint64_t currentTimestamp = nanos_since_boot();
-
     QImage image;
+    if (imageQueue.pop_wait_for(image, std::chrono::milliseconds(1000))) {
+      uint64_t currentTimestamp = nanos_since_boot();
 
-    if (imageQueue.pop_wait_for(image, std::chrono::milliseconds(1000 / UI_FREQ))) {
-      image = image.convertToFormat(QImage::Format_RGBA8888);
-
-      if (!previousImage.isNull()) {
-        double alpha = std::clamp((currentTimestamp - previousTimestamp) / (1000.0 / UI_FREQ), 0.0, 1.0);
-
-        QImage syntheticImage = synthesizeFrame(previousImage, image, alpha);
-
-        std::copy(syntheticImage.bits(), syntheticImage.bits() + SCREEN_WIDTH * SCREEN_HEIGHT * 4, rgbScaleBuffer.data());
-        encoder->encode_frame_rgba(rgbScaleBuffer.data(), SCREEN_WIDTH, SCREEN_HEIGHT, (previousTimestamp + currentTimestamp) / 2);
+      if (image.format() != QImage::Format_RGBA8888) {
+        image = image.convertToFormat(QImage::Format_RGBA8888);
       }
 
-      std::copy(image.bits(), image.bits() + SCREEN_WIDTH * SCREEN_HEIGHT * 4, rgbScaleBuffer.data());
-      encoder->encode_frame_rgba(rgbScaleBuffer.data(), SCREEN_WIDTH, SCREEN_HEIGHT, currentTimestamp);
-
-      previousImage = image;
-      previousTimestamp = currentTimestamp;
+      const uint8_t *bits = image.constBits();
+      if (bits) {
+        encoder->encode_frame_rgba(bits, SCREEN_WIDTH, SCREEN_HEIGHT, currentTimestamp);
+      }
     }
-
-    std::this_thread::yield();
   }
 }
 

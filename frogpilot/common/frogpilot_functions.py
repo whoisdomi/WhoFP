@@ -101,12 +101,12 @@ def backup_toggles(params, boot_run=False):
       changes_found = True
     elif current_value != params_backup.get(key):
       params_backup.put(key, current_value)
-      changes_found |= key not in EXCLUDED_KEYS
+      changes_found |= key.decode("utf-8") not in EXCLUDED_KEYS
 
   maximum_backups = 5
   cleanup_backups(TOGGLE_BACKUPS, maximum_backups)
 
-  if not changes_found:
+  if not changes_found or boot_run:
     print("Toggles are identical to the previous backup. Aborting...")
     return
 

@@ -5,6 +5,7 @@ import os
 import time
 
 from cereal import messaging
+from cereal.services import SERVICE_LIST
 from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL, Priority, Ratekeeper, config_realtime_process
 from openpilot.common.time_helpers import system_time_valid
@@ -18,6 +19,7 @@ from openpilot.frogpilot.system.frogpilot_stats import send_stats
 from openpilot.frogpilot.system.frogpilot_tracking import FrogPilotTracking
 
 ASSET_CHECK_RATE = (1 / DT_MDL)
+TOGGLE_UPDATE_TIME = 1 / min([service.frequency for service in SERVICE_LIST.values() if service.frequency >= 1])
 
 def check_assets(theme_manager, thread_manager, params_memory, frogpilot_toggles):
   for asset_type, asset_param in THEME_COMPONENT_PARAMS.items():
@@ -137,7 +139,7 @@ def frogpilot_thread():
       frogpilot_tracking.update(now, time_validated, sm, frogpilot_toggles)
     elif not started:
       frogpilot_plan_send = messaging.new_message("frogpilotPlan")
-      frogpilot_plan_send.frogpilotPlan.themeUpdated = theme_manager.theme_updated or params_memory.get_bool("UseActiveTheme")
+      frogpilot_plan_send.frogpilotPlan.themeUpdated = theme_manager.theme_updated
       frogpilot_plan_send.frogpilotPlan.togglesUpdated = toggles_updated
       pm.send("frogpilotPlan", frogpilot_plan_send)
 
@@ -151,7 +153,7 @@ def frogpilot_thread():
 
       toggles_last_updated = now
 
-    toggles_updated = (now - toggles_last_updated).total_seconds() <= 1
+    toggles_updated = (now - toggles_last_updated).total_seconds() <= TOGGLE_UPDATE_TIME
 
     run_update_checks |= params_memory.get_bool("ManualUpdateInitiated")
     run_update_checks |= now.second == 0 and (now.minute % 60 == 0 or (now.minute % 5 == 0 and frogpilot_variables.frogs_go_moo))

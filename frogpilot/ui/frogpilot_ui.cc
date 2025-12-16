@@ -17,12 +17,11 @@ static void update_state(FrogPilotUIState *fs) {
   }
   if (fpsm.updated("frogpilotPlan")) {
     const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
-    if (frogpilotPlan.getThemeUpdated() || frogpilotPlan.getTogglesUpdated()) {
+    if (frogpilotPlan.getThemeUpdated()) {
+      emit fs->themeUpdated();
+    }
+    if (frogpilotPlan.getTogglesUpdated()) {
       frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray::fromStdString(fs->params_memory.get("FrogPilotToggles"))).object();
-
-      if (frogpilotPlan.getThemeUpdated()) {
-        emit fs->themeUpdated();
-      }
     }
   }
   if (fpsm.updated("selfdriveState")) {

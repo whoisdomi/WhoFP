@@ -12,6 +12,7 @@ from openpilot.common.constants import CV
 from openpilot.common.git import get_short_branch
 from openpilot.common.params import Params
 from openpilot.common.realtime import DT_CTRL
+from openpilot.selfdrive.controls.lib.desire_helper import LaneChangeDirection
 from openpilot.selfdrive.locationd.calibrationd import MIN_SPEED_FILTER
 from openpilot.system.micd import SAMPLE_RATE, SAMPLE_BUFFER
 from openpilot.selfdrive.ui.feedback.feedbackd import FEEDBACK_MAX_DURATION
@@ -454,7 +455,7 @@ def nnff_loaded_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMast
 
 
 def no_lane_available_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality, frogpilot_toggles: SimpleNamespace) -> Alert:
-  lane_width = sm["frogpilotPlan"].laneWidthLeft if CS.leftBlinker else sm["frogpilotPlan"].laneWidthRight
+  lane_width = sm["frogpilotPlan"].laneWidthLeft if sm["modelV2"].meta.laneChangeDirection == LaneChangeDirection.left else sm["frogpilotPlan"].laneWidthRight
   lane_width_msg = f"{lane_width:.1f} meters" if metric else f"{lane_width * CV.METER_TO_FOOT:.1f} feet"
 
   return Alert(

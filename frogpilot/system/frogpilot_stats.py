@@ -12,6 +12,7 @@ from cereal import car, custom
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
+from openpilot.frogpilot.common.download_utilities import github_rate_limited
 from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name, is_url_pingable
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 
@@ -36,6 +37,10 @@ def get_branch_commits(now):
       "Accept-Language": "en",
       "User-Agent": "frogpilot-branch-commits-checker/1.0 (https://github.com/FrogAi/FrogPilot)"
      })
+
+    if github_rate_limited(session):
+      print("Skipping commit check due to rate limits.")
+      return []
 
     for branch in TRACKED_BRANCHES:
       try:
@@ -217,6 +222,6 @@ def send_stats(params):
 
   all_points = get_branch_commits(now) + model_points + [user_point]
 
-  client = InfluxDBClient(org=ORG_ID, token=TOKEN, url=STATS_URL)
+  client = InfluxDBClient(org=ORG_ID, timeout=60000, token=TOKEN, url=STATS_URL)
   client.write_api(write_options=SYNCHRONOUS).write(bucket=BUCKET, record=all_points)
   print("Successfully sent FrogPilot stats!")
