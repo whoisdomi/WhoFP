@@ -1,24 +1,19 @@
 #!/usr/bin/env python3
 """
-Test 0x4E4 as door lock command!
-Found during key fob capture - appears BEFORE lock state changes
+Test door lock with KEY OUTSIDE car + capture auto-lock sequence
 """
 from panda import Panda
 import time
 import subprocess
 
 print("=" * 60)
-print("TEST 0x4E4 AS LOCK COMMAND")
+print("DOOR LOCK TEST - KEY OUTSIDE + AUTO-LOCK CAPTURE")
 print("=" * 60)
 
 print("\nStopping openpilot...")
 subprocess.run(["pkill", "-f", "selfdrive"], capture_output=True)
 subprocess.run(["pkill", "-f", "_ui"], capture_output=True)
 time.sleep(2)
-
-print("\nCar must be in READY mode")
-print("Press Enter when ready...")
-input()
 
 p = Panda()
 try:
@@ -45,8 +40,8 @@ def safe_recv():
 
 def get_lock_state():
     p.can_clear(0xFFFF)
-    time.sleep(0.3)
-    for _ in range(30):
+    time.sleep(0.2)
+    for _ in range(20):
         for m in safe_recv():
             if m[0] == 0x414 and len(m[1]) >= 5:
                 state = (m[1][4] >> 5) & 0x01
@@ -54,107 +49,143 @@ def get_lock_state():
         time.sleep(0.05)
     return "UNKNOWN"
 
-# Captured patterns from key fob:
-# UNLOCK: d180010000020000 (byte1=0x80, byte4=0x02)
-# LOCK:   6b90010000000000 (byte1=0x90, byte4=0x00)
-
-print(f"\nCurrent state: {get_lock_state()}")
-
 print("\n" + "=" * 60)
-print("TEST 1: Send 0x4E4 LOCK pattern")
+print("TEST 1: Lock commands with KEY OUTSIDE the car")
 print("=" * 60)
+print("\nINSTRUCTIONS:")
+print("  1. Leave the key fob OUTSIDE the car (on roof, with someone, etc)")
+print("  2. Stay inside with laptop/phone connected to comma")
+print("  3. Car should be OFF (not ACC, not Ready)")
+print("\nPress Enter when key is OUTSIDE and you're ready...")
+input()
 
-input("\nPress Enter to send LOCK (6b90010000000000)...")
-print("Sending 0x4E4 LOCK pattern...")
+print(f"Current state: {get_lock_state()}")
 
-# Try with different counters (byte0 varies)
+print("\nTrying 0x4E4 LOCK command...")
 for i in range(10):
     counter = (i * 0x10) & 0xFF
-    # LOCK pattern: byte1=0x90, byte4=0x00
     data = bytes([counter, 0x90, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00])
     p.can_send(0x4E4, data, 1)
     time.sleep(0.04)
 
-time.sleep(0.5)
-state = get_lock_state()
-print(f"State after: {state}")
-print(">>> DID THE DOORS LOCK? <<<")
+time.sleep(1)
+print(f"State after: {get_lock_state()}")
+print(">>> DID THE DOORS LOCK? (check physically!) <<<")
 
-print("\n" + "=" * 60)
-print("TEST 2: Send 0x4E4 UNLOCK pattern")
-print("=" * 60)
-
-input("\nPress Enter to send UNLOCK (d180010000020000)...")
-print("Sending 0x4E4 UNLOCK pattern...")
-
+input("\nPress Enter to try UNLOCK...")
 for i in range(10):
     counter = (i * 0x10) & 0xFF
-    # UNLOCK pattern: byte1=0x80, byte4=0x02
     data = bytes([counter, 0x80, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00])
     p.can_send(0x4E4, data, 1)
     time.sleep(0.04)
 
-time.sleep(0.5)
-state = get_lock_state()
-print(f"State after: {state}")
+time.sleep(1)
+print(f"State after: {get_lock_state()}")
 print(">>> DID THE DOORS UNLOCK? <<<")
 
 print("\n" + "=" * 60)
-print("TEST 3: Try exact captured patterns")
+print("TEST 2: Capture AUTO-LOCK sequence")
 print("=" * 60)
+print("\nThis captures what happens when car auto-locks after door close.")
+print("\nINSTRUCTIONS:")
+print("  1. Car must be OFF (no ACC)")
+print("  2. Doors should be UNLOCKED")
+print("  3. Open driver door, then close it")
+print("  4. Wait for auto-lock (~30 seconds)")
+print("\nPress Enter to start monitoring (60 second capture)...")
+input()
 
-input("\nPress Enter to try exact LOCK pattern...")
-# Exact captured: 6b90010000000000
-for _ in range(5):
-    p.can_send(0x4E4, bytes.fromhex("6b90010000000000"), 1)
-    time.sleep(0.04)
-time.sleep(0.5)
-print(f"State: {get_lock_state()}")
+print("\nMonitoring... Open and close door, then wait for auto-lock!")
+print("Will show any interesting messages...")
 
-input("\nPress Enter to try exact UNLOCK pattern...")
-# Exact captured: d180010000020000
-for _ in range(5):
-    p.can_send(0x4E4, bytes.fromhex("d180010000020000"), 1)
-    time.sleep(0.04)
-time.sleep(0.5)
-print(f"State: {get_lock_state()}")
+p.can_clear(0xFFFF)
+start = time.time()
+
+# Track baseline addresses
+baseline = set()
+for _ in range(50):
+    for m in safe_recv():
+        baseline.add(m[0])
+    time.sleep(0.02)
+
+print(f"Baseline addresses: {len(baseline)}")
+
+# Now monitor for changes
+all_events = []
+last_state = None
+door_open_time = None
+auto_lock_time = None
+
+while time.time() - start < 60:
+    for addr, data, bus in safe_recv():
+        t = time.time() - start
+
+        # Track 0x414 state changes
+        if addr == 0x414 and len(data) >= 6:
+            state = (data[4] >> 5) & 0x01
+            action = data[5] & 0x01
+            state_str = "UNLOCKED" if state == 1 else "LOCKED"
+
+            if state != last_state:
+                print(f"  {t:.1f}s: STATE CHANGE -> {state_str}")
+                if state == 0:  # Just locked
+                    auto_lock_time = t
+                last_state = state
+
+            if action == 1:
+                print(f"  {t:.1f}s: ACTION detected (state={state_str})")
+
+        # Track 0x3FF
+        if addr == 0x3FF:
+            print(f"  {t:.1f}s: 0x3FF = {data.hex()}")
+            all_events.append((t, '0x3FF', data.hex()))
+
+        # Track 0x4E4
+        if addr == 0x4E4:
+            print(f"  {t:.1f}s: 0x4E4 = {data.hex()}")
+            all_events.append((t, '0x4E4', data.hex()))
+
+        # NEW addresses not in baseline
+        if addr not in baseline:
+            print(f"  {t:.1f}s: NEW 0x{addr:03X} = {data.hex()}")
+            all_events.append((t, f'0x{addr:03X}', data.hex()))
+            baseline.add(addr)  # Don't repeat
+
+        # Door-related messages (common addresses)
+        if addr in [0x19A, 0x30A, 0x33A, 0x3CA]:
+            all_events.append((t, f'0x{addr:03X}', data.hex()))
+
+print(f"\n\nCapture complete!")
+print(f"Recorded {len(all_events)} interesting events")
+
+if auto_lock_time:
+    print(f"\nAuto-lock occurred at {auto_lock_time:.1f}s")
+    print("\nMessages in 2 seconds BEFORE auto-lock:")
+    for t, addr, data in all_events:
+        if auto_lock_time - 2 < t < auto_lock_time:
+            print(f"  {t:.1f}s: {addr} = {data}")
 
 print("\n" + "=" * 60)
-print("TEST 4: Try 0x33A (appeared before lock)")
-print("=" * 60)
-# 0x33A: 42fd00000000000000000000f000000000000000000000000000000000000000
-
-input("\nPress Enter to try 0x33A...")
-for _ in range(5):
-    p.can_send(0x33A, bytes.fromhex("42fd00000000000000000000f000000000000000000000000000000000000000"), 1)
-    time.sleep(0.04)
-time.sleep(0.5)
-print(f"State: {get_lock_state()}")
-
-print("\n" + "=" * 60)
-print("TEST 5: Try on bus 0 and bus 2")
+print("TEST 3: Try captured patterns with key outside")
 print("=" * 60)
 
-for bus in [0, 2]:
-    input(f"\nPress Enter to try 0x4E4 LOCK on bus {bus}...")
-    for _ in range(5):
-        p.can_send(0x4E4, bytes.fromhex("6b90010000000000"), bus)
-        time.sleep(0.04)
-    time.sleep(0.3)
-    print(f"State: {get_lock_state()}")
+if all_events:
+    # Find 0x4E4 patterns
+    e4_patterns = [(t, d) for t, a, d in all_events if a == '0x4E4']
+    if e4_patterns:
+        print(f"\nFound {len(e4_patterns)} 0x4E4 patterns during auto-lock!")
+        for t, data in e4_patterns:
+            print(f"  {t:.1f}s: {data}")
 
-    input(f"\nPress Enter to try 0x4E4 UNLOCK on bus {bus}...")
-    for _ in range(5):
-        p.can_send(0x4E4, bytes.fromhex("d180010000020000"), bus)
-        time.sleep(0.04)
-    time.sleep(0.3)
-    print(f"State: {get_lock_state()}")
+        input("\nPress Enter to replay these patterns...")
+        for t, data in e4_patterns:
+            p.can_send(0x4E4, bytes.fromhex(data), 1)
+            time.sleep(0.04)
+
+        time.sleep(1)
+        print(f"State after: {get_lock_state()}")
 
 print("\n" + "=" * 60)
 print("DONE")
 print("=" * 60)
-print("\nIf nothing worked, the command may require:")
-print("  - Authentication/security handshake")
-print("  - Specific counter/checksum values")
-print("  - Coming from the actual SMK ECU address")
 print("\nReboot with: sudo reboot")
