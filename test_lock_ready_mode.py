@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-Capture KEY FOB lock/unlock - might use CAN instead of LIN!
+Test 0x4E4 as door lock command!
+Found during key fob capture - appears BEFORE lock state changes
 """
 from panda import Panda
 import time
 import subprocess
 
 print("=" * 60)
-print("KEY FOB LOCK/UNLOCK CAPTURE")
+print("TEST 0x4E4 AS LOCK COMMAND")
 print("=" * 60)
 
 print("\nStopping openpilot...")
@@ -15,8 +16,7 @@ subprocess.run(["pkill", "-f", "selfdrive"], capture_output=True)
 subprocess.run(["pkill", "-f", "_ui"], capture_output=True)
 time.sleep(2)
 
-print("\nCar must be in READY mode (or at least ACC)")
-print("Have your KEY FOB ready!")
+print("\nCar must be in READY mode")
 print("Press Enter when ready...")
 input()
 
@@ -43,146 +43,118 @@ def safe_recv():
     except:
         return []
 
-# Collect baseline messages for 2 seconds
-print("\nCollecting baseline (don't press anything)...")
-p.can_clear(0xFFFF)
-baseline_addrs = {}
-start = time.time()
-while time.time() - start < 2:
-    for addr, data, bus in safe_recv():
-        if addr not in baseline_addrs:
-            baseline_addrs[addr] = []
-        baseline_addrs[addr].append(data.hex())
+def get_lock_state():
+    p.can_clear(0xFFFF)
+    time.sleep(0.3)
+    for _ in range(30):
+        for m in safe_recv():
+            if m[0] == 0x414 and len(m[1]) >= 5:
+                state = (m[1][4] >> 5) & 0x01
+                return "UNLOCKED" if state == 1 else "LOCKED"
+        time.sleep(0.05)
+    return "UNKNOWN"
 
-print(f"Baseline: {len(baseline_addrs)} unique addresses")
+# Captured patterns from key fob:
+# UNLOCK: d180010000020000 (byte1=0x80, byte4=0x02)
+# LOCK:   6b90010000000000 (byte1=0x90, byte4=0x00)
 
-# Now capture key fob
-print("\n" + "=" * 60)
-print("Press KEY FOB LOCK button NOW!")
-print("Monitoring for 10 seconds...")
-print("=" * 60)
-
-p.can_clear(0xFFFF)
-start = time.time()
-all_events = []
-new_addrs = set()
-
-while time.time() - start < 10:
-    for addr, data, bus in safe_recv():
-        t = time.time() - start
-
-        # Track all messages
-        all_events.append((t, addr, data, bus))
-
-        # Highlight messages we haven't seen in baseline
-        if addr not in baseline_addrs:
-            if addr not in new_addrs:
-                print(f"  {t:.2f}s: NEW 0x{addr:03X} bus{bus} = {data.hex()}")
-                new_addrs.add(addr)
-
-        # Always show 0x414 state changes
-        if addr == 0x414 and len(data) >= 6:
-            state = (data[4] >> 5) & 0x01
-            action = data[5] & 0x01
-            if action == 1:
-                state_str = "UNLOCKED" if state == 1 else "LOCKED"
-                print(f"  {t:.2f}s: 0x414 State={state_str} (action=1)")
-
-        # Always show 0x3FF
-        if addr == 0x3FF:
-            print(f"  {t:.2f}s: 0x3FF = {data.hex()}")
-
-print(f"\nTotal events: {len(all_events)}")
-print(f"New addresses not in baseline: {len(new_addrs)}")
-
-# Analyze what appeared around lock events
-print("\n" + "=" * 60)
-print("Analyzing messages around lock/unlock events...")
-print("=" * 60)
-
-# Find when 0x414 state changed
-lock_times = []
-for i, (t, addr, data, bus) in enumerate(all_events):
-    if addr == 0x414 and len(data) >= 6:
-        action = data[5] & 0x01
-        if action == 1:
-            state = (data[4] >> 5) & 0x01
-            lock_times.append((t, "UNLOCK" if state == 1 else "LOCK"))
-
-print(f"\nLock events detected: {lock_times}")
-
-# For each lock event, show messages 500ms before
-for event_time, event_type in lock_times:
-    print(f"\n--- {event_type} at {event_time:.2f}s ---")
-    print("Messages 500ms BEFORE:")
-
-    before_msgs = {}
-    for t, addr, data, bus in all_events:
-        if event_time - 0.5 <= t < event_time:
-            key = f"0x{addr:03X}"
-            if key not in before_msgs:
-                before_msgs[key] = []
-            before_msgs[key].append((t, data.hex(), bus))
-
-    # Show addresses that are NOT common (not in baseline or low frequency)
-    for addr_str, msgs in sorted(before_msgs.items()):
-        addr_int = int(addr_str, 16)
-        baseline_count = len(baseline_addrs.get(addr_int, []))
-
-        # If this address wasn't in baseline or had few messages, it's interesting
-        if baseline_count < 5 or addr_int in [0x3FF, 0x414]:
-            for t, data, bus in msgs[-3:]:  # Last 3
-                print(f"  {t:.2f}s: {addr_str} bus{bus} = {data}")
-
-# Second capture for UNLOCK
-print("\n" + "=" * 60)
-print("Now press KEY FOB UNLOCK button!")
-print("Monitoring for 10 seconds...")
-print("=" * 60)
-
-p.can_clear(0xFFFF)
-start = time.time()
-all_events2 = []
-
-while time.time() - start < 10:
-    for addr, data, bus in safe_recv():
-        t = time.time() - start
-        all_events2.append((t, addr, data, bus))
-
-        if addr not in baseline_addrs and addr not in new_addrs:
-            print(f"  {t:.2f}s: NEW 0x{addr:03X} bus{bus} = {data.hex()}")
-            new_addrs.add(addr)
-
-        if addr == 0x414 and len(data) >= 6:
-            state = (data[4] >> 5) & 0x01
-            action = data[5] & 0x01
-            if action == 1:
-                state_str = "UNLOCKED" if state == 1 else "LOCKED"
-                print(f"  {t:.2f}s: 0x414 State={state_str}")
-
-        if addr == 0x3FF:
-            print(f"  {t:.2f}s: 0x3FF = {data.hex()}")
-
-# Find unique messages that appeared ONLY during lock/unlock
-print("\n" + "=" * 60)
-print("SUMMARY: Potential command addresses")
-print("=" * 60)
-
-all_captured = set()
-for t, addr, data, bus in all_events + all_events2:
-    all_captured.add(addr)
-
-potential_commands = []
-for addr in all_captured:
-    if addr not in baseline_addrs:
-        potential_commands.append(addr)
-    elif len(baseline_addrs[addr]) < 3:  # Very rare in baseline
-        potential_commands.append(addr)
-
-print(f"\nAddresses that appeared during fob press but not in baseline:")
-for addr in sorted(potential_commands):
-    print(f"  0x{addr:03X}")
+print(f"\nCurrent state: {get_lock_state()}")
 
 print("\n" + "=" * 60)
-print("DONE - Reboot with: sudo reboot")
+print("TEST 1: Send 0x4E4 LOCK pattern")
 print("=" * 60)
+
+input("\nPress Enter to send LOCK (6b90010000000000)...")
+print("Sending 0x4E4 LOCK pattern...")
+
+# Try with different counters (byte0 varies)
+for i in range(10):
+    counter = (i * 0x10) & 0xFF
+    # LOCK pattern: byte1=0x90, byte4=0x00
+    data = bytes([counter, 0x90, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00])
+    p.can_send(0x4E4, data, 1)
+    time.sleep(0.04)
+
+time.sleep(0.5)
+state = get_lock_state()
+print(f"State after: {state}")
+print(">>> DID THE DOORS LOCK? <<<")
+
+print("\n" + "=" * 60)
+print("TEST 2: Send 0x4E4 UNLOCK pattern")
+print("=" * 60)
+
+input("\nPress Enter to send UNLOCK (d180010000020000)...")
+print("Sending 0x4E4 UNLOCK pattern...")
+
+for i in range(10):
+    counter = (i * 0x10) & 0xFF
+    # UNLOCK pattern: byte1=0x80, byte4=0x02
+    data = bytes([counter, 0x80, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00])
+    p.can_send(0x4E4, data, 1)
+    time.sleep(0.04)
+
+time.sleep(0.5)
+state = get_lock_state()
+print(f"State after: {state}")
+print(">>> DID THE DOORS UNLOCK? <<<")
+
+print("\n" + "=" * 60)
+print("TEST 3: Try exact captured patterns")
+print("=" * 60)
+
+input("\nPress Enter to try exact LOCK pattern...")
+# Exact captured: 6b90010000000000
+for _ in range(5):
+    p.can_send(0x4E4, bytes.fromhex("6b90010000000000"), 1)
+    time.sleep(0.04)
+time.sleep(0.5)
+print(f"State: {get_lock_state()}")
+
+input("\nPress Enter to try exact UNLOCK pattern...")
+# Exact captured: d180010000020000
+for _ in range(5):
+    p.can_send(0x4E4, bytes.fromhex("d180010000020000"), 1)
+    time.sleep(0.04)
+time.sleep(0.5)
+print(f"State: {get_lock_state()}")
+
+print("\n" + "=" * 60)
+print("TEST 4: Try 0x33A (appeared before lock)")
+print("=" * 60)
+# 0x33A: 42fd00000000000000000000f000000000000000000000000000000000000000
+
+input("\nPress Enter to try 0x33A...")
+for _ in range(5):
+    p.can_send(0x33A, bytes.fromhex("42fd00000000000000000000f000000000000000000000000000000000000000"), 1)
+    time.sleep(0.04)
+time.sleep(0.5)
+print(f"State: {get_lock_state()}")
+
+print("\n" + "=" * 60)
+print("TEST 5: Try on bus 0 and bus 2")
+print("=" * 60)
+
+for bus in [0, 2]:
+    input(f"\nPress Enter to try 0x4E4 LOCK on bus {bus}...")
+    for _ in range(5):
+        p.can_send(0x4E4, bytes.fromhex("6b90010000000000"), bus)
+        time.sleep(0.04)
+    time.sleep(0.3)
+    print(f"State: {get_lock_state()}")
+
+    input(f"\nPress Enter to try 0x4E4 UNLOCK on bus {bus}...")
+    for _ in range(5):
+        p.can_send(0x4E4, bytes.fromhex("d180010000020000"), bus)
+        time.sleep(0.04)
+    time.sleep(0.3)
+    print(f"State: {get_lock_state()}")
+
+print("\n" + "=" * 60)
+print("DONE")
+print("=" * 60)
+print("\nIf nothing worked, the command may require:")
+print("  - Authentication/security handshake")
+print("  - Specific counter/checksum values")
+print("  - Coming from the actual SMK ECU address")
+print("\nReboot with: sudo reboot")
