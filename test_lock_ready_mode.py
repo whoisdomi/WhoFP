@@ -8,10 +8,18 @@ Tests all known approaches now that ECUs should be fully active.
 """
 from panda import Panda
 import time
+import subprocess
 
 print("=" * 60)
 print("DOOR LOCK TEST - READY MODE")
 print("=" * 60)
+
+# Stop openpilot first to avoid CAN conflicts
+print("\nStopping openpilot...")
+subprocess.run(["pkill", "-f", "selfdrive"], capture_output=True)
+subprocess.run(["pkill", "-f", "_ui"], capture_output=True)
+time.sleep(2)
+
 print("\nIMPORTANT: Car must be:")
 print("  1. In PARK")
 print("  2. Foot on BRAKE")
@@ -24,16 +32,40 @@ try:
     p.set_safety_mode(Panda.SAFETY_ALLOUTPUT)
 except:
     p.set_safety_mode(17)
+
+# Clear any corrupted buffer
+try:
+    p.can_clear(0xFFFF)
+    time.sleep(0.1)
+    p.can_recv()
+except:
+    pass
+
 print("Panda connected!\n")
+
+def safe_can_recv():
+    """Receive CAN messages with error handling"""
+    try:
+        return p.can_recv()
+    except AssertionError:
+        # Clear buffer on checksum error
+        try:
+            p.can_clear(0xFFFF)
+        except:
+            pass
+        return []
 
 def send_uds(addr, data, bus=1, wait=0.1):
     """Send UDS request and get response"""
-    p.can_clear(0xFFFF)
+    try:
+        p.can_clear(0xFFFF)
+    except:
+        pass
     p.can_send(addr, data, bus)
     time.sleep(wait)
 
     responses = []
-    for msg in p.can_recv():
+    for msg in safe_can_recv():
         recv_addr = msg[0]
         recv_data = msg[2] if len(msg) > 2 else msg[1]
         recv_bus = msg[3] if len(msg) > 3 else (msg[2] if len(msg) > 2 else 0)
@@ -52,10 +84,13 @@ def try_extended_session(addr, bus=1):
 
 def monitor_414_state():
     """Read current door lock state from 0x414"""
-    p.can_clear(0xFFFF)
+    try:
+        p.can_clear(0xFFFF)
+    except:
+        pass
     time.sleep(0.2)
 
-    for msg in p.can_recv():
+    for msg in safe_can_recv():
         if msg[0] == 0x414:
             data = msg[2] if len(msg) > 2 else msg[1]
             if len(data) >= 5:
@@ -74,11 +109,14 @@ print("=" * 60)
 found_ecus = []
 for addr in range(0x700, 0x800):
     data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    p.can_clear(0xFFFF)
+    try:
+        p.can_clear(0xFFFF)
+    except:
+        pass
     p.can_send(addr, data, 1)  # Bus 1 (ECAN)
     time.sleep(0.02)
 
-    for msg in p.can_recv():
+    for msg in safe_can_recv():
         recv_addr = msg[0]
         recv_data = msg[2] if len(msg) > 2 else msg[1]
         if recv_addr == addr + 8 and len(recv_data) > 1 and recv_data[1] == 0x7E:
@@ -91,11 +129,14 @@ print(f"\nTotal ECUs found on bus 1: {len(found_ecus)}")
 print("\nScanning bus 0...")
 for addr in range(0x700, 0x800):
     data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    p.can_clear(0xFFFF)
+    try:
+        p.can_clear(0xFFFF)
+    except:
+        pass
     p.can_send(addr, data, 0)  # Bus 0
     time.sleep(0.02)
 
-    for msg in p.can_recv():
+    for msg in safe_can_recv():
         recv_addr = msg[0]
         recv_data = msg[2] if len(msg) > 2 else msg[1]
         if recv_addr == addr + 8 and len(recv_data) > 1 and recv_data[1] == 0x7E:
@@ -125,12 +166,15 @@ print("=" * 60)
 
 # Standard OBD functional address
 data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-p.can_clear(0xFFFF)
+try:
+    p.can_clear(0xFFFF)
+except:
+    pass
 p.can_send(0x7DF, data, 1)
 time.sleep(0.2)
 
 print("Responses to 0x7DF (functional):")
-for msg in p.can_recv():
+for msg in safe_can_recv():
     recv_addr = msg[0]
     recv_data = msg[2] if len(msg) > 2 else msg[1]
     if recv_addr >= 0x700 and recv_addr < 0x800:
@@ -168,11 +212,14 @@ for addr in test_addrs[:5]:  # Test top 5
 
             # IO Control - Short Term Adjustment (LOCK = 0x01)
             io_req = bytes([0x05, 0x2F, did_high, did_low, 0x03, 0x01, 0x00, 0x00])
-            p.can_clear(0xFFFF)
+            try:
+                p.can_clear(0xFFFF)
+            except:
+                pass
             p.can_send(addr, io_req, 1)
             time.sleep(0.1)
 
-            for msg in p.can_recv():
+            for msg in safe_can_recv():
                 recv_addr = msg[0]
                 recv_data = msg[2] if len(msg) > 2 else msg[1]
                 if recv_addr == addr + 8:
@@ -259,11 +306,14 @@ for addr in [0x7B3, 0x730]:
 
             # Routine Control Start with param 0x01 (lock)
             routine_req = bytes([0x05, 0x31, 0x01, rid_high, rid_low, 0x01, 0x00, 0x00])
-            p.can_clear(0xFFFF)
+            try:
+                p.can_clear(0xFFFF)
+            except:
+                pass
             p.can_send(addr, routine_req, 1)
             time.sleep(0.1)
 
-            for msg in p.can_recv():
+            for msg in safe_can_recv():
                 recv_addr = msg[0]
                 recv_data = msg[2] if len(msg) > 2 else msg[1]
                 if recv_addr == addr + 8 and len(recv_data) > 1:
@@ -281,13 +331,16 @@ print("=" * 60)
 print("\nPress the physical door lock button NOW!")
 print("Monitoring for 5 seconds...")
 
-p.can_clear(0xFFFF)
+try:
+    p.can_clear(0xFFFF)
+except:
+    pass
 start = time.time()
 seen_addrs = set()
 messages_by_addr = {}
 
 while time.time() - start < 5:
-    for msg in p.can_recv():
+    for msg in safe_can_recv():
         addr = msg[0]
         data = msg[2] if len(msg) > 2 else msg[1]
         bus = msg[3] if len(msg) > 3 else 0
