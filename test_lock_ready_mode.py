@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 """
-Door Lock Test - Ready Mode
-Run this with car FULLY ON (Ready mode - press brake + start twice)
-Vehicle must be in PARK with foot on brake
-
-Tests all known approaches now that ECUs should be fully active.
+Door Lock Test - Ready Mode (Fixed)
 """
 from panda import Panda
 import time
@@ -14,17 +10,14 @@ print("=" * 60)
 print("DOOR LOCK TEST - READY MODE")
 print("=" * 60)
 
-# Stop openpilot first to avoid CAN conflicts
+# Stop openpilot first
 print("\nStopping openpilot...")
 subprocess.run(["pkill", "-f", "selfdrive"], capture_output=True)
 subprocess.run(["pkill", "-f", "_ui"], capture_output=True)
 time.sleep(2)
 
-print("\nIMPORTANT: Car must be:")
-print("  1. In PARK")
-print("  2. Foot on BRAKE")
-print("  3. READY mode (not just ACC)")
-print("\nPress Enter when ready...")
+print("\nIMPORTANT: Car must be in READY mode (not just ACC)")
+print("Press Enter when ready...")
 input()
 
 p = Panda()
@@ -33,348 +26,204 @@ try:
 except:
     p.set_safety_mode(17)
 
-# Clear any corrupted buffer
-try:
-    p.can_clear(0xFFFF)
-    time.sleep(0.1)
-    p.can_recv()
-except:
-    pass
+# Reset panda to clear buffers
+p.can_clear(0xFFFF)
+time.sleep(0.5)
 
-print("Panda connected!\n")
+print("Panda connected!")
 
-def safe_can_recv():
-    """Receive CAN messages with error handling"""
+def safe_recv():
+    """Safe CAN receive with proper parsing"""
     try:
-        return p.can_recv()
-    except AssertionError:
-        # Clear buffer on checksum error
-        try:
-            p.can_clear(0xFFFF)
-        except:
-            pass
+        msgs = p.can_recv()
+        result = []
+        for m in msgs:
+            # Handle different tuple formats
+            if len(m) >= 4:
+                addr, ts, data, bus = m[0], m[1], m[2], m[3]
+            elif len(m) == 3:
+                addr, data, bus = m[0], m[1], m[2]
+                ts = 0
+            else:
+                continue
+
+            # Make sure data is bytes
+            if isinstance(data, int):
+                continue
+            if isinstance(data, (bytes, bytearray)):
+                result.append((addr, bytes(data), bus))
+        return result
+    except Exception as e:
+        print(f"  recv error: {e}")
         return []
 
-def send_uds(addr, data, bus=1, wait=0.1):
-    """Send UDS request and get response"""
-    try:
-        p.can_clear(0xFFFF)
-    except:
-        pass
-    p.can_send(addr, data, bus)
-    time.sleep(wait)
-
-    responses = []
-    for msg in safe_can_recv():
-        recv_addr = msg[0]
-        recv_data = msg[2] if len(msg) > 2 else msg[1]
-        recv_bus = msg[3] if len(msg) > 3 else (msg[2] if len(msg) > 2 else 0)
-        if recv_addr == addr + 8:
-            responses.append((recv_addr, recv_data, recv_bus))
-    return responses
-
-def try_extended_session(addr, bus=1):
-    """Enter extended diagnostic session"""
-    data = bytes([0x02, 0x10, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00])
-    resp = send_uds(addr, data, bus)
-    for r in resp:
-        if len(r[1]) > 1 and r[1][1] == 0x50:
-            return True
-    return False
-
-def monitor_414_state():
-    """Read current door lock state from 0x414"""
-    try:
-        p.can_clear(0xFFFF)
-    except:
-        pass
-    time.sleep(0.2)
-
-    for msg in safe_can_recv():
-        if msg[0] == 0x414:
-            data = msg[2] if len(msg) > 2 else msg[1]
-            if len(data) >= 5:
-                state = (data[4] >> 5) & 0x01
-                return "UNLOCKED" if state == 1 else "LOCKED"
-    return "UNKNOWN"
-
-print("Current lock state:", monitor_414_state())
-print()
-
-# Test 1: Full ECU scan in Ready mode
+# First, just see if we get ANY CAN messages
+print("\n" + "=" * 60)
+print("TEST 0: Basic CAN Reception Check")
 print("=" * 60)
-print("TEST 1: Full ECU Scan (Ready Mode)")
+
+p.can_clear(0xFFFF)
+time.sleep(0.3)
+raw_msgs = []
+try:
+    raw_msgs = p.can_recv()
+except Exception as e:
+    print(f"Raw recv error: {e}")
+
+print(f"Raw messages received: {len(raw_msgs)}")
+if raw_msgs:
+    print("Sample messages:")
+    for i, m in enumerate(raw_msgs[:5]):
+        print(f"  {i}: {m}")
+
+# Check message format
+if raw_msgs:
+    m = raw_msgs[0]
+    print(f"\nMessage format: {len(m)} elements")
+    print(f"  Element types: {[type(x).__name__ for x in m]}")
+
+# Now let's try to get 0x414
+print("\n" + "=" * 60)
+print("TEST 1: Find 0x414 (Door Lock Status)")
+print("=" * 60)
+
+p.can_clear(0xFFFF)
+time.sleep(0.5)
+
+found_414 = False
+for _ in range(50):  # Try for ~5 seconds
+    try:
+        msgs = p.can_recv()
+        for m in msgs:
+            addr = m[0]
+            if addr == 0x414:
+                data = m[2] if len(m) > 2 else m[1]
+                if isinstance(data, (bytes, bytearray)) and len(data) >= 5:
+                    state = (data[4] >> 5) & 0x01
+                    state_str = "UNLOCKED" if state == 1 else "LOCKED"
+                    print(f"Found 0x414! State: {state_str}")
+                    print(f"  Raw: {data.hex()}")
+                    found_414 = True
+                    break
+        if found_414:
+            break
+    except:
+        pass
+    time.sleep(0.1)
+
+if not found_414:
+    print("Could not find 0x414 - CAN may not be working")
+    print("\nTrying bus 0 instead...")
+
+    # Maybe messages are on bus 0?
+    p.can_clear(0xFFFF)
+    time.sleep(0.3)
+    msgs = safe_recv()
+
+    bus_counts = {}
+    addr_samples = {}
+    for addr, data, bus in msgs:
+        bus_counts[bus] = bus_counts.get(bus, 0) + 1
+        if addr not in addr_samples:
+            addr_samples[addr] = (data, bus)
+
+    print(f"\nMessages by bus: {bus_counts}")
+    print(f"Unique addresses: {len(addr_samples)}")
+
+    if addr_samples:
+        print("\nSample addresses:")
+        for addr, (data, bus) in list(addr_samples.items())[:10]:
+            print(f"  0x{addr:03X} bus{bus}: {data.hex()}")
+
+# ECU Scan
+print("\n" + "=" * 60)
+print("TEST 2: ECU Scan")
 print("=" * 60)
 
 found_ecus = []
-for addr in range(0x700, 0x800):
-    data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    try:
+for bus in [0, 1, 2]:
+    print(f"\nScanning bus {bus}...")
+    for addr in range(0x700, 0x7F0, 0x10):  # Faster scan
+        req = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
         p.can_clear(0xFFFF)
-    except:
-        pass
-    p.can_send(addr, data, 1)  # Bus 1 (ECAN)
-    time.sleep(0.02)
+        p.can_send(addr, req, bus)
+        time.sleep(0.03)
 
-    for msg in safe_can_recv():
-        recv_addr = msg[0]
-        recv_data = msg[2] if len(msg) > 2 else msg[1]
-        if recv_addr == addr + 8 and len(recv_data) > 1 and recv_data[1] == 0x7E:
-            found_ecus.append(addr)
-            print(f"  Found: 0x{addr:03X} -> 0x{recv_addr:03X}")
+        for m in safe_recv():
+            if m[0] == addr + 8:
+                data = m[1]
+                if len(data) > 1 and data[1] == 0x7E:
+                    print(f"  Found: 0x{addr:03X} on bus {bus}")
+                    found_ecus.append((addr, bus))
 
-print(f"\nTotal ECUs found on bus 1: {len(found_ecus)}")
+print(f"\nTotal ECUs: {len(found_ecus)}")
 
-# Also scan bus 0
-print("\nScanning bus 0...")
-for addr in range(0x700, 0x800):
-    data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-    try:
-        p.can_clear(0xFFFF)
-    except:
-        pass
-    p.can_send(addr, data, 0)  # Bus 0
-    time.sleep(0.02)
-
-    for msg in safe_can_recv():
-        recv_addr = msg[0]
-        recv_data = msg[2] if len(msg) > 2 else msg[1]
-        if recv_addr == addr + 8 and len(recv_data) > 1 and recv_data[1] == 0x7E:
-            if addr not in found_ecus:
-                found_ecus.append(addr)
-            print(f"  Found on bus 0: 0x{addr:03X} -> 0x{recv_addr:03X}")
-
-# Test 2: Check if IBU (0x7B1) responds now
+# Try 0x7B1 specifically
 print("\n" + "=" * 60)
-print("TEST 2: Check IBU (0x7B1) in Ready Mode")
+print("TEST 3: Direct IBU (0x7B1) Test")
 print("=" * 60)
 
-# Try tester present
-data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-resp = send_uds(0x7B1, data, 1, 0.1)
-if resp:
-    print("  IBU 0x7B1 RESPONDS!")
-    for r in resp:
-        print(f"    Response: {r[1].hex()}")
-else:
-    print("  IBU 0x7B1 still not responding via UDS")
-
-# Test 3: Try functional addressing for body control
-print("\n" + "=" * 60)
-print("TEST 3: Functional Addressing for Body Control")
-print("=" * 60)
-
-# Standard OBD functional address
-data = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-try:
+for bus in [0, 1, 2]:
+    req = bytes([0x02, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     p.can_clear(0xFFFF)
-except:
-    pass
-p.can_send(0x7DF, data, 1)
-time.sleep(0.2)
+    p.can_send(0x7B1, req, bus)
+    time.sleep(0.1)
 
-print("Responses to 0x7DF (functional):")
-for msg in safe_can_recv():
-    recv_addr = msg[0]
-    recv_data = msg[2] if len(msg) > 2 else msg[1]
-    if recv_addr >= 0x700 and recv_addr < 0x800:
-        print(f"  0x{recv_addr:03X}: {recv_data.hex()}")
+    for m in safe_recv():
+        recv_addr = m[0]
+        if recv_addr >= 0x7B0 and recv_addr <= 0x7C0:
+            print(f"  Response on bus {bus}: 0x{recv_addr:03X} = {m[1].hex()}")
 
-# Test 4: IO Control on all found ECUs
+# Monitor for button press
 print("\n" + "=" * 60)
-print("TEST 4: IO Control on Found ECUs")
+print("TEST 4: Physical Button Capture")
 print("=" * 60)
+print("\nPress door lock button NOW! (5 sec)")
 
-# Common body control DIDs
-body_dids = [
-    (0xB010, "Door Lock Control"),
-    (0xD001, "Central Lock"),
-    (0xF011, "Body Function 11"),
-    (0xF012, "Body Function 12"),
-    (0x0100, "Central Lock Alt"),
-    (0x3000, "Door Lock"),
-    (0x3001, "Door Unlock"),
-]
-
-# Test on 0x7B3 which we know responds
-test_addrs = [0x7B3] + [a for a in found_ecus if a not in [0x7B3]]
-
-for addr in test_addrs[:5]:  # Test top 5
-    print(f"\nTesting 0x{addr:03X}:")
-
-    # Enter extended session
-    if try_extended_session(addr, 1):
-        print(f"  Session OK on 0x{addr:03X}")
-
-        for did, name in body_dids:
-            did_high = (did >> 8) & 0xFF
-            did_low = did & 0xFF
-
-            # IO Control - Short Term Adjustment (LOCK = 0x01)
-            io_req = bytes([0x05, 0x2F, did_high, did_low, 0x03, 0x01, 0x00, 0x00])
-            try:
-                p.can_clear(0xFFFF)
-            except:
-                pass
-            p.can_send(addr, io_req, 1)
-            time.sleep(0.1)
-
-            for msg in safe_can_recv():
-                recv_addr = msg[0]
-                recv_data = msg[2] if len(msg) > 2 else msg[1]
-                if recv_addr == addr + 8:
-                    if len(recv_data) > 1:
-                        if recv_data[1] == 0x6F:
-                            print(f"  >>> {name} (0x{did:04X}): POSITIVE RESPONSE!")
-                            print(f"      Check if doors locked!")
-                        elif recv_data[1] == 0x7F:
-                            nrc = recv_data[3] if len(recv_data) > 3 else 0
-                            # Only show if not "service not supported"
-                            if nrc not in [0x11, 0x12, 0x31]:
-                                print(f"  {name}: NRC 0x{nrc:02X}")
-    else:
-        print(f"  Could not establish session on 0x{addr:03X}")
-
-# Test 5: Try 0x3FF patterns
-print("\n" + "=" * 60)
-print("TEST 5: 0x3FF Message Patterns")
-print("=" * 60)
-
-print("\nSending LOCK pattern (0x5590010000000000)...")
-print("Current state:", monitor_414_state())
-
-for i in range(3):
-    p.can_send(0x3FF, bytes.fromhex("5590010000000000"), 1)
-    time.sleep(0.04)
-
-time.sleep(0.5)
-print("State after:", monitor_414_state())
-
-print("\nSending UNLOCK pattern (0x0074011500000000)...")
-for i in range(3):
-    p.can_send(0x3FF, bytes.fromhex("0074011500000000"), 1)
-    time.sleep(0.04)
-
-time.sleep(0.5)
-print("State after:", monitor_414_state())
-
-# Test 6: Direct 0x414 manipulation
-print("\n" + "=" * 60)
-print("TEST 6: Direct 0x414 with ACTION bit")
-print("=" * 60)
-
-print("\nSending 0x414 LOCK (state=0, action=1)...")
-print("Current state:", monitor_414_state())
-
-# Based on captured data: byte4 bit5 = state, byte5 bit0 = action
-for i in range(5):
-    # LOCK: byte4=0x08 (bit5=0=locked), byte5=0x01 (action)
-    p.can_send(0x414, bytes.fromhex("0000000008010000"), 1)
-    time.sleep(0.04)
-
-time.sleep(0.5)
-print("State after:", monitor_414_state())
-
-print("\nSending 0x414 UNLOCK (state=1, action=1)...")
-for i in range(5):
-    # UNLOCK: byte4=0x28 (bit5=1=unlocked), byte5=0x01 (action)
-    p.can_send(0x414, bytes.fromhex("0000000028010000"), 1)
-    time.sleep(0.04)
-
-time.sleep(0.5)
-print("State after:", monitor_414_state())
-
-# Test 7: Routine Control
-print("\n" + "=" * 60)
-print("TEST 7: Routine Control")
-print("=" * 60)
-
-routine_ids = [
-    (0xD001, "Door Routine"),
-    (0xD010, "Lock Routine"),
-    (0xB001, "Body Routine"),
-    (0xFF00, "Factory Routine"),
-]
-
-for addr in [0x7B3, 0x730]:
-    print(f"\nRoutine Control on 0x{addr:03X}:")
-
-    if try_extended_session(addr, 1):
-        for rid, name in routine_ids:
-            rid_high = (rid >> 8) & 0xFF
-            rid_low = rid & 0xFF
-
-            # Routine Control Start with param 0x01 (lock)
-            routine_req = bytes([0x05, 0x31, 0x01, rid_high, rid_low, 0x01, 0x00, 0x00])
-            try:
-                p.can_clear(0xFFFF)
-            except:
-                pass
-            p.can_send(addr, routine_req, 1)
-            time.sleep(0.1)
-
-            for msg in safe_can_recv():
-                recv_addr = msg[0]
-                recv_data = msg[2] if len(msg) > 2 else msg[1]
-                if recv_addr == addr + 8 and len(recv_data) > 1:
-                    if recv_data[1] == 0x71:
-                        print(f"  >>> {name}: POSITIVE RESPONSE!")
-                    elif recv_data[1] == 0x7F:
-                        nrc = recv_data[3] if len(recv_data) > 3 else 0
-                        if nrc not in [0x11, 0x12, 0x31]:
-                            print(f"  {name}: NRC 0x{nrc:02X}")
-
-# Test 8: Monitor for new messages during physical button press
-print("\n" + "=" * 60)
-print("TEST 8: Capture Physical Button Press")
-print("=" * 60)
-print("\nPress the physical door lock button NOW!")
-print("Monitoring for 5 seconds...")
-
-try:
-    p.can_clear(0xFFFF)
-except:
-    pass
+p.can_clear(0xFFFF)
 start = time.time()
-seen_addrs = set()
-messages_by_addr = {}
+lock_events = []
 
 while time.time() - start < 5:
-    for msg in safe_can_recv():
-        addr = msg[0]
-        data = msg[2] if len(msg) > 2 else msg[1]
-        bus = msg[3] if len(msg) > 3 else 0
+    for m in safe_recv():
+        addr, data, bus = m
 
-        if addr not in messages_by_addr:
-            messages_by_addr[addr] = []
-        messages_by_addr[addr].append((time.time() - start, data.hex(), bus))
-
-        # Print interesting messages
-        if addr == 0x414:
-            state = (data[4] >> 5) & 0x01 if len(data) > 4 else -1
-            action = data[5] & 0x01 if len(data) > 5 else -1
-            state_str = "UNLOCKED" if state == 1 else "LOCKED"
+        if addr == 0x414 and len(data) >= 6:
+            state = (data[4] >> 5) & 0x01
+            action = data[5] & 0x01
             if action == 1:
-                print(f"  {time.time()-start:.2f}s: 0x414 BUTTON PRESS! State={state_str}")
+                t = time.time() - start
+                state_str = "UNLOCKED" if state == 1 else "LOCKED"
+                print(f"  {t:.2f}s: BUTTON! State={state_str}")
+                lock_events.append(('414_action', t, data.hex()))
+
         elif addr == 0x3FF:
-            print(f"  {time.time()-start:.2f}s: 0x3FF {data.hex()}")
-        elif addr not in seen_addrs and addr < 0x700:
-            seen_addrs.add(addr)
+            t = time.time() - start
+            print(f"  {t:.2f}s: 0x3FF = {data.hex()}")
+            lock_events.append(('3ff', t, data.hex()))
 
-print(f"\nSaw {len(messages_by_addr)} unique message IDs")
+print(f"\nCaptured {len(lock_events)} lock-related events")
 
-# Look for rare messages
-for addr, msgs in messages_by_addr.items():
-    if len(msgs) <= 10 and addr not in [0x414, 0x3FF]:  # Rare messages
-        print(f"\n0x{addr:03X} ({len(msgs)} msgs):")
-        for t, data, bus in msgs[:5]:
-            print(f"  {t:.2f}s bus{bus}: {data}")
+# Try sending commands
+print("\n" + "=" * 60)
+print("TEST 5: Send Lock Commands")
+print("=" * 60)
+
+print("\nTrying 0x3FF LOCK pattern...")
+for _ in range(3):
+    p.can_send(0x3FF, bytes.fromhex("5590010000000000"), 1)
+    time.sleep(0.04)
+print("  Sent. Did doors lock? (check physically)")
+
+time.sleep(1)
+
+print("\nTrying 0x3FF UNLOCK pattern...")
+for _ in range(3):
+    p.can_send(0x3FF, bytes.fromhex("0074011500000000"), 1)
+    time.sleep(0.04)
+print("  Sent. Did doors unlock? (check physically)")
 
 print("\n" + "=" * 60)
-print("TESTS COMPLETE")
+print("DONE")
 print("=" * 60)
-print("\nFinal lock state:", monitor_414_state())
-print("\nIf no tests worked, door lock control may require:")
-print("  1. Direct LIN bus access (not available via OBD)")
-print("  2. Factory diagnostic tool with security access")
-print("  3. Different ECU not accessible via gateway")
+print("\nRestart openpilot with: sudo reboot")
