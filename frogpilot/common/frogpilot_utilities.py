@@ -89,21 +89,25 @@ def calculate_distance_to_point(lat1, lon1, lat2, lon2):
   return EARTH_RADIUS * c
 
 
-def calculate_lane_width(lane, current_lane, road_edge=None):
-  current_x = np.asarray(current_lane.x)
-  current_y = np.asarray(current_lane.y)
+def calculate_lane_width(lane_line1, lane_line2, road_edge=None):
+  lane_line1_x = np.asarray(lane_line1.x)
+  lane_line1_y = np.asarray(lane_line1.y)
 
-  lane_y_interp = np.interp(current_x, np.asarray(lane.x), np.asarray(lane.y))
-  distance_to_lane = np.median(np.abs(current_y - lane_y_interp))
+  lane_line2_x = np.asarray(lane_line2.x)
+  lane_line2_y = np.asarray(lane_line2.y)
 
-  if road_edge is None:
-    return float(distance_to_lane)
+  lane_y_interp = np.interp(lane_line1_x, lane_line2_x, lane_line2_y)
+  distance_to_lane = np.median(np.abs(lane_line1_y - lane_y_interp))
 
-  road_edge_y_interp = np.interp(current_x, np.asarray(road_edge.x), np.asarray(road_edge.y))
-  distance_to_road_edge = np.median(np.abs(current_y - road_edge_y_interp))
+  if road_edge is not None:
+    edge_line_x = np.asarray(road_edge.x)
+    edge_line_y = np.asarray(road_edge.y)
 
-  if distance_to_road_edge < distance_to_lane:
-    return 0.0
+    edge_y_interp = np.interp(lane_line1_x, edge_line_x, edge_line_y)
+    distance_to_edge = np.median(np.abs(lane_line1_y - edge_y_interp))
+
+    if distance_to_edge < distance_to_lane:
+      return 0.0
 
   return float(distance_to_lane)
 
@@ -355,7 +359,7 @@ def update_openpilot(thread_manager, params):
     if not params.get_bool("UpdaterFetchAvailable"):
       return False
 
-    while params.get("UpdaterState") != "idle":
+    while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
       time.sleep(60)
 
     run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Update available, downloading...", "Failed to download update...", report=False)

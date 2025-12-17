@@ -89,7 +89,7 @@ class FrogPilotPlanner:
 
     if v_ego >= frogpilot_toggles.minimum_lane_change_speed:
       self.lane_width_left = calculate_lane_width(sm["modelV2"].laneLines[0], sm["modelV2"].laneLines[1], sm["modelV2"].roadEdges[0])
-      self.lane_width_right = calculate_lane_width(sm["modelV2"].laneLines[3], sm["modelV2"].laneLines[2], sm["modelV2"].roadEdges[1])
+      self.lane_width_right = calculate_lane_width(sm["modelV2"].laneLines[2], sm["modelV2"].laneLines[3], sm["modelV2"].roadEdges[1])
     else:
       self.lane_width_left = 0
       self.lane_width_right = 0

@@ -12,7 +12,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL, Priority, config_realtime_process
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.simple_kalman import KF1D
-from openpilot.selfdrive.controls.controlsd import LaneChangeDirection, LaneChangeState
+from openpilot.selfdrive.controls.lib.desire_helper import LaneChangeDirection, LaneChangeState
 
 from openpilot.frogpilot.common.frogpilot_variables import THRESHOLD, get_frogpilot_toggles
 

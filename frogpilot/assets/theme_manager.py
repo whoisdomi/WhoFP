@@ -444,6 +444,10 @@ class ThemeManager:
       }
     elif (boot_run or randomize_theme) and frogpilot_toggles.random_themes:
       available_themes = self.get_full_themes()
+
+      if frogpilot_toggles.random_themes_holidays:
+        available_themes.extend(HOLIDAY_SLUGS.keys())
+
       selected_theme = self.randomize_theme_asset(available_themes)
 
       asset_mappings = {

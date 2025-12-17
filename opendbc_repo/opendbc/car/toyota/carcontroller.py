@@ -36,11 +36,11 @@ MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
 MAX_USER_TORQUE = 500
 
 # FrogPilot variables
+PARK = structs.CarState.GearShifter.park
+
 # Lock / unlock door commands - Credit goes to AlexandreSato!
 LOCK_CMD = b"\x40\x05\x30\x11\x00\x80\x00\x00"
 UNLOCK_CMD = b"\x40\x05\x30\x11\x00\x40\x00\x00"
-
-PARK = structs.CarState.GearShifter.park
 
 
 def get_long_tune(CP, params):

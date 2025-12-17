@@ -211,7 +211,7 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
   SubMaster &sm = *(uiState()->sm);
   SubMaster &fpsm = *(frogpilotUIState()->sm);
 
-  if (frogpilot_toggles.value("adjacent_path_metrics").toBool() || frogpilot_toggles.value("adjacent_paths").toBool()) {
+  if (frogpilot_toggles.value("adjacent_paths").toBool() || frogpilot_toggles.value("adjacent_path_metrics").toBool()) {
     frogpilot_nvg->paintAdjacentPaths(painter, sm, fpsm);
   } else if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles.value("blind_spot_path").toBool()) {
     frogpilot_nvg->paintBlindSpotPath(painter, sm);
@@ -336,20 +336,16 @@ void ModelRenderer::mapLineToPolygon(const cereal::XYZTData::Reader &line, float
 // FrogPilot variables
 void ModelRenderer::mapAveragedLineToPolygon(const cereal::XYZTData::Reader &line1, const cereal::XYZTData::Reader &line2, float y_off, float z_off,
                                              QPolygonF *pvd, int max_idx, float height, bool allow_invert) {
-  const auto line_x = line1.getX(), line_y1 = line1.getY(), line_z1 = line1.getZ();
+  const auto line_x1 = line1.getX(), line_y1 = line1.getY(), line_z1 = line1.getZ();
   const auto line_y2 = line2.getY();
   QPointF left, right;
   pvd->clear();
-  for (int i = 0; i <= std::min({max_idx, (int)line_x.size() - 1, (int)line_y2.size() - 1}); i++) {
+  for (int i = 0; i <= max_idx; i++) {
     // highly negative x positions  are drawn above the frame and cause flickering, clip to zy plane of camera
-    if (line_x[i] < 0) continue;
+    if (line_x1[i] < 0) continue;
 
-    // Average the Y coordinates of the two lines to create the center path
-    float averaged_y = (line_y1[i] + line_y2[i]) / 2.0f;
-
-    bool l = mapToScreen(line_x[i], averaged_y - y_off, line_z1[i] + z_off, &left);
-    bool r = mapToScreen(line_x[i], averaged_y + y_off, line_z1[i] + z_off, &right);
-
+    bool l = mapToScreen(line_x1[i], ((line_y1[i] + line_y2[i]) / 2.0f) - y_off, line_z1[i] + z_off, &left);
+    bool r = mapToScreen(line_x1[i], ((line_y1[i] + line_y2[i]) / 2.0f) + y_off, line_z1[i] + z_off, &right);
     if (l && r) {
       // For wider lines the drawn polygon will "invert" when going over a hill and cause artifacts
       if (!allow_invert && pvd->size() && left.y() > pvd->back().y()) {
@@ -360,7 +356,7 @@ void ModelRenderer::mapAveragedLineToPolygon(const cereal::XYZTData::Reader &lin
     }
   }
 
-  // This removes the "hovering" effect by grounding the path
+  // Ground the path
   if (pvd->size() >= 4) {
     int mid = pvd->size() / 2;
 

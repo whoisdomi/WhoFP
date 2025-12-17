@@ -2,7 +2,6 @@
 
 FrogPilotOnroadWindow::FrogPilotOnroadWindow(QWidget *parent) : QWidget(parent) {
   signalTimer = new QTimer(this);
-
   QObject::connect(signalTimer, &QTimer::timeout, [this] {
     flickerActive = !flickerActive;
   });
@@ -10,12 +9,7 @@ FrogPilotOnroadWindow::FrogPilotOnroadWindow(QWidget *parent) : QWidget(parent) 
 
 void FrogPilotOnroadWindow::resizeEvent(QResizeEvent *event) {
   rect = QWidget::rect();
-
-  marginRegion = QRegion();
-  marginRegion += QRegion(0, 0, rect.width(), UI_BORDER_SIZE);
-  marginRegion += QRegion(0, rect.height() - UI_BORDER_SIZE, rect.width(), UI_BORDER_SIZE);
-  marginRegion += QRegion(0, UI_BORDER_SIZE, UI_BORDER_SIZE, rect.height() - 2 * UI_BORDER_SIZE);
-  marginRegion += QRegion(rect.width() - UI_BORDER_SIZE, UI_BORDER_SIZE, UI_BORDER_SIZE, rect.height() - 2 * UI_BORDER_SIZE);
+  marginRegion = QRegion(rect) - QRegion(rect.marginsRemoved(QMargins(UI_BORDER_SIZE, UI_BORDER_SIZE, UI_BORDER_SIZE, UI_BORDER_SIZE)));
 }
 
 void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
@@ -36,6 +30,15 @@ void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState
   showSignal = (turnSignalLeft || turnSignalRight) && frogpilot_toggles.value("signal_metrics").toBool();
   showSteering = frogpilot_toggles.value("steering_metrics").toBool();
 
+  if (showBlindspot || showSignal) {
+    int interval = showBlindspot ? 250 : 500;
+    if (!signalTimer->isActive() || signalTimer->interval() != interval) {
+      signalTimer->start(interval);
+    }
+  } else if (signalTimer->isActive()) {
+    signalTimer->stop();
+  }
+
   update();
 }
 
@@ -50,18 +53,7 @@ void FrogPilotOnroadWindow::paintEvent(QPaintEvent *event) {
   }
 
   if (showBlindspot || showSignal) {
-    int interval = showBlindspot ? 250 : 500;
-
-    if (!signalTimer->isActive()) {
-      signalTimer->start(interval);
-    } else if (signalTimer->interval() != interval) {
-      signalTimer->stop();
-      signalTimer->start(interval);
-    }
-
     paintTurnSignalBorder(p);
-  } else if (signalTimer->isActive()) {
-    signalTimer->stop();
   }
 
   if (showFPS) {
@@ -83,7 +75,7 @@ void FrogPilotOnroadWindow::paintFPS(QPainter &p) {
   fpsHistory.append({now, fps});
   totalFPS += fps;
 
-  while (!fpsHistory.isEmpty() && now - fpsHistory.first().first > 60000) {
+  while (!fpsHistory.isEmpty() && (now - fpsHistory.first().first > 60000)) {
     totalFPS -= fpsHistory.first().second;
     fpsHistory.removeFirst();
   }
@@ -93,7 +85,7 @@ void FrogPilotOnroadWindow::paintFPS(QPainter &p) {
   minFPS = std::min(minFPS, fps);
   maxFPS = std::max(maxFPS, fps);
 
-  QString fpsDisplayString = QString(tr("FPS: %1 | Min: %2 | Max: %3 | Avg: %4"))
+  QString fpsDisplayString = QString("FPS: %1 | Min: %2 | Max: %3 | Avg: %4")
                                 .arg(qRound(fps))
                                 .arg(qRound(minFPS))
                                 .arg(qRound(maxFPS))
@@ -113,10 +105,12 @@ void FrogPilotOnroadWindow::paintFPS(QPainter &p) {
 void FrogPilotOnroadWindow::paintSteeringTorqueBorder(QPainter &p) {
   p.save();
 
-  static float smoothedSteer = 0.0;
-  smoothedSteer = 0.25 * std::abs(torque) + 0.75 * smoothedSteer;
-  if (std::abs(smoothedSteer - torque) < 0.01) {
-    smoothedSteer = torque;
+  float absTorque = std::abs(torque);
+  static float smoothedSteer = 0.0f;
+
+  smoothedSteer = 0.25f * absTorque + 0.75f * smoothedSteer;
+  if (std::abs(smoothedSteer - absTorque) < 0.01f) {
+    smoothedSteer = absTorque;
   }
 
   QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
@@ -124,20 +118,12 @@ void FrogPilotOnroadWindow::paintSteeringTorqueBorder(QPainter &p) {
   gradient.setColorAt(0.25, bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]);
   gradient.setColorAt(0.5, bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]);
   gradient.setColorAt(0.75, bg_colors[STATUS_ENGAGED]);
-  gradient.setColorAt(1.0, bg_colors[STATUS_ENGAGED]);
 
   int visibleHeight = rect.height() * smoothedSteer;
+  int xPos = (torque < 0) ? rect.x() : (rect.x() + rect.width() - UI_BORDER_SIZE);
+  int yPos = rect.y() + rect.height() - visibleHeight;
 
-  QRect rectToFill, rectToHide;
-  if (torque < 0) {
-    rectToFill = QRect(rect.x(), rect.y() + rect.height() - visibleHeight, UI_BORDER_SIZE, visibleHeight);
-    rectToHide = QRect(rect.x(), rect.y(), UI_BORDER_SIZE, rect.height() - visibleHeight);
-  } else {
-    rectToFill = QRect(rect.x() + rect.width() - UI_BORDER_SIZE, rect.y() + rect.height() - visibleHeight, UI_BORDER_SIZE, visibleHeight);
-    rectToHide = QRect(rect.x() + rect.width() - UI_BORDER_SIZE, rect.y(), UI_BORDER_SIZE, rect.height() - visibleHeight);
-  }
-  p.fillRect(rectToFill, QBrush(gradient));
-  p.fillRect(rectToHide, Qt::transparent);
+  p.fillRect(QRect(xPos, yPos, UI_BORDER_SIZE, visibleHeight), gradient);
 
   p.restore();
 }
@@ -159,11 +145,8 @@ void FrogPilotOnroadWindow::paintTurnSignalBorder(QPainter &p) {
     }
   };
 
-  QColor borderColorLeft = getBorderColor(blindSpotLeft, turnSignalLeft);
-  QColor borderColorRight = getBorderColor(blindSpotRight, turnSignalRight);
-
-  p.fillRect(rect.x(), rect.y(), rect.width() / 2, rect.height(), borderColorLeft);
-  p.fillRect(rect.x() + rect.width() / 2, rect.y(), rect.width() / 2, rect.height(), borderColorRight);
+  p.fillRect(rect.x(), rect.y(), rect.width() / 2, rect.height(), getBorderColor(blindSpotLeft, turnSignalLeft));
+  p.fillRect(rect.x() + rect.width() / 2, rect.y(), rect.width() / 2, rect.height(), getBorderColor(blindSpotRight, turnSignalRight));
 
   p.restore();
 }

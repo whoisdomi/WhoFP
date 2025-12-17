@@ -561,6 +561,12 @@ FrogPilotThemesPanel::FrogPilotThemesPanel(FrogPilotSettingsWindow *parent, bool
     } else if (param == "DownloadStatusLabel") {
       downloadStatusLabel = new LabelControl(title, tr("Idle"));
       themeToggle = downloadStatusLabel;
+
+    } else if (param == "RandomThemes") {
+      std::vector<QString> randomThemesToggles{"RandomThemesHolidays"};
+      std::vector<QString> randomThemesToggleNames{tr("Include Holiday Themes")};
+      themeToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, randomThemesToggles, randomThemesToggleNames);
+
     } else if (param == "StartupAlert") {
       FrogPilotButtonsControl *startupAlertButton = new FrogPilotButtonsControl(title, desc, icon, {tr("STOCK"), tr("FROGPILOT"), tr("CUSTOM"), tr("CLEAR")}, true);
 

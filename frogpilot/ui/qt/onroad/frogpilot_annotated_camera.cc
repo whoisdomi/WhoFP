@@ -289,14 +289,9 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
   const cereal::CarState::Reader &carState = sm["carState"].getCarState();
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
-  for (int i = 0; i < 2; ++i) {
-    bool isLeft = (i == 0);
-    bool isBlindSpot = isLeft ? carState.getLeftBlindspot() : carState.getRightBlindspot();
-
-    float laneWidth = isLeft ? frogpilotPlan.getLaneWidthLeft() : frogpilotPlan.getLaneWidthRight();
-
+  std::function<void(const QPolygonF&, bool, bool, float)> paintPath = [&](const QPolygonF &path, bool isLeft, bool isBlindSpot, float laneWidth) {
     if (laneWidth == 0.0f) {
-      continue;
+      return;
     }
 
     p.save();
@@ -316,7 +311,7 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
     }
 
     p.setBrush(gradient);
-    p.drawPolygon(track_adjacent_vertices[i]);
+    p.drawPolygon(path);
 
     if (frogpilot_toggles.value("adjacent_path_metrics").toBool()) {
       QString text;
@@ -326,14 +321,13 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
         text = QString::number(laneWidth * distanceConversion, 'f', 2) + leadDistanceUnit;
       }
 
-      const QPolygonF &path = track_adjacent_vertices[i];
       int midIndex = path.size() / 2;
       QPointF anchorPoint = isLeft ? path[midIndex / 2] : path[midIndex + (path.size() - midIndex) / 2];
 
       p.setFont(InterFont(45, QFont::DemiBold));
       QFontMetrics metrics(p.font());
 
-      int textXPosition = isLeft ? anchorPoint.x() - metrics.horizontalAdvance(text) - 10 : anchorPoint.x() + 10;
+      int textXPosition = isLeft ? anchorPoint.x() - metrics.horizontalAdvance(text) : anchorPoint.x();
       int textYPosition = anchorPoint.y() - metrics.height() / 2 + metrics.ascent();
 
       QPainterPath textPath;
@@ -345,7 +339,10 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
     }
 
     p.restore();
-  }
+  };
+
+  paintPath(track_adjacent_vertices[0], true, carState.getLeftBlindspot(), frogpilotPlan.getLaneWidthLeft());
+  paintPath(track_adjacent_vertices[1], false, carState.getRightBlindspot(), frogpilotPlan.getLaneWidthRight());
 }
 
 void FrogPilotAnnotatedCameraWidget::paintBlindSpotPath(QPainter &p, SubMaster &sm) {
