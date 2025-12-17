@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Door Lock Test - Try captured patterns
+Capture KEY FOB lock/unlock - might use CAN instead of LIN!
 """
 from panda import Panda
 import time
 import subprocess
 
 print("=" * 60)
-print("DOOR LOCK TEST - CAPTURED PATTERNS")
+print("KEY FOB LOCK/UNLOCK CAPTURE")
 print("=" * 60)
 
 print("\nStopping openpilot...")
@@ -15,7 +15,8 @@ subprocess.run(["pkill", "-f", "selfdrive"], capture_output=True)
 subprocess.run(["pkill", "-f", "_ui"], capture_output=True)
 time.sleep(2)
 
-print("\nCar must be in READY mode")
+print("\nCar must be in READY mode (or at least ACC)")
+print("Have your KEY FOB ready!")
 print("Press Enter when ready...")
 input()
 
@@ -42,111 +43,145 @@ def safe_recv():
     except:
         return []
 
-def get_lock_state():
-    """Get current lock state from 0x414"""
-    p.can_clear(0xFFFF)
-    time.sleep(0.3)
-    for _ in range(20):
-        for m in safe_recv():
-            if m[0] == 0x414 and len(m[1]) >= 5:
-                state = (m[1][4] >> 5) & 0x01
-                return "UNLOCKED" if state == 1 else "LOCKED"
-        time.sleep(0.05)
-    return "UNKNOWN"
+# Collect baseline messages for 2 seconds
+print("\nCollecting baseline (don't press anything)...")
+p.can_clear(0xFFFF)
+baseline_addrs = {}
+start = time.time()
+while time.time() - start < 2:
+    for addr, data, bus in safe_recv():
+        if addr not in baseline_addrs:
+            baseline_addrs[addr] = []
+        baseline_addrs[addr].append(data.hex())
 
-print(f"\nCurrent state: {get_lock_state()}")
+print(f"Baseline: {len(baseline_addrs)} unique addresses")
 
-# Captured patterns from physical button:
-# UNLOCK: a464011500000000 (byte1=0x64, byte3=0x15)
-# LOCK: We need to capture this!
-
+# Now capture key fob
 print("\n" + "=" * 60)
-print("First, let's capture the LOCK pattern")
+print("Press KEY FOB LOCK button NOW!")
+print("Monitoring for 10 seconds...")
 print("=" * 60)
-print("\nPress the LOCK button on the door NOW!")
 
 p.can_clear(0xFFFF)
 start = time.time()
-lock_pattern = None
+all_events = []
+new_addrs = set()
 
 while time.time() - start < 10:
-    for m in safe_recv():
-        addr, data, bus = m
+    for addr, data, bus in safe_recv():
+        t = time.time() - start
 
+        # Track all messages
+        all_events.append((t, addr, data, bus))
+
+        # Highlight messages we haven't seen in baseline
+        if addr not in baseline_addrs:
+            if addr not in new_addrs:
+                print(f"  {t:.2f}s: NEW 0x{addr:03X} bus{bus} = {data.hex()}")
+                new_addrs.add(addr)
+
+        # Always show 0x414 state changes
+        if addr == 0x414 and len(data) >= 6:
+            state = (data[4] >> 5) & 0x01
+            action = data[5] & 0x01
+            if action == 1:
+                state_str = "UNLOCKED" if state == 1 else "LOCKED"
+                print(f"  {t:.2f}s: 0x414 State={state_str} (action=1)")
+
+        # Always show 0x3FF
         if addr == 0x3FF:
-            t = time.time() - start
             print(f"  {t:.2f}s: 0x3FF = {data.hex()}")
-            # Check if this is a LOCK pattern (byte3 should be 0x00 for lock)
-            if len(data) >= 4 and data[3] == 0x00:
-                lock_pattern = data.hex()
-                print(f"  >>> LOCK pattern captured!")
+
+print(f"\nTotal events: {len(all_events)}")
+print(f"New addresses not in baseline: {len(new_addrs)}")
+
+# Analyze what appeared around lock events
+print("\n" + "=" * 60)
+print("Analyzing messages around lock/unlock events...")
+print("=" * 60)
+
+# Find when 0x414 state changed
+lock_times = []
+for i, (t, addr, data, bus) in enumerate(all_events):
+    if addr == 0x414 and len(data) >= 6:
+        action = data[5] & 0x01
+        if action == 1:
+            state = (data[4] >> 5) & 0x01
+            lock_times.append((t, "UNLOCK" if state == 1 else "LOCK"))
+
+print(f"\nLock events detected: {lock_times}")
+
+# For each lock event, show messages 500ms before
+for event_time, event_type in lock_times:
+    print(f"\n--- {event_type} at {event_time:.2f}s ---")
+    print("Messages 500ms BEFORE:")
+
+    before_msgs = {}
+    for t, addr, data, bus in all_events:
+        if event_time - 0.5 <= t < event_time:
+            key = f"0x{addr:03X}"
+            if key not in before_msgs:
+                before_msgs[key] = []
+            before_msgs[key].append((t, data.hex(), bus))
+
+    # Show addresses that are NOT common (not in baseline or low frequency)
+    for addr_str, msgs in sorted(before_msgs.items()):
+        addr_int = int(addr_str, 16)
+        baseline_count = len(baseline_addrs.get(addr_int, []))
+
+        # If this address wasn't in baseline or had few messages, it's interesting
+        if baseline_count < 5 or addr_int in [0x3FF, 0x414]:
+            for t, data, bus in msgs[-3:]:  # Last 3
+                print(f"  {t:.2f}s: {addr_str} bus{bus} = {data}")
+
+# Second capture for UNLOCK
+print("\n" + "=" * 60)
+print("Now press KEY FOB UNLOCK button!")
+print("Monitoring for 10 seconds...")
+print("=" * 60)
+
+p.can_clear(0xFFFF)
+start = time.time()
+all_events2 = []
+
+while time.time() - start < 10:
+    for addr, data, bus in safe_recv():
+        t = time.time() - start
+        all_events2.append((t, addr, data, bus))
+
+        if addr not in baseline_addrs and addr not in new_addrs:
+            print(f"  {t:.2f}s: NEW 0x{addr:03X} bus{bus} = {data.hex()}")
+            new_addrs.add(addr)
 
         if addr == 0x414 and len(data) >= 6:
             state = (data[4] >> 5) & 0x01
             action = data[5] & 0x01
             if action == 1:
-                t = time.time() - start
                 state_str = "UNLOCKED" if state == 1 else "LOCKED"
-                print(f"  {t:.2f}s: Button! State={state_str}")
+                print(f"  {t:.2f}s: 0x414 State={state_str}")
 
-print(f"\nCurrent state: {get_lock_state()}")
+        if addr == 0x3FF:
+            print(f"  {t:.2f}s: 0x3FF = {data.hex()}")
 
-if lock_pattern:
-    print(f"\nLOCK pattern found: {lock_pattern}")
-else:
-    print("\nNo LOCK 0x3FF pattern captured. Using default: 5590010000000000")
-    lock_pattern = "5590010000000000"
-
-# Known UNLOCK pattern from capture
-unlock_pattern = "a464011500000000"
-
+# Find unique messages that appeared ONLY during lock/unlock
 print("\n" + "=" * 60)
-print("TEST: Try sending captured patterns")
+print("SUMMARY: Potential command addresses")
 print("=" * 60)
 
-input("\nPress Enter to try LOCK command...")
-print(f"Sending LOCK: {lock_pattern}")
-for i in range(5):
-    # Try different counter values
-    data = bytes.fromhex(lock_pattern)
-    data = bytes([i * 0x10]) + data[1:]  # Vary counter
-    p.can_send(0x3FF, data, 1)
-    time.sleep(0.04)
+all_captured = set()
+for t, addr, data, bus in all_events + all_events2:
+    all_captured.add(addr)
 
-time.sleep(0.5)
-print(f"State after: {get_lock_state()}")
-print("Did doors LOCK? (check physically)")
+potential_commands = []
+for addr in all_captured:
+    if addr not in baseline_addrs:
+        potential_commands.append(addr)
+    elif len(baseline_addrs[addr]) < 3:  # Very rare in baseline
+        potential_commands.append(addr)
 
-input("\nPress Enter to try UNLOCK command...")
-print(f"Sending UNLOCK: {unlock_pattern}")
-for i in range(5):
-    data = bytes.fromhex(unlock_pattern)
-    data = bytes([i * 0x10]) + data[1:]  # Vary counter
-    p.can_send(0x3FF, data, 1)
-    time.sleep(0.04)
-
-time.sleep(0.5)
-print(f"State after: {get_lock_state()}")
-print("Did doors UNLOCK? (check physically)")
-
-# Also try on bus 2 (some messages were there)
-print("\n" + "=" * 60)
-print("TEST: Try on bus 2")
-print("=" * 60)
-
-input("\nPress Enter to try LOCK on bus 2...")
-for i in range(5):
-    data = bytes.fromhex(lock_pattern)
-    p.can_send(0x3FF, data, 2)
-    time.sleep(0.04)
-print(f"State: {get_lock_state()}")
-
-input("\nPress Enter to try UNLOCK on bus 2...")
-for i in range(5):
-    data = bytes.fromhex(unlock_pattern)
-    p.can_send(0x3FF, data, 2)
-    time.sleep(0.04)
-print(f"State: {get_lock_state()}")
+print(f"\nAddresses that appeared during fob press but not in baseline:")
+for addr in sorted(potential_commands):
+    print(f"  0x{addr:03X}")
 
 print("\n" + "=" * 60)
 print("DONE - Reboot with: sudo reboot")
