@@ -22,7 +22,7 @@ class FrogPilotEvents:
 
     self.events = Events(frogpilot=True)
 
-    self.always_on_lateral_enabled_previously = False
+    self.always_on_lateral_allowed_previously = False
     self.previous_traffic_mode = False
     self.random_event_playing = False
     self.startup_seen = False
@@ -76,6 +76,13 @@ class FrogPilotEvents:
         self.events.add(FrogPilotEventName.leadDeparting)
     else:
       self.tracked_lead_distance = 0
+
+    # Play sound on LKAS AOL button press
+    if sm["frogpilotCarState"].alwaysOnLateralAllowed != self.always_on_lateral_allowed_previously:
+      if sm["frogpilotCarState"].alwaysOnLateralAllowed:
+        self.events.add(FrogPilotEventName.lkasEnable)
+      else:
+        self.events.add(FrogPilotEventName.lkasDisable)
 
     if "nnffLoaded" not in self.played_events and self.startup_seen and alerts_empty and len(self.events) == 0 and self.frogpilot_planner.params.get("NNFFModelName") is not None and frogpilot_toggles.nnff:
       self.events.add(FrogPilotEventName.nnffLoaded)
@@ -167,11 +174,10 @@ class FrogPilotEvents:
           elif event_choice == "yourFrogTriedToKillMe":
             self.events.add(FrogPilotEventName.yourFrogTriedToKillMe)
 
-      if "youveGotMail" not in self.played_events and sm["frogpilotCarState"].alwaysOnLateralEnabled and not self.always_on_lateral_enabled_previously:
+      if "youveGotMail" not in self.played_events and sm["frogpilotCarState"].alwaysOnLateralAllowed and not self.always_on_lateral_allowed_previously:
         if random.random() < RANDOM_EVENTS_CHANCE / DT_MDL:
           self.events.add(FrogPilotEventName.youveGotMail)
 
-      self.always_on_lateral_enabled_previously = sm["frogpilotCarState"].alwaysOnLateralEnabled
       self.random_event_playing |= bool({event for event in self.events.names if RANDOM_EVENT_START <= event <= RANDOM_EVENT_END})
 
     if self.error_log.is_file():
@@ -198,4 +204,5 @@ class FrogPilotEvents:
     elif sm["frogpilotModelV2"].turnDirection == TurnDirection.turnRight:
       self.events.add(FrogPilotEventName.turningRight)
 
+    self.always_on_lateral_allowed_previously = sm["frogpilotCarState"].alwaysOnLateralAllowed
     self.played_events.update(FROGPILOT_EVENT_NAME[event] for event in self.events.names)
