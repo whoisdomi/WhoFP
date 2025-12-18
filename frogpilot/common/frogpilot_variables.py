@@ -258,6 +258,9 @@ frogpilot_default_params: list[tuple[str, str | bytes, int, str]] = [
   ("IsMetric", "0", 0, "0"),
   ("KonikDongleId", "", 0, ""),
   ("KonikMinutes", "0", 0, "0"),
+  ("LaneChangeDuration", "10", 1, "10"),
+  ("LaneChangeJerkResponse", "10", 1, "10"),
+  ("LaneChangeLateralAccel", "10", 1, "10"),
   ("LaneChanges", "1", 0, "1"),
   ("LaneChangeTime", "2.0", 0, "0"),
   ("LaneDetectionWidth", "0", 2, "0"),
@@ -814,6 +817,9 @@ class FrogPilotVariables:
 
     toggle.lane_changes = params.get_bool("LaneChanges") if tuning_level >= level["LaneChanges"] else default.get_bool("LaneChanges")
     toggle.lane_change_delay = params.get_float("LaneChangeTime") if toggle.lane_changes and tuning_level >= level["LaneChangeTime"] else default.get_float("LaneChangeTime")
+    toggle.lane_change_duration = params.get_int("LaneChangeDuration") if toggle.lane_changes and tuning_level >= level["LaneChangeDuration"] else default.get_int("LaneChangeDuration")
+    toggle.lane_change_jerk_response = params.get_int("LaneChangeJerkResponse") if toggle.lane_changes and tuning_level >= level["LaneChangeJerkResponse"] else default.get_int("LaneChangeJerkResponse")
+    toggle.lane_change_lateral_accel = params.get_int("LaneChangeLateralAccel") if toggle.lane_changes and tuning_level >= level["LaneChangeLateralAccel"] else default.get_int("LaneChangeLateralAccel")
     toggle.lane_detection_width = params.get_float("LaneDetectionWidth") * distance_conversion if toggle.lane_changes and tuning_level >= level["LaneDetectionWidth"] else default.get_float("LaneDetectionWidth") * CV.FOOT_TO_METER
     toggle.lane_detection = toggle.lane_detection_width > 0
     toggle.minimum_lane_change_speed = params.get_float("MinimumLaneChangeSpeed") * speed_conversion if toggle.lane_changes and tuning_level >= level["MinimumLaneChangeSpeed"] else default.get_float("MinimumLaneChangeSpeed") * CV.MPH_TO_MS
