@@ -570,6 +570,9 @@ class FrogPilotVariables:
 
     toggle.lane_changes = self.get_value("LaneChanges")
     toggle.lane_change_delay = self.get_value("LaneChangeTime", cast=float, condition=toggle.lane_changes)
+    toggle.lane_change_duration = self.get_value("LaneChangeDuration", cast=int, condition=toggle.lane_changes, default=10)
+    toggle.lane_change_jerk_response = self.get_value("LaneChangeJerkResponse", cast=int, condition=toggle.lane_changes, default=10)
+    toggle.lane_change_lateral_accel = self.get_value("LaneChangeLateralAccel", cast=int, condition=toggle.lane_changes, default=10)
     toggle.lane_detection_width = self.get_value("LaneDetectionWidth", cast=float, condition=toggle.lane_changes, conversion=distance_conversion)
     toggle.lane_detection = toggle.lane_detection_width > 0
     toggle.minimum_lane_change_speed = self.get_value("MinimumLaneChangeSpeed", cast=float, condition=toggle.lane_changes, conversion=speed_conversion)

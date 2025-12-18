@@ -51,6 +51,9 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"MinimumLaneChangeSpeed", tr("Minimum Lane Change Speed"), tr("<b>Lowest speed at which openpilot will change lanes.</b>"), ""},
     {"LaneDetectionWidth", tr("Minimum Lane Width"), tr("<b>Prevent automatic lane changes into lanes narrower than the set width.</b>"), ""},
     {"OneLaneChange", tr("One Lane Change Per Signal"), tr("<b>Limit automatic lane changes to one per turn-signal activation.</b>"), ""},
+    {"LaneChangeDuration", tr("Lane Change Duration"), tr("<b>How long the lane change maneuver takes.</b> Lower values extend the duration, giving the car more time to complete the lane change. Higher values are faster."), ""},
+    {"LaneChangeJerkResponse", tr("Lane Change Jerk Response"), tr("<b>How quickly steering changes during lane changes.</b> Lower values make the initial turn-in smoother and more gradual. Higher values are more responsive."), ""},
+    {"LaneChangeLateralAccel", tr("Lane Change Lateral Accel"), tr("<b>How fast you move sideways during lane changes.</b> Lower values make lane changes take longer. Higher values complete lane changes faster."), ""},
 
     {"LateralTune", tr("Lateral Tuning"), tr("<b>Miscellaneous steering control changes</b> to fine-tune how openpilot drives."), "../../frogpilot/assets/toggle_icons/icon_lateral_tune.png"},
     {"TurnDesires", tr("Force Turn Desires Below Lane Change Speed"), tr("<b>While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.</b>"), ""},
@@ -112,6 +115,24 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
       lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 5, QString(), laneChangeTimeLabels, 0.1);
     } else if (param == "LaneDetectionWidth") {
       lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 15, QString(), std::map<float, QString>(), 0.1, true);
+    } else if (param == "LaneChangeDuration") {
+      std::map<float, QString> durationLabels;
+      for (int i = 1; i <= 10; ++i) {
+        durationLabels[i] = i == 1 ? tr("Extended") : i == 10 ? tr("Standard") : QString::number(i);
+      }
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 1, 10, QString(), durationLabels, 1);
+    } else if (param == "LaneChangeJerkResponse") {
+      std::map<float, QString> jerkLabels;
+      for (int i = 1; i <= 10; ++i) {
+        jerkLabels[i] = i == 1 ? tr("Smoothest") : i == 10 ? tr("Standard") : QString::number(i);
+      }
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 1, 10, QString(), jerkLabels, 1);
+    } else if (param == "LaneChangeLateralAccel") {
+      std::map<float, QString> accelLabels;
+      for (int i = 1; i <= 10; ++i) {
+        accelLabels[i] = i == 1 ? tr("Slowest") : i == 10 ? tr("Standard") : QString::number(i);
+      }
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 1, 10, QString(), accelLabels, 1);
     } else if (param == "MinimumLaneChangeSpeed") {
       lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 99, QString(), std::map<float, QString>(), 1, true);
 
@@ -359,6 +380,18 @@ void FrogPilotLateralPanel::updateToggles() {
     else if (key == "ForceTorqueController") {
       setVisible &= !parent->isAngleCar;
       setVisible &= !parent->isTorqueCar;
+    }
+
+    else if (key == "LaneChangeDuration") {
+      setVisible &= params.getBool("LaneChanges");
+    }
+
+    else if (key == "LaneChangeJerkResponse") {
+      setVisible &= params.getBool("LaneChanges");
+    }
+
+    else if (key == "LaneChangeLateralAccel") {
+      setVisible &= params.getBool("LaneChanges");
     }
 
     else if (key == "LaneChangeTime") {

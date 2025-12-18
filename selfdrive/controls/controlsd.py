@@ -138,7 +138,18 @@ class Controls:
     # Steering PID loop and lateral MPC
     # Reset desired curvature to current to avoid violating the limits on engage
     new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
-    self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
+
+    # Apply lane change jerk/accel factors only during laneChangeStarting (the actual lane change)
+    # During laneChangeFinishing, use normal limits so the car can center properly in the new lane
+    jerk_factor = 1.0
+    lat_accel_factor = 1.0
+    lane_change_starting = model_v2.meta.laneChangeState == LaneChangeState.laneChangeStarting
+    if lane_change_starting and CS.vEgo >= self.frogpilot_toggles.minimum_lane_change_speed:
+      # Convert 1-10 scale to 0.1-1.0 (1=smoothest/slowest, 10=standard/1.0)
+      jerk_factor = self.frogpilot_toggles.lane_change_jerk_response / 10.0
+      lat_accel_factor = self.frogpilot_toggles.lane_change_lateral_accel / 10.0
+
+    self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll, jerk_factor, lat_accel_factor)
 
     actuators.curvature = self.desired_curvature
     steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
