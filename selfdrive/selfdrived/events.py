@@ -1322,6 +1322,14 @@ FROGPILOT_EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       FrogPilotAlertStatus.frogpilot, AlertSize.small,
       Priority.LOW, VisualAlert.none, FrogPilotAudibleAlert.mail, 3.),
   },
+
+  FrogPilotEventName.lkasEnable: {
+    ET.PERMANENT: EngagementAlert(AudibleAlert.engage),
+  },
+
+  FrogPilotEventName.lkasDisable: {
+    ET.PERMANENT: EngagementAlert(AudibleAlert.disengage),
+  },
 }
 
 

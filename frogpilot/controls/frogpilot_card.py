@@ -104,6 +104,7 @@ class FrogPilotCard:
     self.force_coast &= not (carState.brakePressed or carState.gasPressed)
 
     frogpilotCarState.accelPressed = self.accel_pressed
+    frogpilotCarState.alwaysOnLateralAllowed = self.always_on_lateral_allowed
     frogpilotCarState.alwaysOnLateralEnabled = self.always_on_lateral_enabled
     frogpilotCarState.decelPressed = self.decel_pressed
     frogpilotCarState.distanceLongPressed = self.very_long_press_threshold > self.gap_counter >= self.long_press_threshold
