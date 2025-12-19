@@ -1,117 +1,65 @@
 #!/usr/bin/env python3
-import datetime
+import io
+import json
 import random
-import shutil
+import requests
 import string
-import tarfile
 import threading
 import time
-import zstandard as zstd
 
 from pathlib import Path
 
-from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.athena.registration import register
 from openpilot.system.hardware import HARDWARE
 
 from openpilot.frogpilot.assets.theme_manager import ThemeManager
-from openpilot.frogpilot.common.frogpilot_utilities import delete_file, is_FrogsGoMoo, run_cmd, use_konik_server
+from openpilot.frogpilot.common.frogpilot_backups import backup_frogpilot
+from openpilot.frogpilot.common.frogpilot_utilities import is_FrogsGoMoo, run_cmd, use_konik_server
 from openpilot.frogpilot.common.frogpilot_variables import (
-  ERROR_LOGS_PATH, EXCLUDED_KEYS, FROGPILOT_BACKUPS, FROGS_GO_MOO_PATH, HD_LOGS_PATH, KONIK_LOGS_PATH, THEME_SAVE_PATH, TOGGLE_BACKUPS,
+  DISCORD_WEBHOOK_URL_REPORT, ERROR_LOGS_PATH, FROGS_GO_MOO_PATH, HD_LOGS_PATH, KONIK_LOGS_PATH, MAPD_PATH, MAPS_PATH, THEME_SAVE_PATH,
   FrogPilotVariables, get_frogpilot_toggles
 )
 
 
-def cleanup_backups(directory, limit):
-  directory.mkdir(parents=True, exist_ok=True)
-
-  for backup in directory.glob("*_in_progress*"):
-    delete_file(backup, report=False)
-
-  backups = sorted(directory.glob("*_auto*"), key=lambda f: f.stat().st_mtime, reverse=True)
-  for oldest_backup in backups[limit:]:
-    delete_file(oldest_backup, report=False)
-
-
-def create_backup(backup, destination, success_message, fail_message, params, minimum_backup_size=0, compressed=False):
-  final_destination = destination.parent / f"{destination.name}.tar.zst" if compressed else destination
-
-  if final_destination.exists():
-    print("Backup already exists. Aborting...")
+def capture_report(discord_user, report, frogpilot_toggles):
+  if not DISCORD_WEBHOOK_URL_REPORT:
     return
 
-  if compressed:
-    compressed_temp = destination.parent / f"{destination.name}_in_progress.tar.zst"
+  error_file_path = ERROR_LOGS_PATH / "error.txt"
+  error_content = "No error log found."
+  if error_file_path.exists():
+    error_content = error_file_path.read_text()[:1000]
 
-    with open(compressed_temp, "wb") as f_out:
-      cctx = zstd.ZstdCompressor()
-      with cctx.stream_writer(f_out) as compressor:
-        with tarfile.open(fileobj=compressor, mode="w") as tar:
-          try:
-            tar.add(backup, arcname=destination.name)
-          except OSError:
-            pass
+  message = (
+    f"**🚨 New Error Report**\n\n"
+    f"**User:** `{discord_user}`\n\n"
+    f"**Report:**\n```{report}```\n\n"
+    f"**Error Log:**\n```{error_content}```\n\n"
+    f"**Toggle Settings:**"
+  )
 
-    compressed_temp.rename(final_destination)
+  try:
+    main_response = requests.post(
+      DISCORD_WEBHOOK_URL_REPORT,
+      data={"content": message},
+      files={"file": ("frogpilot_toggles.json", io.BytesIO(json.dumps(frogpilot_toggles, indent=2).encode("utf-8")), "application/json")},
+      timeout=10
+    )
+    main_response.raise_for_status()
 
-    compressed_backup_size = final_destination.stat().st_size
-    if minimum_backup_size == 0 or compressed_backup_size < minimum_backup_size:
-      params.put("MinimumBackupSize", int(compressed_backup_size))
-  else:
-    in_progress_destination = destination.parent / f"{destination.name}_in_progress"
+    mention_response = requests.post(
+      DISCORD_WEBHOOK_URL_REPORT,
+      json={"content": "<@&1198482895342411846>"},
+      timeout=10
+    )
+    mention_response.raise_for_status()
 
-    shutil.copytree(backup, in_progress_destination, symlinks=True)
-
-    in_progress_destination.rename(destination)
-
-  print(success_message)
-
-
-def backup_frogpilot(build_metadata, params):
-  maximum_backups = 3
-  cleanup_backups(FROGPILOT_BACKUPS, maximum_backups)
-
-  today = datetime.datetime.now().date()
-  for backup in FROGPILOT_BACKUPS.glob("*_auto.tar.zst"):
-    if backup.name.endswith(f"_{build_metadata.channel}_auto.tar.zst"):
-      if datetime.datetime.fromtimestamp(backup.stat().st_mtime).date() == today:
-        if not backup.name.startswith(f"{build_metadata.openpilot.git_commit[:6]}_"):
-          delete_file(backup, report=False)
-
-  _, _, free = shutil.disk_usage(FROGPILOT_BACKUPS)
-  minimum_backup_size = params.get("MinimumBackupSize")
-  if free > minimum_backup_size * maximum_backups:
-    destination = FROGPILOT_BACKUPS / f"{build_metadata.openpilot.git_commit}_{build_metadata.channel}_auto"
-    create_backup(Path(BASEDIR), destination, "Successfully backed up FrogPilot!", "Failed to backup FrogPilot...", params, minimum_backup_size, compressed=True)
-
-
-def backup_toggles(params, boot_run=False):
-  params_backup = Params("/dev/shm/params_backup", return_defaults=True)
-
-  changes_found = False
-  for key in params.all_keys():
-    current_value = params.get(key)
-    if current_value is None:
-      continue
-
-    if boot_run:
-      params_backup.put(key, current_value)
-      changes_found = True
-    elif current_value != params_backup.get(key):
-      params_backup.put(key, current_value)
-      changes_found |= key.decode("utf-8") not in EXCLUDED_KEYS
-
-  maximum_backups = 5
-  cleanup_backups(TOGGLE_BACKUPS, maximum_backups)
-
-  if not changes_found or boot_run:
-    print("Toggles are identical to the previous backup. Aborting...")
-    return
-
-  destination = TOGGLE_BACKUPS / f"{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_auto"
-  create_backup(Path(params_backup.get_param_path()), destination, "Successfully backed up toggles!", "Failed to backup toggles...", params)
+  except requests.exceptions.RequestException as exception:
+    print(f"Error sending Discord message: {exception}")
+  except Exception as exception:
+    print(f"Unexpected error: {exception}")
 
 
 def frogpilot_boot_functions(build_metadata, params):
@@ -187,3 +135,74 @@ def update_boot_logo(frogpilot=False, stock=False):
     run_cmd(["sudo", "mount", "-o", "remount,rw", "/"], "Successfully remounted / as read-write", "Failed to remount /")
     run_cmd(["sudo", "cp", target_logo, boot_logo], "Successfully replaced boot logo", "Failed to replace boot logo")
     run_cmd(["sudo", "mount", "-o", f"remount,{mount_options}", "/"], "Successfully restored / mount options", "Failed to restore / mount options")
+
+
+def update_maps(now, params, params_memory):
+  while not MAPD_PATH.exists():
+    time.sleep(60)
+
+  maps_selected = params.get("MapsSelected")
+  if not maps_selected or not (maps_selected.get("nations") or maps_selected.get("states")):
+    return
+
+  day = now.day
+  is_first = day == 1
+  is_sunday = now.weekday() == 6
+  schedule = params.get("PreferredSchedule")
+
+  maps_downloaded = MAPS_PATH.exists()
+  if maps_downloaded and (schedule == 0 or (schedule == 1 and not is_sunday) or (schedule == 2 and not is_first)):
+    return
+
+  suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+  todays_date = now.strftime(f"%B {day}{suffix}, %Y")
+
+  if maps_downloaded and params.get("LastMapsUpdate") == todays_date:
+    return
+
+  if params.get("OSMDownloadProgress") is None:
+    params_memory.put("OSMDownloadLocations", maps_selected)
+
+  while params.get("OSMDownloadProgress") is not None:
+    time.sleep(60)
+
+  params.put("LastMapsUpdate", todays_date)
+
+
+def update_openpilot(thread_manager, params):
+  def update_available():
+    run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Checking for updates...", "Failed to check for update...", report=False)
+
+    while params.get("UpdaterState") != "checking...":
+      time.sleep(1)
+
+    while params.get("UpdaterState") == "checking...":
+      time.sleep(1)
+
+    if not params.get_bool("UpdaterFetchAvailable"):
+      return False
+
+    while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
+      time.sleep(60)
+
+    run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Update available, downloading...", "Failed to download update...", report=False)
+
+    while not params.get_bool("UpdateAvailable"):
+      time.sleep(60)
+
+    return True
+
+  if params.get("UpdaterState") != "idle":
+    return
+
+  if not update_available():
+    return
+
+  while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
+    time.sleep(60)
+
+  while True:
+    if not update_available():
+      break
+
+  HARDWARE.reboot()

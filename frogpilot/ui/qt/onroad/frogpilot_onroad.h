@@ -41,5 +41,7 @@ private:
 
   QRegion marginRegion;
 
+  QString fpsDisplayString;
+
   QTimer *signalTimer;
 };

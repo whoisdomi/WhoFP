@@ -12,7 +12,7 @@ from cereal import car, custom
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
-from openpilot.frogpilot.common.download_utilities import github_rate_limited
+from openpilot.frogpilot.common.frogpilot_download_utilities import github_rate_limited
 from openpilot.frogpilot.common.frogpilot_utilities import clean_model_name, is_url_pingable
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
 

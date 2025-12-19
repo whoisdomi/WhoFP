@@ -39,6 +39,35 @@ void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState
     signalTimer->stop();
   }
 
+  if (showFPS) {
+    qint64 now = QDateTime::currentMSecsSinceEpoch();
+
+    static double maxFPS = 0.0;
+    static double minFPS = 99.9;
+    static double totalFPS = 0.0;
+
+    static QList<QPair<qint64, double>> fpsHistory;
+
+    fpsHistory.append({now, fps});
+    totalFPS += fps;
+
+    while (!fpsHistory.isEmpty() && (now - fpsHistory.first().first > 60000)) {
+      totalFPS -= fpsHistory.first().second;
+      fpsHistory.removeFirst();
+    }
+
+    double avgFPS = fpsHistory.isEmpty() ? 0.0 : totalFPS / fpsHistory.size();
+
+    minFPS = std::min(minFPS, fps);
+    maxFPS = std::max(maxFPS, fps);
+
+    fpsDisplayString = QString("FPS: %1 | Min: %2 | Max: %3 | Avg: %4")
+                          .arg(qRound(fps))
+                          .arg(qRound(minFPS))
+                          .arg(qRound(maxFPS))
+                          .arg(qRound(avgFPS));
+  }
+
   update();
 }
 
@@ -63,33 +92,6 @@ void FrogPilotOnroadWindow::paintEvent(QPaintEvent *event) {
 
 void FrogPilotOnroadWindow::paintFPS(QPainter &p) {
   p.save();
-
-  qint64 now = QDateTime::currentMSecsSinceEpoch();
-
-  static double maxFPS = 0.0;
-  static double minFPS = 99.9;
-  static double totalFPS = 0.0;
-
-  static QList<QPair<qint64, double>> fpsHistory;
-
-  fpsHistory.append({now, fps});
-  totalFPS += fps;
-
-  while (!fpsHistory.isEmpty() && (now - fpsHistory.first().first > 60000)) {
-    totalFPS -= fpsHistory.first().second;
-    fpsHistory.removeFirst();
-  }
-
-  double avgFPS = fpsHistory.isEmpty() ? 0.0 : totalFPS / fpsHistory.size();
-
-  minFPS = std::min(minFPS, fps);
-  maxFPS = std::max(maxFPS, fps);
-
-  QString fpsDisplayString = QString("FPS: %1 | Min: %2 | Max: %3 | Avg: %4")
-                                .arg(qRound(fps))
-                                .arg(qRound(minFPS))
-                                .arg(qRound(maxFPS))
-                                .arg(qRound(avgFPS));
 
   p.setFont(InterFont(28, QFont::DemiBold));
   p.setPen(Qt::white);

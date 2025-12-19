@@ -5,8 +5,6 @@ import time
 
 from concurrent.futures import ThreadPoolExecutor
 
-from openpilot.common.constants import CV
-
 from openpilot.frogpilot.common.frogpilot_utilities import calculate_distance_to_point, is_url_pingable
 
 CACHE_DISTANCE = 25

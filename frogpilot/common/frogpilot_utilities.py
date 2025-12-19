@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import io
 import json
 import math
 import numpy as np
@@ -19,10 +18,9 @@ from cereal import log, messaging
 from opendbc.can.parser import CANParser
 from opendbc.car.toyota.carcontroller import LOCK_CMD
 from openpilot.common.realtime import DT_DMON, DT_HW
-from openpilot.system.hardware import HARDWARE
 from panda import Panda
 
-from openpilot.frogpilot.common.frogpilot_variables import DISCORD_WEBHOOK_URL_REPORT, EARTH_RADIUS, ERROR_LOGS_PATH, FROGS_GO_MOO_PATH, KONIK_PATH, MAPD_PATH, MAPS_PATH
+from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH, KONIK_PATH
 
 class ThreadManager:
   def __init__(self):
@@ -124,45 +122,6 @@ def calculate_road_curvature(modelData, v_ego):
   time_to_curve = float(timebase[index])
 
   return predicted_lateral_acc / max(v_ego, 1)**2, max(time_to_curve, 1)
-
-
-def capture_report(discord_user, report, frogpilot_toggles):
-  if not DISCORD_WEBHOOK_URL_REPORT:
-    return
-
-  error_file_path = ERROR_LOGS_PATH / "error.txt"
-  error_content = "No error log found."
-  if error_file_path.exists():
-    error_content = error_file_path.read_text()[:1000]
-
-  message = (
-    f"**🚨 New Error Report**\n\n"
-    f"**User:** `{discord_user}`\n\n"
-    f"**Report:**\n```{report}```\n\n"
-    f"**Error Log:**\n```{error_content}```\n\n"
-    f"**Toggle Settings:**"
-  )
-
-  try:
-    main_response = requests.post(
-      DISCORD_WEBHOOK_URL_REPORT,
-      data={"content": message},
-      files={"file": ("frogpilot_toggles.json", io.BytesIO(json.dumps(frogpilot_toggles, indent=2).encode("utf-8")), "application/json")},
-      timeout=10
-    )
-    main_response.raise_for_status()
-
-    mention_response = requests.post(
-      DISCORD_WEBHOOK_URL_REPORT,
-      json={"content": "<@&1198482895342411846>"},
-      timeout=10
-    )
-    mention_response.raise_for_status()
-
-  except requests.exceptions.RequestException as exception:
-    print(f"Error sending Discord message: {exception}")
-  except Exception as exception:
-    print(f"Unexpected error: {exception}")
 
 
 def clean_model_name(name):
@@ -312,77 +271,6 @@ def update_json_file(path, data):
     os.fsync(file.fileno())
 
   os.replace(temp_path, path)
-
-
-def update_maps(now, params, params_memory):
-  while not MAPD_PATH.exists():
-    time.sleep(60)
-
-  maps_selected = params.get("MapsSelected")
-  if not maps_selected or not (maps_selected.get("nations") or maps_selected.get("states")):
-    return
-
-  day = now.day
-  is_first = day == 1
-  is_sunday = now.weekday() == 6
-  schedule = params.get("PreferredSchedule")
-
-  maps_downloaded = MAPS_PATH.exists()
-  if maps_downloaded and (schedule == 0 or (schedule == 1 and not is_sunday) or (schedule == 2 and not is_first)):
-    return
-
-  suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
-  todays_date = now.strftime(f"%B {day}{suffix}, %Y")
-
-  if maps_downloaded and params.get("LastMapsUpdate") == todays_date:
-    return
-
-  if params.get("OSMDownloadProgress") is None:
-    params_memory.put("OSMDownloadLocations", maps_selected)
-
-  while params.get("OSMDownloadProgress") is not None:
-    time.sleep(60)
-
-  params.put("LastMapsUpdate", todays_date)
-
-
-def update_openpilot(thread_manager, params):
-  def update_available():
-    run_cmd(["pkill", "-SIGUSR1", "-f", "system.updated.updated"], "Checking for updates...", "Failed to check for update...", report=False)
-
-    while params.get("UpdaterState") != "checking...":
-      time.sleep(1)
-
-    while params.get("UpdaterState") == "checking...":
-      time.sleep(1)
-
-    if not params.get_bool("UpdaterFetchAvailable"):
-      return False
-
-    while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
-      time.sleep(60)
-
-    run_cmd(["pkill", "-SIGHUP", "-f", "system.updated.updated"], "Update available, downloading...", "Failed to download update...", report=False)
-
-    while not params.get_bool("UpdateAvailable"):
-      time.sleep(60)
-
-    return True
-
-  if params.get("UpdaterState") != "idle":
-    return
-
-  if not update_available():
-    return
-
-  while params.get_bool("IsOnroad") or thread_manager.is_thread_alive("lock_doors"):
-    time.sleep(60)
-
-  while True:
-    if not update_available():
-      break
-
-  HARDWARE.reboot()
 
 
 @cache

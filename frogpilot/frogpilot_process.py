@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import datetime
 import json
-import os
 import time
 
 from cereal import messaging
@@ -11,8 +10,9 @@ from openpilot.common.realtime import DT_MDL, Priority, Ratekeeper, config_realt
 from openpilot.common.time_helpers import system_time_valid
 
 from openpilot.frogpilot.assets.theme_manager import THEME_COMPONENT_PARAMS, ThemeManager
-from openpilot.frogpilot.common.frogpilot_functions import backup_toggles
-from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, capture_report, flash_panda, is_url_pingable, lock_doors, update_maps, update_openpilot
+from openpilot.frogpilot.common.frogpilot_backups import backup_toggles
+from openpilot.frogpilot.common.frogpilot_functions import capture_report, frogpilot_boot_functions, update_maps, update_openpilot
+from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, flash_panda, is_url_pingable, lock_doors
 from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, FrogPilotVariables
 from openpilot.frogpilot.controls.frogpilot_planner import FrogPilotPlanner
 from openpilot.frogpilot.system.frogpilot_stats import send_stats
@@ -101,12 +101,12 @@ def frogpilot_thread():
   theme_manager = ThemeManager(params, params_memory)
   thread_manager = ThreadManager()
 
+  frogpilot_toggles = frogpilot_variables.frogpilot_toggles
+
   run_update_checks = False
   started_previously = False
   time_validated = False
   toggles_updated = False
-
-  frogpilot_toggles = frogpilot_variables.frogpilot_toggles
 
   toggles_last_updated = datetime.datetime.now(datetime.timezone.utc)
 
@@ -139,6 +139,7 @@ def frogpilot_thread():
       frogpilot_tracking.update(now, time_validated, sm, frogpilot_toggles)
     elif not started:
       frogpilot_plan_send = messaging.new_message("frogpilotPlan")
+      frogpilot_plan_send.frogpilotPlan.frogpilotToggles = json.dumps(vars(frogpilot_toggles))
       frogpilot_plan_send.frogpilotPlan.themeUpdated = theme_manager.theme_updated
       frogpilot_plan_send.frogpilotPlan.togglesUpdated = toggles_updated
       pm.send("frogpilotPlan", frogpilot_plan_send)

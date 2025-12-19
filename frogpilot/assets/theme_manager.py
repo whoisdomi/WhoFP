@@ -9,7 +9,7 @@ from dateutil import easter
 from pathlib import Path
 from urllib.parse import quote_plus
 
-from openpilot.frogpilot.common.download_utilities import GITLAB_URL, download_file, get_repository_url, handle_error, verify_download
+from openpilot.frogpilot.common.frogpilot_download_utilities import GITLAB_URL, download_file, get_repository_url, handle_error, verify_download
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file, extract_zip, load_json_file, update_json_file
 from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, RANDOM_EVENTS_PATH, RESOURCES_REPO, THEME_SAVE_PATH
 

@@ -150,6 +150,8 @@ class FrogPilotPlanner:
 
     frogpilotPlan.frogpilotEvents = self.frogpilot_events.events.to_msg()
 
+    frogpilotPlan.frogpilotToggles = json.dumps(vars(frogpilot_toggles))
+
     if sm["frogpilotCarState"].trafficModeEnabled:
       frogpilotPlan.increasedStoppedDistance = 0
     else:

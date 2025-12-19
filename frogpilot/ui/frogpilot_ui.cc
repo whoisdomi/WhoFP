@@ -20,8 +20,10 @@ static void update_state(FrogPilotUIState *fs) {
     if (frogpilotPlan.getThemeUpdated()) {
       emit fs->themeUpdated();
     }
-    if (frogpilotPlan.getTogglesUpdated()) {
-      frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray::fromStdString(fs->params_memory.get("FrogPilotToggles"))).object();
+    static QString previous_frogpilot_toggles = "";
+    if (previous_frogpilot_toggles != frogpilotPlan.getFrogpilotToggles().cStr()) {
+      frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray(frogpilotPlan.getFrogpilotToggles().cStr())).object();
+      previous_frogpilot_toggles = frogpilotPlan.getFrogpilotToggles().cStr();
     }
   }
   if (fpsm.updated("selfdriveState")) {
@@ -39,7 +41,7 @@ FrogPilotUIState::FrogPilotUIState(QObject *parent) : QObject(parent) {
 
   wifi = new WifiManager(this);
 
-  frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("FrogPilotToggles", true))).object();
+  frogpilot_scene.frogpilot_toggles = QJsonDocument::fromJson(QByteArray((*sm)["frogpilotPlan"].getFrogpilotPlan().getFrogpilotToggles().cStr())).object();
 
   if (frogpilot_scene.frogpilot_toggles.value("tethering_config").toInt() == 1) {
     wifi->setTetheringEnabled(true);

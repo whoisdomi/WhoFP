@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
 
-from opendbc.car.interfaces import ACCEL_MAX
 from openpilot.selfdrive.controls.lib.longitudinal_planner import ACCEL_MIN, get_max_accel
 
 from openpilot.frogpilot.common.frogpilot_variables import CITY_SPEED_LIMIT
