@@ -5,13 +5,13 @@ from openpilot.common.realtime import DT_CTRL, DT_MDL
 MIN_SPEED = 1.0
 CONTROL_N = 17
 CAR_ROTATION_RADIUS = 0.0
-# This is a turn radius smaller than most cars can achieve
-MAX_CURVATURE = 0.2
+# Increased to 0.4 to allow very tight turns (2.5m minimum radius)
+MAX_CURVATURE = 0.4
 MAX_VEL_ERR = 5.0  # m/s
 
-# EU guidelines
+# Modified for sportier driving - 2x ISO comfort standard
 MAX_LATERAL_JERK = 5.0  # m/s^3
-MAX_LATERAL_ACCEL_NO_ROLL = 3.0  # m/s^2
+MAX_LATERAL_ACCEL_NO_ROLL = 6.0  # m/s^2
 
 
 def clamp(val, min_val, max_val):
