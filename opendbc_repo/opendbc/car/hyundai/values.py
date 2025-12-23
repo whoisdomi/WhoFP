@@ -26,7 +26,7 @@ class CarControllerParams:
 
     if CP.flags & HyundaiFlags.CANFD:
       # Speed-dependent torque and rate limits for improved low-speed handling
-      self.STEER_MAX = 720 if vEgoRaw < 14. else 400
+      self.STEER_MAX = 400 if vEgoRaw < 14. else 400
       self.STEER_DRIVER_ALLOWANCE = 370
       self.STEER_DRIVER_MULTIPLIER = 2
       self.STEER_THRESHOLD = 370
