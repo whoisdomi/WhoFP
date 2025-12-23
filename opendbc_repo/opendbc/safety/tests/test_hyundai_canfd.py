@@ -28,14 +28,14 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.CarSafetyTest, common.Drive
   STANDSTILL_THRESHOLD = 12  # 0.375 kph
   FWD_BLACKLISTED_ADDRS = {2: [0x50, 0x2a4]}
 
-  MAX_RATE_UP = 5
+  MAX_RATE_UP = 10
   MAX_RATE_DOWN = 10
   MAX_TORQUE_LOOKUP = [0], [720]
 
-  MAX_RT_DELTA = 112
+  MAX_RT_DELTA = 90
 
-  DRIVER_TORQUE_ALLOWANCE = 370
-  DRIVER_TORQUE_FACTOR = 2
+  DRIVER_TORQUE_ALLOWANCE = 400
+  DRIVER_TORQUE_FACTOR = 3
 
   # Safety around steering req bit
   MIN_VALID_STEERING_FRAMES = 89
