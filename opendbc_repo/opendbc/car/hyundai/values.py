@@ -30,8 +30,8 @@ class CarControllerParams:
       self.STEER_DRIVER_ALLOWANCE = 370
       self.STEER_DRIVER_MULTIPLIER = 2
       self.STEER_THRESHOLD = 370
-      self.STEER_DELTA_UP = 5 if vEgoRaw < 14. else 3
-      self.STEER_DELTA_DOWN = 10 if vEgoRaw < 14. else 4
+      self.STEER_DELTA_UP = 4 if vEgoRaw < 14. else 3
+      self.STEER_DELTA_DOWN = 8 if vEgoRaw < 14. else 4
 
     # To determine the limit for your car, find the maximum value that the stock LKAS will request.
     # If the max stock LKAS request is <384, add your car to this list.
