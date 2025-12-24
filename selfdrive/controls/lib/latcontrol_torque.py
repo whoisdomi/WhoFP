@@ -66,7 +66,7 @@ class LatControlTorque(LatControl):
                                           gravity_adjusted=True)
       ff += get_friction(desired_lateral_accel - actual_lateral_accel, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
-      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 5
+      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1
       output_torque = self.pid.update(pid_log.error,
                                       feedforward=ff,
                                       speed=CS.vEgo,
