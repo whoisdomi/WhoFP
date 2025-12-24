@@ -35,7 +35,7 @@ def clip_curvature(v_ego, prev_curvature, new_curvature, roll, jerk_factor=1.0, 
   # Asymmetric limits: allow faster unwinding (returning to center) than winding (into turn)
   # Unwinding = moving toward zero curvature, Winding = moving away from zero
   is_unwinding = abs(new_curvature) < abs(prev_curvature)
-  unwind_multiplier = 1.0 if is_unwinding else 1.0  # 5x faster unwind rate
+  unwind_multiplier = 5.0 if is_unwinding else 1.0  # 5x faster unwind rate
 
   new_curvature = np.clip(new_curvature,
                           prev_curvature - max_curvature_rate * DT_CTRL * unwind_multiplier,
