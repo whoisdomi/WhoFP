@@ -32,12 +32,13 @@ def ioniq6_ecu_disable():
         addr = 0x730
         bus = 1  # ECAN for LKA steering cars
 
-        # Create simple CAN send/recv functions
+        # Create CAN send/recv functions compatible with IsoTpParallelQuery
         def can_send(msgs):
             for addr, dat, bus in msgs:
                 panda.can_send(addr, dat, bus)
 
-        def can_recv():
+        def can_recv(wait_for_one=False):
+            # IsoTpParallelQuery expects wait_for_one parameter
             return panda.can_recv()
 
         print(f"[Ioniq6 ECU Disable V2] Calling disable_ecu(addr=0x{addr:x}, bus={bus}, security_access=True)...")
