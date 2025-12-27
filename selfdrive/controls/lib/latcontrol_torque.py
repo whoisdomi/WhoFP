@@ -19,8 +19,8 @@ from openpilot.common.pid import PIDController
 # friction in the steering wheel that needs to be overcome to
 # move it at all, this is compensated for too.
 
-LOW_SPEED_X = [0, 10, 20, 30]
-LOW_SPEED_Y = [15, 13, 10, 5]
+LOW_SPEED_X = [0, 15, 25, 35]
+LOW_SPEED_Y = [15, 15, 9, 4]
 
 
 class LatControlTorque(LatControl):
