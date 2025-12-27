@@ -1,11 +1,14 @@
+import time
+
 from opendbc.car import Bus, get_safety_config, structs, uds
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, \
+                                                   CANFD_SECURITYACCESS_CAR, \
                                                    UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags
 from opendbc.car.hyundai.radar_interface import RADAR_START_ADDR
 from opendbc.car.interfaces import CarInterfaceBase
-from opendbc.car.disable_ecu import disable_ecu
+from opendbc.car.disable_ecu import disable_ecu, ecu_log
 from opendbc.car.hyundai.carcontroller import CarController
 from opendbc.car.hyundai.carstate import CarState
 from opendbc.car.hyundai.radar_interface import RadarInterface
@@ -15,6 +18,9 @@ Ecu = structs.CarParams.Ecu
 
 # Cancel button can sometimes be ACC pause/resume button, main button can also enable on some cars
 ENABLE_BUTTONS = (ButtonType.accelCruise, ButtonType.decelCruise, ButtonType.cancel, ButtonType.mainCruise)
+
+# Track when ECU disable happened - used to permanently suppress CAN errors from disabled ECU
+ECU_DISABLE_TIMESTAMP = 0.0
 
 
 class CarInterface(CarInterfaceBase):
@@ -37,8 +43,9 @@ class CarInterface(CarInterfaceBase):
     if ret.flags & HyundaiFlags.CANFD:
       # Shared configuration for CAN-FD cars
       ret.alphaLongitudinalAvailable = candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR
-      if lka_steering and Ecu.adas not in [fw.ecu for fw in car_fw]:
+      if lka_steering and Ecu.adas not in [fw.ecu for fw in car_fw] and candidate not in CANFD_SECURITYACCESS_CAR:
         # this needs to be figured out for cars without an ADAS ECU
+        # Cars in CANFD_SECURITYACCESS_CAR are known to have ADAS ECUs that work with SecurityAccess
         ret.alphaLongitudinalAvailable = False
 
       ret.enableBsm = 0x1ba in fingerprint[CAN.ECAN]
@@ -127,6 +134,10 @@ class CarInterface(CarInterfaceBase):
 
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or Bus.radar not in DBC[ret.carFingerprint]
     ret.openpilotLongitudinalControl = alpha_long and ret.alphaLongitudinalAvailable
+    # When longitudinal is enabled, we disable the ADAS ECU which stops radar messages
+    # Force radarUnavailable to prevent CAN Error from missing radar messages
+    if ret.openpilotLongitudinalControl:
+      ret.radarUnavailable = True
     ret.pcmCruise = not ret.openpilotLongitudinalControl
     ret.startingState = True
     ret.vEgoStarting = 0.1
@@ -156,15 +167,26 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, can_recv, can_send, communication_control=None):
-    # 0x80 silences response
+    global ECU_DISABLE_TIMESTAMP
+
+    # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
     if communication_control is None:
-      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
+      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
 
     if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
       addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
-      disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
+
+      # ECU disable must happen in IGN-ON state BEFORE entering READY mode
+      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
+      ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
+
+      # Only enable CAN error suppression if ECU disable actually succeeded
+      if ecu_disabled:
+        ECU_DISABLE_TIMESTAMP = time.monotonic()
+      else:
+        ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
@@ -174,3 +196,37 @@ class CarInterface(CarInterfaceBase):
   def deinit(CP, can_recv, can_send):
     communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.ENABLE_RX_ENABLE_TX, uds.MESSAGE_TYPE.NORMAL])
     CarInterface.init(CP, can_recv, can_send, communication_control)
+
+  def update(self, can_packets, frogpilot_toggles):
+    # Call base class update - returns (CarState, FrogPilotCarState) tuple
+    ret, fp_ret = super().update(can_packets, frogpilot_toggles)
+
+    # When ECU disable has been done for longitudinal control, we need to handle CAN errors carefully:
+    # - TIMEOUT errors (messages stop coming): Expected after ECU disable, should be suppressed
+    # - COUNTER errors (checksum/counter failures): Real CAN problems, should NOT be suppressed
+    global ECU_DISABLE_TIMESTAMP
+    if ECU_DISABLE_TIMESTAMP > 0 and not ret.canValid:
+      # Check if any parser has counter/checksum errors (real CAN issues)
+      has_counter_errors = False
+      for cp in self.can_parsers.values():
+        if cp is not None:
+          for state in cp.message_states.values():
+            if state.counter_fail >= 5:  # MAX_BAD_COUNTER from parser.py
+              has_counter_errors = True
+              ecu_log(f"REAL CAN ERROR: {state.name} counter_fail={state.counter_fail}")
+              break
+        if has_counter_errors:
+          break
+
+      if has_counter_errors:
+        # Real CAN error - don't suppress, let it through
+        ecu_log("ECU_DISABLE: NOT suppressing canValid - counter errors detected")
+      else:
+        # Only timeout errors (expected after ECU disable) - suppress
+        elapsed = time.monotonic() - ECU_DISABLE_TIMESTAMP
+        # Log occasionally to confirm this is working (every ~10 seconds)
+        if int(elapsed) % 10 == 0 and elapsed - int(elapsed) < 0.1:
+          ecu_log(f"ECU_DISABLE: suppressing timeout error (elapsed={elapsed:.0f}s)")
+        ret.canValid = True
+
+    return ret, fp_ret
