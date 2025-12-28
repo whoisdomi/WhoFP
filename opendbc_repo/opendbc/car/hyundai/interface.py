@@ -158,6 +158,13 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, can_recv, can_send, communication_control=None):
+    from opendbc.car.carlog import carlog
+    carlog.warning("=== HyundaiCarInterface.init() CALLED ===")
+    carlog.warning(f"openpilotLongitudinalControl: {CP.openpilotLongitudinalControl}")
+    carlog.warning(f"flags: {CP.flags}")
+    carlog.warning(f"CANFD_CAMERA_SCC flag: {bool(CP.flags & HyundaiFlags.CANFD_CAMERA_SCC)}")
+    carlog.warning(f"CAMERA_SCC flag: {bool(CP.flags & HyundaiFlags.CAMERA_SCC)}")
+
     # 0x80 silences response
     if communication_control is None:
       communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
@@ -171,6 +178,7 @@ class CarInterface(CarInterfaceBase):
       # According to field testing: ECU disable must happen in IGN_ON state (park gear)
       # BEFORE entering READY mode, otherwise it causes dash errors and doesn't stick
       security_access_needed = bool(CP.flags & HyundaiFlags.CANFD_NO_RADAR_DISABLE)
+      carlog.warning(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
       disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
 
     # for blinkers
