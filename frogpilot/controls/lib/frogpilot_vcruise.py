@@ -45,15 +45,20 @@ class FrogPilotVCruise:
     v_ego_cluster = max(sm["carState"].vEgoCluster, v_ego)
     v_ego_diff = v_ego_cluster - v_ego
 
+    # For CSC/SLC to work with ICBM, we need them to run when either:
+    # 1. openpilot has longitudinal control (long_control_active), OR
+    # 2. ICBM is enabled and cruise is engaged (use cruiseState for non-longitudinal cars)
+    speed_control_active = long_control_active or (frogpilot_toggles.icbm_enabled and sm["carState"].cruiseState.enabled)
+
     # FrogsGoMoo's Curve Speed Controller
-    if long_control_active and v_ego > CRUISING_SPEED and self.frogpilot_planner.road_curvature_detected and frogpilot_toggles.curve_speed_controller:
+    if speed_control_active and v_ego > CRUISING_SPEED and self.frogpilot_planner.road_curvature_detected and frogpilot_toggles.curve_speed_controller:
       self.csc.update_target(v_ego)
 
       self.csc_controlling_speed = True
 
       self.csc_target = self.csc.target
     else:
-      self.csc.log_data(long_control_active, v_ego, sm)
+      self.csc.log_data(speed_control_active, v_ego, sm)
 
       self.csc_controlling_speed = False
       self.csc.target_set = False
@@ -89,9 +94,28 @@ class FrogPilotVCruise:
 
       self.tracked_model_length = self.frogpilot_planner.model_length
 
-      targets = [self.csc_target, v_cruise]
-      if frogpilot_toggles.speed_limit_controller:
-        targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
-      v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
+      # For ICBM, we need the actual target speed (not clamped to current set speed)
+      # because ICBM can both increase AND decrease the set speed
+      if frogpilot_toggles.icbm_enabled:
+        # Start with current set speed as default
+        icbm_target = v_cruise
+
+        # Use SLC target if available and valid
+        # Note: For ICBM, we don't use overridden_speed because we want to allow
+        # both increasing AND decreasing speed based on actual speed limits
+        if frogpilot_toggles.speed_limit_controller and self.slc_target > 0:
+          icbm_target = self.slc_target + self.slc_offset
+
+        # Use CSC target if it's actively controlling and lower than current target
+        if self.csc_controlling_speed and self.csc_target >= CRUISING_SPEED:
+          icbm_target = min(icbm_target, self.csc_target)
+
+        v_cruise = icbm_target
+      else:
+        # Original logic for openpilot longitudinal (takes minimum to slow down)
+        targets = [self.csc_target, v_cruise]
+        if frogpilot_toggles.speed_limit_controller:
+          targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
+        v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     return v_cruise

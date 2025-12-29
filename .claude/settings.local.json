@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git grep:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git submodule:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)"
+    ]
+  }
+}

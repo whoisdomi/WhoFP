@@ -18,6 +18,7 @@ from openpilot.frogpilot.controls.lib.frogpilot_acceleration import FrogPilotAcc
 from openpilot.frogpilot.controls.lib.frogpilot_events import FrogPilotEvents
 from openpilot.frogpilot.controls.lib.frogpilot_following import FrogPilotFollowing
 from openpilot.frogpilot.controls.lib.frogpilot_vcruise import FrogPilotVCruise
+from openpilot.frogpilot.controls.lib.icbm import ICBMController
 from openpilot.frogpilot.controls.lib.weather_checker import WeatherChecker
 
 class FrogPilotPlanner:
@@ -31,6 +32,7 @@ class FrogPilotPlanner:
     self.frogpilot_following = FrogPilotFollowing(self)
     self.frogpilot_vcruise = FrogPilotVCruise(self)
     self.frogpilot_weather = WeatherChecker(self)
+    self.icbm = ICBMController()
 
     self.driving_in_curve = False
     self.lateral_check = False
@@ -113,6 +115,21 @@ class FrogPilotPlanner:
       self.tracking_lead = self.update_lead_status()
 
     self.v_cruise = self.frogpilot_vcruise.update(long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles)
+
+    # ICBM - Intelligent Cruise Button Management
+    if frogpilot_toggles.icbm_enabled:
+      # Use cruiseState.enabled for cars without openpilot longitudinal
+      cruise_enabled = sm["carState"].cruiseState.enabled
+      icbm_button = self.icbm.update(
+        enabled=cruise_enabled,
+        override=sm["carState"].gasPressed or sm["carState"].brakePressed,
+        v_cruise_ms=self.v_cruise,
+        v_cruise_cluster_ms=sm["carState"].vCruiseCluster * CV.KPH_TO_MS,
+        is_metric=frogpilot_toggles.is_metric
+      )
+      self.params_memory.put("ICBMButton", icbm_button)
+    else:
+      self.params_memory.put("ICBMButton", 0)
 
     if self.gps_position and time_validated and frogpilot_toggles.weather_presets:
       self.frogpilot_weather.update_weather(now, frogpilot_toggles)

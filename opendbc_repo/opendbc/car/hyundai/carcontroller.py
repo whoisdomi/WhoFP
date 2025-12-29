@@ -7,6 +7,7 @@ from opendbc.car.hyundai import hyundaicanfd, hyundaican
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR
 from opendbc.car.interfaces import CarControllerBase
+from openpilot.common.params import Params
 
 VisualAlert = structs.CarControl.HUDControl.VisualAlert
 LongCtrlState = structs.CarControl.Actuators.LongControlState
@@ -48,6 +49,7 @@ class CarController(CarControllerBase):
     self.CAN = CanBus(CP)
     self.CP = CP
     self.params = CarControllerParams(CP)
+    self.params_memory = Params(memory=True)
     self.packer = CANPacker(dbc_names[Bus.pt])
     self.angle_limit_counter = 0
 
@@ -103,10 +105,10 @@ class CarController(CarControllerBase):
     # *** CAN/CAN FD specific ***
     if self.CP.flags & HyundaiFlags.CANFD:
       can_sends.extend(self.create_canfd_msgs(apply_steer_req, apply_torque, set_speed_in_units, accel,
-                                              stopping, hud_control, CS, CC))
+                                              stopping, hud_control, CS, CC, frogpilot_toggles))
     else:
       can_sends.extend(self.create_can_msgs(apply_steer_req, apply_torque, torque_fault, set_speed_in_units, accel,
-                                            stopping, hud_control, actuators, CS, CC))
+                                            stopping, hud_control, actuators, CS, CC, frogpilot_toggles))
 
     new_actuators = actuators.as_builder()
     new_actuators.torque = apply_torque / self.params.STEER_MAX
@@ -116,7 +118,7 @@ class CarController(CarControllerBase):
     self.frame += 1
     return new_actuators, can_sends
 
-  def create_can_msgs(self, apply_steer_req, apply_torque, torque_fault, set_speed_in_units, accel, stopping, hud_control, actuators, CS, CC):
+  def create_can_msgs(self, apply_steer_req, apply_torque, torque_fault, set_speed_in_units, accel, stopping, hud_control, actuators, CS, CC, frogpilot_toggles):
     can_sends = []
 
     # HUD messages
@@ -137,6 +139,20 @@ class CarController(CarControllerBase):
         if (self.frame - self.last_button_frame) * DT_CTRL > 0.1:
           # send 25 messages at a time to increases the likelihood of resume being accepted
           can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, self.CP)] * 25)
+          if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
+            self.last_button_frame = self.frame
+      # ICBM - Intelligent Cruise Button Management (CAN)
+      elif frogpilot_toggles.icbm_enabled:
+        raw_button = self.params_memory.get("ICBMButton")
+        if raw_button is None:
+          icbm_button = 0
+        elif isinstance(raw_button, int):
+          icbm_button = raw_button
+        else:
+          icbm_button = int(raw_button.decode()) if raw_button else 0
+        if icbm_button != 0 and (self.frame - self.last_button_frame) * DT_CTRL > 0.1:
+          btn = Buttons.RES_ACCEL if icbm_button == 1 else Buttons.SET_DECEL
+          can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn, self.CP)] * 25)
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
 
@@ -162,7 +178,7 @@ class CarController(CarControllerBase):
 
     return can_sends
 
-  def create_canfd_msgs(self, apply_steer_req, apply_torque, set_speed_in_units, accel, stopping, hud_control, CS, CC):
+  def create_canfd_msgs(self, apply_steer_req, apply_torque, set_speed_in_units, accel, stopping, hud_control, CS, CC, frogpilot_toggles):
     can_sends = []
 
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
@@ -214,6 +230,21 @@ class CarController(CarControllerBase):
           else:
             for _ in range(20):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter + 1, Buttons.RES_ACCEL))
+            self.last_button_frame = self.frame
+
+        # ICBM - Intelligent Cruise Button Management
+        elif frogpilot_toggles.icbm_enabled and not (self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
+          raw_button = self.params_memory.get("ICBMButton")
+          if raw_button is None:
+            icbm_button = 0
+          elif isinstance(raw_button, int):
+            icbm_button = raw_button
+          else:
+            icbm_button = int(raw_button.decode()) if raw_button else 0
+          if icbm_button != 0:
+            btn = Buttons.RES_ACCEL if icbm_button == 1 else Buttons.SET_DECEL
+            for _ in range(20):
+              can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter + 1, btn))
             self.last_button_frame = self.frame
 
     return can_sends

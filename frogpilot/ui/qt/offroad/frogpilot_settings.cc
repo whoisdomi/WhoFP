@@ -465,7 +465,7 @@ void FrogPilotSettingsWindow::updateVariables() {
   }
 
   drivingPanelButtons->setVisibleButton(0, tuningLevel >= frogpilotToggleLevels.value("DrivingModel").toDouble());
-  drivingPanelButtons->setVisibleButton(1, hasOpenpilotLongitudinal);
+  drivingPanelButtons->setVisibleButton(1, hasOpenpilotLongitudinal || isHKG);  // Also show for HKG with ICBM
 
   systemPanelButtons->setVisibleButton(1, tuningLevel >= frogpilotToggleLevels.value("DeviceManagement").toDouble() || tuningLevel >= frogpilotToggleLevels.value("ScreenManagement").toDouble());
 
