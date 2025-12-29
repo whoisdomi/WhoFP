@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+import subprocess
 import sys
 import pyray as rl
 from openpilot.system.hardware import HARDWARE, PC
@@ -8,6 +9,32 @@ from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
+
+
+def get_network_info() -> str:
+  """Get current network SSID and IP address for SSH debugging."""
+  if PC:
+    return ""
+
+  info_parts = []
+  try:
+    # Get connected WiFi SSID
+    ssid = subprocess.check_output(["iwgetid", "-r"], encoding='utf-8', stderr=subprocess.DEVNULL).strip()
+    if ssid:
+      info_parts.append(f"WiFi: {ssid}")
+  except Exception:
+    pass
+
+  try:
+    # Get IP address (first non-localhost IP)
+    ip_output = subprocess.check_output(["hostname", "-I"], encoding='utf-8', stderr=subprocess.DEVNULL).strip()
+    if ip_output:
+      ip = ip_output.split()[0]  # Take first IP
+      info_parts.append(f"IP: {ip}")
+  except Exception:
+    pass
+
+  return "  |  ".join(info_parts) if info_parts else ""
 
 if BIG_UI:
   MARGIN = 50
@@ -66,6 +93,9 @@ class TextWindow(Widget):
     button_text = "Exit" if PC else "Reboot"
     self._button = Button(button_text, click_callback=self._on_button_clicked, button_style=ButtonStyle.TRANSPARENT_WHITE_BORDER, font_size=FONT_SIZE)
 
+    # Get network info for SSH debugging
+    self._network_info = get_network_info()
+
   @staticmethod
   def _on_button_clicked():
     gui_app.request_close()
@@ -81,6 +111,12 @@ class TextWindow(Widget):
         continue
       rl.draw_text_ex(gui_app.font(), line, position, FONT_SIZE, 0, rl.WHITE)
     rl.end_scissor_mode()
+
+    # Draw network info at bottom left (for SSH debugging)
+    if self._network_info:
+      network_font_size = FONT_SIZE * 0.6
+      network_y = rect.height - MARGIN - BUTTON_SIZE.y / 2 - network_font_size / 2
+      rl.draw_text_ex(gui_app.font(), self._network_info, rl.Vector2(MARGIN, network_y), network_font_size, 0, rl.Color(180, 180, 180, 255))
 
     button_bounds = rl.Rectangle(rect.width - MARGIN - BUTTON_SIZE.x - SPACING, rect.height - MARGIN - BUTTON_SIZE.y, BUTTON_SIZE.x, BUTTON_SIZE.y)
     self._button.render(button_bounds)
