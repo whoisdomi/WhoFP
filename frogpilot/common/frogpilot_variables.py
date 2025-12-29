@@ -558,6 +558,10 @@ class FrogPilotVariables:
     toggle.vEgoStarting = 0.1 if toggle.frogsgomoo_tweak else toggle.vEgoStarting
     toggle.vEgoStopping = 0.5 if toggle.frogsgomoo_tweak else toggle.vEgoStopping
 
+    # ICBM - Intelligent Cruise Button Management (for cars without openpilot longitudinal)
+    toggle.icbm_enabled = self.get_value("ICBM", condition=not toggle.openpilot_longitudinal and toggle.car_make == "hyundai")
+    toggle.icbm_button = 0  # Updated by planner via memory param
+
     toggle.holiday_themes = self.get_value("HolidayThemes")
     toggle.current_holiday_theme = holiday_theme if toggle.holiday_themes else "stock"
     if toggle.current_holiday_theme != "stock":
@@ -723,6 +727,9 @@ class FrogPilotVariables:
     toggle.unlock_doors = self.get_value("UnlockDoors", condition=toyota_doors)
 
     toggle.volt_sng = self.get_value("VoltSNG", condition=toggle.car_model == "CHEVROLET_VOLT")
+
+    # Read ICBM button from memory (set by planner)
+    toggle.icbm_button = self.params_memory.get_int("ICBMButton") or 0
 
     self.params_memory.put("FrogPilotToggles", toggle.__dict__)
     self.params_memory.remove("FrogPilotTogglesUpdated")

@@ -150,6 +150,7 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
     {"CustomCruise", tr("Cruise Interval"), tr("<b>How much the set speed increases or decreases</b> for each + or – cruise control button press."), ""},
     {"CustomCruiseLong", tr("Cruise Interval (Hold)"), tr("<b>How much the set speed increases or decreases while holding the + or – cruise control buttons.</b>"), ""},
     {"ForceStops", tr("Force Stop at \"Detected\" Stop Lights/Signs"), tr("<b>Force openpilot to stop whenever the driving model \"detects\" a red light or stop sign.</b><br><br><i><b>Disclaimer</b>: openpilot does not explicitly detect traffic lights or stop signs. In \"Experimental Mode\", openpilot makes end-to-end driving decisions from camera input, which means it may stop even when there's no clear reason!</i>"), ""},
+    {"ICBM", tr("Intelligent Cruise Button Management"), tr("<b>Automatically adjust the car's cruise control set speed</b> to match FrogPilot's target speed by simulating button presses. Useful for Curve Speed Control and Speed Limit Controller when openpilot longitudinal is unavailable."), ""},
     {"IncreasedStoppedDistance", tr("Increase Stopped Distance by:"), tr("<b>Add extra space when stopped behind vehicles.</b> Increase for more room; decrease for shorter gaps."), ""},
     {"MapGears", tr("Map Accel/Decel to Gears"), tr("<b>Map the Acceleration or Deceleration profiles to the vehicle's \"Eco\" and \"Sport\" gear modes.</b>"), ""},
     {"SetSpeedOffset", tr("Offset Set Speed by:"), tr("<b>Increase the set speed by the chosen offset.</b> For example, set +5 if you usually drive 5 over the limit."), ""},
@@ -1020,6 +1021,22 @@ void FrogPilotLongitudinalPanel::updateToggles() {
 
     else if (key == "HumanLaneChanges") {
       setVisible &= parent->hasRadar;
+    }
+
+    else if (key == "ICBM") {
+      setVisible &= parent->isHKG && !parent->hasOpenpilotLongitudinal;
+    }
+
+    // CSC and SLC require either openpilot longitudinal OR ICBM enabled
+    else if (key == "CurveSpeedController" || key == "SpeedLimitController") {
+      setVisible &= parent->hasOpenpilotLongitudinal || (parent->isHKG && params.getBool("ICBM"));
+    }
+
+    // These features require openpilot longitudinal control
+    else if (key == "AdvancedLongitudinalTune" || key == "ConditionalExperimental" ||
+             key == "CustomPersonalities" || key == "LongitudinalTune" ||
+             key == "ForceStops" || key == "IncreasedStoppedDistance" || key == "WeatherPresets") {
+      setVisible &= parent->hasOpenpilotLongitudinal;
     }
 
     else if (key == "MapGears") {
