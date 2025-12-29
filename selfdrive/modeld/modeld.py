@@ -48,7 +48,8 @@ MIN_LAT_CONTROL_SPEED = 0.3
 
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
-                          lat_action_t: float, long_action_t: float, v_ego: float) -> log.ModelDataV2.Action:
+                          lat_action_t: float, long_action_t: float, v_ego: float, desire: int = 0,
+                          frogpilot_toggles = None) -> log.ModelDataV2.Action:
     plan = model_output['plan'][0]
     desired_accel, should_stop = get_accel_from_plan(plan[:,Plan.VELOCITY][:,0],
                                                      plan[:,Plan.ACCELERATION][:,0],
@@ -61,8 +62,48 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
                                                 ModelConstants.T_IDXS,
                                                 v_ego,
                                                 lat_action_t)
+
+    # Advanced Turn Desires (ATD)
+    atd_enabled = frogpilot_toggles and frogpilot_toggles.advanced_turn_desires
+    is_turning = desire in (log.Desire.turnLeft, log.Desire.turnRight)
+
+    # Initialize post-turn timer
+    if not hasattr(get_action_from_model, 'post_turn_timer'):
+      get_action_from_model.post_turn_timer = 0.0
+
+    # Apply ATD logic if enabled
+    if atd_enabled:
+      # Get ATD parameters from frogpilot_toggles
+      turn_lat_smooth = frogpilot_toggles.turn_lat_smooth
+      turn_left_bias_percent = frogpilot_toggles.turn_left_bias_percent
+      turn_right_bias_percent = frogpilot_toggles.turn_right_bias_percent
+      post_turn_smoothing_time = frogpilot_toggles.post_turn_smoothing_time
+
+      # Update post-turn timer
+      if is_turning:
+        get_action_from_model.post_turn_timer = post_turn_smoothing_time
+      elif get_action_from_model.post_turn_timer > 0:
+        get_action_from_model.post_turn_timer -= DT_MDL
+
+      # Apply curvature bias ONLY during active turn
+      if is_turning:
+        if desire == log.Desire.turnLeft:
+          bias_percent = turn_left_bias_percent
+        else:  # turnRight
+          bias_percent = turn_right_bias_percent
+        curvature_bias = desired_curvature * (bias_percent / 100.0)
+        desired_curvature += curvature_bias
+
+      # Use fast smoothing during turn AND for post-turn period
+      if is_turning or get_action_from_model.post_turn_timer > 0:
+        lat_smooth = turn_lat_smooth
+      else:
+        lat_smooth = LAT_SMOOTH_SECONDS
+    else:
+      lat_smooth = LAT_SMOOTH_SECONDS
+
     if v_ego > MIN_LAT_CONTROL_SPEED:
-      desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
+      desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth)
     else:
       desired_curvature = prev_action.desiredCurvature
 
@@ -386,7 +427,7 @@ def main(demo=False):
       drivingdata_send = messaging.new_message('drivingModelData')
       posenet_send = messaging.new_message('cameraOdometry')
 
-      action = get_action_from_model(model_output, prev_action, lat_delay + DT_MDL, long_delay + DT_MDL, v_ego)
+      action = get_action_from_model(model_output, prev_action, lat_delay + DT_MDL, long_delay + DT_MDL, v_ego, desire, frogpilot_toggles)
       prev_action = action
       fill_model_msg(drivingdata_send, modelv2_send, model_output, action,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,

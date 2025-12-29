@@ -585,6 +585,13 @@ class FrogPilotVariables:
     toggle.nnff_lite = self.get_value("NNFFLite", condition=not toggle.nnff and lateral_tuning and not is_angle_car)
     toggle.use_turn_desires = self.get_value("TurnDesires", condition=lateral_tuning)
 
+    # Advanced Turn Desires
+    toggle.advanced_turn_desires = self.get_value("AdvancedTurnDesires", condition=lateral_tuning and toggle.use_turn_desires)
+    toggle.turn_lat_smooth = self.get_value("TurnLatSmooth", cast=float, default=0.05, condition=toggle.advanced_turn_desires)
+    toggle.turn_left_bias_percent = self.get_value("TurnLeftBiasPercent", cast=float, default=-2.0, condition=toggle.advanced_turn_desires)
+    toggle.turn_right_bias_percent = self.get_value("TurnRightBiasPercent", cast=float, default=4.0, condition=toggle.advanced_turn_desires)
+    toggle.post_turn_smoothing_time = self.get_value("PostTurnSmoothingTime", cast=float, default=2.0, condition=toggle.advanced_turn_desires)
+
     lkas_button_control = self.get_value("LKASButtonControl", cast=float, condition=toggle.car_make != "subaru")
     toggle.experimental_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press |= toggle.experimental_mode_via_lkas
