@@ -44,6 +44,12 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"ForceAutoTuneOff", tr("Force Auto-Tune Off"), tr("<b>Force-disable openpilot's live auto-tuning for \"Friction\" and \"Lateral Acceleration\" and use the set value instead.</b>"), ""},
     {"ForceTorqueController", tr("Force Torque Controller"), tr("<b>Use torque-based steering control instead of angle-based control for smoother lane keeping, especially in curves.</b>"), ""},
 
+    {"AdvancedTurnDesires", tr("Advanced Turn Desires"), tr("<b>Improve low-speed turn performance with curvature bias and faster steering response.</b> Enables tighter, more responsive turns when the blinker is active at low speeds."), "../../frogpilot/assets/toggle_icons/icon_advanced_lateral_tune.png"},
+    {"TurnLatSmooth", tr("Turn Lateral Smoothing"), tr("<b>Lateral smoothing time during turns.</b> Lower values make steering more responsive during turns. Default: 0.05s"), ""},
+    {"TurnLeftBiasPercent", tr("Left Turn Bias"), tr("<b>Percentage of inward curvature bias for left turns.</b> Negative values pull the path inward. Default: -2%"), ""},
+    {"TurnRightBiasPercent", tr("Right Turn Bias"), tr("<b>Percentage of inward curvature bias for right turns.</b> Positive values pull the path inward. Default: 4%"), ""},
+    {"PostTurnSmoothingTime", tr("Post-Turn Smoothing Time"), tr("<b>How long to maintain fast steering response after a turn completes.</b> Helps with smooth steering wheel unwind. Default: 2 seconds"), ""},
+
     {"AlwaysOnLateral", tr("Always On Lateral"), tr("<b>openpilot's steering remains active even when the accelerator or brake pedals are pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_always_on_lateral.png"},
     {"AlwaysOnLateralLKAS", tr("Enable With LKAS"), tr("<b>Enable \"Always On Lateral\" whenever \"LKAS\" is on, even when openpilot is not engaged.</b>"), ""},
     {"PauseAOLOnBrake", tr("Pause on Brake Press Below"), tr("<b>Pause \"Always On Lateral\" below the set speed while the brake pedal is pressed.</b>"), ""},
@@ -59,11 +65,6 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"LaneChangeLateralAccel", tr("Lane Change Lateral Accel"), tr("<b>How fast you move sideways during lane changes.</b> Lower values make lane changes take longer. Higher values complete lane changes faster."), ""},
 
     {"LateralTune", tr("Lateral Tuning"), tr("<b>Miscellaneous steering control changes</b> to fine-tune how openpilot drives."), "../../frogpilot/assets/toggle_icons/icon_lateral_tune.png"},
-    {"AdvancedTurnDesires", tr("Advanced Turn Desires"), tr("<b>Improve low-speed turn performance with curvature bias and faster steering response.</b> Enables tighter, more responsive turns when the blinker is active at low speeds."), ""},
-    {"TurnLatSmooth", tr("Turn Lateral Smoothing"), tr("<b>Lateral smoothing time during turns.</b> Lower values make steering more responsive during turns. Default: 0.05s"), ""},
-    {"TurnLeftBiasPercent", tr("Left Turn Bias"), tr("<b>Percentage of inward curvature bias for left turns.</b> Negative values pull the path inward. Default: -2%"), ""},
-    {"TurnRightBiasPercent", tr("Right Turn Bias"), tr("<b>Percentage of inward curvature bias for right turns.</b> Positive values pull the path inward. Default: 4%"), ""},
-    {"PostTurnSmoothingTime", tr("Post-Turn Smoothing Time"), tr("<b>How long to maintain fast steering response after a turn completes.</b> Helps with smooth steering wheel unwind. Default: 2 seconds"), ""},
     {"TurnDesires", tr("Force Turn Desires Below Lane Change Speed"), tr("<b>While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.</b>"), ""},
     {"NNFF", tr("Neural Network Feedforward (NNFF)"), tr("<b>Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses a trained neural network model to predict steering torque based on vehicle speed, roll, and past/future planned path data for smoother, model-based steering."), ""},
     {"NNFFLite", tr("Neural Network Feedforward (NNFF) Lite"), tr("<b>A lightweight version of Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses the \"look-ahead\" planned lateral jerk logic from the full model to help smoothen steering adjustments in curves, but does not use the full neural network for torque calculation."), ""},
@@ -474,6 +475,8 @@ void FrogPilotLateralPanel::updateToggles() {
     if (setVisible) {
       if (advancedLateralTuneKeys.contains(key)) {
         toggles["AdvancedLateralTune"]->setVisible(true);
+      } else if (advancedTurnDesiresKeys.contains(key)) {
+        toggles["AdvancedTurnDesires"]->setVisible(true);
       } else if (aolKeys.contains(key)) {
         toggles["AlwaysOnLateral"]->setVisible(true);
       } else if (laneChangeKeys.contains(key)) {
