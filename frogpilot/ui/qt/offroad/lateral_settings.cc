@@ -13,18 +13,21 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
   lateralLayout->addWidget(lateralPanel);
 
   FrogPilotListWidget *advancedLateralTuneList = new FrogPilotListWidget(this);
+  FrogPilotListWidget *advancedTurnDesiresList = new FrogPilotListWidget(this);
   FrogPilotListWidget *aolList = new FrogPilotListWidget(this);
   FrogPilotListWidget *laneChangeList = new FrogPilotListWidget(this);
   FrogPilotListWidget *lateralTuneList = new FrogPilotListWidget(this);
   FrogPilotListWidget *qolList = new FrogPilotListWidget(this);
 
   ScrollView *advancedLateralTunePanel = new ScrollView(advancedLateralTuneList, this);
+  ScrollView *advancedTurnDesiresPanel = new ScrollView(advancedTurnDesiresList, this);
   ScrollView *aolPanel = new ScrollView(aolList, this);
   ScrollView *laneChangePanel = new ScrollView(laneChangeList, this);
   ScrollView *lateralTunePanel = new ScrollView(lateralTuneList, this);
   ScrollView *qolPanel = new ScrollView(qolList, this);
 
   lateralLayout->addWidget(advancedLateralTunePanel);
+  lateralLayout->addWidget(advancedTurnDesiresPanel);
   lateralLayout->addWidget(aolPanel);
   lateralLayout->addWidget(laneChangePanel);
   lateralLayout->addWidget(lateralTunePanel);
@@ -56,6 +59,11 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"LaneChangeLateralAccel", tr("Lane Change Lateral Accel"), tr("<b>How fast you move sideways during lane changes.</b> Lower values make lane changes take longer. Higher values complete lane changes faster."), ""},
 
     {"LateralTune", tr("Lateral Tuning"), tr("<b>Miscellaneous steering control changes</b> to fine-tune how openpilot drives."), "../../frogpilot/assets/toggle_icons/icon_lateral_tune.png"},
+    {"AdvancedTurnDesires", tr("Advanced Turn Desires"), tr("<b>Improve low-speed turn performance with curvature bias and faster steering response.</b> Enables tighter, more responsive turns when the blinker is active at low speeds."), ""},
+    {"TurnLatSmooth", tr("Turn Lateral Smoothing"), tr("<b>Lateral smoothing time during turns.</b> Lower values make steering more responsive during turns. Default: 0.05s"), ""},
+    {"TurnLeftBiasPercent", tr("Left Turn Bias"), tr("<b>Percentage of inward curvature bias for left turns.</b> Negative values pull the path inward. Default: -2%"), ""},
+    {"TurnRightBiasPercent", tr("Right Turn Bias"), tr("<b>Percentage of inward curvature bias for right turns.</b> Positive values pull the path inward. Default: 4%"), ""},
+    {"PostTurnSmoothingTime", tr("Post-Turn Smoothing Time"), tr("<b>How long to maintain fast steering response after a turn completes.</b> Helps with smooth steering wheel unwind. Default: 2 seconds"), ""},
     {"TurnDesires", tr("Force Turn Desires Below Lane Change Speed"), tr("<b>While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.</b>"), ""},
     {"NNFF", tr("Neural Network Feedforward (NNFF)"), tr("<b>Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses a trained neural network model to predict steering torque based on vehicle speed, roll, and past/future planned path data for smoother, model-based steering."), ""},
     {"NNFFLite", tr("Neural Network Feedforward (NNFF) Lite"), tr("<b>A lightweight version of Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses the \"look-ahead\" planned lateral jerk logic from the full model to help smoothen steering adjustments in curves, but does not use the full neural network for torque calculation."), ""},
@@ -142,6 +150,24 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
         lateralLayout->setCurrentWidget(lateralTunePanel);
       });
       lateralToggle = lateralTuneToggle;
+    } else if (param == "AdvancedTurnDesires") {
+      FrogPilotManageControl *advancedTurnDesiresToggle = new FrogPilotManageControl(param, title, desc, icon);
+      QObject::connect(advancedTurnDesiresToggle, &FrogPilotManageControl::manageButtonClicked, [lateralLayout, advancedTurnDesiresPanel]() {
+        lateralLayout->setCurrentWidget(advancedTurnDesiresPanel);
+      });
+      lateralToggle = advancedTurnDesiresToggle;
+    } else if (param == "TurnLatSmooth") {
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0.01, 0.1, QString(), std::map<float, QString>(), 0.01);
+    } else if (param == "TurnLeftBiasPercent") {
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, -10, 0, QString(), std::map<float, QString>(), 0.1);
+    } else if (param == "TurnRightBiasPercent") {
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 10, QString(), std::map<float, QString>(), 0.1);
+    } else if (param == "PostTurnSmoothingTime") {
+      std::map<float, QString> postTurnLabels;
+      for (int i = 0; i <= 10; ++i) {
+        postTurnLabels[i] = i == 0 ? tr("Off") : i == 1 ? QString::number(i) + tr(" second") : QString::number(i) + tr(" seconds");
+      }
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 10, QString(), postTurnLabels, 1);
 
     } else if (param == "QOLLateral") {
       FrogPilotManageControl *qolLateralToggle = new FrogPilotManageControl(param, title, desc, icon);
@@ -162,6 +188,8 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
 
     if (advancedLateralTuneKeys.contains(param)) {
       advancedLateralTuneList->addItem(lateralToggle);
+    } else if (advancedTurnDesiresKeys.contains(param)) {
+      advancedTurnDesiresList->addItem(lateralToggle);
     } else if (aolKeys.contains(param)) {
       aolList->addItem(lateralToggle);
     } else if (laneChangeKeys.contains(param)) {
