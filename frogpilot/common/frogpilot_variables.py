@@ -729,7 +729,7 @@ class FrogPilotVariables:
     toggle.volt_sng = self.get_value("VoltSNG", condition=toggle.car_model == "CHEVROLET_VOLT")
 
     # Read ICBM button from memory (set by planner)
-    toggle.icbm_button = self.params_memory.get_int("ICBMButton") or 0
+    toggle.icbm_button = self.params_memory.get("ICBMButton") or 0
 
     self.params_memory.put("FrogPilotToggles", toggle.__dict__)
     self.params_memory.remove("FrogPilotTogglesUpdated")
