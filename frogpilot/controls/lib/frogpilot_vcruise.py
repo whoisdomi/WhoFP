@@ -47,8 +47,8 @@ class FrogPilotVCruise:
 
     # For CSC/SLC to work with ICBM, we need them to run when either:
     # 1. openpilot has longitudinal control (long_control_active), OR
-    # 2. ICBM is enabled and cruise is engaged
-    speed_control_active = long_control_active or (frogpilot_toggles.icbm_enabled and sm["carControl"].enabled)
+    # 2. ICBM is enabled and cruise is engaged (use cruiseState for non-longitudinal cars)
+    speed_control_active = long_control_active or (frogpilot_toggles.icbm_enabled and sm["carState"].cruiseState.enabled)
 
     # FrogsGoMoo's Curve Speed Controller
     if speed_control_active and v_ego > CRUISING_SPEED and self.frogpilot_planner.road_curvature_detected and frogpilot_toggles.curve_speed_controller:

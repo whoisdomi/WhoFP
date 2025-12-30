@@ -143,7 +143,8 @@ class CarController(CarControllerBase):
             self.last_button_frame = self.frame
       # ICBM - Intelligent Cruise Button Management (CAN)
       elif frogpilot_toggles.icbm_enabled:
-        icbm_button = self.params_memory.get("ICBMButton") or 0
+        raw_button = self.params_memory.get("ICBMButton")
+        icbm_button = int(raw_button) if raw_button is not None else 0
         if icbm_button != 0 and (self.frame - self.last_button_frame) * DT_CTRL > 0.1:
           btn = Buttons.RES_ACCEL if icbm_button == 1 else Buttons.SET_DECEL
           can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn, self.CP)] * 25)
@@ -228,7 +229,8 @@ class CarController(CarControllerBase):
 
         # ICBM - Intelligent Cruise Button Management
         elif frogpilot_toggles.icbm_enabled and not (self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
-          icbm_button = self.params_memory.get("ICBMButton") or 0
+          raw_button = self.params_memory.get("ICBMButton")
+          icbm_button = int(raw_button) if raw_button is not None else 0
           if icbm_button != 0:
             btn = Buttons.RES_ACCEL if icbm_button == 1 else Buttons.SET_DECEL
             for _ in range(20):
