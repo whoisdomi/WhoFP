@@ -7,6 +7,7 @@ from opendbc.car.hyundai import hyundaicanfd, hyundaican
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR
 from opendbc.car.interfaces import CarControllerBase
+from openpilot.common.params import Params
 
 VisualAlert = structs.CarControl.HUDControl.VisualAlert
 LongCtrlState = structs.CarControl.Actuators.LongControlState
@@ -48,6 +49,7 @@ class CarController(CarControllerBase):
     self.CAN = CanBus(CP)
     self.CP = CP
     self.params = CarControllerParams(CP)
+    self.params_memory = Params(memory=True)
     self.packer = CANPacker(dbc_names[Bus.pt])
     self.angle_limit_counter = 0
 
@@ -141,7 +143,7 @@ class CarController(CarControllerBase):
             self.last_button_frame = self.frame
       # ICBM - Intelligent Cruise Button Management (CAN)
       elif frogpilot_toggles.icbm_enabled:
-        icbm_button = frogpilot_toggles.icbm_button
+        icbm_button = self.params_memory.get("ICBMButton") or 0
         if icbm_button != 0 and (self.frame - self.last_button_frame) * DT_CTRL > 0.1:
           btn = Buttons.RES_ACCEL if icbm_button == 1 else Buttons.SET_DECEL
           can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, btn, self.CP)] * 25)
@@ -226,7 +228,7 @@ class CarController(CarControllerBase):
 
         # ICBM - Intelligent Cruise Button Management
         elif frogpilot_toggles.icbm_enabled and not (self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
-          icbm_button = frogpilot_toggles.icbm_button
+          icbm_button = self.params_memory.get("ICBMButton") or 0
           if icbm_button != 0:
             btn = Buttons.RES_ACCEL if icbm_button == 1 else Buttons.SET_DECEL
             for _ in range(20):
