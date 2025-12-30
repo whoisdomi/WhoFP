@@ -127,9 +127,9 @@ class FrogPilotPlanner:
         v_cruise_cluster_ms=sm["carState"].vCruiseCluster * CV.KPH_TO_MS,
         is_metric=frogpilot_toggles.is_metric
       )
-      self.params_memory.put("ICBMButton", str(icbm_button))
+      self.params_memory.put("ICBMButton", icbm_button)
     else:
-      self.params_memory.put("ICBMButton", str(0))
+      self.params_memory.put("ICBMButton", 0)
 
     if self.gps_position and time_validated and frogpilot_toggles.weather_presets:
       self.frogpilot_weather.update_weather(now, frogpilot_toggles)
