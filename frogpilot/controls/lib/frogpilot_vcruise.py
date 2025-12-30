@@ -45,15 +45,20 @@ class FrogPilotVCruise:
     v_ego_cluster = max(sm["carState"].vEgoCluster, v_ego)
     v_ego_diff = v_ego_cluster - v_ego
 
+    # For CSC/SLC to work with ICBM, we need them to run when either:
+    # 1. openpilot has longitudinal control (long_control_active), OR
+    # 2. ICBM is enabled and cruise is engaged
+    speed_control_active = long_control_active or (frogpilot_toggles.icbm_enabled and sm["carControl"].enabled)
+
     # FrogsGoMoo's Curve Speed Controller
-    if long_control_active and v_ego > CRUISING_SPEED and self.frogpilot_planner.road_curvature_detected and frogpilot_toggles.curve_speed_controller:
+    if speed_control_active and v_ego > CRUISING_SPEED and self.frogpilot_planner.road_curvature_detected and frogpilot_toggles.curve_speed_controller:
       self.csc.update_target(v_ego)
 
       self.csc_controlling_speed = True
 
       self.csc_target = self.csc.target
     else:
-      self.csc.log_data(long_control_active, v_ego, sm)
+      self.csc.log_data(speed_control_active, v_ego, sm)
 
       self.csc_controlling_speed = False
       self.csc.target_set = False

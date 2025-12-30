@@ -420,7 +420,12 @@ class FrogPilotVariables:
     toggle.conditional_signal_lane_detection = toggle.conditional_signal != 0 and self.get_value("CESignalLaneDetection")
     toggle.cem_status = self.get_value("ShowCEMStatus", condition=toggle.conditional_experimental_mode) or toggle.debug_mode
 
-    toggle.curve_speed_controller = toggle.openpilot_longitudinal and self.get_value("CurveSpeedController")
+    # ICBM - Intelligent Cruise Button Management (for cars without openpilot longitudinal)
+    # Defined early so CSC and SLC can check if ICBM is enabled
+    toggle.icbm_enabled = self.get_value("ICBM", condition=not toggle.openpilot_longitudinal and toggle.car_make == "hyundai")
+    toggle.icbm_button = 0  # Updated by planner via memory param
+
+    toggle.curve_speed_controller = (toggle.openpilot_longitudinal or toggle.icbm_enabled) and self.get_value("CurveSpeedController")
     toggle.csc_status = self.get_value("ShowCSCStatus", condition=toggle.curve_speed_controller) or toggle.debug_mode
 
     custom_alerts = self.get_value("CustomAlerts")
@@ -558,10 +563,6 @@ class FrogPilotVariables:
     toggle.vEgoStarting = 0.1 if toggle.frogsgomoo_tweak else toggle.vEgoStarting
     toggle.vEgoStopping = 0.5 if toggle.frogsgomoo_tweak else toggle.vEgoStopping
 
-    # ICBM - Intelligent Cruise Button Management (for cars without openpilot longitudinal)
-    toggle.icbm_enabled = self.get_value("ICBM", condition=not toggle.openpilot_longitudinal and toggle.car_make == "hyundai")
-    toggle.icbm_button = 0  # Updated by planner via memory param
-
     toggle.holiday_themes = self.get_value("HolidayThemes")
     toggle.current_holiday_theme = holiday_theme if toggle.holiday_themes else "stock"
     if toggle.current_holiday_theme != "stock":
@@ -684,7 +685,7 @@ class FrogPilotVariables:
 
     toggle.sng_hack = self.get_value("SNGHack", condition=toggle.openpilot_longitudinal and toggle.car_make == "toyota" and not toggle.has_pedal and not has_sng)
 
-    toggle.speed_limit_controller = toggle.openpilot_longitudinal and self.get_value("SpeedLimitController")
+    toggle.speed_limit_controller = (toggle.openpilot_longitudinal or toggle.icbm_enabled) and self.get_value("SpeedLimitController")
     toggle.map_speed_lookahead_higher = self.get_value("SLCLookaheadHigher", cast=float, condition=toggle.speed_limit_controller)
     toggle.map_speed_lookahead_lower = self.get_value("SLCLookaheadLower", cast=float, condition=toggle.speed_limit_controller)
     toggle.set_speed_limit = self.get_value("SetSpeedLimit", condition=toggle.speed_limit_controller)
