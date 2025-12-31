@@ -94,9 +94,26 @@ class FrogPilotVCruise:
 
       self.tracked_model_length = self.frogpilot_planner.model_length
 
-      targets = [self.csc_target, v_cruise]
-      if frogpilot_toggles.speed_limit_controller:
-        targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
-      v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
+      # For ICBM, we need the actual target speed (not clamped to current set speed)
+      # because ICBM can both increase AND decrease the set speed
+      if frogpilot_toggles.icbm_enabled:
+        # Start with current set speed as default
+        icbm_target = v_cruise
+
+        # Use SLC target if available and valid
+        if frogpilot_toggles.speed_limit_controller and self.slc_target > 0:
+          icbm_target = max(self.slc.overridden_speed, self.slc_target + self.slc_offset)
+
+        # Use CSC target if it's actively controlling and lower than current target
+        if self.csc_controlling_speed and self.csc_target >= CRUISING_SPEED:
+          icbm_target = min(icbm_target, self.csc_target)
+
+        v_cruise = icbm_target
+      else:
+        # Original logic for openpilot longitudinal (takes minimum to slow down)
+        targets = [self.csc_target, v_cruise]
+        if frogpilot_toggles.speed_limit_controller:
+          targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
+        v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     return v_cruise
