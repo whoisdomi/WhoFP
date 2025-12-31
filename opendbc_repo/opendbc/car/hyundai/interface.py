@@ -129,6 +129,10 @@ class CarInterface(CarInterfaceBase):
 
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or Bus.radar not in DBC[ret.carFingerprint]
     ret.openpilotLongitudinalControl = alpha_long and ret.alphaLongitudinalAvailable
+    # When longitudinal is enabled, we disable the ADAS ECU which stops radar messages
+    # Force radarUnavailable to prevent CAN Error from missing radar messages
+    if ret.openpilotLongitudinalControl:
+      ret.radarUnavailable = True
     ret.pcmCruise = not ret.openpilotLongitudinalControl
     ret.startingState = True
     ret.vEgoStarting = 0.1
