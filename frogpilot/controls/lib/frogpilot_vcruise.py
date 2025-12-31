@@ -101,8 +101,10 @@ class FrogPilotVCruise:
         icbm_target = v_cruise
 
         # Use SLC target if available and valid
+        # Note: For ICBM, we don't use overridden_speed because we want to allow
+        # both increasing AND decreasing speed based on actual speed limits
         if frogpilot_toggles.speed_limit_controller and self.slc_target > 0:
-          icbm_target = max(self.slc.overridden_speed, self.slc_target + self.slc_offset)
+          icbm_target = self.slc_target + self.slc_offset
 
         # Use CSC target if it's actively controlling and lower than current target
         if self.csc_controlling_speed and self.csc_target >= CRUISING_SPEED:
