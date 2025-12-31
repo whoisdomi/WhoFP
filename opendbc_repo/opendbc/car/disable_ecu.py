@@ -192,77 +192,28 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
   The ECU will stay silent as long as openpilot keeps sending Tester Present.
 
   This is used to disable the radar in some cars. Openpilot will emulate the radar.
-  WARNING: THIS DISABLES AEB!
+  WARNING: THIS DISABLES AEB!"""
+  ecu_log(f"=== ECU DISABLE START === addr={hex(addr)}, bus={bus}")
 
-  Args:
-    security_access: If True, performs SecurityAccess handshake (0x27) before Communication Control.
-                     Required for HDA2 cars (e.g., Ioniq 6) that return 0x7F2822 without this handshake."""
-  ecu_log(f"=== ECU DISABLE START === addr={hex(addr)}, bus={bus}, security_access={security_access}")
-
-  # For HDA2 cars with security access, use more retries and longer delays
-  # The ECU needs time to boot and be ready to accept UDS commands
-  if security_access:
-    retry = max(retry, 10)  # Fewer retries to avoid overwhelming ECU
-    ecu_log(f"HDA2 mode: using {retry} retries")
-    # Moderate initial delay
-    ecu_log("waiting 2.0s for ECU boot...")
-    time.sleep(2.0)
-
+  # Simple approach - just try a few times with minimal delays
   for i in range(retry):
     try:
       # Enter extended diagnostic session
-      ecu_log(f"attempt {i+1}/{retry}: requesting extended diagnostic session (0x10 0x03)...")
+      ecu_log(f"attempt {i+1}/{retry}: diag session...")
       query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [EXT_DIAG_REQUEST], [EXT_DIAG_RESPONSE])
-      ext_diag_response = query.get_data(timeout)
 
-      for _, _ in ext_diag_response.items():
-        ecu_log("extended diagnostic session established")
-
-        # For HDA2 cars, skip SecurityAccess and rely on timing/state
-        # The ECU accepts CommunicationControl in certain states without security
-        if security_access:
-          ecu_log("HDA2 mode: skipping SecurityAccess, relying on ECU state/timing")
-
-        # Send communication control command and check response
-        ecu_log(f"communication control: sending {com_cont_req.hex()}...")
-        query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [b''])
-        com_response = query.get_data(0.2)
-
-        got_response = False
-        for (rx_addr, _), data in com_response.items():
-          got_response = True
-          ecu_log(f"communication control response: {data.hex()}")
-          # Check for positive response (0x68 = positive response to 0x28)
-          if len(data) >= 1 and data[0] == 0x68:
-            ecu_log("=== ECU DISABLED SUCCESSFULLY (positive response) ===")
-            return True
-          elif len(data) >= 3 and data[0] == 0x7F and data[1] == 0x28:
-            nrc = data[2]
-            nrc_meanings = {
-              0x12: "subFunctionNotSupported",
-              0x22: "conditionsNotCorrect (security access required)",
-              0x31: "requestOutOfRange",
-            }
-            nrc_name = nrc_meanings.get(nrc, "unknown")
-            ecu_log(f"communication control rejected (NRC: 0x{nrc:02x} = {nrc_name})")
-            # Continue retrying
-
-        # Some ECUs silently accept the command without responding
-        # Original approach: return on first "no response" - verification may interfere
-        if not got_response:
-          ecu_log("communication control: no response (command sent)")
-          ecu_log("=== ECU DISABLE SENT (no verification) ===")
-          return True
-        else:
-          ecu_log("communication control: got negative response, retrying...")
+      for _, _ in query.get_data(timeout).items():
+        ecu_log("diag session OK, sending CC...")
+        # Send communication control - don't wait for response, just send and return
+        query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [COM_CONT_RESPONSE])
+        query.get_data(timeout)
+        ecu_log("=== ECU DISABLE SENT ===")
+        return True
 
     except Exception as e:
-      ecu_log(f"attempt {i+1}/{retry} exception: {e}")
+      ecu_log(f"attempt {i+1} exception: {e}")
 
-    # Delay between retries - spread attempts over longer period
-    retry_delay = 0.5 if security_access else 0.05
-    ecu_log(f"waiting {retry_delay}s before next attempt...")
-    time.sleep(retry_delay)
+    time.sleep(0.1)
 
-  ecu_log("=== ECU DISABLE FAILED after all retries ===")
+  ecu_log("=== ECU DISABLE FAILED ===")
   return False
