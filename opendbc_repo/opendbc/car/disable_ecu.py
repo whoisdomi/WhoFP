@@ -42,19 +42,43 @@ def compute_security_key(seed: bytes) -> bytes:
   return key
 
 
-def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2):
+def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2, security_level=0x01):
   """Perform full SecurityAccess handshake (seed request + key send).
   Returns True if security access was granted."""
   try:
-    # Step 1: Request seed
-    ecu_log("security access: requesting seed (0x27 0x01)...")
+    # Step 1: Request seed for the specified security level
+    seed_request = bytes([0x27, security_level])
+    seed_response_expected = bytes([0x67, security_level])
+    key_send_sublevel = security_level + 1  # Key send is always odd level + 1
+
+    ecu_log(f"security access: requesting seed (0x27 0x{security_level:02x})...")
+
+    # Use empty expected response to capture ANY response
     seed_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
-                                     [SECURITY_ACCESS_SEED_REQUEST], [SECURITY_ACCESS_SEED_RESPONSE])
+                                     [seed_request], [b''])
     seed_response = seed_query.get_data(timeout)
 
     for (rx_addr, _), data in seed_response.items():
-      if len(data) >= 2 and data[0:2] == SECURITY_ACCESS_SEED_RESPONSE:
-        seed = data[2:]  # Extract seed bytes after 0x67 0x01
+      ecu_log(f"security access: ECU responded with {len(data)} bytes: {data.hex()}")
+
+      # Check for negative response
+      if len(data) >= 3 and data[0] == 0x7F and data[1] == 0x27:
+        nrc = data[2]
+        nrc_meanings = {
+          0x12: "subFunctionNotSupported",
+          0x13: "incorrectMessageLengthOrInvalidFormat",
+          0x22: "conditionsNotCorrect",
+          0x24: "requestSequenceError",
+          0x35: "invalidKey",
+          0x36: "exceededNumberOfAttempts",
+          0x37: "requiredTimeDelayNotExpired",
+        }
+        nrc_name = nrc_meanings.get(nrc, "unknown")
+        ecu_log(f"security access: seed request rejected (NRC: 0x{nrc:02x} = {nrc_name})")
+        return False
+
+      if len(data) >= 2 and data[0:2] == seed_response_expected:
+        seed = data[2:]  # Extract seed bytes after 0x67 0xXX
         ecu_log(f"security access: received seed ({len(seed)} bytes): {seed.hex()}")
 
         if len(seed) == 0:
@@ -64,15 +88,17 @@ def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2
 
         # Step 2: Compute and send key
         key = compute_security_key(seed)
-        key_request = SECURITY_ACCESS_KEY_SEND + key
-        ecu_log(f"security access: sending key (0x27 0x02 + {len(key)} bytes): {key.hex()}")
+        key_request = bytes([0x27, key_send_sublevel]) + key
+        ecu_log(f"security access: sending key (0x27 0x{key_send_sublevel:02x} + {len(key)} bytes): {key.hex()}")
 
         key_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
-                                        [key_request], [b'\x67\x02'])
+                                        [key_request], [b''])
         key_response = key_query.get_data(timeout)
 
         for (rx_addr2, _), data2 in key_response.items():
-          if len(data2) >= 2 and data2[0:2] == b'\x67\x02':
+          ecu_log(f"security access: key response: {data2.hex()}")
+
+          if len(data2) >= 2 and data2[0] == 0x67 and data2[1] == key_send_sublevel:
             ecu_log("security access: GRANTED")
             return True
           elif len(data2) >= 3 and data2[0] == 0x7F:
@@ -90,7 +116,7 @@ def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2
             ecu_log(f"security access: key rejected (NRC: 0x{nrc:02x} = {nrc_name})")
             return False
 
-    ecu_log("security access: no valid seed response")
+    ecu_log("security access: no response from ECU")
     return False
 
   except Exception as e:
@@ -131,25 +157,44 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
 
         # For HDA2 cars, perform SecurityAccess handshake before Communication Control
         if security_access:
-          # Try security access up to 3 times
+          # Try multiple security levels - Hyundai uses different levels for different ECUs
+          security_levels = [0x01, 0x03, 0x11, 0x61]  # Common Hyundai/Kia security levels
           security_granted = False
-          for sec_attempt in range(3):
-            if perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.3):
+
+          for level in security_levels:
+            ecu_log(f"trying security level 0x{level:02x}...")
+            if perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.3, security_level=level):
               security_granted = True
               break
-            ecu_log(f"security access attempt {sec_attempt + 1}/3 failed, retrying...")
-            time.sleep(0.15)
+            time.sleep(0.1)
 
           if not security_granted:
-            ecu_log("security access not granted, attempting communication control anyway...")
+            ecu_log("security access not granted with any level, attempting communication control anyway...")
 
-        # Send communication control command
+        # Send communication control command and check response
         ecu_log(f"communication control: sending {com_cont_req.hex()}...")
-        query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [COM_CONT_RESPONSE])
-        query.get_data(0)
+        query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [b''])
+        com_response = query.get_data(0.2)
 
-        ecu_log("=== ECU DISABLED SUCCESSFULLY ===")
-        return True
+        for (rx_addr, _), data in com_response.items():
+          ecu_log(f"communication control response: {data.hex()}")
+          # Check for positive response (0x68 = positive response to 0x28)
+          if len(data) >= 1 and data[0] == 0x68:
+            ecu_log("=== ECU DISABLED SUCCESSFULLY ===")
+            return True
+          elif len(data) >= 3 and data[0] == 0x7F and data[1] == 0x28:
+            nrc = data[2]
+            nrc_meanings = {
+              0x12: "subFunctionNotSupported",
+              0x22: "conditionsNotCorrect (security access required)",
+              0x31: "requestOutOfRange",
+            }
+            nrc_name = nrc_meanings.get(nrc, "unknown")
+            ecu_log(f"communication control rejected (NRC: 0x{nrc:02x} = {nrc_name})")
+            # Don't return True here - the disable failed
+
+        # If we got here without a positive response, continue retrying
+        ecu_log("communication control: no positive response, continuing...")
 
     except Exception as e:
       ecu_log(f"attempt {i+1}/{retry} exception: {e}")
