@@ -1,4 +1,5 @@
 import time
+import datetime
 from opendbc.car.carlog import carlog
 from opendbc.car.isotp_parallel_query import IsoTpParallelQuery
 
@@ -11,6 +12,20 @@ COM_CONT_RESPONSE = b''
 SECURITY_ACCESS_SEED_REQUEST = b'\x27\x01'  # Request seed (level 1)
 SECURITY_ACCESS_SEED_RESPONSE = b'\x67\x01'  # Positive response with seed
 SECURITY_ACCESS_KEY_SEND = b'\x27\x02'  # Send key (level 1)
+
+# File-based logging for debugging
+ECU_LOG_FILE = "/data/ecu_disable.log"
+
+def ecu_log(msg):
+  """Write to both carlog and a dedicated log file for debugging."""
+  timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+  log_line = f"[{timestamp}] {msg}"
+  carlog.warning(msg)
+  try:
+    with open(ECU_LOG_FILE, "a") as f:
+      f.write(log_line + "\n")
+  except Exception:
+    pass
 
 
 def compute_security_key(seed: bytes) -> bytes:
