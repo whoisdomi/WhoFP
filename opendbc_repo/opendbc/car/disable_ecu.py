@@ -28,23 +28,56 @@ def ecu_log(msg):
     pass
 
 
-def compute_security_key(seed: bytes) -> bytes:
+def compute_security_key(seed: bytes, algorithm: int = 0) -> bytes:
   """Compute the security key from the seed.
-  For Hyundai HDA2 ADAS ECUs, the key algorithm is typically simple.
-  Common algorithms: XOR with constant, bitwise NOT, or identity.
-  This implements a common Hyundai algorithm."""
+  For Hyundai HDA2 ADAS ECUs, there are several known algorithms.
+  Returns the computed key based on the algorithm parameter."""
   if len(seed) == 0:
     return b''
 
-  # Try simple XOR with 0x00 (identity) - some ECUs accept seed as key
-  # This is a common "null security" implementation
-  key = bytes(seed)
+  if algorithm == 0:
+    # Algorithm 0: XOR with 0x4A (common Hyundai algorithm)
+    key = bytes([b ^ 0x4A for b in seed])
+  elif algorithm == 1:
+    # Algorithm 1: Bitwise NOT (invert all bits)
+    key = bytes([~b & 0xFF for b in seed])
+  elif algorithm == 2:
+    # Algorithm 2: XOR with 0xCA
+    key = bytes([b ^ 0xCA for b in seed])
+  elif algorithm == 3:
+    # Algorithm 3: Swap bytes and XOR with 0x4A
+    swapped = bytes(reversed(seed))
+    key = bytes([b ^ 0x4A for b in swapped])
+  elif algorithm == 4:
+    # Algorithm 4: Add 1 to each byte (modulo 256)
+    key = bytes([(b + 1) & 0xFF for b in seed])
+  elif algorithm == 5:
+    # Algorithm 5: Subtract 1 from each byte (modulo 256)
+    key = bytes([(b - 1) & 0xFF for b in seed])
+  elif algorithm == 6:
+    # Algorithm 6: XOR with fixed pattern 0xDE, 0xAD, 0xBE, 0xEF repeating
+    pattern = [0xDE, 0xAD, 0xBE, 0xEF]
+    key = bytes([seed[i] ^ pattern[i % 4] for i in range(len(seed))])
+  elif algorithm == 7:
+    # Algorithm 7: XOR first 4 bytes with last 4 bytes
+    if len(seed) == 8:
+      key = bytes([seed[i] ^ seed[i + 4] for i in range(4)] + list(seed[4:]))
+    else:
+      key = bytes(seed)
+  elif algorithm == 8:
+    # Algorithm 8: Common Hyundai ADAS - XOR with alternating 0x71, 0x7B
+    pattern = [0x71, 0x7B]
+    key = bytes([seed[i] ^ pattern[i % 2] for i in range(len(seed))])
+  else:
+    # Default: identity
+    key = bytes(seed)
+
   return key
 
 
 def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2, security_level=0x01):
   """Perform full SecurityAccess handshake (seed request + key send).
-  Returns True if security access was granted."""
+  Returns True if security access was granted. Tries multiple key algorithms."""
   try:
     # Step 1: Request seed for the specified security level
     seed_request = bytes([0x27, security_level])
@@ -86,35 +119,65 @@ def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2
           ecu_log("security access: already unlocked (zero-length seed)")
           return True
 
-        # Step 2: Compute and send key
-        key = compute_security_key(seed)
-        key_request = bytes([0x27, key_send_sublevel]) + key
-        ecu_log(f"security access: sending key (0x27 0x{key_send_sublevel:02x} + {len(key)} bytes): {key.hex()}")
+        # Step 2: Try different key algorithms
+        algorithm_names = {
+          0: "XOR 0x4A",
+          1: "bitwise NOT",
+          2: "XOR 0xCA",
+          3: "swap+XOR 0x4A",
+          4: "add 1",
+          5: "subtract 1",
+          6: "XOR DEADBEEF",
+          7: "XOR halves",
+          8: "XOR 71/7B",
+        }
 
-        key_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
-                                        [key_request], [b''])
-        key_response = key_query.get_data(timeout)
+        for algo in range(9):
+          key = compute_security_key(seed, algorithm=algo)
+          key_request = bytes([0x27, key_send_sublevel]) + key
+          ecu_log(f"trying algorithm {algo} ({algorithm_names.get(algo, '?')}): key={key.hex()}")
 
-        for (rx_addr2, _), data2 in key_response.items():
-          ecu_log(f"security access: key response: {data2.hex()}")
+          # Need to re-enter extended diag session before each key attempt
+          # because some ECUs reset the session after a failed key
+          try:
+            key_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
+                                            [key_request], [b''])
+            key_response = key_query.get_data(timeout)
 
-          if len(data2) >= 2 and data2[0] == 0x67 and data2[1] == key_send_sublevel:
-            ecu_log("security access: GRANTED")
-            return True
-          elif len(data2) >= 3 and data2[0] == 0x7F:
-            # Negative response
-            nrc = data2[2]
-            nrc_meanings = {
-              0x12: "subFunctionNotSupported",
-              0x22: "conditionsNotCorrect",
-              0x24: "requestSequenceError",
-              0x35: "invalidKey",
-              0x36: "exceededNumberOfAttempts",
-              0x37: "requiredTimeDelayNotExpired",
-            }
-            nrc_name = nrc_meanings.get(nrc, "unknown")
-            ecu_log(f"security access: key rejected (NRC: 0x{nrc:02x} = {nrc_name})")
-            return False
+            for (rx_addr2, _), data2 in key_response.items():
+              ecu_log(f"key response: {data2.hex()}")
+
+              if len(data2) >= 2 and data2[0] == 0x67 and data2[1] == key_send_sublevel:
+                ecu_log(f"security access: GRANTED with algorithm {algo} ({algorithm_names.get(algo, '?')})")
+                return True
+              elif len(data2) >= 3 and data2[0] == 0x7F:
+                nrc = data2[2]
+                if nrc == 0x35:
+                  ecu_log(f"algorithm {algo}: invalidKey, trying next...")
+                  # Re-request seed for next attempt
+                  time.sleep(0.05)
+                  seed_query2 = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
+                                                   [seed_request], [b''])
+                  seed_response2 = seed_query2.get_data(timeout)
+                  for (_, _), data3 in seed_response2.items():
+                    if len(data3) >= 2 and data3[0:2] == seed_response_expected:
+                      seed = data3[2:]
+                      ecu_log(f"new seed: {seed.hex()}")
+                      break
+                elif nrc == 0x36:
+                  ecu_log("exceeded attempts, need to wait or power cycle")
+                  return False
+                elif nrc == 0x37:
+                  ecu_log("time delay required, waiting 10s...")
+                  time.sleep(10)
+                else:
+                  ecu_log(f"algorithm {algo}: NRC 0x{nrc:02x}")
+          except Exception as e:
+            ecu_log(f"algorithm {algo} exception: {e}")
+            continue
+
+        ecu_log("security access: all algorithms failed")
+        return False
 
     ecu_log("security access: no response from ECU")
     return False
@@ -157,19 +220,12 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
 
         # For HDA2 cars, perform SecurityAccess handshake before Communication Control
         if security_access:
-          # Try multiple security levels - Hyundai uses different levels for different ECUs
-          security_levels = [0x01, 0x03, 0x11, 0x61]  # Common Hyundai/Kia security levels
-          security_granted = False
-
-          for level in security_levels:
-            ecu_log(f"trying security level 0x{level:02x}...")
-            if perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.3, security_level=level):
-              security_granted = True
-              break
-            time.sleep(0.1)
+          # Ioniq 6 ADAS ECU uses security level 0x11
+          ecu_log("trying security level 0x11 (Hyundai HDA2 ADAS)...")
+          security_granted = perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.3, security_level=0x11)
 
           if not security_granted:
-            ecu_log("security access not granted with any level, attempting communication control anyway...")
+            ecu_log("security access not granted, attempting communication control anyway...")
 
         # Send communication control command and check response
         ecu_log(f"communication control: sending {com_cont_req.hex()}...")
