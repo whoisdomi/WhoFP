@@ -202,11 +202,11 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
   # For HDA2 cars with security access, use more retries and longer delays
   # The ECU needs time to boot and be ready to accept UDS commands
   if security_access:
-    retry = max(retry, 30)  # Many retries over longer period
+    retry = max(retry, 10)  # Fewer retries to avoid overwhelming ECU
     ecu_log(f"HDA2 mode: using {retry} retries")
-    # Try longer initial delay - ECU may need more boot time
-    ecu_log("waiting 5.0s for ECU boot...")
-    time.sleep(5.0)
+    # Moderate initial delay
+    ecu_log("waiting 2.0s for ECU boot...")
+    time.sleep(2.0)
 
   for i in range(retry):
     try:
@@ -248,30 +248,11 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
             # Continue retrying
 
         # Some ECUs silently accept the command without responding
-        # We need to VERIFY the ECU actually stopped by checking if it still responds
+        # Original approach: return on first "no response" - verification may interfere
         if not got_response:
-          ecu_log("communication control: no response, verifying ECU is disabled...")
-
-          # Wait a moment for the disable to take effect
-          time.sleep(0.1)
-
-          # Try to query the ECU again - if disabled, it won't respond
-          verify_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
-                                             [EXT_DIAG_REQUEST], [b''])
-          verify_response = verify_query.get_data(0.3)
-
-          ecu_responded = False
-          for (_, _), vdata in verify_response.items():
-            ecu_responded = True
-            ecu_log(f"verification: ECU still responding: {vdata.hex()}")
-
-          if not ecu_responded:
-            ecu_log("verification: ECU not responding - disable confirmed!")
-            ecu_log("=== ECU DISABLED SUCCESSFULLY (verified silent) ===")
-            return True
-          else:
-            ecu_log("verification: ECU still active, disable failed - retrying...")
-            # Continue to next retry iteration
+          ecu_log("communication control: no response (command sent)")
+          ecu_log("=== ECU DISABLE SENT (no verification) ===")
+          return True
         else:
           ecu_log("communication control: got negative response, retrying...")
 
