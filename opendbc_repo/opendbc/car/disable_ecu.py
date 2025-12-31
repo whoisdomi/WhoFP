@@ -47,7 +47,7 @@ def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2
   Returns True if security access was granted."""
   try:
     # Step 1: Request seed
-    carlog.warning("security access: requesting seed (0x27 0x01)...")
+    ecu_log("security access: requesting seed (0x27 0x01)...")
     seed_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
                                      [SECURITY_ACCESS_SEED_REQUEST], [SECURITY_ACCESS_SEED_RESPONSE])
     seed_response = seed_query.get_data(timeout)
@@ -55,17 +55,17 @@ def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2
     for (rx_addr, _), data in seed_response.items():
       if len(data) >= 2 and data[0:2] == SECURITY_ACCESS_SEED_RESPONSE:
         seed = data[2:]  # Extract seed bytes after 0x67 0x01
-        carlog.warning(f"security access: received seed ({len(seed)} bytes)")
+        ecu_log(f"security access: received seed ({len(seed)} bytes): {seed.hex()}")
 
         if len(seed) == 0:
           # Zero-length seed means security is already unlocked
-          carlog.warning("security access: already unlocked (zero-length seed)")
+          ecu_log("security access: already unlocked (zero-length seed)")
           return True
 
         # Step 2: Compute and send key
         key = compute_security_key(seed)
         key_request = SECURITY_ACCESS_KEY_SEND + key
-        carlog.warning(f"security access: sending key (0x27 0x02 + {len(key)} bytes)...")
+        ecu_log(f"security access: sending key (0x27 0x02 + {len(key)} bytes): {key.hex()}")
 
         key_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)],
                                         [key_request], [b'\x67\x02'])
@@ -73,18 +73,28 @@ def perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2
 
         for (rx_addr2, _), data2 in key_response.items():
           if len(data2) >= 2 and data2[0:2] == b'\x67\x02':
-            carlog.warning("security access: GRANTED")
+            ecu_log("security access: GRANTED")
             return True
           elif len(data2) >= 3 and data2[0] == 0x7F:
             # Negative response
-            carlog.warning(f"security access: key rejected (NRC: 0x{data2[2]:02x})")
+            nrc = data2[2]
+            nrc_meanings = {
+              0x12: "subFunctionNotSupported",
+              0x22: "conditionsNotCorrect",
+              0x24: "requestSequenceError",
+              0x35: "invalidKey",
+              0x36: "exceededNumberOfAttempts",
+              0x37: "requiredTimeDelayNotExpired",
+            }
+            nrc_name = nrc_meanings.get(nrc, "unknown")
+            ecu_log(f"security access: key rejected (NRC: 0x{nrc:02x} = {nrc_name})")
             return False
 
-    carlog.warning("security access: no valid seed response")
+    ecu_log("security access: no valid seed response")
     return False
 
   except Exception as e:
-    carlog.warning(f"security access: exception - {e}")
+    ecu_log(f"security access: exception - {e}")
     return False
 
 
@@ -98,54 +108,55 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
   Args:
     security_access: If True, performs SecurityAccess handshake (0x27) before Communication Control.
                      Required for HDA2 cars (e.g., Ioniq 6) that return 0x7F2822 without this handshake."""
-  carlog.warning(f"ecu disable {hex(addr), sub_addr} ...")
+  ecu_log(f"=== ECU DISABLE START === addr={hex(addr)}, bus={bus}, security_access={security_access}")
 
   # For HDA2 cars with security access, use more retries and longer delays
   # The ECU needs time to boot and be ready to accept UDS commands
   if security_access:
-    retry = max(retry, 20)  # Ensure at least 20 retries for HDA2
-    carlog.warning(f"security access mode: using {retry} retries with delays")
-    # Initial delay to let ECU boot
-    time.sleep(0.5)
+    retry = max(retry, 30)  # Ensure at least 30 retries for HDA2
+    ecu_log(f"security access mode: using {retry} retries with delays")
+    # Initial delay to let ECU boot - this is critical for consistency
+    ecu_log("waiting 2.0s for ECU boot...")
+    time.sleep(2.0)
 
   for i in range(retry):
     try:
       # Enter extended diagnostic session
+      ecu_log(f"attempt {i+1}/{retry}: requesting extended diagnostic session (0x10 0x03)...")
       query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [EXT_DIAG_REQUEST], [EXT_DIAG_RESPONSE])
       ext_diag_response = query.get_data(timeout)
 
       for _, _ in ext_diag_response.items():
-        carlog.warning("extended diagnostic session established")
+        ecu_log("extended diagnostic session established")
 
         # For HDA2 cars, perform SecurityAccess handshake before Communication Control
         if security_access:
           # Try security access up to 3 times
           security_granted = False
           for sec_attempt in range(3):
-            if perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.2):
+            if perform_security_access(can_send, can_recv, bus, addr, sub_addr, timeout=0.3):
               security_granted = True
               break
-            carlog.warning(f"security access attempt {sec_attempt + 1}/3 failed, retrying...")
-            time.sleep(0.1)
+            ecu_log(f"security access attempt {sec_attempt + 1}/3 failed, retrying...")
+            time.sleep(0.15)
 
           if not security_granted:
-            carlog.warning("security access not granted, attempting communication control anyway...")
+            ecu_log("security access not granted, attempting communication control anyway...")
 
         # Send communication control command
-        carlog.warning("communication control disable tx/rx ...")
+        ecu_log(f"communication control: sending {com_cont_req.hex()}...")
         query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [COM_CONT_RESPONSE])
         query.get_data(0)
 
-        carlog.warning("ecu disabled successfully")
+        ecu_log("=== ECU DISABLED SUCCESSFULLY ===")
         return True
 
     except Exception as e:
-      carlog.exception(f"ecu disable exception: {e}")
+      ecu_log(f"attempt {i+1}/{retry} exception: {e}")
 
     # Delay between retries - ECU may need time to be ready
-    retry_delay = 0.2 if security_access else 0.05
-    carlog.error(f"ecu disable retry ({i + 1}/{retry}), waiting {retry_delay}s ...")
+    retry_delay = 0.3 if security_access else 0.05
     time.sleep(retry_delay)
 
-  carlog.error("ecu disable failed after all retries")
+  ecu_log("=== ECU DISABLE FAILED after all retries ===")
   return False
