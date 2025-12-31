@@ -202,11 +202,11 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
   # For HDA2 cars with security access, use more retries and longer delays
   # The ECU needs time to boot and be ready to accept UDS commands
   if security_access:
-    retry = max(retry, 15)  # 15 retries with longer delays
-    ecu_log(f"HDA2 mode: using {retry} retries with 1s delays")
-    # Initial delay to let ECU boot - this is critical for consistency
-    ecu_log("waiting 3.0s for ECU boot...")
-    time.sleep(3.0)
+    retry = max(retry, 20)  # More retries with shorter delays
+    ecu_log(f"HDA2 mode: using {retry} retries")
+    # Reduced initial delay - faster disable may align better with openpilot startup
+    ecu_log("waiting 0.5s for ECU boot...")
+    time.sleep(0.5)
 
   for i in range(retry):
     try:
@@ -278,8 +278,8 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
     except Exception as e:
       ecu_log(f"attempt {i+1}/{retry} exception: {e}")
 
-    # Delay between retries - ECU may need time to be ready
-    retry_delay = 1.0 if security_access else 0.05
+    # Delay between retries - shorter delays for faster attempts
+    retry_delay = 0.2 if security_access else 0.05
     ecu_log(f"waiting {retry_delay}s before next attempt...")
     time.sleep(retry_delay)
 
