@@ -19,9 +19,8 @@ Ecu = structs.CarParams.Ecu
 # Cancel button can sometimes be ACC pause/resume button, main button can also enable on some cars
 ENABLE_BUTTONS = (ButtonType.accelCruise, ButtonType.decelCruise, ButtonType.cancel, ButtonType.mainCruise)
 
-# Track when ECU disable happened for grace period
+# Track when ECU disable happened - used to permanently suppress CAN errors from disabled ECU
 ECU_DISABLE_TIMESTAMP = 0.0
-ECU_DISABLE_GRACE_PERIOD = 5.0  # seconds to suppress CAN errors after ECU disable
 
 
 class CarInterface(CarInterfaceBase):
@@ -192,9 +191,9 @@ class CarInterface(CarInterfaceBase):
       ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
       disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
 
-      # Set timestamp for grace period - suppress CAN errors for a few seconds after ECU disable
+      # Set timestamp - will permanently suppress CAN errors since ECU messages stop after disable
       ECU_DISABLE_TIMESTAMP = time.monotonic()
-      ecu_log(f"=== GRACE PERIOD STARTED (t={ECU_DISABLE_TIMESTAMP:.1f}) ===")
+      ecu_log(f"=== ECU DISABLE DONE - CAN error suppression enabled ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
@@ -209,18 +208,32 @@ class CarInterface(CarInterfaceBase):
     # Call base class update - returns (CarState, FrogPilotCarState) tuple
     ret, fp_ret = super().update(can_packets, frogpilot_toggles)
 
-    # During ECU disable grace period, force canValid to True to prevent CAN Error
-    # This gives the system time to stabilize after ECU messages stop
+    # When ECU disable has been done for longitudinal control, we need to handle CAN errors carefully:
+    # - TIMEOUT errors (messages stop coming): Expected after ECU disable, should be suppressed
+    # - COUNTER errors (checksum/counter failures): Real CAN problems, should NOT be suppressed
     global ECU_DISABLE_TIMESTAMP
-    if ECU_DISABLE_TIMESTAMP > 0:
-      elapsed = time.monotonic() - ECU_DISABLE_TIMESTAMP
-      if elapsed < ECU_DISABLE_GRACE_PERIOD:
-        if not ret.canValid:
-          ecu_log(f"GRACE: suppressing CAN error (elapsed={elapsed:.1f}s, canValid was False)")
+    if ECU_DISABLE_TIMESTAMP > 0 and not ret.canValid:
+      # Check if any parser has counter/checksum errors (real CAN issues)
+      has_counter_errors = False
+      for cp in self.can_parsers.values():
+        if cp is not None:
+          for state in cp.message_states.values():
+            if state.counter_fail >= 5:  # MAX_BAD_COUNTER from parser.py
+              has_counter_errors = True
+              ecu_log(f"REAL CAN ERROR: {state.name} counter_fail={state.counter_fail}")
+              break
+        if has_counter_errors:
+          break
+
+      if has_counter_errors:
+        # Real CAN error - don't suppress, let it through
+        ecu_log("ECU_DISABLE: NOT suppressing canValid - counter errors detected")
+      else:
+        # Only timeout errors (expected after ECU disable) - suppress
+        elapsed = time.monotonic() - ECU_DISABLE_TIMESTAMP
+        # Log occasionally to confirm this is working (every ~10 seconds)
+        if int(elapsed) % 10 == 0 and elapsed - int(elapsed) < 0.1:
+          ecu_log(f"ECU_DISABLE: suppressing timeout error (elapsed={elapsed:.0f}s)")
         ret.canValid = True
-      elif elapsed < ECU_DISABLE_GRACE_PERIOD + 1.0:
-        # Log when grace period ends
-        ecu_log(f"=== GRACE PERIOD ENDED (elapsed={elapsed:.1f}s) ===")
-        ECU_DISABLE_TIMESTAMP = 0.0  # Reset so we don't keep checking
 
     return ret, fp_ret
