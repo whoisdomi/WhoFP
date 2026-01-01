@@ -206,8 +206,8 @@ class CarInterface(CarInterfaceBase):
     CarInterface.init(CP, can_recv, can_send, communication_control)
 
   def update(self, can_packets, frogpilot_toggles):
-    # Call base class update
-    ret = super().update(can_packets, frogpilot_toggles)
+    # Call base class update - returns (CarState, FrogPilotCarState) tuple
+    ret, fp_ret = super().update(can_packets, frogpilot_toggles)
 
     # During ECU disable grace period, force canValid to True to prevent CAN Error
     # This gives the system time to stabilize after ECU messages stop
@@ -225,4 +225,4 @@ class CarInterface(CarInterfaceBase):
         carlog.warning(f"ECU disable grace period ended (elapsed={elapsed:.1f}s)")
         ECU_DISABLE_TIMESTAMP = 0.0  # Reset so we don't keep checking
 
-    return ret
+    return ret, fp_ret
