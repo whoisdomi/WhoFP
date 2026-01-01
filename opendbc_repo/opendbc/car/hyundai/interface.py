@@ -169,9 +169,9 @@ class CarInterface(CarInterfaceBase):
     carlog.warning(f"CANFD_CAMERA_SCC flag: {bool(CP.flags & HyundaiFlags.CANFD_CAMERA_SCC)}")
     carlog.warning(f"CAMERA_SCC flag: {bool(CP.flags & HyundaiFlags.CAMERA_SCC)}")
 
-    # 0x80 silences response
+    # Don't use 0x80 (suppress response) so we can see ECU's actual response for debugging
     if communication_control is None:
-      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
+      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
 
     if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
       addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
