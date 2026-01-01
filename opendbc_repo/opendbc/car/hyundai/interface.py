@@ -189,11 +189,14 @@ class CarInterface(CarInterfaceBase):
       # BEFORE entering READY mode, otherwise it causes dash errors and doesn't stick
       security_access_needed = bool(CP.flags & HyundaiFlags.CANFD_NO_RADAR_DISABLE)
       ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
-      disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
+      ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
 
-      # Set timestamp - will permanently suppress CAN errors since ECU messages stop after disable
-      ECU_DISABLE_TIMESTAMP = time.monotonic()
-      ecu_log(f"=== ECU DISABLE DONE - CAN error suppression enabled ===")
+      # Only enable CAN error suppression if ECU disable actually succeeded
+      if ecu_disabled:
+        ECU_DISABLE_TIMESTAMP = time.monotonic()
+        ecu_log(f"=== ECU DISABLE DONE - CAN error suppression enabled ===")
+      else:
+        ecu_log(f"=== ECU DISABLE FAILED - CAN error suppression NOT enabled (start from IGN-ON, not READY) ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:

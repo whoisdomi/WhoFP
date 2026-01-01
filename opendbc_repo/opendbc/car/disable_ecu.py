@@ -214,20 +214,38 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
         cc_response = cc_query.get_data(timeout)
 
         # Log what we got back
+        cc_success = False
+        cc_rejected = False
         for (rx_addr, _), data in cc_response.items():
           ecu_log(f"CC response: {data.hex() if data else 'empty'}")
           # Check for positive response (0x68 = 0x28 + 0x40)
           if len(data) >= 1 and data[0] == 0x68:
             ecu_log("=== ECU DISABLE CONFIRMED ===")
-            return True
+            cc_success = True
           # Check for negative response
           elif len(data) >= 3 and data[0] == 0x7F:
             nrc = data[2]
-            ecu_log(f"CC rejected with NRC 0x{nrc:02x}")
+            nrc_meanings = {
+              0x12: "subFunctionNotSupported",
+              0x13: "incorrectMessageLengthOrInvalidFormat",
+              0x22: "conditionsNotCorrect (car must be in IGN-ON, not READY)",
+              0x31: "requestOutOfRange",
+              0x33: "securityAccessDenied",
+            }
+            nrc_name = nrc_meanings.get(nrc, "unknown")
+            ecu_log(f"CC rejected: NRC 0x{nrc:02x} = {nrc_name}")
+            cc_rejected = True
 
-        # Even if no response, consider it sent
-        ecu_log("=== ECU DISABLE SENT ===")
-        return True
+        if cc_success:
+          return True
+        elif cc_rejected:
+          # ECU explicitly rejected - don't retry, it won't work
+          ecu_log("=== ECU DISABLE REJECTED ===")
+          return False
+        else:
+          # No response - consider it sent (ECU might have stopped responding)
+          ecu_log("=== ECU DISABLE SENT (no response) ===")
+          return True
 
     except Exception as e:
       ecu_log(f"attempt {i+1} exception: {e}")
