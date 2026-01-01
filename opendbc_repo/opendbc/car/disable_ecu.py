@@ -195,7 +195,7 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
   WARNING: THIS DISABLES AEB!"""
   ecu_log(f"=== ECU DISABLE START === addr={hex(addr)}, bus={bus}")
 
-  # Simple approach - just try a few times with minimal delays
+  # Try multiple times with different approaches
   for i in range(retry):
     try:
       # Enter extended diagnostic session
@@ -203,10 +203,29 @@ def disable_ecu(can_recv, can_send, bus=0, addr=0x7d0, sub_addr=None, com_cont_r
       query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [EXT_DIAG_REQUEST], [EXT_DIAG_RESPONSE])
 
       for _, _ in query.get_data(timeout).items():
-        ecu_log("diag session OK, sending CC...")
-        # Send communication control - don't wait for response, just send and return
-        query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [COM_CONT_RESPONSE])
-        query.get_data(timeout)
+        ecu_log("diag session OK")
+
+        # Small delay to let ECU fully enter diagnostic mode
+        time.sleep(0.05)
+
+        # Send CC command and log the response
+        ecu_log("sending CC...")
+        cc_query = IsoTpParallelQuery(can_send, can_recv, bus, [(addr, sub_addr)], [com_cont_req], [b''])
+        cc_response = cc_query.get_data(timeout)
+
+        # Log what we got back
+        for (rx_addr, _), data in cc_response.items():
+          ecu_log(f"CC response: {data.hex() if data else 'empty'}")
+          # Check for positive response (0x68 = 0x28 + 0x40)
+          if len(data) >= 1 and data[0] == 0x68:
+            ecu_log("=== ECU DISABLE CONFIRMED ===")
+            return True
+          # Check for negative response
+          elif len(data) >= 3 and data[0] == 0x7F:
+            nrc = data[2]
+            ecu_log(f"CC rejected with NRC 0x{nrc:02x}")
+
+        # Even if no response, consider it sent
         ecu_log("=== ECU DISABLE SENT ===")
         return True
 
