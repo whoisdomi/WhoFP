@@ -8,7 +8,7 @@ from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
                                                    UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags
 from opendbc.car.hyundai.radar_interface import RADAR_START_ADDR
 from opendbc.car.interfaces import CarInterfaceBase
-from opendbc.car.disable_ecu import disable_ecu
+from opendbc.car.disable_ecu import disable_ecu, ecu_log
 from opendbc.car.hyundai.carcontroller import CarController
 from opendbc.car.hyundai.carstate import CarState
 from opendbc.car.hyundai.radar_interface import RadarInterface
@@ -189,12 +189,12 @@ class CarInterface(CarInterfaceBase):
       # According to field testing: ECU disable must happen in IGN_ON state (park gear)
       # BEFORE entering READY mode, otherwise it causes dash errors and doesn't stick
       security_access_needed = bool(CP.flags & HyundaiFlags.CANFD_NO_RADAR_DISABLE)
-      carlog.warning(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
+      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
       disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
 
       # Set timestamp for grace period - suppress CAN errors for a few seconds after ECU disable
       ECU_DISABLE_TIMESTAMP = time.monotonic()
-      carlog.warning(f"=== ECU DISABLE GRACE PERIOD STARTED (t={ECU_DISABLE_TIMESTAMP:.1f}) ===")
+      ecu_log(f"=== GRACE PERIOD STARTED (t={ECU_DISABLE_TIMESTAMP:.1f}) ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
@@ -216,13 +216,11 @@ class CarInterface(CarInterfaceBase):
       elapsed = time.monotonic() - ECU_DISABLE_TIMESTAMP
       if elapsed < ECU_DISABLE_GRACE_PERIOD:
         if not ret.canValid:
-          from opendbc.car.carlog import carlog
-          carlog.warning(f"ECU disable grace period: suppressing CAN error (elapsed={elapsed:.1f}s)")
+          ecu_log(f"GRACE: suppressing CAN error (elapsed={elapsed:.1f}s, canValid was False)")
         ret.canValid = True
       elif elapsed < ECU_DISABLE_GRACE_PERIOD + 1.0:
         # Log when grace period ends
-        from opendbc.car.carlog import carlog
-        carlog.warning(f"ECU disable grace period ended (elapsed={elapsed:.1f}s)")
+        ecu_log(f"=== GRACE PERIOD ENDED (elapsed={elapsed:.1f}s) ===")
         ECU_DISABLE_TIMESTAMP = 0.0  # Reset so we don't keep checking
 
     return ret, fp_ret
