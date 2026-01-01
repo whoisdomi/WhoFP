@@ -1,3 +1,5 @@
+import time
+
 from opendbc.car import Bus, get_safety_config, structs, uds
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
@@ -16,6 +18,10 @@ Ecu = structs.CarParams.Ecu
 
 # Cancel button can sometimes be ACC pause/resume button, main button can also enable on some cars
 ENABLE_BUTTONS = (ButtonType.accelCruise, ButtonType.decelCruise, ButtonType.cancel, ButtonType.mainCruise)
+
+# Track when ECU disable happened for grace period
+ECU_DISABLE_TIMESTAMP = 0.0
+ECU_DISABLE_GRACE_PERIOD = 5.0  # seconds to suppress CAN errors after ECU disable
 
 
 class CarInterface(CarInterfaceBase):
@@ -162,6 +168,7 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, can_recv, can_send, communication_control=None):
+    global ECU_DISABLE_TIMESTAMP
     from opendbc.car.carlog import carlog
     carlog.warning("=== HyundaiCarInterface.init() CALLED ===")
     carlog.warning(f"openpilotLongitudinalControl: {CP.openpilotLongitudinalControl}")
@@ -185,6 +192,10 @@ class CarInterface(CarInterfaceBase):
       carlog.warning(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
       disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
 
+      # Set timestamp for grace period - suppress CAN errors for a few seconds after ECU disable
+      ECU_DISABLE_TIMESTAMP = time.monotonic()
+      carlog.warning(f"=== ECU DISABLE GRACE PERIOD STARTED (t={ECU_DISABLE_TIMESTAMP:.1f}) ===")
+
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
       disable_ecu(can_recv, can_send, bus=CanBus(CP).ECAN, addr=0x7B1, com_cont_req=communication_control)
@@ -193,3 +204,25 @@ class CarInterface(CarInterfaceBase):
   def deinit(CP, can_recv, can_send):
     communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, 0x80 | uds.CONTROL_TYPE.ENABLE_RX_ENABLE_TX, uds.MESSAGE_TYPE.NORMAL])
     CarInterface.init(CP, can_recv, can_send, communication_control)
+
+  def update(self, can_packets, frogpilot_toggles):
+    # Call base class update
+    ret = super().update(can_packets, frogpilot_toggles)
+
+    # During ECU disable grace period, force canValid to True to prevent CAN Error
+    # This gives the system time to stabilize after ECU messages stop
+    global ECU_DISABLE_TIMESTAMP
+    if ECU_DISABLE_TIMESTAMP > 0:
+      elapsed = time.monotonic() - ECU_DISABLE_TIMESTAMP
+      if elapsed < ECU_DISABLE_GRACE_PERIOD:
+        if not ret.canValid:
+          from opendbc.car.carlog import carlog
+          carlog.warning(f"ECU disable grace period: suppressing CAN error (elapsed={elapsed:.1f}s)")
+        ret.canValid = True
+      elif elapsed < ECU_DISABLE_GRACE_PERIOD + 1.0:
+        # Log when grace period ends
+        from opendbc.car.carlog import carlog
+        carlog.warning(f"ECU disable grace period ended (elapsed={elapsed:.1f}s)")
+        ECU_DISABLE_TIMESTAMP = 0.0  # Reset so we don't keep checking
+
+    return ret
