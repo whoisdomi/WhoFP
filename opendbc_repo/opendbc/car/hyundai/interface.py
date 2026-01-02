@@ -168,14 +168,8 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def init(CP, can_recv, can_send, communication_control=None):
     global ECU_DISABLE_TIMESTAMP
-    from opendbc.car.carlog import carlog
-    carlog.warning("=== HyundaiCarInterface.init() CALLED ===")
-    carlog.warning(f"openpilotLongitudinalControl: {CP.openpilotLongitudinalControl}")
-    carlog.warning(f"flags: {CP.flags}")
-    carlog.warning(f"CANFD_CAMERA_SCC flag: {bool(CP.flags & HyundaiFlags.CANFD_CAMERA_SCC)}")
-    carlog.warning(f"CAMERA_SCC flag: {bool(CP.flags & HyundaiFlags.CAMERA_SCC)}")
 
-    # Don't use 0x80 (suppress response) so we can see ECU's actual response for debugging
+    # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
     if communication_control is None:
       communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
 
@@ -184,19 +178,15 @@ class CarInterface(CarInterfaceBase):
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
 
-      # HDA2 cars with CANFD_NO_RADAR_DISABLE need SecurityAccess handshake
-      # According to field testing: ECU disable must happen in IGN_ON state (park gear)
-      # BEFORE entering READY mode, otherwise it causes dash errors and doesn't stick
-      security_access_needed = bool(CP.flags & HyundaiFlags.CANFD_NO_RADAR_DISABLE)
-      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus}, security_access={security_access_needed} ===")
-      ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control, security_access=security_access_needed)
+      # ECU disable must happen in IGN-ON state BEFORE entering READY mode
+      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
+      ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
 
       # Only enable CAN error suppression if ECU disable actually succeeded
       if ecu_disabled:
         ECU_DISABLE_TIMESTAMP = time.monotonic()
-        ecu_log(f"=== ECU DISABLE DONE - CAN error suppression enabled ===")
       else:
-        ecu_log(f"=== ECU DISABLE FAILED - CAN error suppression NOT enabled (start from IGN-ON, not READY) ===")
+        ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
