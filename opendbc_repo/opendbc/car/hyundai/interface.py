@@ -170,8 +170,10 @@ class CarInterface(CarInterfaceBase):
     global ECU_DISABLE_TIMESTAMP
 
     # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
+    # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
+    # This allows ECU to still receive from rear radars for BSM while blocking SCC TX
     if communication_control is None:
-      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.DISABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
+      communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
 
     if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
       addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
