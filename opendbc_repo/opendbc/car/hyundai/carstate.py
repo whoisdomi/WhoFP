@@ -245,7 +245,12 @@ class CarState(CarStateBase):
     ret.steeringTorque = cp.vl["MDPS"]["STEERING_COL_TORQUE"]
     ret.steeringTorqueEps = cp.vl["MDPS"]["STEERING_OUT_TORQUE"]
     ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > self.params.STEER_THRESHOLD, 5)
-    ret.steerFaultTemporary = cp.vl["MDPS"]["LKA_FAULT"] != 0
+    lka_fault_raw = cp.vl["MDPS"]["LKA_FAULT"]
+    ret.steerFaultTemporary = lka_fault_raw != 0
+
+    # DEBUG LOGGING
+    if lka_fault_raw != 0:
+      print(f"DEBUG CARSTATE: LKA_FAULT={lka_fault_raw}, angle={ret.steeringAngleDeg:.1f}")
 
     # TODO: alt signal usage may be described by cp.vl['BLINKERS']['USE_ALT_LAMP']
     left_blinker_sig, right_blinker_sig = "LEFT_LAMP", "RIGHT_LAMP"
