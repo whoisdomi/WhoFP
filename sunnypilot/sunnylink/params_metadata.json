@@ -463,7 +463,7 @@
     "title": "Lane Turn Value",
     "description": "",
     "min": 0,
-    "max": 20,
+    "max": 40,
     "step": 1
   },
   "LanguageSetting": {
