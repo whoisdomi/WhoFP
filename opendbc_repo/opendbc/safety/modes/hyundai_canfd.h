@@ -229,12 +229,20 @@ static bool hyundai_canfd_fwd_hook(int bus_num, int addr) {
   // Only block when longitudinal enabled AND controls_allowed (OP is engaged)
   // This prevents the "Christmas lights" fault from blocking 0x1A0 before OP is ready
   if (hyundai_longitudinal && controls_allowed) {
-    // LKA steering: SCC on bus 1 (E-CAN)
-    // LFA steering: SCC on bus 0 (PT-CAN) or bus 2 (camera)
-    const int scc_bus = hyundai_canfd_lka_steering ? 1 : (hyundai_camera_scc ? 2 : 0);
-
-    if ((bus_num == scc_bus) && (addr == 0x1A0)) {
-      block_msg = true;
+    // Block 0x1A0 from any bus that's not where OP sends
+    // LKA steering: OP sends on bus 1 (E-CAN), block 0x1A0 from all other buses
+    // LFA steering: OP sends on bus 0, block from bus 2 (camera) if camera_scc
+    if (addr == 0x1A0) {
+      if (hyundai_canfd_lka_steering) {
+        // Block 0x1A0 from any bus except where OP transmits
+        // Stock may appear on bus 1 or other buses (e.g., 193 in Cabana)
+        block_msg = true;  // Block all 0x1A0 forwarding, OP sends directly
+      } else {
+        const int scc_bus = hyundai_camera_scc ? 2 : 0;
+        if (bus_num == scc_bus) {
+          block_msg = true;
+        }
+      }
     }
   }
 
