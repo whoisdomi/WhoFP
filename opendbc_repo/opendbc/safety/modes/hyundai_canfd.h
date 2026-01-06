@@ -221,6 +221,26 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
   return tx;
 }
 
+// BSM-preserving SCC filtering: Block stock 0x1A0 ONLY when OP is engaged
+// This allows stock SCC to work during startup, then OP takes over when engaged
+static bool hyundai_canfd_fwd_hook(int bus_num, int addr) {
+  bool block_msg = false;
+
+  // Only block when longitudinal enabled AND controls_allowed (OP is engaged)
+  // This prevents the "Christmas lights" fault from blocking 0x1A0 before OP is ready
+  if (hyundai_longitudinal && controls_allowed) {
+    // LKA steering: SCC on bus 1 (E-CAN)
+    // LFA steering: SCC on bus 0 (PT-CAN) or bus 2 (camera)
+    const int scc_bus = hyundai_canfd_lka_steering ? 1 : (hyundai_camera_scc ? 2 : 0);
+
+    if ((bus_num == scc_bus) && (addr == 0x1A0)) {
+      block_msg = true;
+    }
+  }
+
+  return block_msg;
+}
+
 static safety_config hyundai_canfd_init(uint16_t param) {
   const int HYUNDAI_PARAM_CANFD_LKA_STEERING_ALT = 128;
   const int HYUNDAI_PARAM_CANFD_ALT_BUTTONS = 32;
@@ -382,6 +402,7 @@ const safety_hooks hyundai_canfd_hooks = {
   .init = hyundai_canfd_init,
   .rx = hyundai_canfd_rx_hook,
   .tx = hyundai_canfd_tx_hook,
+  .fwd = hyundai_canfd_fwd_hook,
   .get_counter = hyundai_canfd_get_counter,
   .get_checksum = hyundai_canfd_get_checksum,
   .compute_checksum = hyundai_common_canfd_compute_checksum,

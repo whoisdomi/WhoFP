@@ -169,6 +169,18 @@ class CarInterface(CarInterfaceBase):
   def init(CP, can_recv, can_send, communication_control=None):
     global ECU_DISABLE_TIMESTAMP
 
+    # BSM-PRESERVING MODE: Use panda fwd hook filtering instead of ECU disable
+    # The fwd hook in hyundai_canfd.h blocks stock 0x1A0 only when controls_allowed=true
+    # This preserves BSM (0x1BA) and allows stock SCC during startup
+    USE_PANDA_SCC_FILTERING = True
+
+    if USE_PANDA_SCC_FILTERING:
+      if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
+        ecu_log("=== PANDA SCC FILTERING MODE (ECU NOT DISABLED) - BSM PRESERVED ===")
+        ecu_log("Stock 0x1A0 will be blocked by fwd hook only when OP engaged")
+      return
+
+    # Original ECU disable code (disabled for BSM preservation)
     # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
     # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
     # This allows ECU to still receive from rear radars for BSM while blocking SCC TX
