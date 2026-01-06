@@ -377,11 +377,27 @@ static safety_config hyundai_canfd_init(uint16_t param) {
 
   return ret;
 }
-
+static bool hyundai_canfd_fwd_hook(int bus_num, int addr) {
+bool block_msg = false;
+// Block stock SCC_CONTROL (0x1A0) from ADAS ECU when longitudinal is enabled
+// This allows OpenPilot to send its own 0x1A0 while keeping BSM (0x1BA) working
+if (hyundai_longitudinal) {
+// Determine which bus the SCC messages come from
+// LKA steering cars: SCC on bus 1 (E-CAN)
+// LFA steering cars: SCC on bus 0 (PT-CAN) or bus 2 (camera)
+const int scc_bus = hyundai_canfd_lka_steering ? 1 : (hyundai_camera_scc ? 2 :
+0);
+if ((bus_num == scc_bus) && (addr == 0x1A0)) {
+block_msg = true;
+}
+}
+return block_msg;
+}
 const safety_hooks hyundai_canfd_hooks = {
   .init = hyundai_canfd_init,
   .rx = hyundai_canfd_rx_hook,
   .tx = hyundai_canfd_tx_hook,
+  .fwd = hyundai_canfd_fwd_hook, // ADD THIS LINE
   .get_counter = hyundai_canfd_get_counter,
   .get_checksum = hyundai_canfd_get_checksum,
   .compute_checksum = hyundai_common_canfd_compute_checksum,
