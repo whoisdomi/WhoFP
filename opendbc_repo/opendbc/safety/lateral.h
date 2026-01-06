@@ -58,8 +58,6 @@ static bool rt_torque_rate_limit_check(int val, int val_last, const int MAX_RT_D
 
 // Safety checks for torque-based steering commands
 bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueSteeringLimits limits) {
-  return false;  // TESTING ONLY - disables all torque safety checks
-
   bool violation = false;
   uint32_t ts = microsecond_timer_get();
 
