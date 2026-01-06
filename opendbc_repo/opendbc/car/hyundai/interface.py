@@ -224,11 +224,7 @@ class CarInterface(CarInterfaceBase):
         # Real CAN error - don't suppress, let it through
         ecu_log("ECU_DISABLE: NOT suppressing canValid - counter errors detected")
       else:
-        # Only timeout errors (expected after ECU disable) - suppress
-        elapsed = time.monotonic() - ECU_DISABLE_TIMESTAMP
-        # Log occasionally to confirm this is working (every ~10 seconds)
-        if int(elapsed) % 10 == 0 and elapsed - int(elapsed) < 0.1:
-          ecu_log(f"ECU_DISABLE: suppressing timeout error (elapsed={elapsed:.0f}s)")
+        # Only timeout errors (expected after ECU disable) - suppress silently
         ret.canValid = True
 
     return ret, fp_ret
