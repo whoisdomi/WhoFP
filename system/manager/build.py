@@ -86,6 +86,12 @@ def build(spinner: Spinner, dirty: bool = False, minimal: bool = False) -> None:
     cache_size -= f.stat().st_size
     f.unlink()
 
+  # Re-create prebuilt file if Auto Prebuilt Flag is enabled
+  # Read param directly from file to avoid importing params module
+  prebuilt_param = Path("/data/params/d/AutoPrebuiltEnabled")
+  if prebuilt_param.exists() and prebuilt_param.read_bytes() == b"1":
+    (Path(BASEDIR) / "prebuilt").touch()
+
 
 if __name__ == "__main__":
   spinner = Spinner()
