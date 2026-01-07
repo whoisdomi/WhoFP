@@ -72,10 +72,13 @@ class CarController(CarControllerBase):
                                                                        self.angle_limit_counter, MAX_ANGLE_FRAMES,
                                                                        MAX_ANGLE_CONSECUTIVE_FRAMES)
 
-    # DEBUG LOGGING
+    # DEBUG LOGGING - writes to /data/steer_debug.log
     if abs(CS.out.steeringAngleDeg) >= MAX_ANGLE or CS.out.steerFaultTemporary:
-      print(f"DEBUG: angle={CS.out.steeringAngleDeg:.1f}, steer_req={apply_steer_req}, torque={apply_torque}, "
-            f"latActive={CC.latActive}, fault={CS.out.steerFaultTemporary}, counter={self.angle_limit_counter}")
+      import time
+      with open("/data/steer_debug.log", "a") as f:
+        f.write(f"{time.time():.3f} CTRL: angle={CS.out.steeringAngleDeg:.1f}, steer_req={apply_steer_req}, "
+                f"torque={apply_torque}, latActive={CC.latActive}, fault={CS.out.steerFaultTemporary}, "
+                f"counter={self.angle_limit_counter}\n")
 
     if not CC.latActive:
       apply_torque = 0
