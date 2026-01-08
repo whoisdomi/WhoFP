@@ -182,6 +182,9 @@ procs += [
 
   # locationd
   NativeProcess("locationd_llk", "sunnypilot/selfdrive/locationd", ["./locationd"], only_onroad),
+
+  # navigationd - must be after locationd since it subscribes to liveLocationKalman
+  PythonProcess("navigationd", "sunnypilot.navd.navigationd", only_onroad),
 ]
 
 if os.path.exists("./github_runner.sh"):
