@@ -145,6 +145,7 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
     {"HumanLaneChanges", tr("Human-Like Lane Changes"), tr("<b>Lane-change behavior that mimics human drivers</b> by anticipating and tracking adjacent vehicles during lane changes."), ""},
     {"LeadDetectionThreshold", tr("Lead Detection Sensitivity"), tr("<b>How sensitive openpilot is to detecting vehicles.</b> Higher sensitivity allows quicker detection at longer distances but may react to non-vehicle objects; lower sensitivity is more conservative and reduces false detections."), ""},
     {"TacoTune", tr("\"Taco Bell Run\" Turn Speed Hack"), tr("<b>The turn-speed hack from comma's 2022 \"Taco Bell Run\".</b> Designed to slow down for left and right turns."), ""},
+    {"TacoTuneAggressiveness", tr("Taco Bell Aggressiveness"), tr("<b>Adjusts how aggressively openpilot slows for turns.</b> Lower values slow down more for turns; higher values maintain more speed. 100% is the default behavior."), ""},
 
     {"QOLLongitudinal", tr("Quality of Life"), tr("<b>Miscellaneous acceleration and braking control changes</b> to fine-tune how openpilot drives."), "../../frogpilot/assets/toggle_icons/icon_quality_of_life.png"},
     {"CustomCruise", tr("Cruise Interval"), tr("<b>How much the set speed increases or decreases</b> for each + or – cruise control button press."), ""},
@@ -372,6 +373,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       longitudinalToggle = decelerationProfileToggle;
     } else if (param == "LeadDetectionThreshold") {
       longitudinalToggle = new FrogPilotParamValueControl(param, title, desc, icon, 25, 50, "%");
+    } else if (param == "TacoTuneAggressiveness") {
+      longitudinalToggle = new FrogPilotParamValueControl(param, title, desc, icon, 25, 100, "%");
 
     } else if (param == "QOLLongitudinal") {
       FrogPilotManageControl *qolLongitudinalToggle = new FrogPilotManageControl(param, title, desc, icon);
@@ -644,6 +647,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
     } else if (customDrivingPersonalityKeys.contains(param)) {
       customDrivingPersonalityList->addItem(longitudinalToggle);
     } else if (longitudinalTuneKeys.contains(param)) {
+      longitudinalTuneList->addItem(longitudinalToggle);
+    } else if (tacoTuneKeys.contains(param)) {
       longitudinalTuneList->addItem(longitudinalToggle);
     } else if (qolKeys.contains(param)) {
       qolList->addItem(longitudinalToggle);
@@ -1061,6 +1066,10 @@ void FrogPilotLongitudinalPanel::updateToggles() {
       setVisible &= !parent->isToyota || !params.getBool("FrogsGoMoosTweak");
     }
 
+    else if (key == "TacoTuneAggressiveness") {
+      setVisible &= params.getBool("TacoTune");
+    }
+
     toggle->setVisible(setVisible);
 
     if (setVisible) {
@@ -1075,6 +1084,8 @@ void FrogPilotLongitudinalPanel::updateToggles() {
       } else if (customDrivingPersonalityKeys.contains(key)) {
         toggles["CustomPersonalities"]->setVisible(true);
       } else if (longitudinalTuneKeys.contains(key)) {
+        toggles["LongitudinalTune"]->setVisible(true);
+      } else if (tacoTuneKeys.contains(key)) {
         toggles["LongitudinalTune"]->setVisible(true);
       } else if (qolKeys.contains(key)) {
         toggles["QOLLongitudinal"]->setVisible(true);

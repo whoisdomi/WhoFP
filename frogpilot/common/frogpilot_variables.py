@@ -616,6 +616,7 @@ class FrogPilotVariables:
     toggle.human_lane_changes = has_radar and self.get_value("HumanLaneChanges", condition=longitudinal_tuning)
     toggle.lead_detection_probability = self.get_value("LeadDetectionThreshold", cast=float, condition=longitudinal_tuning, conversion=0.01, min=0.25, max=0.5)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
+    toggle.taco_tune_aggressiveness = self.get_value("TacoTuneAggressiveness", cast=int, condition=toggle.taco_tune, min=25, max=100) / 100
 
     toggle.model = self.default_values["DrivingModel"]
     toggle.model_name = self.default_values["DrivingModelName"]

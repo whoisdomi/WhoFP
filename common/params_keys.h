@@ -453,6 +453,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"StoppingDecelRateStock", {PERSISTENT, FLOAT, "0.0", "0.0", 3}},
     {"SubaruSNG", {PERSISTENT, BOOL, "1", "0", 2}},
     {"TacoTune", {PERSISTENT, BOOL, "0", "0", 2}},
+    {"TacoTuneAggressiveness", {PERSISTENT, INT, "100", "100", 2}},
     {"TacoTuneHacks", {PERSISTENT, BOOL, "0", "0", 2}},
     {"TestAlert", {CLEAR_ON_MANAGER_START, STRING, "", ""}},
     {"TetheringEnabled", {PERSISTENT, INT, "0", "0", 0}},
