@@ -75,10 +75,11 @@ class CarController(CarControllerBase):
     # DEBUG LOGGING - writes to /data/steer_debug.log
     if abs(CS.out.steeringAngleDeg) >= MAX_ANGLE or CS.out.steerFaultTemporary:
       import time
+      lat_accel = CS.out.yawRate * CS.out.vEgo
       with open("/data/steer_debug.log", "a") as f:
         f.write(f"{time.time():.3f} CTRL: angle={CS.out.steeringAngleDeg:.1f}, steer_req={apply_steer_req}, "
-                f"torque={apply_torque}, latActive={CC.latActive}, fault={CS.out.steerFaultTemporary}, "
-                f"counter={self.angle_limit_counter}\n")
+                f"torque={apply_torque}, latAccel={lat_accel:.2f}, vEgo={CS.out.vEgo:.1f}, "
+                f"latActive={CC.latActive}, fault={CS.out.steerFaultTemporary}, counter={self.angle_limit_counter}\n")
 
     if not CC.latActive:
       apply_torque = 0

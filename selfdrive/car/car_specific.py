@@ -210,8 +210,22 @@ class CarSpecificEvents:
         if self.silent_steer_warning or CS.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
           self.silent_steer_warning = True
           events.add(EventName.steerTempUnavailableSilent)
+          # DEBUG LOGGING
+          import time
+          lat_accel = CS.yawRate * CS.vEgo
+          with open("/data/steer_debug.log", "a") as f:
+            f.write(f"{time.time():.3f} ALERT: steerTempUnavailableSilent - angle={CS.steeringAngleDeg:.1f}, "
+                    f"torque={CS.steeringTorque:.1f}, latAccel={lat_accel:.2f}, vEgo={CS.vEgo:.1f}, "
+                    f"standstill={CS.standstill}, steering_unpressed={self.steering_unpressed}\n")
         else:
           events.add(EventName.steerTempUnavailable)
+          # DEBUG LOGGING
+          import time
+          lat_accel = CS.yawRate * CS.vEgo
+          with open("/data/steer_debug.log", "a") as f:
+            f.write(f"{time.time():.3f} ALERT: steerTempUnavailable (TAKE CONTROL) - angle={CS.steeringAngleDeg:.1f}, "
+                    f"torque={CS.steeringTorque:.1f}, latAccel={lat_accel:.2f}, vEgo={CS.vEgo:.1f}, "
+                    f"standstill={CS.standstill}, steering_unpressed={self.steering_unpressed}\n")
     else:
       self.no_steer_warning = False
       self.silent_steer_warning = False
