@@ -5,6 +5,7 @@
 #include <string>
 
 #include <QDebug>
+#include <QFile>
 #include <QLabel>
 
 #include "common/params.h"
@@ -34,6 +35,29 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
                                                        tr("FrogPilot will automatically update itself and it's assets when you're offroad and have an active internet connection."), "");
   addItem(automaticUpdatesToggle);
 
+  // auto prebuilt flag toggle
+  prebuiltToggle = new ToggleControl(
+    tr("Auto Prebuilt Flag"),
+    tr("Automatically manage the prebuilt flag for faster boot times. The flag is removed when downloading updates and restored after successful compilation."),
+    "",
+    params.getBool("AutoPrebuiltEnabled")
+  );
+  connect(prebuiltToggle, &ToggleControl::toggleFlipped, [=](bool state) {
+    params.putBool("AutoPrebuiltEnabled", state);
+    if (state) {
+      // Create prebuilt file if it doesn't exist
+      QFile file("/data/openpilot/prebuilt");
+      if (!file.exists()) {
+        file.open(QIODevice::WriteOnly);
+        file.close();
+      }
+    } else {
+      // Remove prebuilt file
+      QFile::remove("/data/openpilot/prebuilt");
+    }
+  });
+  addItem(prebuiltToggle);
+
   // download update btn
   downloadBtn = new ButtonControl(tr("Download"), tr("CHECK"));
   connect(downloadBtn, &ButtonControl::clicked, [=]() {
@@ -41,6 +65,8 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     if (downloadBtn->text() == tr("CHECK")) {
       checkForUpdates();
     } else {
+      // Remove prebuilt file when downloading (will be restored after compile if toggle is ON)
+      QFile::remove("/data/openpilot/prebuilt");
       std::system("pkill -SIGHUP -f system.updated.updated");
     }
     frogpilotUIState()->params_memory.putBool("ManualUpdateInitiated", true);
