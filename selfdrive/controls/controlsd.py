@@ -161,6 +161,14 @@ class Controls:
     actuators.torque = float(steer)
     actuators.steeringAngleDeg = float(steeringAngleDeg)
 
+    # DEBUG LOGGING - lateral controller inputs/outputs
+    if CC.latActive and (abs(CS.steeringAngleDeg) >= 15 or abs(steer) > 0.1):
+      import time
+      with open("/data/steer_debug.log", "a") as f:
+        f.write(f"{time.time():.3f} LAT: angle={CS.steeringAngleDeg:.1f}, modelCurv={new_desired_curvature:.4f}, "
+                f"clippedCurv={self.desired_curvature:.4f}, curvLimited={curvature_limited}, "
+                f"steerOut={steer:.3f}, currCurv={self.curvature:.4f}\n")
+
     # OPGM variables
     if len(long_plan.speeds):
       actuators.speed = long_plan.speeds[-1]
