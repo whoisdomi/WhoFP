@@ -26,9 +26,9 @@ class CarControllerParams:
 
     if CP.flags & HyundaiFlags.CANFD:
       self.STEER_MAX = 720 if vEgoRaw < 15. else 400
-      self.STEER_DRIVER_ALLOWANCE = 400
+      self.STEER_DRIVER_ALLOWANCE = 350
       self.STEER_DRIVER_MULTIPLIER = 3
-      self.STEER_THRESHOLD = 400
+      self.STEER_THRESHOLD = 250
       self.STEER_DELTA_UP = 3
       self.STEER_DELTA_DOWN = 7
 
