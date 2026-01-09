@@ -261,7 +261,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"HKGAutoExperimental", {PERSISTENT, BOOL, "0", "0", 2}},
     {"HKGAutoLongAlpha", {PERSISTENT, BOOL, "0", "0", 2}},
     {"HKGEcuDisable", {PERSISTENT, BOOL, "0", "0", 2}},
-    {"HKGEcuDisableSuccess", {PERSISTENT, BOOL, "0", "0"}},
     {"ICBM", {PERSISTENT, BOOL, "0", "0", 1}},
     {"ICBMButton", {CLEAR_ON_OFFROAD_TRANSITION, INT, "0", "0"}},
     {"IconPack", {PERSISTENT, STRING, "frog-animated", "stock", 0}},

@@ -134,31 +134,7 @@ class CarInterface(CarInterfaceBase):
     # Common longitudinal control setup
 
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or Bus.radar not in DBC[ret.carFingerprint]
-
-    # For SecurityAccess cars (Ioniq 6, Kona EV 2nd Gen) with HKGEcuDisable toggle on,
-    # DON'T enable longitudinal here unless ECU disable already succeeded (HKGEcuDisableSuccess).
-    # This prevents errors if user starts in READY mode (ECU disable fails but CarParams has long enabled).
-    is_security_access = candidate in CANFD_SECURITYACCESS_CAR
-    hkg_ecu_disable_on = False
-    hkg_ecu_disable_success = False
-    if is_security_access:
-      try:
-        params = Params()
-        hkg_ecu_disable_on = params.get_bool("HKGEcuDisable")
-        hkg_ecu_disable_success = params.get_bool("HKGEcuDisableSuccess")
-      except:
-        pass
-
-    if is_security_access and hkg_ecu_disable_on:
-      if hkg_ecu_disable_success:
-        # ECU disable already succeeded in a previous boot - safe to enable longitudinal
-        ret.openpilotLongitudinalControl = alpha_long and ret.alphaLongitudinalAvailable
-      else:
-        # First boot with toggle on - don't enable longitudinal until ECU disable succeeds
-        ret.openpilotLongitudinalControl = False
-    else:
-      ret.openpilotLongitudinalControl = alpha_long and ret.alphaLongitudinalAvailable
-
+    ret.openpilotLongitudinalControl = alpha_long and ret.alphaLongitudinalAvailable
     # When longitudinal is enabled, we disable the ADAS ECU which stops radar messages
     # Force radarUnavailable to prevent CAN Error from missing radar messages
     if ret.openpilotLongitudinalControl:
@@ -236,11 +212,6 @@ class CarInterface(CarInterfaceBase):
         # Auto-enable settings if configured (SecurityAccess cars only)
         if is_security_access_car:
           try:
-            # Mark ECU disable as successful - this persists across reboots
-            # so _get_params() knows it's safe to enable longitudinal
-            params.put_bool("HKGEcuDisableSuccess", True)
-            ecu_log("Set HKGEcuDisableSuccess = True")
-
             if params.get_bool("HKGAutoLongAlpha"):
               params.put_bool("AlphaLongitudinalEnabled", True)
               ecu_log("Auto-enabled AlphaLongitudinalEnabled")
@@ -248,11 +219,6 @@ class CarInterface(CarInterfaceBase):
               if params.get_bool("HKGAutoExperimental"):
                 params.put_bool("ExperimentalMode", True)
                 ecu_log("Auto-enabled ExperimentalMode")
-
-              # Trigger a reboot so longitudinal actually works this drive
-              # (CarParams was built with openpilotLongitudinalControl=False to prevent errors on READY mode start)
-              ecu_log("=== ECU DISABLE SUCCESS - Triggering reboot for longitudinal ===")
-              params.put_bool("DoReboot", True)
           except Exception as e:
             ecu_log(f"Error setting auto-enable params: {e}")
       else:
@@ -261,10 +227,6 @@ class CarInterface(CarInterfaceBase):
         # Turn OFF Longitudinal and Experimental (may have been on from previous drive)
         if is_security_access_car:
           try:
-            # Mark ECU disable as failed - prevents longitudinal from being enabled
-            params.put_bool("HKGEcuDisableSuccess", False)
-            ecu_log("Set HKGEcuDisableSuccess = False")
-
             params.put_bool("AlphaLongitudinalEnabled", False)
             params.put_bool("ExperimentalMode", False)
             ecu_log("Disabled AlphaLongitudinalEnabled and ExperimentalMode due to ECU disable failure")
