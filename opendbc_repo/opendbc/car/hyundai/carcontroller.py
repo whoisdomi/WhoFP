@@ -73,12 +73,15 @@ class CarController(CarControllerBase):
                                                                        MAX_ANGLE_CONSECUTIVE_FRAMES)
 
     # DEBUG LOGGING - writes to /data/steer_debug.log
-    if abs(CS.out.steeringAngleDeg) >= MAX_ANGLE or CS.out.steerFaultTemporary:
+    # Log when: angle >= 50° (to catch the approach), OR fault, OR latActive with significant torque
+    if abs(CS.out.steeringAngleDeg) >= 50 or CS.out.steerFaultTemporary or (CC.latActive and abs(apply_torque) > 50):
       import time
       lat_accel = CS.out.yawRate * CS.out.vEgo
+      torque_limited = new_torque != apply_torque
       with open("/data/steer_debug.log", "a") as f:
-        f.write(f"{time.time():.3f} CTRL: angle={CS.out.steeringAngleDeg:.1f}, steer_req={apply_steer_req}, "
-                f"torque={apply_torque}, latAccel={lat_accel:.2f}, vEgo={CS.out.vEgo:.1f}, "
+        f.write(f"{time.time():.3f} CTRL: angle={CS.out.steeringAngleDeg:.1f}, steerRate={CS.out.steeringRateDeg:.1f}, "
+                f"desired={new_torque}, torque={apply_torque}, limited={torque_limited}, "
+                f"latAccel={lat_accel:.2f}, vEgo={CS.out.vEgo:.1f}, "
                 f"latActive={CC.latActive}, fault={CS.out.steerFaultTemporary}, counter={self.angle_limit_counter}\n")
 
     if not CC.latActive:
