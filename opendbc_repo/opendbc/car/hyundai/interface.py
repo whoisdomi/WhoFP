@@ -1,5 +1,6 @@
 import time
 
+from openpilot.common.params import Params
 from opendbc.car import Bus, get_safety_config, structs, uds
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
@@ -169,13 +170,33 @@ class CarInterface(CarInterfaceBase):
   def init(CP, can_recv, can_send, communication_control=None):
     global ECU_DISABLE_TIMESTAMP
 
+    # Check if car is SecurityAccess capable (Ioniq 6, Kona EV 2nd Gen)
+    is_security_access_car = CP.carFingerprint in CANFD_SECURITYACCESS_CAR
+
+    # Get ECU disable toggle setting for SecurityAccess cars
+    params = Params()
+    hkg_ecu_disable_enabled = False
+    if is_security_access_car:
+      try:
+        hkg_ecu_disable_enabled = params.get_bool("HKGEcuDisable")
+      except:
+        pass
+      ecu_log(f"SecurityAccess car - ECU disable toggle: {hkg_ecu_disable_enabled}")
+
     # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
     # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
     # This allows ECU to still receive from rear radars for BSM while blocking SCC TX
     if communication_control is None:
       communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
 
-    if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
+    # Determine if we should run ECU disable
+    # For non-SecurityAccess cars: use existing logic (openpilotLongitudinalControl)
+    # For SecurityAccess cars: require the HKGEcuDisable toggle to be enabled
+    should_run_ecu_disable = CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC))
+    if is_security_access_car:
+      should_run_ecu_disable = hkg_ecu_disable_enabled and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC))
+
+    if should_run_ecu_disable:
       addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
@@ -187,8 +208,30 @@ class CarInterface(CarInterfaceBase):
       # Only enable CAN error suppression if ECU disable actually succeeded
       if ecu_disabled:
         ECU_DISABLE_TIMESTAMP = time.monotonic()
+
+        # Auto-enable settings if configured (SecurityAccess cars only)
+        if is_security_access_car:
+          try:
+            if params.get_bool("HKGAutoLongAlpha"):
+              params.put_bool("AlphaLongitudinalEnabled", True)
+              ecu_log("Auto-enabled AlphaLongitudinalEnabled")
+
+              if params.get_bool("HKGAutoExperimental"):
+                params.put_bool("ExperimentalMode", True)
+                ecu_log("Auto-enabled ExperimentalMode")
+          except Exception as e:
+            ecu_log(f"Error setting auto-enable params: {e}")
       else:
         ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
+
+        # Turn OFF Longitudinal and Experimental (may have been on from previous drive)
+        if is_security_access_car:
+          try:
+            params.put_bool("AlphaLongitudinalEnabled", False)
+            params.put_bool("ExperimentalMode", False)
+            ecu_log("Disabled AlphaLongitudinalEnabled and ExperimentalMode due to ECU disable failure")
+          except Exception as e:
+            ecu_log(f"Error disabling params: {e}")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:

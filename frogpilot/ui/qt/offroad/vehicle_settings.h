@@ -24,7 +24,7 @@ private:
   std::map<QString, AbstractControl*> toggles;
 
   QSet<QString> gmKeys = {"VoltSNG"};
-  QSet<QString> hkgKeys = {"TacoTuneHacks"};
+  QSet<QString> hkgKeys = {"HKGAutoExperimental", "HKGAutoLongAlpha", "HKGEcuDisable", "TacoTuneHacks"};
   QSet<QString> longitudinalKeys = {"FrogsGoMoosTweak", "SNGHack", "SubaruSNG", "VoltSNG"};
   QSet<QString> subaruKeys = {"SubaruSNG"};
   QSet<QString> toyotaKeys = {"ClusterOffset", "FrogsGoMoosTweak", "LockDoorsTimer", "SNGHack", "ToyotaDoors"};
