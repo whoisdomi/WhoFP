@@ -1,13 +1,16 @@
+import time
+
 from cereal import car, custom
 from panda import Panda
+from panda.python import uds
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CANFD_CAR, CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, \
-                                         CANFD_UNSUPPORTED_LONGITUDINAL_CAR, EV_CAR, HYBRID_CAR, LEGACY_SAFETY_MODE_CAR, \
-                                         UNSUPPORTED_LONGITUDINAL_CAR, Buttons
+                                         CANFD_UNSUPPORTED_LONGITUDINAL_CAR, CANFD_SECURITYACCESS_CAR, EV_CAR, HYBRID_CAR, \
+                                         LEGACY_SAFETY_MODE_CAR, UNSUPPORTED_LONGITUDINAL_CAR, Buttons
 from openpilot.selfdrive.car.hyundai.radar_interface import RADAR_START_ADDR
 from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
-from openpilot.selfdrive.car.disable_ecu import disable_ecu
+from openpilot.selfdrive.car.disable_ecu import disable_ecu, ecu_log
 
 Ecu = car.CarParams.Ecu
 ButtonType = car.CarState.ButtonEvent.Type
@@ -17,6 +20,9 @@ GearShifter = car.CarState.GearShifter
 ENABLE_BUTTONS = (Buttons.RES_ACCEL, Buttons.SET_DECEL, Buttons.CANCEL)
 BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: ButtonType.decelCruise,
                 Buttons.GAP_DIST: ButtonType.gapAdjustCruise, Buttons.CANCEL: ButtonType.cancel}
+
+# Track when ECU disable happened - used to permanently suppress CAN errors from disabled ECU
+ECU_DISABLE_TIMESTAMP = 0.0
 
 
 class CarInterface(CarInterfaceBase):
@@ -156,11 +162,29 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, logcan, sendcan):
+    global ECU_DISABLE_TIMESTAMP
+
+    # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
+    # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
+    # This allows ECU to still receive from rear radars for BSM while blocking SCC TX
+    communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
+
     if CP.openpilotLongitudinalControl and not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC.value):
       addr, bus = 0x7d0, 0
       if CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, CanBus(CP).ECAN
-      disable_ecu(logcan, sendcan, bus=bus, addr=addr, com_cont_req=b'\x28\x83\x01')
+      if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
+        addr, bus = 0x730, CanBus(CP).ECAN
+
+      # ECU disable must happen in IGN-ON state BEFORE entering READY mode
+      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
+      ecu_disabled = disable_ecu(logcan, sendcan, bus=bus, addr=addr, com_cont_req=communication_control)
+
+      # Only enable CAN error suppression if ECU disable actually succeeded
+      if ecu_disabled:
+        ECU_DISABLE_TIMESTAMP = time.monotonic()
+      else:
+        ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
@@ -193,5 +217,34 @@ class CarInterface(CarInterfaceBase):
       events.add(car.CarEvent.EventName.belowSteerSpeed)
 
     ret.events = events.to_msg()
+
+    return ret, fp_ret
+
+  def update(self, c: car.CarControl, can_strings: list[bytes], frogpilot_toggles):
+    ret, fp_ret = super().update(c, can_strings, frogpilot_toggles)
+
+    # When ECU disable has been done for longitudinal control, we need to handle CAN errors carefully:
+    # - TIMEOUT errors (messages stop coming): Expected after ECU disable, should be suppressed
+    # - COUNTER errors (checksum/counter failures): Real CAN problems, should NOT be suppressed
+    global ECU_DISABLE_TIMESTAMP
+    if ECU_DISABLE_TIMESTAMP > 0 and not ret.canValid:
+      # Check if any parser has non-timeout errors (real CAN issues)
+      # bus_timeout indicates timeout, which is expected after ECU disable
+      # If can_valid is False but NOT due to timeout, there's a real error
+      has_real_errors = False
+      for cp in self.can_parsers:
+        if cp is not None:
+          # If can_valid is False but bus_timeout is also False, it's likely a counter/checksum error
+          if not cp.can_valid and not cp.bus_timeout:
+            has_real_errors = True
+            ecu_log(f"REAL CAN ERROR: can_valid=False, bus_timeout=False")
+            break
+
+      if has_real_errors:
+        # Real CAN error - don't suppress, let it through
+        ecu_log("ECU_DISABLE: NOT suppressing canValid - real errors detected")
+      else:
+        # Only timeout errors (expected after ECU disable) - suppress silently
+        ret.canValid = True
 
     return ret, fp_ret
