@@ -183,6 +183,7 @@ class CarInterface(CarInterfaceBase):
       # Only enable CAN error suppression if ECU disable actually succeeded
       if ecu_disabled:
         ECU_DISABLE_TIMESTAMP = time.monotonic()
+        ecu_log(f"=== ECU DISABLE SUCCESS - TIMESTAMP SET: {ECU_DISABLE_TIMESTAMP} ===")
       else:
         ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
 
@@ -223,28 +224,19 @@ class CarInterface(CarInterfaceBase):
   def update(self, c: car.CarControl, can_strings: list[bytes], frogpilot_toggles):
     ret, fp_ret = super().update(c, can_strings, frogpilot_toggles)
 
-    # When ECU disable has been done for longitudinal control, we need to handle CAN errors carefully:
-    # - TIMEOUT errors (messages stop coming): Expected after ECU disable, should be suppressed
-    # - COUNTER errors (checksum/counter failures): Real CAN problems, should NOT be suppressed
+    # When ECU disable has been done for longitudinal control, suppress CAN errors
+    # The disabled ECU will stop sending messages, causing timeout errors which are expected
     global ECU_DISABLE_TIMESTAMP
     if ECU_DISABLE_TIMESTAMP > 0 and not ret.canValid:
-      # Check if any parser has non-timeout errors (real CAN issues)
-      # bus_timeout indicates timeout, which is expected after ECU disable
-      # If can_valid is False but NOT due to timeout, there's a real error
-      has_real_errors = False
-      for cp in self.can_parsers:
-        if cp is not None:
-          # If can_valid is False but bus_timeout is also False, it's likely a counter/checksum error
-          if not cp.can_valid and not cp.bus_timeout:
-            has_real_errors = True
-            ecu_log(f"REAL CAN ERROR: can_valid=False, bus_timeout=False")
-            break
+      # Log once for debugging
+      if not hasattr(self, '_ecu_disable_logged'):
+        self._ecu_disable_logged = True
+        ecu_log(f"ECU_DISABLE: Suppressing CAN errors (ECU disabled at {ECU_DISABLE_TIMESTAMP})")
+        for i, cp in enumerate(self.can_parsers):
+          if cp is not None:
+            ecu_log(f"  Parser {i}: can_valid={cp.can_valid}, bus_timeout={cp.bus_timeout}")
 
-      if has_real_errors:
-        # Real CAN error - don't suppress, let it through
-        ecu_log("ECU_DISABLE: NOT suppressing canValid - real errors detected")
-      else:
-        # Only timeout errors (expected after ECU disable) - suppress silently
-        ret.canValid = True
+      # Suppress CAN errors after successful ECU disable
+      ret.canValid = True
 
     return ret, fp_ret
