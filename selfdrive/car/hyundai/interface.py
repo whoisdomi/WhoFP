@@ -1,16 +1,13 @@
-import time
-
 from cereal import car, custom
 from panda import Panda
-from panda.python import uds
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CANFD_CAR, CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, \
-                                         CANFD_UNSUPPORTED_LONGITUDINAL_CAR, CANFD_SECURITYACCESS_CAR, EV_CAR, HYBRID_CAR, LEGACY_SAFETY_MODE_CAR, \
+                                         CANFD_UNSUPPORTED_LONGITUDINAL_CAR, EV_CAR, HYBRID_CAR, LEGACY_SAFETY_MODE_CAR, \
                                          UNSUPPORTED_LONGITUDINAL_CAR, Buttons
 from openpilot.selfdrive.car.hyundai.radar_interface import RADAR_START_ADDR
 from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
-from openpilot.selfdrive.car.disable_ecu import disable_ecu, ecu_log
+from openpilot.selfdrive.car.disable_ecu import disable_ecu
 
 Ecu = car.CarParams.Ecu
 ButtonType = car.CarState.ButtonEvent.Type
@@ -20,9 +17,6 @@ GearShifter = car.CarState.GearShifter
 ENABLE_BUTTONS = (Buttons.RES_ACCEL, Buttons.SET_DECEL, Buttons.CANCEL)
 BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: ButtonType.decelCruise,
                 Buttons.GAP_DIST: ButtonType.gapAdjustCruise, Buttons.CANCEL: ButtonType.cancel}
-
-# Track when ECU disable happened - used to permanently suppress CAN errors from disabled ECU
-ECU_DISABLE_TIMESTAMP = 0.0
 
 
 class CarInterface(CarInterfaceBase):
@@ -162,30 +156,11 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, logcan, sendcan):
-    global ECU_DISABLE_TIMESTAMP
-
-    # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
-    # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
-    # This allows ECU to still receive from rear radars for BSM while blocking SCC TX
-    communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
-
     if CP.openpilotLongitudinalControl and not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC.value):
       addr, bus = 0x7d0, 0
       if CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, CanBus(CP).ECAN
-      # CANFD_SECURITYACCESS_CAR cars use HDA2 address even without HDA2 flag
-      elif CP.carFingerprint in CANFD_SECURITYACCESS_CAR:
-        addr, bus = 0x730, CanBus(CP).ECAN
-
-      # ECU disable must happen in IGN-ON state BEFORE entering READY mode
-      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
-      ecu_disabled = disable_ecu(logcan, sendcan, bus=bus, addr=addr, com_cont_req=communication_control)
-
-      # Only enable CAN error suppression if ECU disable actually succeeded
-      if ecu_disabled:
-        ECU_DISABLE_TIMESTAMP = time.monotonic()
-      else:
-        ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
+      disable_ecu(logcan, sendcan, bus=bus, addr=addr, com_cont_req=b'\x28\x83\x01')
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
