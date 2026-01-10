@@ -7,6 +7,18 @@ from openpilot.selfdrive.controls.lib.drive_helpers import MIN_SPEED
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
+# Advanced Turn Desires constants
+LAT_SMOOTH_SECONDS = 0.1
+DT_MDL = 1. / 20.  # 20 Hz model frequency
+
+# Post-turn timer state (module-level to persist across calls)
+_post_turn_timer = 0.0
+_prev_desired_curv = 0.0
+
+def smooth_value(val, prev_val, tau, dt=DT_MDL):
+  alpha = 1 - np.exp(-dt/tau) if tau > 0 else 1
+  return alpha * val + (1 - alpha) * prev_val
+
 ConfidenceClass = log.ModelDataV2.ConfidenceClass
 
 def curv_from_psis(psi_target, psi_rate, vego, delay):
@@ -69,13 +81,50 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
                    net_output_data: dict[str, np.ndarray], v_ego: float, delay: float,
                    publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
                    frame_id: int, frame_drop: float, timestamp_eof: int, model_execution_time: float,
-                   valid: bool) -> None:
+                   valid: bool, desire: int = 0, frogpilot_toggles = None) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   frame_drop_perc = frame_drop * 100
   extended_msg.valid = valid
   base_msg.valid = valid
 
   desired_curv = float(get_curvature_from_plan(net_output_data['plan'][0], v_ego, delay))
+
+  # Advanced Turn Desires (ATD) logic
+  global _post_turn_timer, _prev_desired_curv
+  atd_enabled = frogpilot_toggles and frogpilot_toggles.advanced_turn_desires
+  is_turning = desire in (log.Desire.turnLeft, log.Desire.turnRight)
+
+  if atd_enabled:
+    turn_lat_smooth = frogpilot_toggles.turn_lat_smooth
+    turn_left_bias_percent = frogpilot_toggles.turn_left_bias_percent
+    turn_right_bias_percent = frogpilot_toggles.turn_right_bias_percent
+    post_turn_smoothing_time = frogpilot_toggles.post_turn_smoothing_time
+
+    # Update post-turn timer
+    if is_turning:
+      _post_turn_timer = post_turn_smoothing_time
+    elif _post_turn_timer > 0:
+      _post_turn_timer -= DT_MDL
+
+    # Apply curvature bias during active turn
+    if is_turning:
+      if desire == log.Desire.turnLeft:
+        bias_percent = turn_left_bias_percent
+      else:  # turnRight
+        bias_percent = turn_right_bias_percent
+      curvature_bias = desired_curv * (bias_percent / 100.0)
+      desired_curv += curvature_bias
+
+    # Apply faster smoothing during turn and post-turn period
+    if is_turning or _post_turn_timer > 0:
+      lat_smooth = turn_lat_smooth
+    else:
+      lat_smooth = LAT_SMOOTH_SECONDS
+
+    if v_ego > 0.3:  # MIN_LAT_CONTROL_SPEED
+      desired_curv = smooth_value(desired_curv, _prev_desired_curv, lat_smooth)
+
+  _prev_desired_curv = desired_curv
 
   driving_model_data = base_msg.drivingModelData
 

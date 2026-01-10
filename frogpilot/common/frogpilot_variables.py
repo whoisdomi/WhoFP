@@ -832,6 +832,13 @@ class FrogPilotVariables:
     toggle.nnff_lite = not toggle.nnff and lateral_tuning and not is_angle_car and (params.get_bool("NNFFLite") if tuning_level >= level["NNFFLite"] else default.get_bool("NNFFLite"))
     toggle.use_turn_desires = lateral_tuning and (params.get_bool("TurnDesires") if tuning_level >= level["TurnDesires"] else default.get_bool("TurnDesires"))
 
+    # Advanced Turn Desires
+    toggle.advanced_turn_desires = toggle.use_turn_desires and (params.get_bool("AdvancedTurnDesires") if tuning_level >= level.get("AdvancedTurnDesires", 2) else False)
+    toggle.turn_lat_smooth = params.get_float("TurnLatSmooth") if toggle.advanced_turn_desires else 0.05
+    toggle.turn_left_bias_percent = params.get_float("TurnLeftBiasPercent") if toggle.advanced_turn_desires else -2.0
+    toggle.turn_right_bias_percent = params.get_float("TurnRightBiasPercent") if toggle.advanced_turn_desires else 4.0
+    toggle.post_turn_smoothing_time = params.get_float("PostTurnSmoothingTime") if toggle.advanced_turn_desires else 2.0
+
     lkas_button_control = (params.get_int("LKASButtonControl") if tuning_level >= level["LKASButtonControl"] else default.get_int("LKASButtonControl")) if toggle.car_make != "subaru" else 0
     toggle.experimental_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press |= toggle.experimental_mode_via_lkas
