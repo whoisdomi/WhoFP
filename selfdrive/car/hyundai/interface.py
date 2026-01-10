@@ -104,11 +104,6 @@ class CarInterface(CarInterfaceBase):
     ret.openpilotLongitudinalControl = experimental_long and ret.experimentalLongitudinalAvailable
     ret.pcmCruise = not ret.openpilotLongitudinalControl
 
-    # When longitudinal is enabled via ECU disable, radar messages stop coming
-    # Force radarUnavailable to prevent CAN Error from missing radar messages
-    if ret.openpilotLongitudinalControl and candidate in CANFD_SECURITYACCESS_CAR:
-      ret.radarUnavailable = True
-
     ret.stoppingControl = True
     ret.startingState = True
     ret.vEgoStarting = 0.1
@@ -198,26 +193,6 @@ class CarInterface(CarInterfaceBase):
 
   def _update(self, c, frogpilot_toggles):
     ret, fp_ret = self.CS.update(self.cp, self.cp_cam, frogpilot_toggles)
-
-    # When ECU disable has been done for longitudinal control, suppress CAN timeout errors
-    # (expected after ECU disable) while still showing real counter/checksum errors
-    global ECU_DISABLE_TIMESTAMP
-    if ECU_DISABLE_TIMESTAMP > 0 and not ret.canValid:
-      # Check if any parser has counter/checksum errors (real CAN issues)
-      has_counter_errors = False
-      for cp in [self.cp, self.cp_cam]:
-        if cp is not None:
-          for msg_name, msg_state in cp.vl_all.items():
-            # Check if this message has counter failures by looking at the valid flag
-            if hasattr(cp, 'can_invalid_cnt') and cp.can_invalid_cnt > 0:
-              has_counter_errors = True
-              break
-        if has_counter_errors:
-          break
-
-      if not has_counter_errors:
-        # Only timeout errors (expected after ECU disable) - suppress silently
-        ret.canValid = True
 
     if self.CS.CP.openpilotLongitudinalControl:
       ret.buttonEvents = [
