@@ -210,6 +210,9 @@ class CarInterfaceBase(ABC):
         if CP.flags & HyundaiFlags.HAS_LDA_BUTTON:
           fp_ret.safetyConfigs[-1].safetyParam |= HyundaiFrogPilotSafetyFlags.HAS_LDA_BUTTON.value
 
+        if getattr(frogpilot_toggles, 'taco_tune_hack', False):
+          fp_ret.safetyConfigs[-1].safetyParam |= HyundaiFrogPilotSafetyFlags.TACO_TUNE_HACK.value
+
       elif platform in TOYOTA:
         fp_ret.canUsePedal = not CP.autoResumeSng
         fp_ret.canUseSDSU = not CP.enableDsu and candidate not in UNSUPPORTED_DSU_CAR and candidate not in TSS2_CAR

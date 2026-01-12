@@ -328,6 +328,70 @@ class TestHyundaiCanfdLFASteeringLongAltButtons(TestHyundaiCanfdLFASteeringLongB
     pass
 
 
+# FrogPilot - Taco Tune Hack Tests
+class TestHyundaiCanfdTacoTuneHack(TestHyundaiCanfdLFASteeringEV):
+  """Test the taco tune hack which bypasses rate limits at low speed."""
+
+  TACO_TUNE_HACK_FLAG = 2048  # Must match HYUNDAI_PARAM_TACO_TUNE_HACK
+
+  # Low speed threshold is 17 m/s (15 m/s + 2 m/s margin)
+  # Speed conversion: raw * 0.03125 * 0.277778 = m/s
+  # So for 17 m/s: raw = 17 / (0.03125 * 0.277778) = 1958
+  SPEED_LOW = 1950   # ~16.9 m/s - below threshold
+  SPEED_HIGH = 2000  # ~17.4 m/s - above threshold
+
+  def setUp(self):
+    self.packer = CANPackerSafety("hyundai_canfd_generated")
+    self.safety = libsafety_py.libsafety
+    # LFA steering EV with Taco Tune Hack flag
+    self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd,
+                                 HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CAMERA_SCC | self.TACO_TUNE_HACK_FLAG)
+    self.safety.init_tests()
+
+  def _speed_msg_raw(self, raw_speed):
+    """Send speed message with raw speed value for all wheels."""
+    values = {f"WHL_Spd{pos}Val": raw_speed for pos in ["FL", "FR", "RL", "RR"]}
+    return self.packer.make_can_msg_safety("WHEEL_SPEEDS", self.PT_BUS, values)
+
+  def test_taco_tune_hack_low_speed(self):
+    """At low speed, rate limits should be bypassed."""
+    # Set low speed
+    self._rx(self._speed_msg_raw(self.SPEED_LOW))
+    self.safety.set_controls_allowed(True)
+
+    # Should allow instant jump to max torque (bypassing rate limits)
+    self._set_prev_torque(0)
+    self.assertTrue(self._tx(self._torque_cmd_msg(409)))
+
+    # Should not allow exceeding max torque
+    self._set_prev_torque(0)
+    self.assertFalse(self._tx(self._torque_cmd_msg(410)))
+
+  def test_taco_tune_hack_high_speed(self):
+    """At high speed, normal rate limits should apply."""
+    # Set high speed
+    self._rx(self._speed_msg_raw(self.SPEED_HIGH))
+    self.safety.set_controls_allowed(True)
+
+    # Normal rate limits should apply (MAX_RATE_UP = 3)
+    self._set_prev_torque(0)
+    self.assertTrue(self._tx(self._torque_cmd_msg(self.MAX_RATE_UP)))
+
+    self._set_prev_torque(0)
+    self.assertFalse(self._tx(self._torque_cmd_msg(self.MAX_RATE_UP + 1)))
+
+  def test_taco_tune_hack_controls_not_allowed(self):
+    """Without controls allowed, no torque should be permitted."""
+    # Set low speed
+    self._rx(self._speed_msg_raw(self.SPEED_LOW))
+    self.safety.set_controls_allowed(False)
+
+    # Zero torque should be allowed
+    self.assertTrue(self._tx(self._torque_cmd_msg(0)))
+
+    # Non-zero torque should be blocked
+    self.assertFalse(self._tx(self._torque_cmd_msg(1)))
+
 
 if __name__ == "__main__":
   unittest.main()
