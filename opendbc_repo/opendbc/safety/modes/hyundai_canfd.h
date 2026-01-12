@@ -48,6 +48,11 @@
 static bool hyundai_canfd_alt_buttons = false;
 static bool hyundai_canfd_lka_steering_alt = false;
 
+// FrogPilot variables - Taco tune hack
+static bool hyundai_canfd_taco_tune_hack = false;
+static float hyundai_canfd_front_left_vego = 0.f;
+static float hyundai_canfd_rear_right_vego = 0.f;
+
 static unsigned int hyundai_canfd_get_lka_addr(void) {
   return hyundai_canfd_lka_steering_alt ? 0x110U : 0x50U;
 }
@@ -127,6 +132,11 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *msg) {
 
       // average of all 4 wheel speeds. Conversion: raw * 0.03125 / 3.6 = m/s
       UPDATE_VEHICLE_SPEED((fr + rr + rl + fl) / 4.0 * 0.03125 * KPH_TO_MS);
+
+      // FrogPilot variables - Track wheel speeds for taco tune hack
+      const float conversion_factor = 0.03125f * 0.277778f;  // raw to m/s
+      hyundai_canfd_front_left_vego = (float)fl * conversion_factor;
+      hyundai_canfd_rear_right_vego = (float)rr * conversion_factor;
     }
   }
 
@@ -167,8 +177,45 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     int desired_torque = (((msg->data[6] & 0xFU) << 7U) | (msg->data[5] >> 1U)) - 1024U;
     bool steer_req = GET_BIT(msg, 52U);
 
-    if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
-      tx = false;
+    // FrogPilot - Taco tune hack: bypass rate limits at low speed (< 17 m/s with margin)
+    if (hyundai_canfd_taco_tune_hack && (hyundai_canfd_front_left_vego < 17.f) && (hyundai_canfd_rear_right_vego < 17.f)) {
+      bool violation = false;
+      uint32_t ts = microsecond_timer_get();
+      bool aol_active = alternative_experience_enabled(ALT_EXP_ALWAYS_ON_LATERAL) && lkas_on;
+
+      if (controls_allowed || aol_active) {
+        // Only check max torque limit (409), bypass rate limits for instant response
+        violation |= max_limit_check(desired_torque, 409, -409);
+
+        // Clamp last torque for blending back to high-speed limits
+        desired_torque_last = MAX(-384, MIN(desired_torque, 384));
+        rt_torque_last = desired_torque;
+        ts_torque_check_last = ts;
+      }
+
+      // No torque if controls is not allowed
+      if (!(controls_allowed || aol_active) && (desired_torque != 0)) {
+        violation = true;
+      }
+
+      // Reset if violation or controls not allowed
+      if (violation || !(controls_allowed || aol_active)) {
+        valid_steer_req_count = 0;
+        invalid_steer_req_count = 0;
+        desired_torque_last = 0;
+        rt_torque_last = 0;
+        ts_torque_check_last = ts;
+        ts_steer_req_mismatch_last = ts;
+      }
+
+      if (violation) {
+        tx = false;
+      }
+    } else {
+      // Normal rate-limited checks at high speed
+      if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
+        tx = false;
+      }
     }
   }
 
@@ -224,6 +271,7 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
 static safety_config hyundai_canfd_init(uint16_t param) {
   const uint16_t HYUNDAI_PARAM_CANFD_LKA_STEERING_ALT = 128;
   const uint16_t HYUNDAI_PARAM_CANFD_ALT_BUTTONS = 32;
+  const uint16_t HYUNDAI_PARAM_TACO_TUNE_HACK = 2048;  // FrogPilot
 
   static const CanMsg HYUNDAI_CANFD_LKA_STEERING_TX_MSGS[] = {
     HYUNDAI_CANFD_LKA_STEERING_COMMON_TX_MSGS(0, 1)
@@ -273,6 +321,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
   gen_crc_lookup_table_16(0x1021, hyundai_canfd_crc_lut);
   hyundai_canfd_alt_buttons = GET_FLAG(param, HYUNDAI_PARAM_CANFD_ALT_BUTTONS);
   hyundai_canfd_lka_steering_alt = GET_FLAG(param, HYUNDAI_PARAM_CANFD_LKA_STEERING_ALT);
+  hyundai_canfd_taco_tune_hack = GET_FLAG(param, HYUNDAI_PARAM_TACO_TUNE_HACK);  // FrogPilot
 
   safety_config ret;
   if (hyundai_longitudinal) {

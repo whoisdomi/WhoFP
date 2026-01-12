@@ -75,7 +75,7 @@ class CarState(CarStateBase):
     cp_cam = can_parsers[Bus.cam]
 
     if self.CP.flags & HyundaiFlags.CANFD:
-      return self.update_canfd(can_parsers)
+      return self.update_canfd(can_parsers, frogpilot_toggles)
 
     ret = structs.CarState()
     cp_cruise = cp_cam if self.CP.flags & HyundaiFlags.CAMERA_SCC else cp
@@ -208,7 +208,7 @@ class CarState(CarStateBase):
 
     return ret, fp_ret
 
-  def update_canfd(self, can_parsers) -> structs.CarState:
+  def update_canfd(self, can_parsers, frogpilot_toggles) -> structs.CarState:
     cp = can_parsers[Bus.pt]
     cp_cam = can_parsers[Bus.cam]
 
@@ -239,6 +239,9 @@ class CarState(CarStateBase):
     )
     ret.standstill = cp.vl["WHEEL_SPEEDS"]["WHL_SpdFLVal"] <= STANDSTILL_THRESHOLD and cp.vl["WHEEL_SPEEDS"]["WHL_SpdFRVal"] <= STANDSTILL_THRESHOLD and \
                      cp.vl["WHEEL_SPEEDS"]["WHL_SpdRLVal"] <= STANDSTILL_THRESHOLD and cp.vl["WHEEL_SPEEDS"]["WHL_SpdRRVal"] <= STANDSTILL_THRESHOLD
+
+    # Update params with current speed for taco tune hack (FrogPilot)
+    self.params = CarControllerParams(self.CP, ret.vEgoRaw, getattr(frogpilot_toggles, 'taco_tune_hack', False))
 
     ret.steeringRateDeg = cp.vl["STEERING_SENSORS"]["STEERING_RATE"]
     ret.steeringAngleDeg = cp.vl["STEERING_SENSORS"]["STEERING_ANGLE"]

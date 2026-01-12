@@ -737,6 +737,8 @@ class FrogPilotVariables:
 
     toggle.subaru_sng = self.get_value("SubaruSNG", condition=toggle.car_make == "subaru" and not (CP.flags & SubaruFlags.GLOBAL_GEN2 or CP.flags & SubaruFlags.HYBRID))
 
+    toggle.taco_tune_hack = self.get_value("TacoTuneHacks", condition=toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD))
+
     toggle.tethering_config = self.get_value("TetheringEnabled", cast=float)
 
     toyota_doors = self.get_value("ToyotaDoors", condition=toggle.car_make == "toyota")
