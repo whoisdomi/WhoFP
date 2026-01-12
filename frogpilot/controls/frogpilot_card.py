@@ -93,7 +93,7 @@ class FrogPilotCard:
       self.always_on_lateral_enabled &= frogpilotCarState.alwaysOnLateralAllowed
     else:
       self.always_on_lateral_enabled |= self.car.frogpilot_toggles.always_on_lateral_main or carState.cruiseState.enabled
-      self.always_on_lateral_enabled &= carState.cruiseState.available
+      self.always_on_lateral_enabled &= carState.cruiseState.available or frogpilotCarState.alwaysOnLateralAllowed
 
     self.always_on_lateral_enabled &= carState.gearShifter not in NON_DRIVING_GEARS
     self.always_on_lateral_enabled &= sm["frogpilotPlan"].lateralCheck
