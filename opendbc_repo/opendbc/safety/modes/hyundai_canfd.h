@@ -181,9 +181,8 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     if (hyundai_canfd_taco_tune_hack && (hyundai_canfd_front_left_vego < 17.f) && (hyundai_canfd_rear_right_vego < 17.f)) {
       bool violation = false;
       uint32_t ts = microsecond_timer_get();
-      bool aol_active = alternative_experience_enabled(ALT_EXP_ALWAYS_ON_LATERAL) && lkas_on;
 
-      if (controls_allowed || aol_active) {
+      if (controls_allowed || aol_allowed) {
         // Only check max torque limit (409), bypass rate limits for instant response
         violation |= max_limit_check(desired_torque, 409, -409);
 
@@ -194,12 +193,12 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
       }
 
       // No torque if controls is not allowed
-      if (!(controls_allowed || aol_active) && (desired_torque != 0)) {
+      if (!(controls_allowed || aol_allowed) && (desired_torque != 0)) {
         violation = true;
       }
 
       // Reset if violation or controls not allowed
-      if (violation || !(controls_allowed || aol_active)) {
+      if (violation || !(controls_allowed || aol_allowed)) {
         valid_steer_req_count = 0;
         invalid_steer_req_count = 0;
         desired_torque_last = 0;
