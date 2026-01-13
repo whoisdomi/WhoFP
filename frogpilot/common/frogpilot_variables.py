@@ -202,26 +202,11 @@ def nnff_supported(car_fingerprint):
 
   return False
 
-TOGGLES_FILE = Path("/tmp/frogpilot_toggles.json")
+def get_frogpilot_toggles():
+  if not hasattr(get_frogpilot_toggles, "_params_memory"):
+    get_frogpilot_toggles._params_memory = Params(memory=True)
 
-def get_frogpilot_toggles(sm=None):
-  # If SubMaster provided and has valid toggles data, use it
-  if sm is not None:
-    toggles = sm["frogpilotPlan"].frogpilotToggles
-    if toggles:
-      return SimpleNamespace(**json.loads(toggles))
-
-  # Fallback to file-based storage
-  if TOGGLES_FILE.exists():
-    try:
-      toggles_data = json.loads(TOGGLES_FILE.read_text())
-      if toggles_data:
-        return SimpleNamespace(**toggles_data)
-    except (json.JSONDecodeError, OSError):
-      pass
-
-  # Last resort fallback
-  return FrogPilotVariables().frogpilot_toggles
+  return SimpleNamespace(**get_frogpilot_toggles._params_memory.get("FrogPilotToggles"))
 
 def update_frogpilot_toggles():
   if not hasattr(update_frogpilot_toggles, "_params_memory"):
@@ -759,6 +744,5 @@ class FrogPilotVariables:
 
     toggle.volt_sng = self.get_value("VoltSNG", condition=toggle.car_model == "CHEVROLET_VOLT")
 
-    # Save toggles to file for other processes to read
-    TOGGLES_FILE.write_text(json.dumps(toggle.__dict__))
+    self.params_memory.put("FrogPilotToggles", toggle.__dict__)
     self.params_memory.remove("FrogPilotTogglesUpdated")

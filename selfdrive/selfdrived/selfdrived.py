@@ -612,7 +612,7 @@ class SelfdriveD:
     self.CS_prev = CS
 
     # FrogPilot variables
-    self.frogpilot_toggles = get_frogpilot_toggles(self.sm)
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
   def params_thread(self, evt):
     while not evt.is_set():

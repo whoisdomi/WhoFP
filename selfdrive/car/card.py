@@ -304,7 +304,7 @@ class Car:
     # FrogPilot variables
     self.CI.CS.CC = self.sm['carControl']
 
-    self.frogpilot_toggles = get_frogpilot_toggles(self.sm)
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
   def params_thread(self, evt):
     while not evt.is_set():

@@ -85,7 +85,7 @@ class Controls:
     if self.sm.updated['liveDelay'] and hasattr(self.LaC, "update_live_delay"):
       self.LaC.update_live_delay(self.sm['liveDelay'].lateralDelay)
 
-    self.frogpilot_toggles = get_frogpilot_toggles(self.sm)
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
   def state_control(self):
     CS = self.sm['carState']
