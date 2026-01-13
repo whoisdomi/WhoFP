@@ -403,4 +403,4 @@ def main():
         params.put_nonblocking("LiveDelay", lag_msg_dat)
 
     # FrogPilot variables
-    lag_learner.frogpilot_toggles = get_frogpilot_toggles(sm)
+    lag_learner.frogpilot_toggles = get_frogpilot_toggles()

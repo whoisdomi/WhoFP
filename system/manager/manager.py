@@ -209,7 +209,7 @@ def manager_thread() -> None:
       break
 
     # FrogPilot variables
-    frogpilot_toggles = get_frogpilot_toggles(sm)
+    frogpilot_toggles = get_frogpilot_toggles()
 
 
 def main() -> None:

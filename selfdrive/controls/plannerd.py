@@ -43,7 +43,7 @@ def main():
       pm.send('driverAssistance', msg)
 
     # FrogPilot variables
-    frogpilot_toggles = get_frogpilot_toggles(sm)
+    frogpilot_toggles = get_frogpilot_toggles()
 
 
 if __name__ == "__main__":

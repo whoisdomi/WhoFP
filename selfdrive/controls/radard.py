@@ -334,7 +334,7 @@ class RadarD:
       self.frogpilot_radar_state.leadLeft = get_adjacent_lead(self.tracks, sm['modelV2'], left=True)
       self.frogpilot_radar_state.leadRight = get_adjacent_lead(self.tracks, sm['modelV2'], left=False)
 
-    self.frogpilot_toggles = get_frogpilot_toggles(sm)
+    self.frogpilot_toggles = get_frogpilot_toggles()
 
   def publish(self, pm: messaging.PubMaster):
     assert self.radar_state is not None

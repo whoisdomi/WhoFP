@@ -281,7 +281,7 @@ def main(demo=False):
       params.put_nonblocking("LiveTorqueParameters", msg.to_bytes())
 
     # FrogPilot variables
-    estimator.frogpilot_toggles = get_frogpilot_toggles(sm)
+    estimator.frogpilot_toggles = get_frogpilot_toggles()
 
 
 if __name__ == "__main__":
