@@ -202,13 +202,22 @@ def nnff_supported(car_fingerprint):
 
   return False
 
-def get_frogpilot_toggles(sm=messaging.SubMaster(["frogpilotPlan"])):
-  return process_frogpilot_toggles(sm["frogpilotPlan"].frogpilotToggles)
+def get_frogpilot_toggles(sm=None):
+  # If SubMaster provided and has valid toggles data, use it
+  if sm is not None:
+    toggles = sm["frogpilotPlan"].frogpilotToggles
+    if toggles:
+      return SimpleNamespace(**json.loads(toggles))
 
-@cache
-def process_frogpilot_toggles(toggles):
-  if toggles:
-    return SimpleNamespace(**json.loads(toggles))
+  # Fallback to Params memory (original FP-Testing approach)
+  if not hasattr(get_frogpilot_toggles, "_params_memory"):
+    get_frogpilot_toggles._params_memory = Params(memory=True)
+
+  toggles_data = get_frogpilot_toggles._params_memory.get("FrogPilotToggles")
+  if toggles_data:
+    return SimpleNamespace(**toggles_data)
+
+  # Last resort fallback
   return FrogPilotVariables().frogpilot_toggles
 
 def update_frogpilot_toggles():
@@ -747,4 +756,5 @@ class FrogPilotVariables:
 
     toggle.volt_sng = self.get_value("VoltSNG", condition=toggle.car_model == "CHEVROLET_VOLT")
 
+    self.params_memory.put("FrogPilotToggles", toggle.__dict__)
     self.params_memory.remove("FrogPilotTogglesUpdated")
