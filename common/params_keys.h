@@ -245,6 +245,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"FrogPilotCarParamsPersistent", {PERSISTENT, BYTES, "", ""}},
     {"FrogPilotDongleId", {PERSISTENT | DONT_LOG, STRING, "", "", 0}},
     {"FrogPilotStats", {PERSISTENT | DONT_LOG, JSON, "{}", "{}"}},
+    {"FrogPilotToggles", {CLEAR_ON_MANAGER_START, JSON, "{}", "{}"}},
     {"FrogPilotTogglesUpdated", {CLEAR_ON_MANAGER_START, BOOL, "0", "0"}},
     {"FrogsGoMoosTweak", {PERSISTENT, BOOL, "1", "0", 2}},
     {"GoatScream", {PERSISTENT, BOOL, "0", "0", 1}},
