@@ -184,7 +184,7 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
 
       if (controls_allowed || aol_allowed) {
         // Only check max torque limit (600), bypass rate limits for instant response
-        violation |= safety_max_limit_check(desired_torque, 600, -600);
+        violation |= safety_max_limit_check(desired_torque, 700, -700);
 
         // Clamp last torque for blending back to high-speed limits
         desired_torque_last = MAX(-560, MIN(desired_torque, 560));

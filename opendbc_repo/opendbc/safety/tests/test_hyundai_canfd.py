@@ -361,11 +361,11 @@ class TestHyundaiCanfdTacoTuneHack(TestHyundaiCanfdLFASteeringEV):
 
     # Should allow instant jump to max torque (bypassing rate limits)
     self._set_prev_torque(0)
-    self.assertTrue(self._tx(self._torque_cmd_msg(600)))
+    self.assertTrue(self._tx(self._torque_cmd_msg(700)))
 
     # Should not allow exceeding max torque
     self._set_prev_torque(0)
-    self.assertFalse(self._tx(self._torque_cmd_msg(601)))
+    self.assertFalse(self._tx(self._torque_cmd_msg(701)))
 
   def test_taco_tune_hack_high_speed(self):
     """At high speed, normal rate limits should apply."""

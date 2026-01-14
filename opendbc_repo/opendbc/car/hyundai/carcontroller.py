@@ -65,6 +65,11 @@ class CarController(CarControllerBase):
     # Update params with current speed for taco tune hack (FrogPilot)
     self.params = CarControllerParams(self.CP, CS.out.vEgoRaw, getattr(frogpilot_toggles, 'taco_tune_hack', False))
 
+    if getattr(frogpilot_toggles, 'taco_tune_hack', False):
+      self.params.STEER_MAX = getattr(frogpilot_toggles, 'taco_tune_max_steer', 400)
+      self.params.STEER_DELTA_UP = getattr(frogpilot_toggles, 'taco_tune_delta_up', 3)
+      self.params.STEER_DELTA_DOWN = getattr(frogpilot_toggles, 'taco_tune_delta_down', 3)
+
     # steering torque
     new_torque = int(round(actuators.torque * self.params.STEER_MAX))
     apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last, CS.out.steeringTorque, self.params)
