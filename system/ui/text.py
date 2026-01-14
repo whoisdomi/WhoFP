@@ -36,7 +36,7 @@ def get_network_info() -> str:
 
   return "  |  ".join(info_parts) if info_parts else ""
 
-if BIG_UI:
+if gui_app.big_ui():
   MARGIN = 50
   SPACING = 40
   FONT_SIZE = 72
@@ -68,12 +68,27 @@ def wrap_text(text, font_size, max_width):
     words = re.split(r"(\s+|-)", paragraph[len(indent):])
     while len(words):
       word = words.pop(0)
-      test_line = current_line + word + (words.pop(0) if words else "")
+      delimiter = words.pop(0) if words else ""
+      test_line = current_line + word + delimiter
       if measure_text_cached(font, test_line, font_size).x <= max_width:
         current_line = test_line
       else:
-        lines.append(current_line)
-        current_line = word + " "
+        if current_line:
+          lines.append(current_line)
+          current_line = ""
+        
+        next_chunk = word + delimiter
+        if measure_text_cached(font, next_chunk, font_size).x <= max_width:
+          current_line = next_chunk
+        else:
+          partial = ""
+          for char in next_chunk:
+            if measure_text_cached(font, partial + char, font_size).x > max_width:
+              lines.append(partial)
+              partial = char
+            else:
+              partial += char
+          current_line = partial
     current_line = current_line.rstrip()
     if current_line:
       lines.append(current_line)
