@@ -20,7 +20,7 @@ from openpilot.common.pid import PIDController
 # move it at all, this is compensated for too.
 
 LOW_SPEED_X = [0, 15, 25, 35]
-LOW_SPEED_Y = [15, 15, 9, 4]
+LOW_SPEED_Y = [20, 15, 7, 3]
 
 
 class LatControlTorque(LatControl):
