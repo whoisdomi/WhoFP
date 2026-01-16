@@ -175,6 +175,9 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent) 
     {"HKGToggles", tr("Hyundai/Kia/Genesis Settings"), tr("<b>FrogPilot features for Genesis, Hyundai, and Kia vehicles.</b>"), ""},
     {"NewLongAPI", tr("comma's New Longitudinal API"), tr("<b>comma's new gas and brake control system</b> that improves acceleration and braking but may cause issues on some Genesis/Hyundai/Kia vehicles."), ""},
     {"TacoTuneHacks", tr("\"Taco Bell Run\" Torque Hack"), tr("<b>The steering torque hack from comma's 2022 \"Taco Bell Run\".</b> Designed to increase steering torque at low speeds for left and right turns."), ""},
+    {"TacoTuneMaxSteer", tr("Max Steer"), tr("<b>Maximum steering torque.</b><br><br>Default: 400"), ""},
+    {"TacoTuneDeltaUp", tr("Steer Delta Up"), tr("<b>Steering torque rate up.</b><br><br>Default: 3"), ""},
+    {"TacoTuneDeltaDown", tr("Steer Delta Down"), tr("<b>Steering torque rate down.</b><br><br>Default: 3"), ""},
 
     {"ToyotaToggles", tr("Toyota/Lexus Settings"), tr("<b>FrogPilot features for Lexus and Toyota vehicles.</b>"), ""},
     {"ToyotaDoors", tr("Automatically Lock/Unlock Doors"), tr("<b>Automatically lock/unlock doors</b> when shifting in and out of drive."), ""},
@@ -223,6 +226,10 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent) 
       std::vector<QString> lockToggles{"LockDoors", "UnlockDoors"};
       std::vector<QString> lockToggleNames{tr("Lock"), tr("Unlock")};
       vehicleToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, lockToggles, lockToggleNames);
+    } else if (param == "TacoTuneMaxSteer") {
+      vehicleToggle = new FrogPilotParamValueControl(param, title, desc, icon, 400, 700, QString(), std::map<float, QString>(), 10);
+    } else if (param == "TacoTuneDeltaUp" || param == "TacoTuneDeltaDown") {
+      vehicleToggle = new FrogPilotParamValueControl(param, title, desc, icon, 3, 10, QString(), std::map<float, QString>(), 1);
     } else if (param == "LockDoorsTimer") {
       std::map<float, QString> autoLockLabels;
       for (int i = 0; i <= 300; ++i) {
@@ -402,6 +409,10 @@ void FrogPilotVehiclesPanel::updateToggles() {
 
     else if (key == "TacoTuneHacks") {
       setVisible &= isHKGCanFd;
+    }
+
+    else if (key == "TacoTuneMaxSteer" || key == "TacoTuneDeltaUp" || key == "TacoTuneDeltaDown") {
+      setVisible &= params.getBool("TacoTuneHacks");
     }
 
     else if (key == "GMPedalLongitudinal") {

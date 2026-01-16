@@ -332,8 +332,8 @@ class TestTacoTuneHack(TestHyundaiCanfdHDA2EV):
     self.MAX_TORQUE = super().MAX_TORQUE
 
   def test_taco_tune_hack(self):
-    # Override MAX_TORQUE to the hacked value (409 at low speed)
-    self.MAX_TORQUE = 409
+    # Override MAX_TORQUE to the hacked value (700 at low speed)
+    self.MAX_TORQUE = 700
 
     # Test at low speed with controls allowed
     self.safety.init_tests()

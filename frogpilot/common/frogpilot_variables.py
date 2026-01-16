@@ -1006,6 +1006,9 @@ class FrogPilotVariables:
     toggle.startup_alert_bottom = params.get("StartupMessageBottom", encoding="utf-8") if tuning_level >= level["StartupMessageBottom"] else default.get("StartupMessageBottom", encoding="utf-8")
 
     toggle.taco_tune_hacks = taco_hacks_allowed and (params.get_bool("TacoTuneHacks") if tuning_level >= level["TacoTuneHacks"] else default.get_bool("TacoTuneHacks"))
+    toggle.taco_tune_max_steer = params.get_int("TacoTuneMaxSteer") if toggle.taco_tune_hacks else 400
+    toggle.taco_tune_delta_up = params.get_int("TacoTuneDeltaUp") if toggle.taco_tune_hacks else 3
+    toggle.taco_tune_delta_down = params.get_int("TacoTuneDeltaDown") if toggle.taco_tune_hacks else 3
 
     toggle.tethering_config = params.get_int("TetheringEnabled")
 

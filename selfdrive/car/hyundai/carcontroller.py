@@ -63,6 +63,13 @@ class CarController(CarControllerBase):
 
     # steering torque
     self.params = CarControllerParams(self.CP, CS.out.vEgoRaw, frogpilot_toggles)
+
+    # Apply live taco tune values (FrogPilot)
+    if getattr(frogpilot_toggles, 'taco_tune_hacks', False):
+      self.params.STEER_MAX = getattr(frogpilot_toggles, 'taco_tune_max_steer', 400)
+      self.params.STEER_DELTA_UP = getattr(frogpilot_toggles, 'taco_tune_delta_up', 3)
+      self.params.STEER_DELTA_DOWN = getattr(frogpilot_toggles, 'taco_tune_delta_down', 3)
+
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
     apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
     apply_steer = clip(apply_steer, -self.params.STEER_MAX, self.params.STEER_MAX)
