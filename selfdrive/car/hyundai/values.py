@@ -26,19 +26,24 @@ class CarControllerParams:
     self.STEER_STEP = 1  # 100 Hz
 
     if CP.carFingerprint in CANFD_CAR and frogpilot_toggles and frogpilot_toggles.taco_tune_hacks:
-      self.STEER_MAX = 720 if vEgoRaw < 15. else 400
+      if vEgoRaw < 15.:  # Low speed (~34 mph) - maximum aggression
+        self.STEER_MAX = 409
+        self.STEER_DELTA_UP = 10
+        self.STEER_DELTA_DOWN = 10
+      else:  # High speed - slightly conservative
+        self.STEER_MAX = 384
+        self.STEER_DELTA_UP = 3
+        self.STEER_DELTA_DOWN = 3
       self.STEER_DRIVER_ALLOWANCE = 350
-      self.STEER_DRIVER_MULTIPLIER = 3
-      self.STEER_THRESHOLD = 250
-      self.STEER_DELTA_UP = 5 if vEgoRaw < 15. else 3
-      self.STEER_DELTA_DOWN = 10 if vEgoRaw < 15. else 7
+      self.STEER_DRIVER_MULTIPLIER = 2
+      self.STEER_THRESHOLD = 350
     elif CP.carFingerprint in CANFD_CAR:
-      self.STEER_MAX = 270
+      self.STEER_MAX = 409
       self.STEER_DRIVER_ALLOWANCE = 250
       self.STEER_DRIVER_MULTIPLIER = 2
       self.STEER_THRESHOLD = 250
-      self.STEER_DELTA_UP = 2
-      self.STEER_DELTA_DOWN = 3
+      self.STEER_DELTA_UP = 3
+      self.STEER_DELTA_DOWN = 7
 
     # To determine the limit for your car, find the maximum value that the stock LKAS will request.
     # If the max stock LKAS request is <384, add your car to this list.

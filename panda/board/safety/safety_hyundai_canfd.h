@@ -249,28 +249,28 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
 
     // 2m/s margin
     if ((hyundai_canfd_front_left_vego < (15.f + 2.f) && hyundai_canfd_rear_right_vego < (15.f + 2.f)) && hyundai_canfd_taco_tune_hack) {
-      bool aol_active = (alternative_experience & ALT_EXP_ALWAYS_ON_LATERAL) && lkas_on;
+      bool aol_allowed = (acc_main_on || lkas_on) && (alternative_experience & ALT_EXP_ALWAYS_ON_LATERAL);
 
       bool violation = false;
       uint32_t ts = microsecond_timer_get();
 
-      if (controls_allowed || aol_active) {
+      if (controls_allowed || aol_allowed) {
         // *** global torque limit check ***
-        violation |= max_limit_check(desired_torque, 720, -720);
+        violation |= max_limit_check(desired_torque, 409, -409);
 
         // ready to blend in limits
-        desired_torque_last = MAX(-620, MIN(desired_torque, 620));
+        desired_torque_last = MAX(-384, MIN(desired_torque, 384));
         rt_torque_last = desired_torque;
         ts_torque_check_last = ts;
       }
 
       // no torque if controls is not allowed
-      if (!(controls_allowed || aol_active) && (desired_torque != 0)) {
+      if (!(controls_allowed || aol_allowed) && (desired_torque != 0)) {
         violation = true;
       }
 
       // reset to 0 if either controls is not allowed or there's a violation
-      if (violation || !(controls_allowed || aol_active)) {
+      if (violation || !(controls_allowed || aol_allowed)) {
         valid_steer_req_count = 0;
         invalid_steer_req_count = 0;
         desired_torque_last = 0;

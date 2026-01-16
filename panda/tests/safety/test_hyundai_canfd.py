@@ -315,10 +315,11 @@ class TestHyundaiCanfdHDA1Long(HyundaiLongitudinalBase, TestHyundaiCanfdHDA1Base
 # FrogPilot tests
 class TestTacoTuneHack(TestHyundaiCanfdHDA2EV):
 
-  # Vego = raw_speed * 0.00868. Low speed is < 13 m/s.
-  # 13 / 0.00868 = 1497.7. So raw speed 1497 is low, 1498 is high.
-  SPEED_LOW = 1497
-  SPEED_HIGH = 1498
+  # Low speed threshold is 17 m/s (15 m/s + 2 m/s margin)
+  # Speed conversion: raw * 0.03125 * 0.277778 = m/s
+  # So for 17 m/s: raw = 17 / (0.03125 * 0.277778) = 1958
+  SPEED_LOW = 1950   # ~16.9 m/s - below threshold
+  SPEED_HIGH = 2000  # ~17.4 m/s - above threshold
 
   def setUp(self):
     self.packer = CANPackerPanda("hyundai_canfd")
@@ -331,8 +332,8 @@ class TestTacoTuneHack(TestHyundaiCanfdHDA2EV):
     self.MAX_TORQUE = super().MAX_TORQUE
 
   def test_taco_tune_hack(self):
-    # Override MAX_TORQUE to the hacked value
-    self.MAX_TORQUE = 384
+    # Override MAX_TORQUE to the hacked value (409 at low speed)
+    self.MAX_TORQUE = 409
 
     # Test at low speed with controls allowed
     self.safety.init_tests()
