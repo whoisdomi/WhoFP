@@ -40,6 +40,11 @@ MINIMUM_LATERAL_ACCELERATION = 1.3        # m/s^2, typical minimum lateral accel
 PLANNER_TIME = ModelConstants.T_IDXS[-1]  # Length of time the model projects out for
 THRESHOLD = 1 - 1 / math.e                # Requires the condition to be true for ~1 second
 
+def scale_threshold(v_ego):
+  """Scale detection threshold based on speed - more aggressive at low speeds, less at highway"""
+  # Speed breakpoints: [0, 40, 60, 80, 100] mph in m/s
+  return np.interp(v_ego, [0, 17.9, 26.8, 35.8, 44.7], [0.58, 0.60, 0.62, 0.75, 0.9])
+
 NON_DRIVING_GEARS = [GearShifter.neutral, GearShifter.park, GearShifter.reverse, GearShifter.unknown]
 
 DISCORD_WEBHOOK_URL_REPORT = os.getenv("DISCORD_WEBHOOK_URL_REPORT")
