@@ -1,25 +1,19 @@
 import time
 
-from cereal import car, custom
+from cereal import car
 from panda import Panda
 from panda.python import uds
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, CAR, DBC, CANFD_CAR, CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, \
                                          CANFD_UNSUPPORTED_LONGITUDINAL_CAR, CANFD_SECURITYACCESS_CAR, EV_CAR, HYBRID_CAR, \
-                                         LEGACY_SAFETY_MODE_CAR, UNSUPPORTED_LONGITUDINAL_CAR, Buttons
+                                         LEGACY_SAFETY_MODE_CAR, UNSUPPORTED_LONGITUDINAL_CAR
 from openpilot.selfdrive.car.hyundai.radar_interface import RADAR_START_ADDR
-from openpilot.selfdrive.car import create_button_events, get_safety_config
+from openpilot.selfdrive.car import get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.car.disable_ecu import disable_ecu, ecu_log
 
 Ecu = car.CarParams.Ecu
-ButtonType = car.CarState.ButtonEvent.Type
-FrogPilotButtonType = custom.FrogPilotCarState.ButtonEvent.Type
-EventName = car.CarEvent.EventName
 GearShifter = car.CarState.GearShifter
-ENABLE_BUTTONS = (Buttons.RES_ACCEL, Buttons.SET_DECEL, Buttons.CANCEL)
-BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: ButtonType.decelCruise,
-                Buttons.GAP_DIST: ButtonType.gapAdjustCruise, Buttons.CANCEL: ButtonType.cancel}
 
 # Track when ECU disable happened - used to permanently suppress CAN errors from disabled ECU
 ECU_DISABLE_TIMESTAMP = 0.0
@@ -194,20 +188,10 @@ class CarInterface(CarInterfaceBase):
   def _update(self, c, frogpilot_toggles):
     ret, fp_ret = self.CS.update(self.cp, self.cp_cam, frogpilot_toggles)
 
-    if self.CS.CP.openpilotLongitudinalControl:
-      ret.buttonEvents = [
-        *create_button_events(self.CS.cruise_buttons[-1], self.CS.prev_cruise_buttons, BUTTONS_DICT),
-        *create_button_events(self.CS.lkas_enabled, self.CS.lkas_previously_enabled, {1: FrogPilotButtonType.lkas}),
-      ]
-    else:
-      ret.buttonEvents = create_button_events(self.CS.lkas_enabled, self.CS.lkas_previously_enabled, {1: FrogPilotButtonType.lkas})
+    # Button events are now generated in carstate.py
 
-    # On some newer model years, the CANCEL button acts as a pause/resume button based on the PCM state
-    # To avoid re-engaging when openpilot cancels, check user engagement intention via buttons
-    # Main button also can trigger an engagement on these cars
-    allow_enable = any(btn in ENABLE_BUTTONS for btn in self.CS.cruise_buttons) or any(self.CS.main_buttons)
     events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.manumatic],
-                                       pcm_enable=self.CS.CP.pcmCruise, allow_enable=allow_enable)
+                                       pcm_enable=self.CS.CP.pcmCruise)
 
     # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
     if ret.vEgo < (self.CP.minSteerSpeed + 2.) and self.CP.minSteerSpeed > 10.:
