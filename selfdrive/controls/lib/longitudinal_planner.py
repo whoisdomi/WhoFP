@@ -181,7 +181,29 @@ class LongitudinalPlanner:
       output_a_target = output_a_target_mpc
       self.output_should_stop = output_should_stop_mpc
     else:
-      output_a_target = min(output_a_target_mpc, output_a_target_e2e)
+      # Determine if conditions warrant conservative driving
+      stop_ahead = output_should_stop_e2e or sm['frogpilotPlan'].redLight
+
+      # Check if lead is actually a concern (slower, stopped, or braking hard) AND close
+      lead = sm['radarState'].leadOne
+      lead_dominated = False
+      if lead.status:
+        # Lead is a concern if: stopped, slower than us, or braking significantly - AND close enough to matter
+        lead_close = lead.dRel < 50  # Within 50 meters
+        lead_stopped = lead.vLead < 1
+        lead_slower = lead.vLead < v_ego - 1  # Lead going slower than us
+        lead_braking_hard = lead.aLeadK < -1.5  # Lead decelerating hard (likely stopping)
+        # Only concern if close, OR stopped/braking hard (those matter at any distance)
+        lead_dominated = lead_stopped or lead_braking_hard or (lead_slower and lead_close)
+
+      if not stop_ahead and not lead_dominated and output_a_target_e2e >= -0.5:
+        # Road appears clear and e2e isn't requesting significant braking
+        # Use weighted blend favoring MPC for better speed maintenance
+        output_a_target = 0.7 * output_a_target_mpc + 0.3 * output_a_target_e2e
+      else:
+        # Conservative mode: use minimum for safety (stop ahead, lead present, or e2e wants braking)
+        output_a_target = min(output_a_target_mpc, output_a_target_e2e)
+
       self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
     for idx in range(2):
