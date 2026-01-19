@@ -187,9 +187,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
     {"HKGAutoExperimental", tr("Auto Enable Experimental"), tr("<b>Automatically enable Experimental Mode</b> when longitudinal is active.<br><br>"
         "Enables stop sign and traffic light detection."), ""},
     {"TacoTuneHacks", tr("\"Taco Bell Run\" Torque Hack"), tr("<b>The steering torque hack from comma's 2022 \"Taco Bell Run\".</b> Designed to increase steering torque at low speeds for left and right turns."), ""},
-    {"TacoTuneMaxSteer", tr("Max Steer"), tr("<b>Maximum steering torque.</b><br><br>Default: 400"), ""},
-    {"TacoTuneDeltaUp", tr("Steer Delta Up"), tr("<b>Steering torque rate up.</b><br><br>Default: 3"), ""},
-    {"TacoTuneDeltaDown", tr("Steer Delta Down"), tr("<b>Steering torque rate down.</b><br><br>Default: 3"), ""},
 
     {"SubaruToggles", tr("Subaru Settings"), tr("<b>FrogPilot features for Subaru vehicles.</b>"), ""},
     {"SubaruSNG", tr("Stop and Go"), tr("Stop and go for supported Subaru vehicles."), ""},
@@ -249,10 +246,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
       std::vector<QString> lockToggles{"LockDoors", "UnlockDoors"};
       std::vector<QString> lockToggleNames{tr("Lock"), tr("Unlock")};
       vehicleToggle = new FrogPilotButtonToggleControl(param, title, desc, icon, lockToggles, lockToggleNames);
-    } else if (param == "TacoTuneMaxSteer") {
-      vehicleToggle = new FrogPilotParamValueControl(param, title, desc, icon, 400, 700, QString(), std::map<float, QString>(), 10);
-    } else if (param == "TacoTuneDeltaUp" || param == "TacoTuneDeltaDown") {
-      vehicleToggle = new FrogPilotParamValueControl(param, title, desc, icon, 3, 10, QString(), std::map<float, QString>(), 1);
     } else if (param == "LockDoorsTimer") {
       std::map<float, QString> autoLockLabels;
       for (int i = 0; i <= 300; ++i) {
@@ -429,10 +422,6 @@ void FrogPilotVehiclesPanel::updateToggles() {
 
     else if (key == "TacoTuneHacks") {
       setVisible &= parent->isHKGCanFd;
-    }
-
-    else if (key == "TacoTuneMaxSteer" || key == "TacoTuneDeltaUp" || key == "TacoTuneDeltaDown") {
-      setVisible &= params.getBool("TacoTuneHacks");
     }
 
     else if (key == "HKGEcuDisable") {

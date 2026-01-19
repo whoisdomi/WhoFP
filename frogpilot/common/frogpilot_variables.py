@@ -771,9 +771,6 @@ class FrogPilotVariables:
     toggle.subaru_sng = self.get_value("SubaruSNG", condition=toggle.openpilot_longitudinal and toggle.car_make == "subaru" and not (CP.flags & SubaruFlags.GLOBAL_GEN2 or CP.flags & SubaruFlags.HYBRID))
 
     toggle.taco_tune_hack = self.get_value("TacoTuneHacks", condition=toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD))
-    toggle.taco_tune_max_steer = self.get_value("TacoTuneMaxSteer", cast=int, condition=toggle.taco_tune_hack, default=400)
-    toggle.taco_tune_delta_up = self.get_value("TacoTuneDeltaUp", cast=int, condition=toggle.taco_tune_hack, default=3)
-    toggle.taco_tune_delta_down = self.get_value("TacoTuneDeltaDown", cast=int, condition=toggle.taco_tune_hack, default=3)
 
     toggle.tethering_config = self.get_value("TetheringEnabled", cast=float)
 
