@@ -45,6 +45,7 @@ qt_env['CPPPATH'] += ["../../frogpilot/ui/screenrecorder/openmax/include/"]
 frogpilot_src = ["../../frogpilot/ui/frogpilot_ui.cc", "../../frogpilot/ui/qt/offroad/data_settings.cc",
                  "../../frogpilot/ui/qt/offroad/device_settings.cc", "../../frogpilot/ui/qt/offroad/frogpilot_settings.cc",
                  "../../frogpilot/ui/qt/offroad/lateral_settings.cc", "../../frogpilot/ui/qt/offroad/longitudinal_settings.cc",
+                 "../../frogpilot/ui/qt/offroad/expandable_multi_option_dialog.cc",
                  "../../frogpilot/ui/qt/offroad/maps_settings.cc", "../../frogpilot/ui/qt/offroad/model_settings.cc",
                  "../../frogpilot/ui/qt/offroad/navigation_settings.cc", "../../frogpilot/ui/qt/offroad/sounds_settings.cc",
                  "../../frogpilot/ui/qt/offroad/theme_settings.cc", "../../frogpilot/ui/qt/offroad/utilities.cc",

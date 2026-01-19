@@ -9,6 +9,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL, Priority, Ratekeeper, config_realtime_process
 from openpilot.common.time_helpers import system_time_valid
 
+from openpilot.frogpilot.assets.model_manager import MODEL_DOWNLOAD_PARAM, MODEL_DOWNLOAD_ALL_PARAM, ModelManager
 from openpilot.frogpilot.assets.theme_manager import THEME_COMPONENT_PARAMS, ThemeManager
 from openpilot.frogpilot.common.frogpilot_functions import backup_toggles
 from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, capture_report, flash_panda, is_url_pingable, lock_doors, update_maps, update_openpilot
@@ -19,11 +20,18 @@ from openpilot.frogpilot.system.frogpilot_tracking import FrogPilotTracking
 
 ASSET_CHECK_RATE = (1 / DT_MDL)
 
-def check_assets(theme_manager, thread_manager, params_memory, frogpilot_toggles):
+def check_assets(model_manager, theme_manager, thread_manager, params_memory, frogpilot_toggles):
   for asset_type, asset_param in THEME_COMPONENT_PARAMS.items():
     asset_to_download = params_memory.get(asset_param)
     if asset_to_download:
       thread_manager.run_with_lock(theme_manager.download_theme, (asset_type, asset_to_download, asset_param, frogpilot_toggles))
+
+  if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM):
+    thread_manager.run_with_lock(model_manager.download_all_models)
+
+  model_to_download = params_memory.get(MODEL_DOWNLOAD_PARAM)
+  if model_to_download:
+    thread_manager.run_with_lock(model_manager.download_model, (model_to_download,))
 
   if params_memory.get_bool("FlashPanda"):
     thread_manager.run_with_lock(flash_panda, (params_memory))
@@ -49,9 +57,11 @@ def transition_onroad(error_log):
   if error_log.is_file():
     error_log.unlink()
 
-def update_checks(now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, boot_run=False):
+def update_checks(model_manager, now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, boot_run=False):
   while not (is_url_pingable("https://github.com") or is_url_pingable("https://gitlab.com")):
     time.sleep(60)
+
+  model_manager.update_models(boot_run)
 
   thread_manager.run_with_lock(update_maps, (now, params, params_memory))
 
@@ -96,6 +106,7 @@ def frogpilot_thread():
   params_memory = Params(memory=True)
 
   frogpilot_variables = FrogPilotVariables()
+  model_manager = ModelManager()
   theme_manager = ThemeManager(params, params_memory)
   thread_manager = ThreadManager()
 
@@ -144,7 +155,7 @@ def frogpilot_thread():
     started_previously = started
 
     if rate_keeper.frame % ASSET_CHECK_RATE == 0:
-      check_assets(theme_manager, thread_manager, params_memory, frogpilot_toggles)
+      check_assets(model_manager, theme_manager, thread_manager, params_memory, frogpilot_toggles)
 
     if params_memory.get_bool("FrogPilotTogglesUpdated") or theme_manager.theme_updated:
       frogpilot_toggles = update_toggles(frogpilot_variables, started, theme_manager, thread_manager, time_validated, params, frogpilot_toggles)
@@ -153,13 +164,16 @@ def frogpilot_thread():
 
     toggles_updated = (now - toggles_last_updated).total_seconds() <= 1
 
-    run_update_checks |= params_memory.get_bool("ManualUpdateInitiated")
+    manual_update = params_memory.get_bool("ManualUpdateInitiated")
+    run_update_checks |= manual_update
     run_update_checks |= now.second == 0 and (now.minute % 60 == 0 or (now.minute % 5 == 0 and frogpilot_variables.frogs_go_moo))
     run_update_checks &= time_validated
 
     if run_update_checks:
+      if manual_update:
+        params_memory.remove("ManualUpdateInitiated")
       theme_manager.update_active_theme(time_validated, frogpilot_toggles)
-      thread_manager.run_with_lock(update_checks, (now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles))
+      thread_manager.run_with_lock(update_checks, (model_manager, now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles))
 
       run_update_checks = False
     elif not time_validated:
@@ -171,7 +185,7 @@ def frogpilot_thread():
 
       thread_manager.run_with_lock(backup_toggles, (params, True))
       thread_manager.run_with_lock(send_stats, (params))
-      thread_manager.run_with_lock(update_checks, (now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, True))
+      thread_manager.run_with_lock(update_checks, (model_manager, now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, True))
 
     rate_keeper.keep_time()
 

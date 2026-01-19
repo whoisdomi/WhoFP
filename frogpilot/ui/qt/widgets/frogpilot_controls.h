@@ -23,6 +23,7 @@ void openDescriptions(bool forceOpenDescriptions, std::map<QString, AbstractCont
 void updateFrogPilotToggles();
 
 QString cleanModelName(QString modelName);
+QString processModelName(const QString &modelName);
 
 const QString buttonStyle = R"(
   QPushButton {

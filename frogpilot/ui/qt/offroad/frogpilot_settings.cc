@@ -68,7 +68,7 @@ void FrogPilotSettingsWindow::createPanelButtons(FrogPilotListWidget *list) {
   FrogPilotLateralPanel *frogpilotLateralPanel = new FrogPilotLateralPanel(this, !shownDescriptions.value("FrogPilotLateralPanel").toBool(false));
   FrogPilotLongitudinalPanel *frogpilotLongitudinalPanel = new FrogPilotLongitudinalPanel(this, !shownDescriptions.value("FrogPilotLongitudinalPanel").toBool(false));
   FrogPilotMapsPanel *frogpilotMapsPanel = new FrogPilotMapsPanel(this, !shownDescriptions.value("FrogPilotMapsPanel").toBool(false));
-  FrogPilotModelPanel *frogpilotModelPanel = new FrogPilotModelPanel(this, !shownDescriptions.value("FrogPilotModelPanel").toBool(false));
+  FrogPilotModelPanel *frogpilotModelPanel = new FrogPilotModelPanel(this);
   FrogPilotNavigationPanel *frogpilotNavigationPanel = new FrogPilotNavigationPanel(this, !shownDescriptions.value("FrogPilotNavigationPanel").toBool(false));
   FrogPilotSoundsPanel *frogpilotSoundsPanel = new FrogPilotSoundsPanel(this, !shownDescriptions.value("FrogPilotSoundsPanel").toBool(false));
   FrogPilotThemesPanel *frogpilotThemesPanel = new FrogPilotThemesPanel(this, !shownDescriptions.value("FrogPilotThemesPanel").toBool(false));

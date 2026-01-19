@@ -1,5 +1,7 @@
 #include "selfdrive/ui/ui.h"
 
+#include <QRegularExpression>
+
 #include "frogpilot/ui/frogpilot_ui.h"
 
 bool FrogPilotConfirmationDialog::toggleReboot(QWidget *parent) {
@@ -95,4 +97,11 @@ void updateFrogPilotToggles() {
 
 QString cleanModelName(QString modelName) {
   return modelName.remove("_default").remove("(Default)");
+}
+
+QString processModelName(const QString &modelName) {
+  QString modelCleaned = modelName;
+  modelCleaned = modelCleaned.remove(QRegularExpression("[🗺️👀📡]")).simplified();
+  modelCleaned = modelCleaned.replace("(Default)", "");
+  return modelCleaned;
 }
