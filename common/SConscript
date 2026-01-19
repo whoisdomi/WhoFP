@@ -1,7 +1,12 @@
 Import('env', 'envCython', 'arch')
 
+# Create a special environment for params.cc with lower optimization
+# to prevent OOM during compilation (params_keys.h has ~500 map entries)
+env_params = env.Clone()
+env_params['CCFLAGS'] = [f for f in env_params['CCFLAGS'] if f != '-O2'] + ['-O1']
+
 common_libs = [
-  'params.cc',
+  env_params.Object('params.cc'),  # Compile with -O1 to reduce memory usage
   'swaglog.cc',
   'util.cc',
   'watchdog.cc',
