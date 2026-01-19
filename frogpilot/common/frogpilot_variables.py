@@ -629,7 +629,6 @@ class FrogPilotVariables:
     toggle.human_lane_changes = has_radar and self.get_value("HumanLaneChanges", condition=longitudinal_tuning)
     toggle.lead_detection_probability = self.get_value("LeadDetectionThreshold", cast=float, condition=longitudinal_tuning, conversion=0.01, min=0.25, max=0.5)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
-    toggle.taco_tune_aggressiveness = self.get_value("TacoTuneAggressiveness", cast=int, condition=toggle.taco_tune, min=25, max=100) / 100
 
     # HKG ECU Disable toggles (for SecurityAccess cars like Ioniq 6, Kona EV 2nd Gen)
     is_security_access_car = toggle.car_make == "hyundai" and toggle.car_model in ("HYUNDAI_IONIQ_6", "HYUNDAI_KONA_EV_2ND_GEN")

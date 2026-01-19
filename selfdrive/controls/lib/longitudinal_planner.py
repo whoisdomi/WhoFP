@@ -76,7 +76,7 @@ class LongitudinalPlanner:
     self.solverExecutionTime = 0.0
 
   @staticmethod
-  def parse_model(model_msg, v_ego, taco_tune, taco_tune_aggressiveness):
+  def parse_model(model_msg, v_ego, taco_tune):
     if (len(model_msg.position.x) == ModelConstants.IDX_N and
       len(model_msg.velocity.x) == ModelConstants.IDX_N and
       len(model_msg.acceleration.x) == ModelConstants.IDX_N):
@@ -96,7 +96,7 @@ class LongitudinalPlanner:
 
     # FrogPilot variables
     if taco_tune:
-      max_lat_accel = np.interp(v_ego, [5, 10, 20], [1.5, 2.0, 3.0]) * taco_tune_aggressiveness
+      max_lat_accel = np.interp(v_ego, [5, 10, 20], [1.5, 2.0, 3.0])
       curvatures = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.orientationRate.z) / np.clip(v, 0.3, 100.0)
       max_v = np.sqrt(max_lat_accel / (np.abs(curvatures) + 1e-3)) - 2.0
       v = np.minimum(max_v, v)
@@ -141,7 +141,7 @@ class LongitudinalPlanner:
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
-    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'], v_ego, frogpilot_toggles.taco_tune, frogpilot_toggles.taco_tune_aggressiveness)
+    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'], v_ego, frogpilot_toggles.taco_tune)
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
