@@ -630,44 +630,9 @@ class FrogPilotVariables:
     toggle.lead_detection_probability = self.get_value("LeadDetectionThreshold", cast=float, condition=longitudinal_tuning, conversion=0.01, min=0.25, max=0.5)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
 
-    # HKG ECU Disable toggles (for SecurityAccess cars like Ioniq 6, Kona EV 2nd Gen)
-    is_security_access_car = toggle.car_make == "hyundai" and toggle.car_model in ("HYUNDAI_IONIQ_6", "HYUNDAI_KONA_EV_2ND_GEN")
-    toggle.hkg_ecu_disable = self.get_value("HKGEcuDisable", condition=is_security_access_car)
-    toggle.hkg_auto_long_alpha = self.get_value("HKGAutoLongAlpha", condition=is_security_access_car and toggle.hkg_ecu_disable)
-    toggle.hkg_auto_experimental = self.get_value("HKGAutoExperimental", condition=is_security_access_car and toggle.hkg_ecu_disable and toggle.hkg_auto_long_alpha)
-
-    toggle.available_models = params.get("AvailableModels") or ""
-    toggle.available_model_names = params.get("AvailableModelNames") or ""
-    toggle.model_released_dates = params.get("ModelReleasedDates") or ""
-    toggle.model_versions = params.get("ModelVersions") or ""
-
-    downloaded_models = [model for model in toggle.available_models.split(",") if any(MODELS_PATH.glob(f"{model}*"))]
-    toggle.model_randomizer = downloaded_models and (params.get_bool("ModelRandomizer") if self.tuning_level >= self.tuning_levels.get("ModelRandomizer", 0) else params_default.get_bool("ModelRandomizer"))
-    if toggle.available_models and toggle.available_model_names and downloaded_models and toggle.model_versions:
-      if DEFAULT_MODEL not in toggle.available_models.split(","):
-        toggle.available_models += f",{DEFAULT_MODEL}"
-        toggle.available_model_names += f",{DEFAULT_MODEL_NAME}"
-        toggle.model_versions += f",{DEFAULT_MODEL_VERSION}"
-        downloaded_models += [DEFAULT_MODEL]
-      if toggle.model_randomizer:
-        blacklisted_models = (params.get("BlacklistedModels") or "").split(",")
-        selectable_models = [model for model in downloaded_models if model not in blacklisted_models]
-        toggle.model = random.choice(selectable_models) if selectable_models else params_default.get("Model")
-        toggle.model_name = "Mystery Model 👻"
-        toggle.model_version = toggle.model_versions.split(",")[toggle.available_models.split(",").index(toggle.model)]
-      else:
-        toggle.model = params.get("Model") if self.tuning_level >= self.tuning_levels.get("Model", 0) else params_default.get("Model")
-        if toggle.model in downloaded_models:
-          toggle.model_name = toggle.available_model_names.split(",")[toggle.available_models.split(",").index(toggle.model)]
-          toggle.model_version = toggle.model_versions.split(",")[toggle.available_models.split(",").index(toggle.model)]
-        else:
-          toggle.model = params_default.get("Model")
-          toggle.model_name = toggle.available_model_names.split(",")[toggle.available_models.split(",").index(toggle.model)]
-          toggle.model_version = toggle.model_versions.split(",")[toggle.available_models.split(",").index(toggle.model)]
-    else:
-      toggle.model = DEFAULT_MODEL
-      toggle.model_name = DEFAULT_MODEL_NAME
-      toggle.model_version = DEFAULT_MODEL_VERSION
+    toggle.model = self.default_values["DrivingModel"]
+    toggle.model_name = self.default_values["DrivingModelName"]
+    toggle.model_version = self.default_values["DrivingModelVersion"]
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)

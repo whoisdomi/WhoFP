@@ -176,16 +176,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
     {"VoltSNG", tr("Stop-and-Go Hack"), tr("<b>Force stop-and-go</b> on the 2017 Chevy Volt."), ""},
 
     {"HKGToggles", tr("Hyundai/Kia/Genesis Settings"), tr("<b>FrogPilot features for Genesis, Hyundai, and Kia vehicles.</b>"), ""},
-    {"HKGEcuDisable", tr("ECU Disable"), tr("<b>Enable ECU disable for longitudinal control.</b><br><br>"
-        "When enabled, openpilot will attempt to disable the ADAS ECU at startup.<br><br>"
-        "<b>Requirements:</b><br>"
-        "- Start car in IGN-ON mode (press start without brake)<br>"
-        "- Wait for ECU disable before going to READY<br><br>"
-        "If car is in READY mode at startup, ECU disable will be skipped."), ""},
-    {"HKGAutoLongAlpha", tr("Auto Enable Longitudinal"), tr("<b>Automatically enable Alpha Longitudinal</b> when ECU disable succeeds.<br><br>"
-        "WARNING: This disables the car's stock AEB and Blind Spot Monitoring!"), ""},
-    {"HKGAutoExperimental", tr("Auto Enable Experimental"), tr("<b>Automatically enable Experimental Mode</b> when longitudinal is active.<br><br>"
-        "Enables stop sign and traffic light detection."), ""},
     {"TacoTuneHacks", tr("\"Taco Bell Run\" Torque Hack"), tr("<b>The steering torque hack from comma's 2022 \"Taco Bell Run\".</b> Designed to increase steering torque at low speeds for left and right turns."), ""},
 
     {"SubaruToggles", tr("Subaru Settings"), tr("<b>FrogPilot features for Subaru vehicles.</b>"), ""},
@@ -324,14 +314,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
     });
   }
 
-  // Refresh child toggle visibility when parent HKG toggles change
-  QObject::connect(static_cast<ToggleControl*>(toggles["HKGEcuDisable"]), &ToggleControl::toggleFlipped, [this](bool) {
-    updateToggles();
-  });
-  QObject::connect(static_cast<ToggleControl*>(toggles["HKGAutoLongAlpha"]), &ToggleControl::toggleFlipped, [this](bool) {
-    updateToggles();
-  });
-
   openDescriptions(forceOpenDescriptions, toggles);
 
   QObject::connect(uiState(), &UIState::offroadTransition, [selectMakeButton, selectModelButton, this]() {
@@ -422,18 +404,6 @@ void FrogPilotVehiclesPanel::updateToggles() {
 
     else if (key == "TacoTuneHacks") {
       setVisible &= parent->isHKGCanFd;
-    }
-
-    else if (key == "HKGEcuDisable") {
-      setVisible &= parent->isHKGSecurityAccessCar;
-    }
-
-    else if (key == "HKGAutoLongAlpha") {
-      setVisible &= parent->isHKGSecurityAccessCar && params.getBool("HKGEcuDisable");
-    }
-
-    else if (key == "HKGAutoExperimental") {
-      setVisible &= parent->isHKGSecurityAccessCar && params.getBool("HKGEcuDisable") && params.getBool("HKGAutoLongAlpha");
     }
 
     else if (key == "VoltSNG") {
