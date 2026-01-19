@@ -251,12 +251,6 @@ class CarState(CarStateBase):
     lka_fault_raw = cp.vl["MDPS"]["LKA_FAULT"]
     ret.steerFaultTemporary = lka_fault_raw != 0
 
-    # DEBUG LOGGING - writes to /data/steer_debug.log
-    if lka_fault_raw != 0:
-      import time
-      with open("/data/steer_debug.log", "a") as f:
-        f.write(f"{time.time():.3f} STATE: LKA_FAULT={lka_fault_raw}, angle={ret.steeringAngleDeg:.1f}\n")
-
     # TODO: alt signal usage may be described by cp.vl['BLINKERS']['USE_ALT_LAMP']
     left_blinker_sig, right_blinker_sig = "LEFT_LAMP", "RIGHT_LAMP"
     if self.CP.carFingerprint == CAR.HYUNDAI_KONA_EV_2ND_GEN:
