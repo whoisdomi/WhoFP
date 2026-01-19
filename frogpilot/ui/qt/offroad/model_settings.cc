@@ -667,7 +667,7 @@ void FrogPilotModelPanel::showEvent(QShowEvent *event) {
 
   noModelsDownloaded = getDeletableModelDisplayNames().isEmpty();
 
-  bool parked = !s.scene.started || fs.frogpilot_scene.parked || fs.frogpilot_toggles.value("frogs_go_moo").toBool();
+  bool parked = !s.scene.started || fs.frogpilot_scene.parked || fs.frogpilot_scene.frogpilot_toggles.value("frogs_go_moo").toBool();
 
   deleteModelButton->setEnabled(!(allModelsDownloading || modelDownloading || noModelsDownloaded));
 
@@ -686,7 +686,7 @@ void FrogPilotModelPanel::updateState(const UIState &s, const FrogPilotUIState &
     return;
   }
 
-  bool parked = !started || fs.frogpilot_scene.parked || fs.frogpilot_toggles.value("frogs_go_moo").toBool();
+  bool parked = !started || fs.frogpilot_scene.parked || fs.frogpilot_scene.frogpilot_toggles.value("frogs_go_moo").toBool();
 
   if (allModelsDownloading || modelDownloading) {
     QString progress = QString::fromStdString(params_memory.get("ModelDownloadProgress"));
