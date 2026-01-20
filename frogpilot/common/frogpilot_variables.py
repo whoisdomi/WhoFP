@@ -632,9 +632,20 @@ class FrogPilotVariables:
     toggle.lead_detection_probability = self.get_value("LeadDetectionThreshold", cast=float, condition=longitudinal_tuning, conversion=0.01, min=0.25, max=0.5)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
 
-    toggle.model = self.default_values["DrivingModel"]
-    toggle.model_name = self.default_values["DrivingModelName"]
-    toggle.model_version = self.default_values["DrivingModelVersion"]
+    # Read the selected model from params and look up its display name
+    selected_model = self.params.get("Model") or DEFAULT_MODEL
+    available_models = (self.params.get("AvailableModels") or "").split(",")
+    available_model_names = (self.params.get("AvailableModelNames") or "").split(",")
+
+    if selected_model in available_models and len(available_models) == len(available_model_names):
+      model_index = available_models.index(selected_model)
+      toggle.model = selected_model
+      toggle.model_name = available_model_names[model_index]
+    else:
+      toggle.model = selected_model
+      toggle.model_name = DEFAULT_MODEL_NAME if selected_model == DEFAULT_MODEL else selected_model
+
+    toggle.model_version = self.params.get("ModelVersion") or DEFAULT_MODEL_VERSION
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)
