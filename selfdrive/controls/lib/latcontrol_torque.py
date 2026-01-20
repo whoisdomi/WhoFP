@@ -23,7 +23,7 @@ LOW_SPEED_X = [0, 15, 25, 35]
 #LOW_SPEED_Y = [20, 15, 5, 1]
 LOW_SPEED_Y = [25, 10, 1, 0.5]
 
-UNWIND_MULTIPLIER = 0.95  # Integrator decay when unwinding (0.95 = 5% decay per cycle at 100Hz)
+UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.95 = 5% decay per cycle at 100Hz)
 
 
 class LatControlTorque(LatControl):
