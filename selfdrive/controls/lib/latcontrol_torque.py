@@ -23,13 +23,16 @@ LOW_SPEED_X = [0, 15, 25, 35]
 #LOW_SPEED_Y = [20, 15, 5, 1]
 LOW_SPEED_Y = [25, 10, 1, 0.5]
 
+UNWIND_MULTIPLIER = 0.95  # Integrator decay when unwinding (0.95 = 5% decay per cycle at 100Hz)
+
 
 class LatControlTorque(LatControl):
   def __init__(self, CP, CI):
     super().__init__(CP, CI)
     self.torque_params = CP.lateralTuning.torque.as_builder()
     self.pid = PIDController(self.torque_params.kp, self.torque_params.ki,
-                             k_f=self.torque_params.kf, pos_limit=self.steer_max, neg_limit=-self.steer_max)
+                             k_f=self.torque_params.kf, pos_limit=self.steer_max, neg_limit=-self.steer_max,
+                             unwind_multiplier=UNWIND_MULTIPLIER)
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
 
