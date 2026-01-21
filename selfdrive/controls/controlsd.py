@@ -80,6 +80,7 @@ class Controls:
     # FrogPilot variables
     if hasattr(self.LaC, "pid") and self.CP.lateralTuning.which() != "pid":
       self.LaC.pid._k_p = self.frogpilot_toggles.steerKp
+      self.LaC.pid._k_i = [[0], [self.frogpilot_toggles.steerKi]]
 
     if self.sm.updated['liveDelay'] and hasattr(self.LaC, "update_live_delay"):
       self.LaC.update_live_delay(self.sm['liveDelay'].lateralDelay)

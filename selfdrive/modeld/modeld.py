@@ -98,9 +98,9 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
       if is_turning or get_action_from_model.post_turn_timer > 0:
         lat_smooth = turn_lat_smooth
       else:
-        lat_smooth = LAT_SMOOTH_SECONDS
+        lat_smooth = frogpilot_toggles.latSmoothSeconds if frogpilot_toggles else LAT_SMOOTH_SECONDS
     else:
-      lat_smooth = LAT_SMOOTH_SECONDS
+      lat_smooth = frogpilot_toggles.latSmoothSeconds if frogpilot_toggles else LAT_SMOOTH_SECONDS
 
     if v_ego > MIN_LAT_CONTROL_SPEED:
       desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth)
