@@ -25,7 +25,7 @@ private:
   std::map<QString, AbstractControl*> toggles;
 
   QSet<QString> advancedLateralTuneKeys = {"ForceAutoTune", "ForceAutoTuneOff", "ForceTorqueController", "LatSmoothSeconds", "SteerDelay", "SteerFriction", "SteerKi", "SteerKP", "SteerLatAccel", "SteerRatio"};
-  QSet<QString> advancedTurnDesiresKeys = {"TurnLatSmooth", "TurnLeftBiasPercent", "TurnRightBiasPercent", "PostTurnSmoothingTime"};
+  QSet<QString> advancedTurnDesiresKeys = {"TurnLatSmooth", "TurnLeftBiasPercent", "TurnRightBiasPercent", "PostTurnSmoothingTime", "LowSpeedTurnAssist", "LowSpeedTurnMinSpeed"};
   QSet<QString> aolKeys = {"AlwaysOnLateralLKAS", "PauseAOLOnBrake"};
   QSet<QString> laneChangeKeys = {"LaneChangeDuration", "LaneChangeJerkResponse", "LaneChangeLateralAccel", "LaneChangeTime", "LaneDetectionWidth", "MinimumLaneChangeSpeed", "NudgelessLaneChange", "OneLaneChange"};
   QSet<QString> lateralTuneKeys = {"NNFF", "NNFFLite", "TurnDesires"};

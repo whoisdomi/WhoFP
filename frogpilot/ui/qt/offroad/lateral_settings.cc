@@ -51,6 +51,8 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"TurnLeftBiasPercent", tr("Left Turn Bias"), tr("<b>Percentage of inward curvature bias for left turns.</b> Negative values pull the path inward. Default: -2%"), ""},
     {"TurnRightBiasPercent", tr("Right Turn Bias"), tr("<b>Percentage of inward curvature bias for right turns.</b> Positive values pull the path inward. Default: 4%"), ""},
     {"PostTurnSmoothingTime", tr("Post-Turn Smoothing Time"), tr("<b>How long to maintain fast steering response after a turn completes.</b> Helps with smooth steering wheel unwind. Default: 2 seconds"), ""},
+    {"LowSpeedTurnAssist", tr("Low Speed Turn Assist"), tr("<b>Prevents steering from going limp during low-speed turns (1-5 mph).</b> Allows curvature updates below the normal 0.67 mph threshold when turn signal is active. Helps complete turns at stop signs."), ""},
+    {"LowSpeedTurnMinSpeed", tr("Minimum Turn Speed"), tr("<b>Minimum speed for curvature updates during low-speed turns.</b> Lower values allow steering at slower speeds. Default: 0.1 m/s (0.22 mph). Range: 0.05-0.3 m/s."), ""},
 
     {"AlwaysOnLateral", tr("Always On Lateral"), tr("<b>openpilot's steering remains active even when the accelerator or brake pedals are pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_always_on_lateral.png"},
     {"AlwaysOnLateralLKAS", tr("Enable With LKAS"), tr("<b>Enable \"Always On Lateral\" whenever \"LKAS\" is on, even when openpilot is not engaged.</b>"), ""},
@@ -177,6 +179,13 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
         postTurnLabels[i] = i == 0 ? tr("Off") : i == 1 ? QString::number(i) + tr(" second") : QString::number(i) + tr(" seconds");
       }
       lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 10, QString(), postTurnLabels, 1);
+    } else if (param == "LowSpeedTurnMinSpeed") {
+      std::map<float, QString> minSpeedLabels;
+      for (int i = 5; i <= 30; i += 5) {
+        float val = i / 100.0f;
+        minSpeedLabels[val] = QString::number(val, 'f', 2) + tr(" m/s");
+      }
+      lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0.05, 0.30, QString(), minSpeedLabels, 0.05);
 
     } else if (param == "QOLLateral") {
       FrogPilotManageControl *qolLateralToggle = new FrogPilotManageControl(param, title, desc, icon);
@@ -228,7 +237,7 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     });
   }
 
-  QSet<QString> forceUpdateKeys = {"ForceAutoTune", "ForceAutoTuneOff", "LateralTune", "NNFF", "NudgelessLaneChange"};
+  QSet<QString> forceUpdateKeys = {"ForceAutoTune", "ForceAutoTuneOff", "LateralTune", "LowSpeedTurnAssist", "NNFF", "NudgelessLaneChange", "TurnDesires"};
   for (const QString &key : forceUpdateKeys) {
     QObject::connect(static_cast<ToggleControl*>(toggles[key]), &ToggleControl::toggleFlipped, this, &FrogPilotLateralPanel::updateToggles);
   }
@@ -492,6 +501,14 @@ void FrogPilotLateralPanel::updateToggles() {
     else if (key == "SteerRatio") {
       setVisible &= parent->steerRatio != 0;
       setVisible &= parent->hasAutoTune ? forcingAutoTuneOff : !forcingAutoTune;
+    }
+
+    else if (key == "LowSpeedTurnAssist") {
+      setVisible &= params.getBool("LateralTune") && params.getBool("TurnDesires");
+    }
+
+    else if (key == "LowSpeedTurnMinSpeed") {
+      setVisible &= params.getBool("LateralTune") && params.getBool("TurnDesires") && params.getBool("LowSpeedTurnAssist");
     }
 
     toggle->setVisible(setVisible);
