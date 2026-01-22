@@ -98,17 +98,9 @@ class FrogPilotPlanner:
 
     self.lateral_acceleration = v_ego**2 * sm["controlsState"].curvature
 
-    turn_signal_on = sm["carState"].leftBlinker or sm["carState"].rightBlinker
-
     self.lateral_check = v_ego >= frogpilot_toggles.pause_lateral_below_speed
-    self.lateral_check |= not turn_signal_on and frogpilot_toggles.pause_lateral_below_signal
+    self.lateral_check |= not (sm["carState"].leftBlinker or sm["carState"].rightBlinker) and frogpilot_toggles.pause_lateral_below_signal
     self.lateral_check |= sm["carState"].standstill
-
-    # Low Speed Turn Assist: allow lateral control at low speeds when turning
-    if frogpilot_toggles.low_speed_turn_assist and turn_signal_on:
-      if v_ego >= frogpilot_toggles.low_speed_turn_min_speed:
-        self.lateral_check = True
-
     self.lateral_check &= not sm["frogpilotCarState"].pauseLateral
 
     self.model_length = sm["modelV2"].position.x[-1]

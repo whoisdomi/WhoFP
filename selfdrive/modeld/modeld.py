@@ -102,13 +102,7 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     else:
       lat_smooth = frogpilot_toggles.latSmoothSeconds if frogpilot_toggles else LAT_SMOOTH_SECONDS
 
-    # Low Speed Turn Assist: use lower threshold when turning with signal
-    if frogpilot_toggles and frogpilot_toggles.low_speed_turn_assist and is_turning:
-      min_lat_speed = frogpilot_toggles.low_speed_turn_min_speed
-    else:
-      min_lat_speed = MIN_LAT_CONTROL_SPEED
-
-    if v_ego > min_lat_speed:
+    if v_ego > MIN_LAT_CONTROL_SPEED:
       desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth)
     else:
       desired_curvature = prev_action.desiredCurvature

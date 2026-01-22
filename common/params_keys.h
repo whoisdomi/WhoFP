@@ -484,8 +484,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"TurnLeftBiasPercent", {PERSISTENT, FLOAT, "-2.0", "-2.0", 2}},
     {"TurnRightBiasPercent", {PERSISTENT, FLOAT, "4.0", "4.0", 2}},
     {"PostTurnSmoothingTime", {PERSISTENT, FLOAT, "2.0", "2.0", 2}},
-    {"LowSpeedTurnAssist", {PERSISTENT, BOOL, "0", "0", 2}},
-    {"LowSpeedTurnMinSpeed", {PERSISTENT, FLOAT, "0.1", "0.1", 3}},
     {"UnlockDoors", {PERSISTENT, BOOL, "1", "0", 0}},
     {"Updated", {PERSISTENT, STRING, "0", "0"}},
     {"UpdateSpeedLimits", {CLEAR_ON_MANAGER_START, BOOL, "0", "0"}},

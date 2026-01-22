@@ -614,10 +614,6 @@ class FrogPilotVariables:
     toggle.turn_right_bias_percent = self.get_value("TurnRightBiasPercent", cast=float, default=4.0, condition=toggle.advanced_turn_desires)
     toggle.post_turn_smoothing_time = self.get_value("PostTurnSmoothingTime", cast=float, default=2.0, condition=toggle.advanced_turn_desires)
 
-    # Low Speed Turn Assist
-    toggle.low_speed_turn_assist = self.get_value("LowSpeedTurnAssist", condition=lateral_tuning and toggle.use_turn_desires)
-    toggle.low_speed_turn_min_speed = self.get_value("LowSpeedTurnMinSpeed", cast=float, default=0.1, condition=toggle.low_speed_turn_assist)
-
     lkas_button_control = self.get_value("LKASButtonControl", cast=float, condition=toggle.car_make != "subaru")
     toggle.experimental_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
     toggle.experimental_mode_via_press |= toggle.experimental_mode_via_lkas
