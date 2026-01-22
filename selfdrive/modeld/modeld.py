@@ -63,6 +63,45 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
                                                 v_ego,
                                                 lat_action_t)
 
+    # Low Speed Turn Anticipation - look ahead and start turning earlier for sharp turns
+    LOW_SPEED_TURN_THRESHOLD = 2.5  # m/s (~5.5 mph)
+    SHARP_TURN_CURVATURE = 0.02  # curvature threshold for "sharp" turn
+    MODEL_LENGTH_SHORT = 50.0  # meters - model predicting stop
+    LOOKAHEAD_TIME = 1.5  # seconds to look ahead
+
+    is_turning_signal = desire in (log.Desire.turnLeft, log.Desire.turnRight)
+
+    if is_turning_signal and v_ego < LOW_SPEED_TURN_THRESHOLD:
+      # Calculate lookahead curvature
+      future_curvature = get_curvature_from_plan(plan[:,Plan.T_FROM_CURRENT_EULER][:,2],
+                                                  plan[:,Plan.ORIENTATION_RATE][:,2],
+                                                  ModelConstants.T_IDXS,
+                                                  max(v_ego, 0.5),  # use min speed for stable calculation
+                                                  LOOKAHEAD_TIME)
+
+      # Calculate model path length (x position at last time point)
+      model_length = float(plan[-1, 0])
+
+      # Check conditions for anticipating the turn:
+      # 1. Sharp turn coming (high future curvature) but current curvature is low
+      # 2. OR model path is short (model doesn't see ahead clearly)
+      sharp_turn_ahead = abs(future_curvature) > SHARP_TURN_CURVATURE
+      short_model_path = model_length < MODEL_LENGTH_SHORT
+      current_curvature_low = abs(desired_curvature) < abs(future_curvature) * 0.5
+
+      if (sharp_turn_ahead or short_model_path) and current_curvature_low:
+        # Blend in some of the future curvature to start turning earlier
+        blend_factor = 0.5
+        anticipated_curvature = future_curvature * blend_factor
+
+        # Apply in the correct direction
+        if desire == log.Desire.turnLeft:
+          # Left turn - curvature should be positive (or more positive)
+          desired_curvature = max(desired_curvature, anticipated_curvature)
+        else:  # turnRight
+          # Right turn - curvature should be negative (or more negative)
+          desired_curvature = min(desired_curvature, anticipated_curvature)
+
     # Advanced Turn Desires (ATD)
     atd_enabled = frogpilot_toggles and frogpilot_toggles.advanced_turn_desires
     is_turning = desire in (log.Desire.turnLeft, log.Desire.turnRight)
