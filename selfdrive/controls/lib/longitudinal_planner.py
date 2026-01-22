@@ -96,9 +96,9 @@ class LongitudinalPlanner:
 
     # FrogPilot variables
     if taco_tune:
-      max_lat_accel = np.interp(v_ego, [5, 10, 20], [1.5, 2.0, 3.0])
+      max_lat_accel = np.interp(v_ego, [5, 15, 30], [1.0, 1.5, 2.0])
       curvatures = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.orientationRate.z) / np.clip(v, 0.3, 100.0)
-      max_v = np.sqrt(max_lat_accel / (np.abs(curvatures) + 1e-3)) - 2.0
+      max_v = np.sqrt(max_lat_accel / (np.abs(curvatures) + 1e-3)) - 3.5
       v = np.minimum(max_v, v)
 
     return x, v, a, j, throttle_prob
@@ -196,10 +196,10 @@ class LongitudinalPlanner:
         # Only concern if close, OR stopped/braking hard (those matter at any distance)
         lead_dominated = lead_stopped or lead_braking_hard or (lead_slower and lead_close)
 
-      if not stop_ahead and not lead_dominated and output_a_target_e2e >= -0.5:
+      if not stop_ahead and not lead_dominated and output_a_target_e2e >= -0.2:
         # Road appears clear and e2e isn't requesting significant braking
         # Use weighted blend favoring MPC for better speed maintenance
-        output_a_target = 0.7 * output_a_target_mpc + 0.3 * output_a_target_e2e
+        output_a_target = 0.5 * output_a_target_mpc + 0.5 * output_a_target_e2e
       else:
         # Conservative mode: use minimum for safety (stop ahead, lead present, or e2e wants braking)
         output_a_target = min(output_a_target_mpc, output_a_target_e2e)
