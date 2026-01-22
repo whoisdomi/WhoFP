@@ -18,6 +18,20 @@ STANDSTILL_THRESHOLD = 12 * 0.03125
 
 # Cancel button can sometimes be ACC pause/resume button, main button can also enable on some cars
 ENABLE_BUTTONS = (Buttons.RES_ACCEL, Buttons.SET_DECEL, Buttons.CANCEL)
+
+
+# Speed limit from camera for Speed Limit Controller (ISLW = Intelligent Speed Limit Warning)
+def calculate_speed_limit_canfd(cp, cp_cam, is_metric, lka_steering):
+  # For LKA_STEERING cars (Ioniq 6, etc.), FR_CMR message is on ECAN, otherwise on CAM
+  bus = cp if lka_steering else cp_cam
+  speed_limit = bus.vl["FR_CMR_02_100ms"]["ISLW_SpdCluMainDis"]
+  # 0 = No Recognition, 253 = Unlimited, 254-255 = Reserved/Invalid
+  if speed_limit in (0, 253, 254, 255):
+    return 0
+  # Value is direct km/h or mph depending on cluster unit setting
+  return speed_limit * (CV.KPH_TO_MS if is_metric else CV.MPH_TO_MS)
+
+
 BUTTONS_DICT = {Buttons.RES_ACCEL: ButtonType.accelCruise, Buttons.SET_DECEL: ButtonType.decelCruise,
                 Buttons.GAP_DIST: ButtonType.gapAdjustCruise, Buttons.CANCEL: ButtonType.cancel}
 
@@ -307,20 +321,28 @@ class CarState(CarStateBase):
 
     # FrogPilot variables
     fp_ret = custom.FrogPilotCarState.new_message()
+    lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
+    fp_ret.dashboardSpeedLimit = calculate_speed_limit_canfd(cp, cp_cam, self.is_metric, lka_steering)
 
     return ret, fp_ret
 
   def get_can_parsers_canfd(self, CP):
     msgs = []
+    cam_msgs = []
     if not (CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS):
       # TODO: this can be removed once we add dynamic support to vl_all
       msgs += [
         # this message is 50Hz but the ECU frequently stops transmitting for ~0.5s
         ("CRUISE_BUTTONS", 1)
       ]
+    # Speed limit from camera (ISLW) - bus depends on harness type
+    if CP.flags & HyundaiFlags.CANFD_LKA_STEERING:
+      msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars
+    else:
+      cam_msgs.append(("FR_CMR_02_100ms", 10))  # On CAM for other cars
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], msgs, CanBus(CP).ECAN),
-      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], CanBus(CP).CAM),
+      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_msgs, CanBus(CP).CAM),
     }
 
   def get_can_parsers(self, CP):
