@@ -136,7 +136,7 @@ class VCruiseHelper:
         self.button_timers[b.type.raw] = 1 if b.pressed else 0
         self.button_change_states[b.type.raw] = {"standstill": CS.cruiseState.standstill, "enabled": enabled}
 
-  def initialize_v_cruise(self, CS, experimental_mode: bool, resume_prev_button: bool, frogpilot_toggles: SimpleNamespace) -> None:
+  def initialize_v_cruise(self, CS, experimental_mode: bool, resume_prev_button: bool, frogpilot_toggles: SimpleNamespace, slc_speed_limit: float = 0) -> None:
     # initializing is handled by the PCM
     if self.CP.pcmCruise and not self.gm_cc_only:
       return
@@ -147,6 +147,10 @@ class VCruiseHelper:
       and self.v_cruise_initialized or (self.gm_cc_only and resume_prev_button)):
       self.v_cruise_kph = self.v_cruise_kph_last
     else:
-      self.v_cruise_kph = int(round(np.clip(CS.vEgo * CV.MS_TO_KPH, initial, V_CRUISE_MAX)))
+      # Use speed limit if "Match Speed Limit on Engage" is enabled and we have a valid speed limit
+      if frogpilot_toggles.set_speed_limit and slc_speed_limit > 0:
+        self.v_cruise_kph = int(round(np.clip(slc_speed_limit * CV.MS_TO_KPH, V_CRUISE_MIN, V_CRUISE_MAX)))
+      else:
+        self.v_cruise_kph = int(round(np.clip(CS.vEgo * CV.MS_TO_KPH, initial, V_CRUISE_MAX)))
 
     self.v_cruise_cluster_kph = self.v_cruise_kph
