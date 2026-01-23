@@ -1024,7 +1024,7 @@ void FrogPilotLongitudinalPanel::updateToggles() {
     }
 
     else if (key == "ICBM") {
-      setVisible &= parent->isHKG && !parent->hasOpenpilotLongitudinal;
+      setVisible &= parent->isHKG;
     }
 
     // CSC and SLC require either openpilot longitudinal OR ICBM enabled
