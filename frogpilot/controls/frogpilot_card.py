@@ -18,6 +18,7 @@ class FrogPilotCard:
     self.accel_pressed = False
     self.always_on_lateral_allowed = False
     self.decel_pressed = False
+    self.distance_button_pressed = False
     self.distancePressed_previously = False
     self.force_coast = False
     self.pause_lateral = False
@@ -29,8 +30,12 @@ class FrogPilotCard:
     self.always_on_lateral_set = bool(FPCP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
     self.frogs_go_moo = is_FrogsGoMoo()
 
-    self.long_press_threshold = CRUISE_LONG_PRESS * (1.5 if self.CP.brand == "gm" else 1)
-    self.very_long_press_threshold = CRUISE_LONG_PRESS * 5
+    # Distance button press thresholds (at 100Hz)
+    # Short press: < 30 cycles (< 0.3s)
+    # Long press: 30-89 cycles (0.3-0.9s)
+    # Very long press: >= 90 cycles (>= 0.9s)
+    self.long_press_threshold = 30  # 0.3 seconds
+    self.very_long_press_threshold = 90  # 0.9 seconds
 
     self.error_log = ERROR_LOGS_PATH / "error.txt"
 
@@ -43,7 +48,7 @@ class FrogPilotCard:
       self.pause_lateral = not self.pause_lateral
     elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"pause_longitudinal_via_{key}"):
       self.pause_longitudinal = not self.pause_longitudinal
-    elif getattr(frogpilot_toggles, f"traffic_mode_via_{key}"):
+    elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"traffic_mode_via_{key}"):
       self.traffic_mode_enabled = not self.traffic_mode_enabled
 
   def handle_experimental_mode(self, sm, frogpilot_toggles):
@@ -83,7 +88,13 @@ class FrogPilotCard:
     if sm.updated["frogpilotPlan"] or any(be.type == ButtonType.decelCruise for be in carState.buttonEvents):
       self.decel_pressed = any(be.type == ButtonType.decelCruise for be in carState.buttonEvents)
 
-    frogpilotCarState.distancePressed |= self.params_memory.get_bool("OnroadDistanceButtonPressed")
+    # Track physical distance/gap button state
+    for be in carState.buttonEvents:
+      if be.type == ButtonType.gapAdjustCruise:
+        self.distance_button_pressed = be.pressed
+
+    # Combine physical button with onscreen button (OR logic)
+    frogpilotCarState.distancePressed = self.distance_button_pressed or self.params_memory.get_bool("OnroadDistanceButtonPressed")
 
     if frogpilotCarState.distancePressed:
       self.gap_counter += 1
@@ -94,10 +105,9 @@ class FrogPilotCard:
 
     if not frogpilotCarState.distancePressed and 1 < self.gap_counter < self.long_press_threshold:
       self.handle_button_event("distance", sm, frogpilot_toggles)
-    elif self.gap_counter == self.long_press_threshold:
+    elif not frogpilotCarState.distancePressed and self.long_press_threshold <= self.gap_counter < self.very_long_press_threshold:
       self.handle_button_event("distance_long", sm, frogpilot_toggles)
-    elif self.gap_counter == self.very_long_press_threshold:
-      self.handle_button_event("distance_long", sm, frogpilot_toggles)
+    elif not frogpilotCarState.distancePressed and self.gap_counter >= self.very_long_press_threshold:
       self.handle_button_event("distance_very_long", sm, frogpilot_toggles)
 
     if any(be.pressed and be.type == ButtonType.lkas for be in carState.buttonEvents):
