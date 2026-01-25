@@ -15,7 +15,7 @@ class CarControllerParams:
   ACCEL_MIN = -3.5 # m/s
   ACCEL_MAX = 2.0 # m/s
 
-  def __init__(self, CP, vEgoRaw=100., taco_tune_hack=False, taco_tune_max_steer=409, taco_tune_delta_up=3, taco_tune_delta_down=5):
+  def __init__(self, CP, vEgoRaw=100., taco_tune_hack=False):
     self.STEER_DELTA_UP = 3
     self.STEER_DELTA_DOWN = 7
     self.STEER_DRIVER_ALLOWANCE = 50
@@ -26,13 +26,14 @@ class CarControllerParams:
 
     # Taco tune hack - speed dependent limits (FrogPilot)
     if CP.flags & HyundaiFlags.CANFD and taco_tune_hack:
-      self.STEER_MAX = taco_tune_max_steer
       if vEgoRaw < 15.:  # Low speed (~34 mph) - maximum aggression
-        self.STEER_DELTA_UP = taco_tune_delta_up
-        self.STEER_DELTA_DOWN = taco_tune_delta_down
+        self.STEER_MAX = 409
+        self.STEER_DELTA_UP = 3
+        self.STEER_DELTA_DOWN = 5
       else:  # High speed - slightly conservative
-        self.STEER_DELTA_UP = max(1, taco_tune_delta_up - 2)
-        self.STEER_DELTA_DOWN = max(1, taco_tune_delta_down - 3)
+        self.STEER_MAX = 409
+        self.STEER_DELTA_UP = 1
+        self.STEER_DELTA_DOWN = 2
       self.STEER_DRIVER_ALLOWANCE = 350
       self.STEER_DRIVER_MULTIPLIER = 2
       self.STEER_THRESHOLD = 350

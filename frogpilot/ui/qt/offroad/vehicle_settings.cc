@@ -177,9 +177,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
 
     {"HKGToggles", tr("Hyundai/Kia/Genesis Settings"), tr("<b>FrogPilot features for Genesis, Hyundai, and Kia vehicles.</b>"), ""},
     {"TacoTuneHacks", tr("\"Taco Bell Run\" Torque Hack"), tr("<b>The steering torque hack from comma's 2022 \"Taco Bell Run\".</b> Designed to increase steering torque at low speeds for left and right turns."), ""},
-    {"TacoTuneMaxSteer", tr("Max Steer (Default: 409)"), tr("<b>Maximum steering torque.</b> Higher values allow more aggressive steering at low speeds."), ""},
-    {"TacoTuneDeltaUp", tr("Delta Up (Default: 3)"), tr("<b>Torque increase rate per frame.</b> Higher values allow quicker torque buildup."), ""},
-    {"TacoTuneDeltaDown", tr("Delta Down (Default: 5)"), tr("<b>Torque decrease rate per frame.</b> Higher values allow quicker torque release."), ""},
 
     {"SubaruToggles", tr("Subaru Settings"), tr("<b>FrogPilot features for Subaru vehicles.</b>"), ""},
     {"SubaruSNG", tr("Stop and Go"), tr("Stop and go for supported Subaru vehicles."), ""},
@@ -253,31 +250,6 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
         clusterOffsetToggle->refresh();
       });
       vehicleToggle = clusterOffsetToggle;
-
-    } else if (param == "TacoTuneMaxSteer") {
-      std::vector<QString> tacoMaxSteerButton{"Reset"};
-      FrogPilotParamValueButtonControl *tacoMaxSteerToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 384, 600, QString(), std::map<float, QString>(), 1, false, {}, tacoMaxSteerButton, false, false);
-      QObject::connect(tacoMaxSteerToggle, &FrogPilotParamValueButtonControl::buttonClicked, [tacoMaxSteerToggle, this]() {
-        params.putInt("TacoTuneMaxSteer", std::stoi(params.getKeyDefaultValue("TacoTuneMaxSteer").value()));
-        tacoMaxSteerToggle->refresh();
-      });
-      vehicleToggle = tacoMaxSteerToggle;
-    } else if (param == "TacoTuneDeltaUp") {
-      std::vector<QString> tacoDeltaUpButton{"Reset"};
-      FrogPilotParamValueButtonControl *tacoDeltaUpToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 1, 10, QString(), std::map<float, QString>(), 1, false, {}, tacoDeltaUpButton, false, false);
-      QObject::connect(tacoDeltaUpToggle, &FrogPilotParamValueButtonControl::buttonClicked, [tacoDeltaUpToggle, this]() {
-        params.putInt("TacoTuneDeltaUp", std::stoi(params.getKeyDefaultValue("TacoTuneDeltaUp").value()));
-        tacoDeltaUpToggle->refresh();
-      });
-      vehicleToggle = tacoDeltaUpToggle;
-    } else if (param == "TacoTuneDeltaDown") {
-      std::vector<QString> tacoDeltaDownButton{"Reset"};
-      FrogPilotParamValueButtonControl *tacoDeltaDownToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 1, 10, QString(), std::map<float, QString>(), 1, false, {}, tacoDeltaDownButton, false, false);
-      QObject::connect(tacoDeltaDownToggle, &FrogPilotParamValueButtonControl::buttonClicked, [tacoDeltaDownToggle, this]() {
-        params.putInt("TacoTuneDeltaDown", std::stoi(params.getKeyDefaultValue("TacoTuneDeltaDown").value()));
-        tacoDeltaDownToggle->refresh();
-      });
-      vehicleToggle = tacoDeltaDownToggle;
 
     } else if (param == "VehicleInfo") {
       ButtonControl *VehicleInfoButton = new ButtonControl(title, tr("VIEW"), desc);
@@ -432,10 +404,6 @@ void FrogPilotVehiclesPanel::updateToggles() {
 
     else if (key == "TacoTuneHacks") {
       setVisible &= parent->isHKGCanFd;
-    }
-
-    else if (key == "TacoTuneMaxSteer" || key == "TacoTuneDeltaUp" || key == "TacoTuneDeltaDown") {
-      setVisible &= parent->isHKGCanFd && params.getBool("TacoTuneHacks");
     }
 
     else if (key == "VoltSNG") {
