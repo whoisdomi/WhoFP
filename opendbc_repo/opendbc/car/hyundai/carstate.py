@@ -324,6 +324,12 @@ class CarState(CarStateBase):
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
     fp_ret.dashboardSpeedLimit = calculate_speed_limit_canfd(cp, cp_cam, self.is_metric, lka_steering)
 
+    # Drive mode detection for Map Accel/Decel to Gears feature (Ioniq 6 and other Hyundai EVs)
+    if self.CP.flags & HyundaiFlags.EV:
+      drive_mode = cp.vl["DRIVE_MODE_EV"]["DRIVE_MODE"]
+      fp_ret.ecoGear = (drive_mode == 4)    # Eco mode
+      fp_ret.sportGear = (drive_mode == 5)  # Sport mode
+
     return ret, fp_ret
 
   def get_can_parsers_canfd(self, CP):
@@ -340,6 +346,9 @@ class CarState(CarStateBase):
       msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars
     else:
       cam_msgs.append(("FR_CMR_02_100ms", 10))  # On CAM for other cars
+    # Drive mode for Map Accel/Decel to Gears feature (Hyundai EVs)
+    if CP.flags & HyundaiFlags.EV:
+      msgs.append(("DRIVE_MODE_EV", 10))
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], msgs, CanBus(CP).ECAN),
       Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_msgs, CanBus(CP).CAM),
