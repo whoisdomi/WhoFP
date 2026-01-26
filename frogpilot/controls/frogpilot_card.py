@@ -93,6 +93,7 @@ class FrogPilotCard:
     self.distancePressed_previously = frogpilotCarState.distancePressed
 
     if not frogpilotCarState.distancePressed and 1 < self.gap_counter < self.long_press_threshold:
+      print(f"FrogPilot: Short press detected, gap_counter={self.gap_counter}")
       self.handle_button_event("distance", sm, frogpilot_toggles)
     elif self.gap_counter == self.long_press_threshold:
       self.handle_button_event("distance_long", sm, frogpilot_toggles)
