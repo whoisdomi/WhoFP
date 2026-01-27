@@ -330,6 +330,10 @@ class CarState(CarStateBase):
       fp_ret.ecoGear = (drive_mode == 4)    # Eco mode
       fp_ret.sportGear = (drive_mode == 5)  # Sport mode
 
+    # Steering wheel media buttons (Mode and Custom) for FrogPilot wheel controls
+    fp_ret.modePressed = bool(cp.vl["STEERING_WHEEL_MEDIA_BUTTONS"]["MODE_BUTTON"])
+    fp_ret.customPressed = bool(cp.vl["STEERING_WHEEL_MEDIA_BUTTONS"]["CUSTOM_BUTTON"])
+
     return ret, fp_ret
 
   def get_can_parsers_canfd(self, CP):
@@ -341,6 +345,8 @@ class CarState(CarStateBase):
         # this message is 50Hz but the ECU frequently stops transmitting for ~0.5s
         ("CRUISE_BUTTONS", 1)
       ]
+    # Steering wheel media buttons for Mode and Custom buttons (FrogPilot)
+    msgs.append(("STEERING_WHEEL_MEDIA_BUTTONS", 50))
     # Speed limit from camera (ISLW) - bus depends on harness type
     if CP.flags & HyundaiFlags.CANFD_LKA_STEERING:
       msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars

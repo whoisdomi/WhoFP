@@ -4,10 +4,16 @@ FrogPilotWheelPanel::FrogPilotWheelPanel(FrogPilotSettingsWindow *parent, bool f
   forceOpenDescriptions = forceOpen;
 
   const std::vector<std::tuple<QString, QString, QString, QString>> wheelToggles {
+    {"CustomButtonControl", tr("Custom Button"), tr("<b>Action performed when the \"Custom\" button is pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"LongCustomButtonControl", tr("Custom Button (Long Press)"), tr("<b>Action performed when the \"Custom\" button is pressed for more than 0.3 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"VeryLongCustomButtonControl", tr("Custom Button (Very Long Press)"), tr("<b>Action performed when the \"Custom\" button is pressed for more than 0.9 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
     {"DistanceButtonControl", tr("Distance Button"), tr("<b>Action performed when the \"Distance\" button is pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
-    {"LongDistanceButtonControl", tr("Distance Button (Long Press)"), tr("<b>Action performed when the \"Distance\" button is pressed for more than 0.5 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
-    {"VeryLongDistanceButtonControl", tr("Distance Button (Very Long Press)"), tr("<b>Action performed when the \"Distance\" button is pressed for more than 2.5 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
-    {"LKASButtonControl", tr("LKAS Button"), tr("<b>Action performed when the \"LKAS\" button is pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"}
+    {"LongDistanceButtonControl", tr("Distance Button (Long Press)"), tr("<b>Action performed when the \"Distance\" button is pressed for more than 0.3 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"VeryLongDistanceButtonControl", tr("Distance Button (Very Long Press)"), tr("<b>Action performed when the \"Distance\" button is pressed for more than 0.9 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"LKASButtonControl", tr("LKAS Button"), tr("<b>Action performed when the \"LKAS\" button is pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"ModeButtonControl", tr("Mode Button"), tr("<b>Action performed when the \"Mode\" button is pressed.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"LongModeButtonControl", tr("Mode Button (Long Press)"), tr("<b>Action performed when the \"Mode\" button is pressed for more than 0.3 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"},
+    {"VeryLongModeButtonControl", tr("Mode Button (Very Long Press)"), tr("<b>Action performed when the \"Mode\" button is pressed for more than 0.9 seconds.</b>"), "../../frogpilot/assets/toggle_icons/icon_mute.png"}
   };
 
   for (const auto &[param, title, desc, icon] : wheelToggles) {
@@ -73,6 +79,12 @@ void FrogPilotWheelPanel::updateToggles() {
     if (key == "LKASButtonControl") {
       setVisible &= !parent->isSubaru;
       setVisible &= !parent->lkasAllowedForAOL || !(params.getBool("AlwaysOnLateral") && params.getBool("AlwaysOnLateralLKAS"));
+    }
+
+    // Mode and Custom buttons are only available on CAN FD Hyundai vehicles
+    if (key == "ModeButtonControl" || key == "LongModeButtonControl" || key == "VeryLongModeButtonControl" ||
+        key == "CustomButtonControl" || key == "LongCustomButtonControl" || key == "VeryLongCustomButtonControl") {
+      setVisible &= parent->isHKGCanFd;
     }
 
     toggle->setVisible(setVisible);
