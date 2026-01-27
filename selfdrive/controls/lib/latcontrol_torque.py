@@ -22,7 +22,9 @@ from openpilot.common.pid import PIDController
 LOW_SPEED_X = [0, 15, 25, 35]
 #LOW_SPEED_Y = [20, 15, 5, 1]
 #LOW_SPEED_Y = [25, 10, 1, 0.5]
-LOW_SPEED_Y = [25, 10, 3, 1.5] #trying to firm up steering
+#LOW_SPEED_Y = [25, 10, 3, 1.5] #trying to firm up steering
+LOW_SPEED_Y = [25, 10, 4, 2] #more firmness
+
 
 
 UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.95 = 5% decay per cycle at 100Hz)
