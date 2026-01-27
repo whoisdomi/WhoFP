@@ -239,23 +239,6 @@ def create_adrv_messages(packer, CAN, frame):
   return ret
 
 
-def create_steering_wheel_buttons_block(packer, CAN, frame, steering_wheel_buttons):
-  # Block MODE_BUTTON and CUSTOM_BUTTON from reaching the head unit
-  # while forwarding all other button states unchanged
-  values = {
-    'VOICE_BUTTON': steering_wheel_buttons.get('VOICE_BUTTON', 0),
-    'PHONE_BUTTON': steering_wheel_buttons.get('PHONE_BUTTON', 0),
-    'MODE_BUTTON': 0,  # Block Mode button
-    'RIGHT_SCROLL_PRESS': steering_wheel_buttons.get('RIGHT_SCROLL_PRESS', 0),
-    'NEXT_BUTTON': steering_wheel_buttons.get('NEXT_BUTTON', 0),
-    'PREVIOUS_BUTTON': steering_wheel_buttons.get('PREVIOUS_BUTTON', 0),
-    'MENU_BUTTON': steering_wheel_buttons.get('MENU_BUTTON', 0),
-    'LEFT_SCROLL_PRESS': steering_wheel_buttons.get('LEFT_SCROLL_PRESS', 0),
-    'CUSTOM_BUTTON': 0,  # Block Custom button
-  }
-  return packer.make_can_msg("STEERING_WHEEL_MEDIA_BUTTONS", CAN.ECAN, values)
-
-
 def hkg_can_fd_checksum(address: int, sig, d: bytearray) -> int:
   crc = 0
   for i in range(2, len(d)):

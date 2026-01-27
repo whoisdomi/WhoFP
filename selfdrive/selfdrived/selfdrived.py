@@ -469,6 +469,24 @@ class SelfdriveD:
       if self.frogpilot_toggles.personality_profile_via_lkas:
         distance_pressed |= any(be.pressed and be.type == FrogPilotButtonType.lkas for be in CS.buttonEvents)
 
+      # Mode button personality profile handling
+      if self.frogpilot_toggles.personality_profile_via_mode:
+        distance_pressed |= self.sm['frogpilotCarState'].modePressed
+        distance_pressed &= not (self.sm['frogpilotCarState'].modeLongPressed or self.sm['frogpilotCarState'].modeVeryLongPressed)
+      if self.frogpilot_toggles.personality_profile_via_mode_long:
+        distance_pressed |= self.sm['frogpilotCarState'].modeLongPressed
+      if self.frogpilot_toggles.personality_profile_via_mode_very_long:
+        distance_pressed |= self.sm['frogpilotCarState'].modeVeryLongPressed
+
+      # Custom button personality profile handling
+      if self.frogpilot_toggles.personality_profile_via_custom:
+        distance_pressed |= self.sm['frogpilotCarState'].customPressed
+        distance_pressed &= not (self.sm['frogpilotCarState'].customLongPressed or self.sm['frogpilotCarState'].customVeryLongPressed)
+      if self.frogpilot_toggles.personality_profile_via_custom_long:
+        distance_pressed |= self.sm['frogpilotCarState'].customLongPressed
+      if self.frogpilot_toggles.personality_profile_via_custom_very_long:
+        distance_pressed |= self.sm['frogpilotCarState'].customVeryLongPressed
+
       if not distance_pressed and self.distance_pressed_previously:
         if self.display_timer > 0 or not self.has_menu:
           self.personality = (self.personality - 1) % 3

@@ -249,29 +249,4 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter + 1, btn))
             self.last_button_frame = self.frame
 
-    # Block MODE_BUTTON and CUSTOM_BUTTON stock functions if FrogPilot controls are enabled
-    # Send continuously at 50Hz to override the stock message - must send every frame to prevent stock function
-    mode_button_used = (getattr(frogpilot_toggles, 'experimental_mode_via_mode', False) or getattr(frogpilot_toggles, 'force_coast_via_mode', False) or
-                        getattr(frogpilot_toggles, 'pause_lateral_via_mode', False) or getattr(frogpilot_toggles, 'pause_longitudinal_via_mode', False) or
-                        getattr(frogpilot_toggles, 'personality_profile_via_mode', False) or getattr(frogpilot_toggles, 'traffic_mode_via_mode', False) or
-                        getattr(frogpilot_toggles, 'experimental_mode_via_mode_long', False) or getattr(frogpilot_toggles, 'force_coast_via_mode_long', False) or
-                        getattr(frogpilot_toggles, 'pause_lateral_via_mode_long', False) or getattr(frogpilot_toggles, 'pause_longitudinal_via_mode_long', False) or
-                        getattr(frogpilot_toggles, 'personality_profile_via_mode_long', False) or getattr(frogpilot_toggles, 'traffic_mode_via_mode_long', False) or
-                        getattr(frogpilot_toggles, 'experimental_mode_via_mode_very_long', False) or getattr(frogpilot_toggles, 'force_coast_via_mode_very_long', False) or
-                        getattr(frogpilot_toggles, 'pause_lateral_via_mode_very_long', False) or getattr(frogpilot_toggles, 'pause_longitudinal_via_mode_very_long', False) or
-                        getattr(frogpilot_toggles, 'personality_profile_via_mode_very_long', False) or getattr(frogpilot_toggles, 'traffic_mode_via_mode_very_long', False))
-
-    custom_button_used = (getattr(frogpilot_toggles, 'experimental_mode_via_custom', False) or getattr(frogpilot_toggles, 'force_coast_via_custom', False) or
-                          getattr(frogpilot_toggles, 'pause_lateral_via_custom', False) or getattr(frogpilot_toggles, 'pause_longitudinal_via_custom', False) or
-                          getattr(frogpilot_toggles, 'personality_profile_via_custom', False) or getattr(frogpilot_toggles, 'traffic_mode_via_custom', False) or
-                          getattr(frogpilot_toggles, 'experimental_mode_via_custom_long', False) or getattr(frogpilot_toggles, 'force_coast_via_custom_long', False) or
-                          getattr(frogpilot_toggles, 'pause_lateral_via_custom_long', False) or getattr(frogpilot_toggles, 'pause_longitudinal_via_custom_long', False) or
-                          getattr(frogpilot_toggles, 'personality_profile_via_custom_long', False) or getattr(frogpilot_toggles, 'traffic_mode_via_custom_long', False) or
-                          getattr(frogpilot_toggles, 'experimental_mode_via_custom_very_long', False) or getattr(frogpilot_toggles, 'force_coast_via_custom_very_long', False) or
-                          getattr(frogpilot_toggles, 'pause_lateral_via_custom_very_long', False) or getattr(frogpilot_toggles, 'pause_longitudinal_via_custom_very_long', False) or
-                          getattr(frogpilot_toggles, 'personality_profile_via_custom_very_long', False) or getattr(frogpilot_toggles, 'traffic_mode_via_custom_very_long', False))
-
-    if mode_button_used or custom_button_used:
-      can_sends.append(hyundaicanfd.create_steering_wheel_buttons_block(self.packer, self.CAN, self.frame, CS.steering_wheel_buttons))
-
     return can_sends
