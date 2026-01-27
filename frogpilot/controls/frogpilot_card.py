@@ -20,12 +20,18 @@ class FrogPilotCard:
     self.decel_pressed = False
     self.distance_button_pressed = False
     self.distancePressed_previously = False
+    self.mode_button_pressed = False
+    self.modePressed_previously = False
+    self.custom_button_pressed = False
+    self.customPressed_previously = False
     self.force_coast = False
     self.pause_lateral = False
     self.pause_longitudinal = False
     self.traffic_mode_enabled = False
 
     self.gap_counter = 0
+    self.mode_counter = 0
+    self.custom_counter = 0
 
     self.always_on_lateral_set = bool(FPCP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
     self.frogs_go_moo = is_FrogsGoMoo()
@@ -110,6 +116,40 @@ class FrogPilotCard:
     elif not frogpilotCarState.distancePressed and self.gap_counter >= self.very_long_press_threshold:
       self.handle_button_event("distance_very_long", sm, frogpilot_toggles)
 
+    # Track mode button state from FrogPilotCarState (parsed in carstate.py for CAN FD Hyundai)
+    self.mode_button_pressed = frogpilotCarState.modePressed or self.params_memory.get_bool("OnroadModeButtonPressed")
+
+    if self.mode_button_pressed:
+      self.mode_counter += 1
+    elif not self.modePressed_previously:
+      self.mode_counter = 0
+
+    self.modePressed_previously = self.mode_button_pressed
+
+    if not self.mode_button_pressed and 1 < self.mode_counter < self.long_press_threshold:
+      self.handle_button_event("mode", sm, frogpilot_toggles)
+    elif not self.mode_button_pressed and self.long_press_threshold <= self.mode_counter < self.very_long_press_threshold:
+      self.handle_button_event("mode_long", sm, frogpilot_toggles)
+    elif not self.mode_button_pressed and self.mode_counter >= self.very_long_press_threshold:
+      self.handle_button_event("mode_very_long", sm, frogpilot_toggles)
+
+    # Track custom button state from FrogPilotCarState (parsed in carstate.py for CAN FD Hyundai)
+    self.custom_button_pressed = frogpilotCarState.customPressed or self.params_memory.get_bool("OnroadCustomButtonPressed")
+
+    if self.custom_button_pressed:
+      self.custom_counter += 1
+    elif not self.customPressed_previously:
+      self.custom_counter = 0
+
+    self.customPressed_previously = self.custom_button_pressed
+
+    if not self.custom_button_pressed and 1 < self.custom_counter < self.long_press_threshold:
+      self.handle_button_event("custom", sm, frogpilot_toggles)
+    elif not self.custom_button_pressed and self.long_press_threshold <= self.custom_counter < self.very_long_press_threshold:
+      self.handle_button_event("custom_long", sm, frogpilot_toggles)
+    elif not self.custom_button_pressed and self.custom_counter >= self.very_long_press_threshold:
+      self.handle_button_event("custom_very_long", sm, frogpilot_toggles)
+
     if any(be.pressed and be.type == ButtonType.lkas for be in carState.buttonEvents):
       self.handle_button_event("lkas", sm, frogpilot_toggles)
 
@@ -121,6 +161,10 @@ class FrogPilotCard:
     frogpilotCarState.decelPressed = self.decel_pressed
     frogpilotCarState.distanceLongPressed = self.very_long_press_threshold > self.gap_counter >= self.long_press_threshold
     frogpilotCarState.distanceVeryLongPressed = self.gap_counter >= self.very_long_press_threshold
+    frogpilotCarState.modeLongPressed = self.very_long_press_threshold > self.mode_counter >= self.long_press_threshold
+    frogpilotCarState.modeVeryLongPressed = self.mode_counter >= self.very_long_press_threshold
+    frogpilotCarState.customLongPressed = self.very_long_press_threshold > self.custom_counter >= self.long_press_threshold
+    frogpilotCarState.customVeryLongPressed = self.custom_counter >= self.very_long_press_threshold
     frogpilotCarState.forceCoast = self.force_coast
     frogpilotCarState.pauseLateral = self.pause_lateral
     frogpilotCarState.pauseLongitudinal = self.pause_longitudinal
