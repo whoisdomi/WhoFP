@@ -44,6 +44,7 @@ class CarState(CarStateBase):
     self.cruise_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.lda_button = 0
+    self.steering_wheel_buttons = {}
 
     self.gear_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                           "GEAR_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS else \
@@ -331,8 +332,10 @@ class CarState(CarStateBase):
       fp_ret.sportGear = (drive_mode == 5)  # Sport mode
 
     # Steering wheel media buttons (Mode and Custom) for FrogPilot wheel controls
-    fp_ret.modePressed = bool(cp.vl["STEERING_WHEEL_MEDIA_BUTTONS"]["MODE_BUTTON"])
-    fp_ret.customPressed = bool(cp.vl["STEERING_WHEEL_MEDIA_BUTTONS"]["CUSTOM_BUTTON"])
+    # Save all button states so we can forward non-Mode/Custom buttons while blocking Mode/Custom
+    self.steering_wheel_buttons = copy.copy(cp.vl["STEERING_WHEEL_MEDIA_BUTTONS"])
+    fp_ret.modePressed = bool(self.steering_wheel_buttons["MODE_BUTTON"])
+    fp_ret.customPressed = bool(self.steering_wheel_buttons["CUSTOM_BUTTON"])
 
     return ret, fp_ret
 

@@ -249,4 +249,30 @@ class CarController(CarControllerBase):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter + 1, btn))
             self.last_button_frame = self.frame
 
+    # Block MODE_BUTTON and CUSTOM_BUTTON stock functions if FrogPilot controls are enabled
+    # Send at 50Hz (every other frame) to override the stock message
+    if self.frame % 2 == 0:
+      mode_button_used = (frogpilot_toggles.experimental_mode_via_mode or frogpilot_toggles.force_coast_via_mode or
+                          frogpilot_toggles.pause_lateral_via_mode or frogpilot_toggles.pause_longitudinal_via_mode or
+                          frogpilot_toggles.personality_profile_via_mode or frogpilot_toggles.traffic_mode_via_mode or
+                          frogpilot_toggles.experimental_mode_via_mode_long or frogpilot_toggles.force_coast_via_mode_long or
+                          frogpilot_toggles.pause_lateral_via_mode_long or frogpilot_toggles.pause_longitudinal_via_mode_long or
+                          frogpilot_toggles.personality_profile_via_mode_long or frogpilot_toggles.traffic_mode_via_mode_long or
+                          frogpilot_toggles.experimental_mode_via_mode_very_long or frogpilot_toggles.force_coast_via_mode_very_long or
+                          frogpilot_toggles.pause_lateral_via_mode_very_long or frogpilot_toggles.pause_longitudinal_via_mode_very_long or
+                          frogpilot_toggles.personality_profile_via_mode_very_long or frogpilot_toggles.traffic_mode_via_mode_very_long)
+
+      custom_button_used = (frogpilot_toggles.experimental_mode_via_custom or frogpilot_toggles.force_coast_via_custom or
+                            frogpilot_toggles.pause_lateral_via_custom or frogpilot_toggles.pause_longitudinal_via_custom or
+                            frogpilot_toggles.personality_profile_via_custom or frogpilot_toggles.traffic_mode_via_custom or
+                            frogpilot_toggles.experimental_mode_via_custom_long or frogpilot_toggles.force_coast_via_custom_long or
+                            frogpilot_toggles.pause_lateral_via_custom_long or frogpilot_toggles.pause_longitudinal_via_custom_long or
+                            frogpilot_toggles.personality_profile_via_custom_long or frogpilot_toggles.traffic_mode_via_custom_long or
+                            frogpilot_toggles.experimental_mode_via_custom_very_long or frogpilot_toggles.force_coast_via_custom_very_long or
+                            frogpilot_toggles.pause_lateral_via_custom_very_long or frogpilot_toggles.pause_longitudinal_via_custom_very_long or
+                            frogpilot_toggles.personality_profile_via_custom_very_long or frogpilot_toggles.traffic_mode_via_custom_very_long)
+
+      if mode_button_used or custom_button_used:
+        can_sends.append(hyundaicanfd.create_steering_wheel_buttons_block(self.packer, self.CAN, self.frame, CS.steering_wheel_buttons))
+
     return can_sends
