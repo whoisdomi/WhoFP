@@ -7,6 +7,7 @@ import cereal.messaging as messaging
 
 from cereal import car, custom, log
 
+from openpilot.common.constants import CV
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
 from openpilot.common.swaglog import cloudlog, ForwardingHandler
@@ -19,7 +20,7 @@ from opendbc.car.car_helpers import get_car, interfaces
 from opendbc.car.interfaces import CarInterfaceBase, RadarInterfaceBase
 from opendbc.safety import ALTERNATIVE_EXPERIENCE
 from openpilot.selfdrive.pandad import can_capnp_to_list, can_list_to_can_capnp
-from openpilot.selfdrive.car.cruise import VCruiseHelper
+from openpilot.selfdrive.car.cruise import VCruiseHelper, V_CRUISE_MIN, V_CRUISE_MAX
 from openpilot.selfdrive.car.car_specific import MockCarState
 
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles, update_frogpilot_toggles
@@ -173,6 +174,7 @@ class Car:
     self.resume_prev_button = False
 
     # FrogPilot variables
+    self.params_memory = Params(memory=True)
     self.frogpilot_toggles = get_frogpilot_toggles()
 
     if self.frogpilot_toggles.always_on_lateral:
@@ -220,6 +222,15 @@ class Car:
       # Get speed limit for "Match Speed Limit on Engage" feature
       slc_speed_limit = self.sm['frogpilotPlan'].slcSpeedLimit + self.sm['frogpilotPlan'].slcSpeedLimitOffset
       self.v_cruise_helper.initialize_v_cruise(self.CS_prev, self.experimental_mode, self.resume_prev_button, self.frogpilot_toggles, slc_speed_limit)
+
+    # Check if SLC accepted a higher speed limit and update v_cruise to match
+    slc_accepted_speed = self.params_memory.get_float("SLCAcceptedCruiseSpeed")
+    if slc_accepted_speed > 0:
+      new_cruise_kph = slc_accepted_speed * CV.MS_TO_KPH
+      if new_cruise_kph > self.v_cruise_helper.v_cruise_kph:
+        self.v_cruise_helper.v_cruise_kph = min(new_cruise_kph, V_CRUISE_MAX)
+        self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
+      self.params_memory.remove("SLCAcceptedCruiseSpeed")
 
     # TODO: mirror the carState.cruiseState struct?
     CS.vCruise = float(self.v_cruise_helper.v_cruise_kph)

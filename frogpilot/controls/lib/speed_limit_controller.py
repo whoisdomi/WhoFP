@@ -198,7 +198,7 @@ class SpeedLimitController:
     future = self.executor.submit(make_request)
     future.add_done_callback(complete_request)
 
-  def handle_limit_change(self, desired_source, desired_target, sm):
+  def handle_limit_change(self, desired_source, desired_target, v_cruise, sm):
     self.speed_limit_changed_timer += DT_MDL
 
     speed_limit_accepted = (sm["frogpilotCarState"].accelPressed and sm["carControl"].longActive) or self.frogpilot_planner.params_memory.get_bool("SpeedLimitAccepted")
@@ -209,6 +209,11 @@ class SpeedLimitController:
 
       self.source = desired_source
       self.target = desired_target
+
+      # When accepting a higher speed limit, update v_cruise to match if it's currently lower
+      new_target_with_offset = self.target + self.offset
+      if new_target_with_offset > v_cruise:
+        self.frogpilot_planner.params_memory.put_float("SLCAcceptedCruiseSpeed", new_target_with_offset)
 
       self.frogpilot_planner.params_memory.remove("SpeedLimitAccepted")
 
@@ -295,7 +300,7 @@ class SpeedLimitController:
       self.segment_distance = 0
 
     if abs(desired_target - self.previous_target) >= 1:
-      self.handle_limit_change(desired_source, desired_target, sm)
+      self.handle_limit_change(desired_source, desired_target, v_cruise, sm)
     elif desired_source != self.source and abs(desired_target - self.target) < 1:
       self.source = desired_source
     else:
