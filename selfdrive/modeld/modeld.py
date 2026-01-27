@@ -326,6 +326,10 @@ def main(demo=False):
   meta_main = FrameMeta()
   meta_extra = FrameMeta()
 
+  # Pre-allocate arrays used in hot loop to avoid allocations at 20Hz
+  traffic_convention = np.zeros(2, dtype=np.float32)
+  vec_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
+
 
   if demo:
     CP = get_demo_car_params()
@@ -391,10 +395,11 @@ def main(demo=False):
       model_transform_extra = get_warp_matrix(device_from_calib_euler, dc.ecam.intrinsics, True).astype(np.float32)
       live_calib_seen = True
 
-    traffic_convention = np.zeros(2)
+    # Reset pre-allocated arrays in-place (avoids allocation at 20Hz)
+    traffic_convention[:] = 0
     traffic_convention[int(is_rhd)] = 1
 
-    vec_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
+    vec_desire[:] = 0
     if desire >= 0 and desire < ModelConstants.DESIRE_LEN:
       vec_desire[desire] = 1
 

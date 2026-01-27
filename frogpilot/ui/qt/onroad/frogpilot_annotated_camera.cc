@@ -5,6 +5,7 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
 
   brakePedalImg = loadPixmap("../../frogpilot/assets/other_images/brake_pedal.png", {btn_size, btn_size});
   curveSpeedIcon = loadPixmap("../../frogpilot/assets/other_images/curve_speed.png", {btn_size, btn_size});
+  curveSpeedIconFlipped = curveSpeedIcon.transformed(QTransform().scale(-1, 1));  // Pre-cache flipped version
   dashboardIcon = loadPixmap("../../frogpilot/assets/other_images/dashboard_icon.png", {btn_size / 2, btn_size / 2});
   gasPedalImg = loadPixmap("../../frogpilot/assets/other_images/gas_pedal.png", {btn_size, btn_size});
   mapboxIcon = loadPixmap("../../frogpilot/assets/other_images/mapbox_icon.png", {btn_size / 2, btn_size / 2});
@@ -49,7 +50,9 @@ void FrogPilotAnnotatedCameraWidget::showEvent(QShowEvent *event) {
 
 void FrogPilotAnnotatedCameraWidget::updateSignals() {
   QVector<QPixmap>().swap(blindspotImages);
+  QVector<QPixmap>().swap(blindspotImagesFlipped);
   QVector<QPixmap>().swap(signalImages);
+  QVector<QPixmap>().swap(signalImagesFlipped);
 
   bool isGif = false;
 
@@ -109,6 +112,20 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
     totalFrames = 0;
 
     signalStyle = "None";
+  }
+
+  // Pre-cache flipped versions to avoid transforms at 20Hz during paint
+  QTransform flipTransform;
+  flipTransform.scale(-1, 1);
+
+  signalImagesFlipped.reserve(signalImages.size());
+  for (const QPixmap &img : signalImages) {
+    signalImagesFlipped.append(img.transformed(flipTransform));
+  }
+
+  blindspotImagesFlipped.reserve(blindspotImages.size());
+  for (const QPixmap &img : blindspotImages) {
+    blindspotImagesFlipped.append(img.transformed(flipTransform));
   }
 }
 
@@ -172,6 +189,15 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
     frogHopCount++;
   }
   lastFrameIndex = animationFrameIndex;
+
+  // Cache values to avoid parsing in paint methods (saves CPU at 20Hz)
+  if (frogpilot_toggles.value("compass").toBool()) {
+    double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
+    cachedBearing = qRound(fmod(rawBearing + 360.0, 360.0));
+  }
+  if (frogpilot_toggles.value("road_name_ui").toBool()) {
+    cachedRoadName = QString::fromStdString(params_memory.get("RoadName"));
+  }
 
   update();
 }
@@ -479,9 +505,8 @@ void FrogPilotAnnotatedCameraWidget::paintCompass(QPainter &p) {
   clipPath.addRoundedRect(compassWidget.adjusted(MARGIN, MARGIN, -MARGIN, -MARGIN), 24, 24);
   p.setClipPath(clipPath);
 
-  double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
-  int bearing = qRound(fmod(rawBearing + 360.0, 360.0));
-  int offset = qRound(bearing * PIXELS_PER_DEGREE) % BASE_RIBBON_WIDTH;
+  // Use cached bearing from updateState() to avoid JSON parsing at 20Hz
+  int offset = qRound(cachedBearing * PIXELS_PER_DEGREE) % BASE_RIBBON_WIDTH;
   int drawX = compassWidget.center().x() - offset;
 
   p.drawPixmap(drawX - BASE_RIBBON_WIDTH, compassWidget.top() + MARGIN, compassRibbon);
@@ -509,7 +534,8 @@ void FrogPilotAnnotatedCameraWidget::paintCurveSpeedControl(QPainter &p, SubMast
 
   QRect curveSpeedRect(QPoint(setSpeedRect.right() + UI_BORDER_SIZE, setSpeedRect.top()), QSize(defaultSize.width() * 1.25, defaultSize.width() * 1.25));
 
-  QPixmap curveSpeedImage = frogpilotPlan.getRoadCurvature() < 0 ? curveSpeedIcon : curveSpeedIcon.transformed(QTransform().scale(-1, 1));
+  // Use pre-cached flipped icon to avoid transform at 20Hz
+  const QPixmap &curveSpeedImage = frogpilotPlan.getRoadCurvature() < 0 ? curveSpeedIcon : curveSpeedIconFlipped;
   QSize curveSpeedSize = curveSpeedImage.size();
   QPoint curveSpeedPoint(curveSpeedRect.x() + (curveSpeedRect.width()  - curveSpeedSize.width())  / 2, curveSpeedRect.y() + (curveSpeedRect.height() - curveSpeedSize.height()) / 2);
 
@@ -540,7 +566,8 @@ void FrogPilotAnnotatedCameraWidget::paintCurveSpeedControlTraining(QPainter &p,
   }
 
   QRect curveSpeedRect(QPoint(setSpeedRect.right() + UI_BORDER_SIZE, setSpeedRect.top()), QSize(defaultSize.width() * 1.25, defaultSize.width() * 1.25));
-  QPixmap curveSpeedImage = frogpilotPlan.getRoadCurvature() < 0 ? curveSpeedIcon : curveSpeedIcon.transformed(QTransform().scale(-1, 1));
+  // Use pre-cached flipped icon to avoid transform at 20Hz
+  const QPixmap &curveSpeedImage = frogpilotPlan.getRoadCurvature() < 0 ? curveSpeedIcon : curveSpeedIconFlipped;
 
   qreal phase = (glowTimer.elapsed() % 2000) / 2000.0 * 2 * M_PI;
   qreal alphaFactor = 0.5 + 0.5 * sin(phase);
@@ -847,8 +874,8 @@ void FrogPilotAnnotatedCameraWidget::paintRadarTracks(QPainter &p) {
 }
 
 void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
-  QString roadName = QString::fromStdString(params_memory.get("RoadName"));
-  if (roadName.isEmpty()) {
+  // Use cached road name from updateState() to avoid params read at 20Hz
+  if (cachedRoadName.isEmpty()) {
     return;
   }
 
@@ -858,7 +885,7 @@ void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
 
   QFont font = InterFont(40, QFont::DemiBold);
 
-  int textWidth = QFontMetrics(font).horizontalAdvance(roadName);
+  int textWidth = QFontMetrics(font).horizontalAdvance(cachedRoadName);
 
   QRect roadNameRect((width() - (textWidth + 100)) / 2, rect().bottom() - 55 + 1, textWidth + 100, 50);
 
@@ -869,7 +896,7 @@ void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
 
   p.setFont(font);
   p.setPen(QPen(whiteColor(), 6));
-  p.drawText(roadNameRect, Qt::AlignCenter, roadName);
+  p.drawText(roadNameRect, Qt::AlignCenter, cachedRoadName);
 
   p.restore();
 }
@@ -1116,10 +1143,11 @@ void FrogPilotAnnotatedCameraWidget::paintTurnSignals(QPainter &p, SubMaster &sm
     int signalXPosition = leftBlinker ? (rect().center().x() * 0.75) - signalWidth : rect().center().x() * 1.25;
     int signalYPosition = signalHeight / 2;
 
+    // Use pre-cached flipped images to avoid transforms at 20Hz
     if (blindspotActive && !blindspotImages.empty()) {
-      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, blindspotImages[0].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, leftBlinker ? blindspotImages[0] : blindspotImagesFlipped[0]);
     } else {
-      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, signalImages[animationFrameIndex].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, leftBlinker ? signalImages[animationFrameIndex] : signalImagesFlipped[animationFrameIndex]);
     }
   } else {
     int signalXPosition;
@@ -1130,10 +1158,11 @@ void FrogPilotAnnotatedCameraWidget::paintTurnSignals(QPainter &p, SubMaster &sm
     }
     int signalYPosition = height() - signalHeight - alertHeight;
 
+    // Use pre-cached flipped images to avoid transforms at 20Hz
     if (blindspotActive && !blindspotImages.empty()) {
-      p.drawPixmap(leftBlinker ? width() - signalWidth : 0, signalYPosition, signalWidth, signalHeight, blindspotImages[0].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+      p.drawPixmap(leftBlinker ? width() - signalWidth : 0, signalYPosition, signalWidth, signalHeight, leftBlinker ? blindspotImages[0] : blindspotImagesFlipped[0]);
     } else {
-      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, signalImages[animationFrameIndex].transformed(QTransform().scale(leftBlinker ? 1 : -1, 1)));
+      p.drawPixmap(signalXPosition, signalYPosition, signalWidth, signalHeight, leftBlinker ? signalImages[animationFrameIndex] : signalImagesFlipped[animationFrameIndex]);
     }
   }
 

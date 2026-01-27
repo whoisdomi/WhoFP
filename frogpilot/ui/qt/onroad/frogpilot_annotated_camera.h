@@ -83,6 +83,10 @@ private:
 
   bool speedLimitChanged;
 
+  // Cached values to avoid parsing in paint methods (20Hz)
+  int cachedBearing;
+  QString cachedRoadName;
+
   int animationFrameIndex;
   int desiredFollowDistance;
   int frogHopCount;
@@ -110,6 +114,7 @@ private:
 
   QPixmap brakePedalImg;
   QPixmap curveSpeedIcon;
+  QPixmap curveSpeedIconFlipped;  // Pre-cached flipped version
   QPixmap dashboardIcon;
   QPixmap mapDataIcon;
   QPixmap mapboxIcon;
@@ -148,5 +153,7 @@ private:
   QTimer *animationTimer;
 
   QVector<QPixmap> blindspotImages;
+  QVector<QPixmap> blindspotImagesFlipped;  // Pre-cached flipped versions
   QVector<QPixmap> signalImages;
+  QVector<QPixmap> signalImagesFlipped;  // Pre-cached flipped versions
 };
