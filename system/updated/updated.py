@@ -71,8 +71,8 @@ def write_time_to_param(params, param) -> None:
   t = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
   params.put(param, t)
 
-def run(cmd: list[str], cwd: str = None) -> str:
-  return subprocess.check_output(cmd, cwd=cwd, stderr=subprocess.STDOUT, encoding='utf8')
+def run(cmd: list[str], cwd: str = None, timeout: int = 30) -> str:
+  return subprocess.check_output(cmd, cwd=cwd, stderr=subprocess.STDOUT, encoding='utf8', timeout=timeout)
 
 
 def set_consistent_flag(consistent: bool) -> None:
