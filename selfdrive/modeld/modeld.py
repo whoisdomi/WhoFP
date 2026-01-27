@@ -353,7 +353,7 @@ def main(demo=False):
         break
 
     if buf_main is None:
-      cloudlog.debug("vipc_client_main no frame")
+      # cloudlog.debug("vipc_client_main no frame")  # Muted - too verbose at 20Hz
       continue
 
     if use_extra_client:
@@ -365,12 +365,13 @@ def main(demo=False):
           break
 
       if buf_extra is None:
-        cloudlog.debug("vipc_client_extra no frame")
+        # cloudlog.debug("vipc_client_extra no frame")  # Muted - too verbose at 20Hz
         continue
 
       if abs(meta_main.timestamp_sof - meta_extra.timestamp_sof) > 10000000:
-        cloudlog.error(f"frames out of sync! main: {meta_main.frame_id} ({meta_main.timestamp_sof / 1e9:.5f}),\
-                         extra: {meta_extra.frame_id} ({meta_extra.timestamp_sof / 1e9:.5f})")
+        # cloudlog.error(f"frames out of sync! main: {meta_main.frame_id} ({meta_main.timestamp_sof / 1e9:.5f}),\
+        #                  extra: {meta_extra.frame_id} ({meta_extra.timestamp_sof / 1e9:.5f})")  # Muted - expensive formatting at 20Hz
+        pass
 
     else:
       # Use single camera
@@ -408,7 +409,7 @@ def main(demo=False):
     frame_drop_ratio = frames_dropped / (1 + frames_dropped)
     prepare_only = vipc_dropped_frames > 0
     if prepare_only:
-      cloudlog.error(f"skipping model eval. Dropped {vipc_dropped_frames} frames")
+      pass  # cloudlog.error(f"skipping model eval. Dropped {vipc_dropped_frames} frames")  # Muted - too verbose during frame drops
 
     bufs = {name: buf_extra if 'big' in name else buf_main for name in model.vision_input_names}
     transforms = {name: model_transform_extra if 'big' in name else model_transform_main for name in model.vision_input_names}

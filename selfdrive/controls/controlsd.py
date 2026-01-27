@@ -173,7 +173,7 @@ class Controls:
         continue
 
       if not math.isfinite(attr):
-        cloudlog.error(f"actuators.{p} not finite {actuators.to_dict()}")
+        # cloudlog.error(f"actuators.{p} not finite {actuators.to_dict()}")  # Muted - expensive to_dict() at 100Hz
         setattr(actuators, p, 0.0)
 
     return CC, lac_log
