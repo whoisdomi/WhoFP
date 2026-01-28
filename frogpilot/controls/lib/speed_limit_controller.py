@@ -213,7 +213,7 @@ class SpeedLimitController:
       # When accepting a higher speed limit, update v_cruise to match if it's currently lower
       new_target_with_offset = self.target + self.offset
       if new_target_with_offset > v_cruise:
-        self.frogpilot_planner.params_memory.put_float("SLCAcceptedCruiseSpeed", new_target_with_offset)
+        self.frogpilot_planner.params_memory.put("SLCAcceptedCruiseSpeed", new_target_with_offset)
 
       self.frogpilot_planner.params_memory.remove("SpeedLimitAccepted")
 
