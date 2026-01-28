@@ -8,6 +8,8 @@ This is **FrogPilot**, a community fork of openpilot. openpilot is an open-sourc
 
 **Target Hardware:** comma 3/3X devices (also supports PC development)
 
+**Target Car:** When a car is not specified, assume it is for a 2023 Ioniq 6
+
 ## Build Commands
 
 ```bash
