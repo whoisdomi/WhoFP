@@ -201,8 +201,13 @@ class SpeedLimitController:
   def handle_limit_change(self, desired_source, desired_target, v_cruise, sm):
     self.speed_limit_changed_timer += DT_MDL
 
-    speed_limit_accepted = (sm["frogpilotCarState"].accelPressed and sm["carControl"].longActive) or self.frogpilot_planner.params_memory.get_bool("SpeedLimitAccepted")
-    speed_limit_denied = sm["frogpilotCarState"].decelPressed or (self.speed_limit_changed_timer >= 30)
+    long_active = sm["carControl"].longActive
+    speed_limit_accepted = (sm["frogpilotCarState"].accelPressed and long_active) or self.frogpilot_planner.params_memory.get_bool("SpeedLimitAccepted")
+    speed_limit_denied = sm["frogpilotCarState"].decelPressed or (self.speed_limit_changed_timer >= 30 and long_active)
+
+    # Auto-accept speed limit changes when not engaged (no confirmation needed)
+    if not long_active and not sm["selfdriveState"].enabled:
+      speed_limit_accepted = True
 
     if speed_limit_accepted:
       self.overridden_speed = 0
