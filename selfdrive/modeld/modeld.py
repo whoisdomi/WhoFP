@@ -102,6 +102,16 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     else:
       lat_smooth = frogpilot_toggles.latSmoothSeconds if frogpilot_toggles else LAT_SMOOTH_SECONDS
 
+    # Apply lane position offset as curvature correction
+    # Positive offset = shift right = need negative curvature (steer right)
+    if frogpilot_toggles and v_ego > MIN_LAT_CONTROL_SPEED:
+      lane_offset = getattr(frogpilot_toggles, 'lane_position_offset', 0.0)
+      if lane_offset != 0:
+        # Scale correction by velocity - smaller correction at higher speeds for stability
+        # The gain factor converts offset (meters) to curvature (1/meters)
+        curvature_correction = -lane_offset * 0.15 / max(v_ego * v_ego, 25.0)
+        desired_curvature += curvature_correction
+
     if v_ego > MIN_LAT_CONTROL_SPEED:
       desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth)
     else:

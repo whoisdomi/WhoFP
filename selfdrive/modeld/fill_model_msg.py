@@ -83,8 +83,9 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.modelExecutionTime = model_execution_time
 
   # plan - apply lane position offset to Y values
+  # Positive offset = shift right = subtract from Y (since positive Y is left in car coords)
   plan_pos = net_output_data['plan'][0,:,Plan.POSITION].T.copy()
-  plan_pos[1] += lane_position_offset  # Add offset to Y values
+  plan_pos[1] -= lane_position_offset
   fill_xyzt(modelV2.position, ModelConstants.T_IDXS, *plan_pos, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
   fill_xyzt(modelV2.velocity, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.VELOCITY].T)
   fill_xyzt(modelV2.acceleration, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ACCELERATION].T)
@@ -101,10 +102,11 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   LINE_T_IDXS: list[float] = []
 
   # lane lines - apply lane position offset to Y values
+  # Positive offset = shift right = subtract from Y (since positive Y is left in car coords)
   modelV2.init('laneLines', 4)
   for i in range(4):
     lane_line = modelV2.laneLines[i]
-    lane_line_y = net_output_data['lane_lines'][0,i,:,0] + lane_position_offset
+    lane_line_y = net_output_data['lane_lines'][0,i,:,0] - lane_position_offset
     fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), lane_line_y, net_output_data['lane_lines'][0,i,:,1])
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
@@ -112,10 +114,11 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   fill_lane_line_meta(driving_model_data.laneLineMeta, modelV2.laneLines, modelV2.laneLineProbs)
 
   # road edges - apply lane position offset to Y values
+  # Positive offset = shift right = subtract from Y (since positive Y is left in car coords)
   modelV2.init('roadEdges', 2)
   for i in range(2):
     road_edge = modelV2.roadEdges[i]
-    road_edge_y = net_output_data['road_edges'][0,i,:,0] + lane_position_offset
+    road_edge_y = net_output_data['road_edges'][0,i,:,0] - lane_position_offset
     fill_xyzt(road_edge, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), road_edge_y, net_output_data['road_edges'][0,i,:,1])
   modelV2.roadEdgeStds = net_output_data['road_edges_stds'][0,:,0,0].tolist()
 
