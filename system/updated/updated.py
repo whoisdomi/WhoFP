@@ -190,17 +190,17 @@ def finalize_update(params) -> None:
     shutil.rmtree(FINALIZED)
   shutil.copytree(OVERLAY_MERGED, FINALIZED, symlinks=True)
 
-  run(["git", "reset", "--hard"], FINALIZED)
-  run(["git", "submodule", "foreach", "--recursive", "git", "reset", "--hard"], FINALIZED)
+  run(["git", "reset", "--hard"], FINALIZED, timeout=120)
+  run(["git", "submodule", "foreach", "--recursive", "git", "reset", "--hard"], FINALIZED, timeout=120)
 
   if params.get_bool("IsOffroad"):
     cloudlog.info("Starting git cleanup in finalized update")
     t = time.monotonic()
     try:
-      run(["git", "gc"], FINALIZED)
-      run(["git", "lfs", "prune"], FINALIZED)
+      run(["git", "gc"], FINALIZED, timeout=300)
+      run(["git", "lfs", "prune"], FINALIZED, timeout=300)
       cloudlog.event("Done git cleanup", duration=time.monotonic() - t)
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
       cloudlog.exception(f"Failed git cleanup, took {time.monotonic() - t:.3f} s")
 
   set_consistent_flag(True)
@@ -381,7 +381,7 @@ class Updater:
     setup_git_options(OVERLAY_MERGED)
 
     branch = self.target_branch
-    git_fetch_output = run(["git", "fetch", "origin", branch], OVERLAY_MERGED)
+    git_fetch_output = run(["git", "fetch", "origin", branch], OVERLAY_MERGED, timeout=300)
     cloudlog.info("git fetch success: %s", git_fetch_output)
 
     cloudlog.info("git reset in progress")
@@ -393,7 +393,7 @@ class Updater:
       ["git", "submodule", "update", "--init", "--recursive"],
       ["git", "submodule", "foreach", "--recursive", "git", "reset", "--hard"],
     ]
-    r = [run(cmd, OVERLAY_MERGED) for cmd in cmds]
+    r = [run(cmd, OVERLAY_MERGED, timeout=300) for cmd in cmds]
     cloudlog.info("git reset success: %s", '\n'.join(r))
 
     # TODO: show agnos download progress
