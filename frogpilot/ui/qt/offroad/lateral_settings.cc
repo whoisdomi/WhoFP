@@ -67,6 +67,7 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"LaneChangeLateralAccel", tr("Lane Change Lateral Accel"), tr("<b>How fast you move sideways during lane changes.</b> Lower values make lane changes take longer. Higher values complete lane changes faster."), ""},
 
     {"LateralTune", tr("Lateral Tuning"), tr("<b>Miscellaneous steering control changes</b> to fine-tune how openpilot drives."), "../../frogpilot/assets/toggle_icons/icon_lateral_tune.png"},
+    {"LanePositionOffset", tr("Lane Position Offset (Default: 0.00)"), tr("<b>Shift the car's lane position left or right.</b> Negative values shift the car left, positive values shift right. Use this to adjust lane centering without resetting calibration."), ""},
     {"TurnDesires", tr("Force Turn Desires Below Lane Change Speed"), tr("<b>While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.</b>"), ""},
     {"NNFF", tr("Neural Network Feedforward (NNFF)"), tr("<b>Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses a trained neural network model to predict steering torque based on vehicle speed, roll, and past/future planned path data for smoother, model-based steering."), ""},
     {"NNFFLite", tr("Neural Network Feedforward (NNFF) Lite"), tr("<b>A lightweight version of Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses the \"look-ahead\" planned lateral jerk logic from the full model to help smoothen steering adjustments in curves, but does not use the full neural network for torque calculation."), ""},
@@ -177,6 +178,15 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
         postTurnLabels[i] = i == 0 ? tr("Off") : i == 1 ? QString::number(i) + tr(" second") : QString::number(i) + tr(" seconds");
       }
       lateralToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 10, QString(), postTurnLabels, 1);
+
+    } else if (param == "LanePositionOffset") {
+      std::vector<QString> lanePositionOffsetButton{"Reset"};
+      std::map<float, QString> lanePositionOffsetLabels;
+      for (int i = -30; i <= 30; i++) {
+        float val = i / 100.0f;
+        lanePositionOffsetLabels[val] = QString::number(val, 'f', 2) + " m";
+      }
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, -0.30, 0.30, QString(), lanePositionOffsetLabels, 0.01, false, {}, lanePositionOffsetButton, false, false);
 
     } else if (param == "QOLLateral") {
       FrogPilotManageControl *qolLateralToggle = new FrogPilotManageControl(param, title, desc, icon);
@@ -303,6 +313,14 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Steer Ratio</b> to its default value?"), this)) {
       params.putFloat("SteerRatio", parent->steerRatio);
       steerRatioToggle->refresh();
+    }
+  });
+
+  lanePositionOffsetToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["LanePositionOffset"]);
+  QObject::connect(lanePositionOffsetToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Lane Position Offset</b> to its default value?"), this)) {
+      params.putFloat("LanePositionOffset", 0.0);
+      lanePositionOffsetToggle->refresh();
     }
   });
 

@@ -59,7 +59,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
                    net_output_data: dict[str, np.ndarray], action: log.ModelDataV2.Action,
                    publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
                    frame_id: int, frame_drop: float, timestamp_eof: int, model_execution_time: float,
-                   valid: bool) -> None:
+                   valid: bool, lane_position_offset: float = 0.0) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   frame_drop_perc = frame_drop * 100
   extended_msg.valid = valid
@@ -82,15 +82,17 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.timestampEof = timestamp_eof
   modelV2.modelExecutionTime = model_execution_time
 
-  # plan
-  fill_xyzt(modelV2.position, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.POSITION].T, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
+  # plan - apply lane position offset to Y values
+  plan_pos = net_output_data['plan'][0,:,Plan.POSITION].T.copy()
+  plan_pos[1] += lane_position_offset  # Add offset to Y values
+  fill_xyzt(modelV2.position, ModelConstants.T_IDXS, *plan_pos, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
   fill_xyzt(modelV2.velocity, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.VELOCITY].T)
   fill_xyzt(modelV2.acceleration, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ACCELERATION].T)
   fill_xyzt(modelV2.orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
   fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
 
-  # poly path
-  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, *net_output_data['plan'][0,:,Plan.POSITION].T)
+  # poly path - apply lane position offset to Y values
+  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, *plan_pos)
 
   # action
   modelV2.action = action
@@ -98,21 +100,23 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   # times at X_IDXS of edges and lines aren't used
   LINE_T_IDXS: list[float] = []
 
-  # lane lines
+  # lane lines - apply lane position offset to Y values
   modelV2.init('laneLines', 4)
   for i in range(4):
     lane_line = modelV2.laneLines[i]
-    fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0], net_output_data['lane_lines'][0,i,:,1])
+    lane_line_y = net_output_data['lane_lines'][0,i,:,0] + lane_position_offset
+    fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), lane_line_y, net_output_data['lane_lines'][0,i,:,1])
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
   fill_lane_line_meta(driving_model_data.laneLineMeta, modelV2.laneLines, modelV2.laneLineProbs)
 
-  # road edges
+  # road edges - apply lane position offset to Y values
   modelV2.init('roadEdges', 2)
   for i in range(2):
     road_edge = modelV2.roadEdges[i]
-    fill_xyzt(road_edge, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['road_edges'][0,i,:,0], net_output_data['road_edges'][0,i,:,1])
+    road_edge_y = net_output_data['road_edges'][0,i,:,0] + lane_position_offset
+    fill_xyzt(road_edge, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), road_edge_y, net_output_data['road_edges'][0,i,:,1])
   modelV2.roadEdgeStds = net_output_data['road_edges_stds'][0,:,0,0].tolist()
 
   # leads
