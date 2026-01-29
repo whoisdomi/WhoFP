@@ -199,7 +199,7 @@ class LongitudinalPlanner:
         # Base: 80m at low closing speeds, increases with closing speed
         # Formula: max(80m, closing_speed * 6 seconds)
         closing_speed = max(v_ego - lead.vLead, 0)
-        lead_close_distance = max(80, closing_speed * 6)  # 6 second buffer
+        lead_close_distance = max(80, closing_speed * 7)  # 7 second buffer
         lead_close = lead.dRel < lead_close_distance
 
         # Stopped/near-stopped leads should trigger coasting behavior
@@ -210,7 +210,7 @@ class LongitudinalPlanner:
       if not stop_ahead and not lead_dominated and output_a_target_e2e >= -0.5:
         # Road appears clear and e2e isn't requesting significant braking
         # Use weighted blend favoring MPC for better speed maintenance
-        output_a_target = 0.7 * output_a_target_mpc + 0.3 * output_a_target_e2e
+        output_a_target = 0.6 * output_a_target_mpc + 0.4 * output_a_target_e2e
       else:
         # Conservative mode: use minimum for safety (stop ahead, lead present, or e2e wants braking)
         output_a_target = min(output_a_target_mpc, output_a_target_e2e)
