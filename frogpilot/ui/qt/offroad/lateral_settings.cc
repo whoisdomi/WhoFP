@@ -68,6 +68,7 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
 
     {"LateralTune", tr("Lateral Tuning"), tr("<b>Miscellaneous steering control changes</b> to fine-tune how openpilot drives."), "../../frogpilot/assets/toggle_icons/icon_lateral_tune.png"},
     {"LanePositionOffset", tr("Lane Position Offset (Default: 0.00)"), tr("<b>Shift the car's lane position left or right.</b> Positive values shift right, negative values shift left. If your car hugs the left side, use a positive value to center it."), ""},
+    {"ResetCameraCalibration", tr("Reset Camera Calibration"), tr("<b>Reset only the camera calibration without losing learned steering values.</b> Use this if your car consistently hugs one side of the lane. Drive straight on a highway after reset to recalibrate."), ""},
     {"TurnDesires", tr("Force Turn Desires Below Lane Change Speed"), tr("<b>While driving below the minimum lane change speed with an active turn signal, instruct openpilot to turn left/right.</b>"), ""},
     {"NNFF", tr("Neural Network Feedforward (NNFF)"), tr("<b>Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses a trained neural network model to predict steering torque based on vehicle speed, roll, and past/future planned path data for smoother, model-based steering."), ""},
     {"NNFFLite", tr("Neural Network Feedforward (NNFF) Lite"), tr("<b>A lightweight version of Twilsonco's \"Neural Network FeedForward\" controller.</b> Uses the \"look-ahead\" planned lateral jerk logic from the full model to help smoothen steering adjustments in curves, but does not use the full neural network for torque calculation."), ""},
@@ -187,6 +188,16 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
         lanePositionOffsetLabels[val] = QString::number(val, 'f', 2) + " m";
       }
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, -0.30, 0.30, QString(), lanePositionOffsetLabels, 0.01, false, {}, lanePositionOffsetButton, false, false);
+
+    } else if (param == "ResetCameraCalibration") {
+      ButtonControl *resetCameraCalibButton = new ButtonControl(title, tr("RESET"), desc);
+      QObject::connect(resetCameraCalibButton, &ButtonControl::clicked, [this]() {
+        if (FrogPilotConfirmationDialog::yesorno(tr("Reset camera calibration? This will NOT reset your learned steering values. Drive straight on a highway to recalibrate."), this)) {
+          params.remove("CalibrationParams");
+          params.putBool("OnroadCycleRequested", true);
+        }
+      });
+      lateralToggle = resetCameraCalibButton;
 
     } else if (param == "QOLLateral") {
       FrogPilotManageControl *qolLateralToggle = new FrogPilotManageControl(param, title, desc, icon);
