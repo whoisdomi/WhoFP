@@ -108,8 +108,9 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
       lane_offset = getattr(frogpilot_toggles, 'lane_position_offset', 0.0)
       if lane_offset != 0:
         # Scale correction by velocity - smaller correction at higher speeds for stability
-        # The gain factor converts offset (meters) to curvature (1/meters)
-        curvature_correction = -lane_offset * 0.15 / max(v_ego * v_ego, 25.0)
+        # At 10m/s with 0.1m offset: -0.003 curvature (noticeable steering)
+        # At 30m/s with 0.1m offset: -0.001 curvature (gentler at highway speeds)
+        curvature_correction = -lane_offset * 0.3 / max(v_ego, 5.0)
         desired_curvature += curvature_correction
 
     if v_ego > MIN_LAT_CONTROL_SPEED:
