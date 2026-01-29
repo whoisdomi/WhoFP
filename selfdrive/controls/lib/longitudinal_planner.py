@@ -187,14 +187,25 @@ class LongitudinalPlanner:
       # Check if lead is actually a concern (slower, stopped, or braking hard) AND close
       lead = sm['radarState'].leadOne
       lead_dominated = False
+      lead_stopped_or_slow = False
       if lead.status:
-        # Lead is a concern if: stopped, slower than us, or braking significantly - AND close enough to matter
-        lead_close = lead.dRel < 50  # Within 50 meters
+        # Lead is a concern if: stopped, slower than us, or braking significantly
         lead_stopped = lead.vLead < 1
+        lead_near_stopped = lead.vLead < 3  # Near-stopped (creeping)
         lead_slower = lead.vLead < v_ego - 1  # Lead going slower than us
         lead_braking_hard = lead.aLeadK < -1.5  # Lead decelerating hard (likely stopping)
-        # Only concern if close, OR stopped/braking hard (those matter at any distance)
-        lead_dominated = lead_stopped or lead_braking_hard or (lead_slower and lead_close)
+
+        # Dynamic distance threshold based on closing speed (time-to-collision approach)
+        # Base: 80m at low closing speeds, increases with closing speed
+        # Formula: max(80m, closing_speed * 6 seconds)
+        closing_speed = max(v_ego - lead.vLead, 0)
+        lead_close_distance = max(80, closing_speed * 6)  # 6 second buffer
+        lead_close = lead.dRel < lead_close_distance
+
+        # Stopped/near-stopped leads should trigger coasting behavior
+        lead_stopped_or_slow = lead_stopped or lead_near_stopped
+        # Conservative mode triggers: stopped, braking hard, or slower and within range
+        lead_dominated = lead_stopped_or_slow or lead_braking_hard or (lead_slower and lead_close)
 
       if not stop_ahead and not lead_dominated and output_a_target_e2e >= -0.5:
         # Road appears clear and e2e isn't requesting significant braking
@@ -203,6 +214,9 @@ class LongitudinalPlanner:
       else:
         # Conservative mode: use minimum for safety (stop ahead, lead present, or e2e wants braking)
         output_a_target = min(output_a_target_mpc, output_a_target_e2e)
+        # Coast towards stopped/near-stopped leads (no acceleration)
+        if lead_stopped_or_slow:
+          output_a_target = min(output_a_target, 0.0)
 
       self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
