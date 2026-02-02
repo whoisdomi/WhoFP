@@ -26,7 +26,7 @@ from openpilot.common.pid import PIDController
 # Base KP/KI come from torque_params (set via UI or car defaults)
 # These are fallbacks if torque_params aren't set
 DEFAULT_KP = 1.0
-DEFAULT_KI = 0.15
+DEFAULT_KI = 0.3
 
 # Speed-interpolated KP: aggressive at low speed, tapering to base KP at highway
 # The actual base KP (rightmost value) is set dynamically from torque_params in __init__
@@ -90,10 +90,17 @@ class LatControlTorque(LatControl):
     # Unwind detection state
     self.prev_desired_lateral_accel = 0.0
 
-  def update_pid_gains(self):
-    """Update PID gains from torque_params. Call when params change."""
-    base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
-    base_ki = self.torque_params.ki if self.torque_params.ki > 0 else DEFAULT_KI
+  def update_pid_gains(self, frogpilot_toggles=None):
+    """Update PID gains from frogpilot_toggles (live) or torque_params (startup)."""
+    # Try to get live values from frogpilot_toggles first
+    if frogpilot_toggles is not None and hasattr(frogpilot_toggles, 'steerKp'):
+      # steerKp is [[speeds], [values]] format, get the first (only) value
+      base_kp = frogpilot_toggles.steerKp[1][0] if frogpilot_toggles.steerKp else DEFAULT_KP
+      base_ki = frogpilot_toggles.steerKi if hasattr(frogpilot_toggles, 'steerKi') else DEFAULT_KI
+    else:
+      # Fall back to torque_params (startup values)
+      base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
+      base_ki = self.torque_params.ki if self.torque_params.ki > 0 else DEFAULT_KI
 
     # Only update if gains changed
     if base_kp != self.current_kp or base_ki != self.current_ki:
@@ -125,7 +132,7 @@ class LatControlTorque(LatControl):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
 
     # Check for KP/KI changes from UI (allows live tuning)
-    self.update_pid_gains()
+    self.update_pid_gains(frogpilot_toggles)
 
     # Calculate current state
     measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
