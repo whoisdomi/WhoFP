@@ -22,13 +22,17 @@ from openpilot.common.pid import PIDController
 # Additionally, there is friction in the steering wheel that needs
 # to be overcome to move it at all, this is compensated for too.
 
-# === Gain Settings (from stock comma) ===
-KP = 0.8
-KI = 0.15
+# === Gain Settings ===
+# Base KP/KI come from torque_params (set via UI or car defaults)
+# These are fallbacks if torque_params aren't set
+DEFAULT_KP = 1.0
+DEFAULT_KI = 0.15
 
-# Speed-interpolated KP: aggressive at low speed, normal at highway
+# Speed-interpolated KP: aggressive at low speed, tapering to base KP at highway
+# The actual base KP (rightmost value) is set dynamically from torque_params in __init__
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
-KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
+# Multipliers relative to base KP (last value = 1.0x base)
+KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0]
 
 # === Jerk Filtering (from stock comma) ===
 LP_FILTER_CUTOFF_HZ = 1.2        # Low-pass filter for jerk smoothing
@@ -59,8 +63,16 @@ class LatControlTorque(LatControl):
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
 
+    # Use KP/KI from torque_params (UI settings) or defaults
+    base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
+    base_ki = self.torque_params.ki if self.torque_params.ki > 0 else DEFAULT_KI
+
+    # Scale KP multipliers by the base KP from settings
+    # At 30 m/s you get base_kp, at 1 m/s you get 250 * base_kp
+    kp_interp = [m * base_kp for m in KP_MULTIPLIERS]
+
     # PID with speed-interpolated KP
-    self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI,
+    self.pid = PIDController([INTERP_SPEEDS, kp_interp], base_ki,
                              pos_limit=1.0, neg_limit=-1.0,
                              unwind_multiplier=UNWIND_MULTIPLIER)
 
