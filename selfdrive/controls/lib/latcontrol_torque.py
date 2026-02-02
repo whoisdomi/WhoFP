@@ -3,7 +3,7 @@ import numpy as np
 from collections import deque
 
 from cereal import log
-from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
+from opendbc.car.lateral import get_friction
 from opendbc.car.interfaces import LatControlInputs
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -49,6 +49,17 @@ UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.85 = 15% decay per cycle)
+
+# === Friction Threshold (from StarPilot) ===
+# Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
+# higher at highway (friction needs bigger error to kick in, prevents ticking)
+FRICTION_THRESHOLD_SPEEDS = [0.5, 33.5]  # m/s (approx 1 mph to 75 mph)
+FRICTION_THRESHOLD_VALUES = [0.12, 0.3]   # threshold values
+
+
+def get_friction_threshold(v_ego: float) -> float:
+  """Returns speed-interpolated friction threshold."""
+  return float(np.interp(v_ego, FRICTION_THRESHOLD_SPEEDS, FRICTION_THRESHOLD_VALUES))
 
 
 class LatControlTorque(LatControl):
@@ -143,7 +154,9 @@ class LatControlTorque(LatControl):
     # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
     ff -= self.torque_params.latAccelOffset
     # Friction term with jerk gain (anticipates needed friction based on rate of change)
-    ff += get_friction(error + JERK_GAIN * desired_lateral_jerk, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+    # Use speed-interpolated threshold: lower at low speed (helps turns), higher at highway (prevents ticking)
+    friction_threshold = get_friction_threshold(CS.vEgo)
+    ff += get_friction(error + JERK_GAIN * desired_lateral_jerk, lateral_accel_deadzone, friction_threshold, self.torque_params)
 
     # StarPilot unwind detection: freeze integrator when exiting a turn
     desired_lateral_accel_rate = (setpoint - self.prev_desired_lateral_accel) / DT_CTRL
