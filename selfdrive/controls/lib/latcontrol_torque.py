@@ -50,11 +50,6 @@ UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.85 = 15% decay per cycle)
 
-# === Low Speed Factor (DISABLED - using KP interpolation instead) ===
-# Uncomment to re-enable if KP interp alone isn't enough for low-speed response
-# LOW_SPEED_X = [0, 15, 25, 35]
-# LOW_SPEED_Y = [25, 10, 4, 2]  # Squared in calculation
-
 
 class LatControlTorque(LatControl):
   def __init__(self, CP, CI):
@@ -63,18 +58,15 @@ class LatControlTorque(LatControl):
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
 
-    # Use KP/KI from torque_params (UI settings) or defaults
-    base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
-    base_ki = self.torque_params.ki if self.torque_params.ki > 0 else DEFAULT_KI
+    # Store current KP/KI for live update detection
+    self.current_kp = 0.0
+    self.current_ki = 0.0
 
-    # Scale KP multipliers by the base KP from settings
-    # At 30 m/s you get base_kp, at 1 m/s you get 250 * base_kp
-    kp_interp = [m * base_kp for m in KP_MULTIPLIERS]
-
-    # PID with speed-interpolated KP
-    self.pid = PIDController([INTERP_SPEEDS, kp_interp], base_ki,
-                             pos_limit=1.0, neg_limit=-1.0,
+    # Initialize PID (will be configured in update_pid_gains)
+    self.pid = PIDController(DEFAULT_KP, DEFAULT_KI,
+                             pos_limit=1e308, neg_limit=-1e308,
                              unwind_multiplier=UNWIND_MULTIPLIER)
+    self.update_pid_gains()
 
     # Delay compensation buffer
     self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / DT_CTRL)
@@ -87,13 +79,42 @@ class LatControlTorque(LatControl):
     # Unwind detection state
     self.prev_desired_lateral_accel = 0.0
 
+  def update_pid_gains(self):
+    """Update PID gains from torque_params. Call when params change."""
+    base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
+    base_ki = self.torque_params.ki if self.torque_params.ki > 0 else DEFAULT_KI
+
+    # Only update if gains changed
+    if base_kp != self.current_kp or base_ki != self.current_ki:
+      self.current_kp = base_kp
+      self.current_ki = base_ki
+
+      # Scale KP multipliers by the base KP from settings
+      kp_interp = [m * base_kp for m in KP_MULTIPLIERS]
+
+      # Update PID gains
+      self.pid._k_p = [INTERP_SPEEDS, kp_interp]
+      self.pid._k_i = base_ki
+
+      # Calculate PID limits based on latAccelFactor
+      # lat_accel = torque * latAccelFactor, so max_lat_accel = steer_max * latAccelFactor
+      lat_accel_factor = self.torque_params.latAccelFactor if self.torque_params.latAccelFactor > 0 else 2.5
+      max_lat_accel = self.steer_max * lat_accel_factor
+      self.pid.pos_limit = max_lat_accel
+      self.pid.neg_limit = -max_lat_accel
+
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
     self.torque_params.latAccelOffset = latAccelOffset
     self.torque_params.friction = friction
+    # Recalculate PID limits when latAccelFactor changes
+    self.update_pid_gains()
 
   def update(self, active, CS, VM, params, steer_limited_by_controls, desired_curvature, curvature_limited, calibrated_pose, model_data, frogpilot_toggles):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
+
+    # Check for KP/KI changes from UI (allows live tuning)
+    self.update_pid_gains()
 
     # Calculate current state
     measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
