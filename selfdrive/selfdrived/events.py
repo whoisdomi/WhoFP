@@ -1195,6 +1195,14 @@ FROGPILOT_EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.),
   },
 
+  FrogPilotEventName.manualStopAheadActive: {
+    ET.WARNING: Alert(
+      "Manual Stop Ahead",
+      "",
+      FrogPilotAlertStatus.frogpilot, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.),
+  },
+
   FrogPilotEventName.turningLeft: {
     ET.WARNING: Alert(
       "Turning left",

@@ -25,9 +25,12 @@ class FrogPilotCard:
     self.custom_button_pressed = False
     self.customPressed_previously = False
     self.force_coast = False
+    self.manual_stop_ahead = False
     self.pause_lateral = False
     self.pause_longitudinal = False
     self.traffic_mode_enabled = False
+
+    self.manual_stop_ahead_timer = 0
 
     self.gap_counter = 0
     self.mode_counter = 0
@@ -56,6 +59,10 @@ class FrogPilotCard:
       self.pause_longitudinal = not self.pause_longitudinal
     elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"traffic_mode_via_{key}"):
       self.traffic_mode_enabled = not self.traffic_mode_enabled
+    elif sm["carControl"].longActive and getattr(frogpilot_toggles, f"manual_stop_ahead_via_{key}"):
+      self.manual_stop_ahead = not self.manual_stop_ahead
+      if self.manual_stop_ahead:
+        self.manual_stop_ahead_timer = 0
 
   def handle_experimental_mode(self, sm, frogpilot_toggles):
     if frogpilot_toggles.conditional_experimental_mode:
@@ -155,6 +162,19 @@ class FrogPilotCard:
 
     self.force_coast &= not (carState.brakePressed or carState.gasPressed)
 
+    # Manual Stop Ahead timeout and cancellation logic
+    if self.manual_stop_ahead:
+      self.manual_stop_ahead_timer += 1
+      # Cancel on gas press
+      if carState.gasPressed:
+        self.manual_stop_ahead = False
+      # Cancel on 25 second timeout (2500 cycles at 100Hz)
+      elif self.manual_stop_ahead_timer >= 2500:
+        self.manual_stop_ahead = False
+      # Cancel when force stop takes over (handoff)
+      elif sm["frogpilotPlan"].forcingStop:
+        self.manual_stop_ahead = False
+
     frogpilotCarState.accelPressed = self.accel_pressed
     frogpilotCarState.alwaysOnLateralAllowed = self.always_on_lateral_allowed
     frogpilotCarState.alwaysOnLateralEnabled = self.always_on_lateral_enabled
@@ -166,6 +186,7 @@ class FrogPilotCard:
     frogpilotCarState.customLongPressed = self.very_long_press_threshold > self.custom_counter >= self.long_press_threshold
     frogpilotCarState.customVeryLongPressed = self.custom_counter >= self.very_long_press_threshold
     frogpilotCarState.forceCoast = self.force_coast
+    frogpilotCarState.manualStopAhead = self.manual_stop_ahead
     frogpilotCarState.pauseLateral = self.pause_lateral
     frogpilotCarState.pauseLongitudinal = self.pause_longitudinal
     frogpilotCarState.trafficModeEnabled = self.traffic_mode_enabled

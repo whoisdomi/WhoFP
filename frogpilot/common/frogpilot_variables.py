@@ -96,7 +96,8 @@ BUTTON_FUNCTIONS = {
   "PAUSE_LATERAL": 3,
   "PAUSE_LONGITUDINAL": 4,
   "EXPERIMENTAL_MODE": 5,
-  "TRAFFIC_MODE": 6
+  "TRAFFIC_MODE": 6,
+  "MANUAL_STOP_AHEAD": 7
 }
 
 DEVELOPER_SIDEBAR_METRICS = {
@@ -556,6 +557,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_distance = toggle.openpilot_longitudinal and distance_button_control == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     distance_button_control_long = self.get_value("LongDistanceButtonControl", cast=float)
     toggle.experimental_mode_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -565,6 +567,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_distance_long = toggle.openpilot_longitudinal and distance_button_control_long == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     distance_button_control_very_long = self.get_value("VeryLongDistanceButtonControl", cast=float)
     toggle.experimental_mode_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -574,6 +577,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_distance_very_long = toggle.openpilot_longitudinal and distance_button_control_very_long == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     mode_button_control = self.get_value("ModeButtonControl", cast=float)
     toggle.experimental_mode_via_mode = toggle.openpilot_longitudinal and mode_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -583,6 +587,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_mode = toggle.openpilot_longitudinal and mode_button_control == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_mode = toggle.openpilot_longitudinal and mode_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_mode = toggle.openpilot_longitudinal and mode_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_mode = toggle.openpilot_longitudinal and mode_button_control == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     mode_button_control_long = self.get_value("LongModeButtonControl", cast=float)
     toggle.experimental_mode_via_mode_long = toggle.openpilot_longitudinal and mode_button_control_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -592,6 +597,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_mode_long = toggle.openpilot_longitudinal and mode_button_control_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_mode_long = toggle.openpilot_longitudinal and mode_button_control_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_mode_long = toggle.openpilot_longitudinal and mode_button_control_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_mode_long = toggle.openpilot_longitudinal and mode_button_control_long == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     mode_button_control_very_long = self.get_value("VeryLongModeButtonControl", cast=float)
     toggle.experimental_mode_via_mode_very_long = toggle.openpilot_longitudinal and mode_button_control_very_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -601,6 +607,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_mode_very_long = toggle.openpilot_longitudinal and mode_button_control_very_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_mode_very_long = toggle.openpilot_longitudinal and mode_button_control_very_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_mode_very_long = toggle.openpilot_longitudinal and mode_button_control_very_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_mode_very_long = toggle.openpilot_longitudinal and mode_button_control_very_long == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     custom_button_control = self.get_value("CustomButtonControl", cast=float)
     toggle.experimental_mode_via_custom = toggle.openpilot_longitudinal and custom_button_control == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -610,6 +617,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_custom = toggle.openpilot_longitudinal and custom_button_control == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_custom = toggle.openpilot_longitudinal and custom_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_custom = toggle.openpilot_longitudinal and custom_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_custom = toggle.openpilot_longitudinal and custom_button_control == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     custom_button_control_long = self.get_value("LongCustomButtonControl", cast=float)
     toggle.experimental_mode_via_custom_long = toggle.openpilot_longitudinal and custom_button_control_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -619,6 +627,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_custom_long = toggle.openpilot_longitudinal and custom_button_control_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_custom_long = toggle.openpilot_longitudinal and custom_button_control_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_custom_long = toggle.openpilot_longitudinal and custom_button_control_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_custom_long = toggle.openpilot_longitudinal and custom_button_control_long == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     custom_button_control_very_long = self.get_value("VeryLongCustomButtonControl", cast=float)
     toggle.experimental_mode_via_custom_very_long = toggle.openpilot_longitudinal and custom_button_control_very_long == BUTTON_FUNCTIONS["EXPERIMENTAL_MODE"]
@@ -628,6 +637,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_custom_very_long = toggle.openpilot_longitudinal and custom_button_control_very_long == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_custom_very_long = toggle.openpilot_longitudinal and custom_button_control_very_long == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_custom_very_long = toggle.openpilot_longitudinal and custom_button_control_very_long == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_custom_very_long = toggle.openpilot_longitudinal and custom_button_control_very_long == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     toggle.frogsgomoo_tweak = self.get_value("FrogsGoMoosTweak", condition=toggle.openpilot_longitudinal and toggle.car_make == "toyota")
     toggle.stoppingDecelRate = 0.01 if toggle.frogsgomoo_tweak else toggle.stoppingDecelRate
@@ -678,6 +688,7 @@ class FrogPilotVariables:
     toggle.pause_longitudinal_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["PAUSE_LONGITUDINAL"]
     toggle.personality_profile_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["PERSONALITY_PROFILE"]
     toggle.traffic_mode_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["TRAFFIC_MODE"]
+    toggle.manual_stop_ahead_via_lkas = toggle.openpilot_longitudinal and lkas_button_control == BUTTON_FUNCTIONS["MANUAL_STOP_AHEAD"]
 
     toggle.lock_doors_timer = self.get_value("LockDoorsTimer", cast=float, condition=(toggle.car_make == "toyota"))
 

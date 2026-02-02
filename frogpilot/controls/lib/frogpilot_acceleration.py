@@ -80,7 +80,11 @@ class FrogPilotAcceleration:
     if self.frogpilot_planner.frogpilot_weather.weather_id != 0:
       self.max_accel -= self.max_accel * self.frogpilot_planner.frogpilot_weather.reduce_acceleration
 
-    if self.frogpilot_planner.tracking_lead:
+    # Manual Stop Ahead: no acceleration, gentle decel when not tracking a lead
+    if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
+      self.max_accel = 0
+      self.min_accel = -0.3
+    elif self.frogpilot_planner.tracking_lead:
       self.min_accel = ACCEL_MIN
     elif sm["frogpilotCarState"].forceCoast:
       self.min_accel = A_CRUISE_MIN_ECO

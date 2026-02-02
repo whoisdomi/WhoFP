@@ -161,6 +161,11 @@ class ConditionalExperimentalMode:
       light_boost = np.interp(speed_mph, bp, [low_boost, low_boost, tuned_boost])
       cap_factor = np.interp(speed_mph, bp, [low_cap_factor, low_cap_factor, tuned_cap_factor])
 
+      # Manual Stop Ahead: flat 1.3x boost for light detection and model time
+      if sm["frogpilotCarState"].manualStopAhead:
+        light_boost = 1.3
+        model_time *= 1.3
+
       # Update filter times dynamically
       self.curvature_filter = FirstOrderFilter(self.curvature_filter.x, filter_time_curves, DT_MDL)
       self.slow_lead_filter = FirstOrderFilter(self.slow_lead_filter.x, filter_time_leads, DT_MDL)

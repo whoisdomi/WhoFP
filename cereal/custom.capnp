@@ -87,6 +87,7 @@ struct FrogPilotCarState @0xf35cc4560bbf6ec2 {
   customPressed @18 :Bool;
   customLongPressed @19 :Bool;
   customVeryLongPressed @20 :Bool;
+  manualStopAhead @21 :Bool;
 }
 
 struct FrogPilotDeviceState @0xda96579883444c35 {
@@ -152,6 +153,7 @@ struct FrogPilotOnroadEvent @0xa5cd762cd951a455 {
     youveGotMail @28;
     lkasEnable @29;
     lkasDisable @30;
+    manualStopAheadActive @31;
   }
 }
 

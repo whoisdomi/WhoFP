@@ -23,6 +23,7 @@ class FrogPilotEvents:
     self.events = Events(frogpilot=True)
 
     self.always_on_lateral_allowed_previously = False
+    self.previous_manual_stop_ahead = False
     self.previous_traffic_mode = False
     self.random_event_playing = False
     self.startup_seen = False
@@ -198,6 +199,11 @@ class FrogPilotEvents:
         self.events.add(FrogPilotEventName.trafficModeActive)
 
       self.previous_traffic_mode = sm["frogpilotCarState"].trafficModeEnabled
+
+    # Manual Stop Ahead event - only play sound on activation
+    if sm["frogpilotCarState"].manualStopAhead and not self.previous_manual_stop_ahead:
+      self.events.add(FrogPilotEventName.manualStopAheadActive)
+    self.previous_manual_stop_ahead = sm["frogpilotCarState"].manualStopAhead
 
     if sm["frogpilotModelV2"].turnDirection == TurnDirection.turnLeft:
       self.events.add(FrogPilotEventName.turningLeft)
