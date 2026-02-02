@@ -112,7 +112,7 @@ class LatControlTorque(LatControl):
 
       # Update PID gains
       self.pid._k_p = [INTERP_SPEEDS, kp_interp]
-      self.pid._k_i = base_ki
+      self.pid._k_i = [[0], [base_ki]]
 
       # Calculate PID limits based on latAccelFactor
       # lat_accel = torque * latAccelFactor, so max_lat_accel = steer_max * latAccelFactor
