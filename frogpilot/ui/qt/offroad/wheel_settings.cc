@@ -27,7 +27,8 @@ FrogPilotWheelPanel::FrogPilotWheelPanel(FrogPilotSettingsWindow *parent, bool f
       {2, tr("Force openpilot to Coast")},
       {4, tr("Pause Acceleration/Braking")},
       {5, tr("Toggle \"Experimental Mode\" On/Off")},
-      {6, tr("Toggle \"Traffic Mode\" On/Off")}
+      {6, tr("Toggle \"Traffic Mode\" On/Off")},
+      {7, tr("Toggle \"Manual Stop Ahead\" On/Off")}
     };
 
     ButtonControl *wheelToggle = new ButtonControl(title, tr("SELECT"), desc);
