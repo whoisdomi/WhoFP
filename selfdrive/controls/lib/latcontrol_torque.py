@@ -41,7 +41,7 @@ JERK_GAIN = 0.3                  # Weight of jerk term in friction calculation
 
 # === Delay Compensation (from stock comma) ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
-LAT_DELAY = 0.1  # Default lateral delay if not provided (seconds)
+LAT_DELAY = 0.18  # Tuned for Ioniq 6 (ACTS-HORIZON value)
 
 # === Unwind Detection (from StarPilot) ===
 UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
@@ -51,9 +51,9 @@ UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.85 = 15% decay per cycle)
 
 # === Low Speed Factor (curvature-based boost for turns) ===
-# Works alongside KP_INTERP: adds modest curvature-proportional boost at low speeds
+# Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
 LOW_SPEED_X = [0, 10, 20, 30]  # m/s breakpoints
-LOW_SPEED_Y = [5.0, 4.0, 1.5, 1.0]   # factor values (NOT squared - direct multiplier)
+LOW_SPEED_Y = [1.0, 1.0, 1.0, 1.0]   # disabled (all 1.0 = no effect)
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
