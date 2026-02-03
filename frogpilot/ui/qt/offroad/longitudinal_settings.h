@@ -39,7 +39,7 @@ private:
   QSet<QString> speedLimitControllerKeys = {"SLCOffsets", "SLCFallback", "SLCOverride", "SLCPriority", "SLCQOL", "SLCVisuals"};
   QSet<QString> speedLimitControllerOffsetsKeys = {"Offset1", "Offset2", "Offset3", "Offset4", "Offset5", "Offset6", "Offset7"};
   QSet<QString> speedLimitControllerQOLKeys = {"SetSpeedLimit", "SLCConfirmation", "SLCLookaheadHigher", "SLCLookaheadLower", "SLCMapboxFiller"};
-  QSet<QString> speedLimitControllerVisualKeys = {"ShowSLCOffset", "SpeedLimitSources"};
+  QSet<QString> speedLimitControllerVisualKeys = {"ShowSLCOffset", "SLCPriorityMode", "SpeedLimitSources"};
   QSet<QString> standardPersonalityKeys = {"StandardFollow", "StandardJerkAcceleration", "StandardJerkDeceleration", "StandardJerkDanger", "StandardJerkSpeed", "StandardJerkSpeedDecrease", "ResetStandardPersonality"};
   QSet<QString> trafficPersonalityKeys = {"TrafficFollow", "TrafficJerkAcceleration", "TrafficJerkDeceleration", "TrafficJerkDanger", "TrafficJerkSpeed", "TrafficJerkSpeedDecrease", "ResetTrafficPersonality"};
   QSet<QString> weatherKeys = {"LowVisibilityOffsets", "RainOffsets", "RainStormOffsets", "SetWeatherKey", "SnowOffsets"};

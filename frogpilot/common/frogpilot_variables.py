@@ -808,6 +808,7 @@ class FrogPilotVariables:
     toggle.speed_limit_priority_highest = toggle.speed_limit_priority1 == "Highest"
     toggle.speed_limit_priority_lowest = toggle.speed_limit_priority1 == "Lowest"
     toggle.speed_limit_sources = self.get_value("SpeedLimitSources", condition=toggle.speed_limit_controller)
+    toggle.slc_priority_mode = self.get_value("SLCPriorityMode", condition=toggle.speed_limit_controller)
 
     toggle.speed_limit_filler = self.get_value("SpeedLimitFiller")
 

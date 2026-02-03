@@ -1034,15 +1034,40 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
 
   int signMargin = 12;
 
-  QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
-  QRect mapDataRect(dashboardRect.x(), dashboardRect.y() + dashboardRect.height() + UI_BORDER_SIZE / 2, 450, 60);
-  QRect mapboxRect(mapDataRect.x(), mapDataRect.y() + mapDataRect.height() + UI_BORDER_SIZE / 2, 450, 60);
-  QRect nextLimitRect(mapboxRect.x(), mapboxRect.y() + mapboxRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+  if (frogpilot_scene.frogpilot_toggles.value("slc_priority_mode").toBool()) {
+    QString activeSource = QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr());
+    QPixmap *activeIcon = nullptr;
 
-  drawSource(dashboardRect, dashboardIcon, "Dashboard", frogpilotCarState.getDashboardSpeedLimit() * speedConversion);
-  drawSource(mapDataRect, mapDataIcon, "Map Data", frogpilotPlan.getSlcMapSpeedLimit() * speedConversion);
-  drawSource(mapboxRect, mapboxIcon, "Mapbox", frogpilotPlan.getSlcMapboxSpeedLimit() * speedConversion);
-  drawSource(nextLimitRect, nextMapsIcon, "Upcoming", frogpilotPlan.getSlcNextSpeedLimit() * speedConversion);
+    if (activeSource == "Dashboard") activeIcon = &dashboardIcon;
+    else if (activeSource == "Map Data") activeIcon = &mapDataIcon;
+    else if (activeSource == "Mapbox") activeIcon = &mapboxIcon;
+    else if (activeSource == "Upcoming") activeIcon = &nextMapsIcon;
+
+    QRect rect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
+    int iconSize = img_size / 4;
+    QRect iconRect(rect.x() + 20, rect.y() + (rect.height() - iconSize) / 2, iconSize, iconSize);
+
+    p.setOpacity(1.0);
+
+    if (activeIcon) {
+      QPixmap scaledIcon = activeIcon->scaled(iconRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+      p.drawPixmap(iconRect, scaledIcon);
+    } else {
+      p.setPen(QPen(redColor(), 5));
+      p.drawLine(iconRect.topLeft(), iconRect.bottomRight());
+      p.drawLine(iconRect.topRight(), iconRect.bottomLeft());
+    }
+  } else {
+    QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
+    QRect mapDataRect(dashboardRect.x(), dashboardRect.y() + dashboardRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+    QRect mapboxRect(mapDataRect.x(), mapDataRect.y() + mapDataRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+    QRect nextLimitRect(mapboxRect.x(), mapboxRect.y() + mapboxRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+
+    drawSource(dashboardRect, dashboardIcon, "Dashboard", frogpilotCarState.getDashboardSpeedLimit() * speedConversion);
+    drawSource(mapDataRect, mapDataIcon, "Map Data", frogpilotPlan.getSlcMapSpeedLimit() * speedConversion);
+    drawSource(mapboxRect, mapboxIcon, "Mapbox", frogpilotPlan.getSlcMapboxSpeedLimit() * speedConversion);
+    drawSource(nextLimitRect, nextMapsIcon, "Upcoming", frogpilotPlan.getSlcNextSpeedLimit() * speedConversion);
+  }
 
   p.restore();
 }

@@ -203,7 +203,8 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
     {"Offset7", tr("Speed Offset (75–99 mph)"), tr("<b>How much to offset posted speed-limits</b> between 75 and 99 mph."), ""},
     {"SLCVisuals", tr("Visual Settings"), tr("<b>Visual \"Speed Limit Controller\" changes</b> to fine-tune how the driving screen looks."), ""},
     {"ShowSLCOffset", tr("Show Speed Limit Offset"), tr("<b>Show the current offset from the posted limit</b> on the driving screen."), ""},
-    {"SpeedLimitSources", tr("Show Speed Limit Sources"), tr("<b>Display the speed-limit sources and their current values</b> on the driving screen."), ""}
+    {"SpeedLimitSources", tr("Show Speed Limit Sources"), tr("<b>Display the speed-limit sources and their current values</b> on the driving screen."), ""},
+    {"SLCPriorityMode", tr("Show Active Source Only"), tr("<b>Show only the active speed limit source</b> instead of all available sources."), ""}
   };
 
   for (const auto &[param, title, desc, icon] : longitudinalToggles) {
