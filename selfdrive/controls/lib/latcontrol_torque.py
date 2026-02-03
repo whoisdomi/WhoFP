@@ -47,13 +47,13 @@ UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.85 = 15% decay pe
 # === Low Speed Factor (curvature-based boost for turns) ===
 # Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
 LOW_SPEED_X = [0, 10, 20, 30]  # m/s breakpoints
-LOW_SPEED_Y = [1.0, 1.0, 1.0, 1.0]   # disabled (all 1.0 = no effect)
+LOW_SPEED_Y = [2.0, 1.5, 1.0, 1.0]
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
 # higher at highway (friction needs bigger error to kick in, prevents ticking)
 FRICTION_THRESHOLD_SPEEDS = [0.5, 33.5]  # m/s (approx 1 mph to 75 mph)
-FRICTION_THRESHOLD_VALUES = [0.12, 0.3]   # threshold values
+FRICTION_THRESHOLD_VALUES = [0.12, 0.2]   # threshold values
 
 
 def get_friction_threshold(v_ego: float) -> float:
