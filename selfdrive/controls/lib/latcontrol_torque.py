@@ -51,9 +51,9 @@ UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.85 = 15% decay per cycle)
 
 # === Low Speed Factor (curvature-based boost for turns) ===
-# Works alongside KP_INTERP: adds curvature-proportional boost at low speeds
-LOW_SPEED_X = [0, 15, 25, 35]  # m/s breakpoints
-LOW_SPEED_Y = [25, 10, 4, 2]   # factor values (squared in calculation)
+# Works alongside KP_INTERP: adds modest curvature-proportional boost at low speeds
+LOW_SPEED_X = [0, 10, 20, 30]  # m/s breakpoints
+LOW_SPEED_Y = [5.0, 4.0, 1.5, 1.0]   # factor values (NOT squared - direct multiplier)
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
@@ -156,7 +156,7 @@ class LatControlTorque(LatControl):
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
-    low_speed_factor = float(np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y)) ** 2
+    low_speed_factor = float(np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y))
     setpoint *= low_speed_factor
     measurement *= low_speed_factor
 
