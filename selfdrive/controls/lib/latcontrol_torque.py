@@ -35,7 +35,7 @@ KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0]
 
 # === Delay Compensation ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
-LAT_DELAY = 0.24  # ACTS-HORIZON: actuator=0.18, total lateral delay=0.24
+# Note: Initial lat_delay is calculated in __init__ as CP.steerActuatorDelay + 0.2 (matching lagd)
 
 # === Unwind Detection (from StarPilot) ===
 UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
@@ -82,8 +82,18 @@ class LatControlTorque(LatControl):
     self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / DT_CTRL)
     self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
 
+    # Live lateral delay from lagd (updated by controlsd via update_live_delay)
+    # Initial value: actuator delay + estimated processing delay (~0.06-0.1)
+    # Will be replaced by lagd's learned value once available
+    self.lat_delay = CP.steerActuatorDelay + 0.1
+
     # Unwind detection state
     self.prev_desired_lateral_accel = 0.0
+
+  def update_live_delay(self, lateral_delay):
+    """Update lateral delay from lagd (called by controlsd when liveDelay updates)."""
+    if lateral_delay > 0:
+      self.lat_delay = lateral_delay
 
   def update_pid_gains(self, frogpilot_toggles=None):
     """Update PID gains from frogpilot_toggles (live) or torque_params (startup)."""
@@ -139,16 +149,19 @@ class LatControlTorque(LatControl):
     curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
     lateral_accel_deadzone = curvature_deadzone * CS.vEgo ** 2
 
+    # Use live lateral delay from lagd (updated via update_live_delay from controlsd)
+    lat_delay = self.lat_delay
+
     # Delay compensation: compare against what we requested lat_delay ago
-    delay_frames = int(np.clip(LAT_DELAY / DT_CTRL + 1, 1, self.lat_accel_request_buffer_len))
+    delay_frames = int(np.clip(lat_delay / DT_CTRL + 1, 1, self.lat_accel_request_buffer_len))
     expected_lateral_accel = self.lat_accel_request_buffer[-delay_frames]
 
     # Jerk calculation (ACTS-HORIZON style: simple difference / delay)
-    desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / LAT_DELAY
+    desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / lat_delay
 
     # Setpoint with jerk prediction (ACTS-HORIZON formula)
     # Predicts where lateral accel will be after the delay period
-    setpoint = LAT_DELAY * desired_lateral_jerk + expected_lateral_accel
+    setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
