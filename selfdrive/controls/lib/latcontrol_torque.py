@@ -41,7 +41,7 @@ JERK_GAIN = 0.3                  # Weight of jerk term in friction calculation
 
 # === Delay Compensation (from stock comma) ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
-LAT_DELAY = 0.18  # Tuned for Ioniq 6 (ACTS-HORIZON value)
+LAT_DELAY = 0.24  # ACTS-HORIZON: actuator=0.18, total lateral delay=0.24
 
 # === Unwind Detection (from StarPilot) ===
 UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
