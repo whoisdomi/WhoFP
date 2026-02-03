@@ -1037,22 +1037,52 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
   if (frogpilot_scene.frogpilot_toggles.value("slc_priority_mode").toBool()) {
     QString activeSource = QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr());
     QPixmap *activeIcon = nullptr;
+    QString shortName;
 
-    if (activeSource == "Dashboard") activeIcon = &dashboardIcon;
-    else if (activeSource == "Map Data") activeIcon = &mapDataIcon;
-    else if (activeSource == "Mapbox") activeIcon = &mapboxIcon;
-    else if (activeSource == "Upcoming") activeIcon = &nextMapsIcon;
+    if (activeSource == "Dashboard") {
+      activeIcon = &dashboardIcon;
+      shortName = "Dash";
+    } else if (activeSource == "Map Data") {
+      activeIcon = &mapDataIcon;
+      shortName = "MapD";
+    } else if (activeSource == "Mapbox") {
+      activeIcon = &mapboxIcon;
+      shortName = "MapB";
+    } else if (activeSource == "Upcoming") {
+      activeIcon = &nextMapsIcon;
+      shortName = "Next";
+    }
 
-    QRect rect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
-    int iconSize = img_size / 4;
-    QRect iconRect(rect.x() + 20, rect.y() + (rect.height() - iconSize) / 2, iconSize, iconSize);
+    QRect rect(speedLimitRect.x(), speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, speedLimitRect.width(), 60);
 
+    p.setBrush(blackColor(166));
     p.setOpacity(1.0);
+    p.drawRoundedRect(rect, 24, 24);
 
     if (activeIcon) {
+      p.setFont(InterFont(35, QFont::Bold));
+      QFontMetrics fm(p.font());
+      int textWidth = fm.horizontalAdvance(shortName);
+      int iconSize = img_size / 4;
+      int gap = 10;
+      int totalContentWidth = iconSize + gap + textWidth;
+
+      int startX = rect.x() + (rect.width() - totalContentWidth) / 2;
+      int contentY = rect.y() + (rect.height() - iconSize) / 2;
+
+      QRect iconRect(startX, contentY, iconSize, iconSize);
       QPixmap scaledIcon = activeIcon->scaled(iconRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
       p.drawPixmap(iconRect, scaledIcon);
+
+      QRect textRect(startX + iconSize + gap, rect.y(), textWidth, rect.height());
+      p.setPen(QPen(whiteColor(), 6));
+      p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, shortName);
     } else {
+      int iconSize = img_size / 4;
+      int startX = rect.x() + (rect.width() - iconSize) / 2;
+      int startY = rect.y() + (rect.height() - iconSize) / 2;
+      QRect iconRect(startX, startY, iconSize, iconSize);
+
       p.setPen(QPen(redColor(), 5));
       p.drawLine(iconRect.topLeft(), iconRect.bottomRight());
       p.drawLine(iconRect.topRight(), iconRect.bottomLeft());
