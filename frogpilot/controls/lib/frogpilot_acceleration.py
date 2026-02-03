@@ -83,7 +83,7 @@ class FrogPilotAcceleration:
     # Manual Stop Ahead: no acceleration, gentle decel when not tracking a lead
     if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
       self.max_accel = 0
-      self.min_accel = -0.3
+      self.min_accel = -1.5
     elif self.frogpilot_planner.tracking_lead:
       self.min_accel = ACCEL_MIN
     elif sm["frogpilotCarState"].forceCoast:
