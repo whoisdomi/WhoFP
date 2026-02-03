@@ -123,7 +123,7 @@ class FrogPilotVCruise:
       # Reduce v_cruise gradually - target a lower speed to cause deceleration
       # Decel rate of ~1.5 m/s² means reducing target by 1.5 * DT_MDL per cycle
       self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
-      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.5 * DT_MDL), 0)
+      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.2 * DT_MDL), 0)
       v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
     else:
       self.manual_stop_ahead_v_cruise = v_ego
