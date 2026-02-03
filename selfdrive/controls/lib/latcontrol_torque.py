@@ -6,7 +6,6 @@ from cereal import log
 from opendbc.car.lateral import get_friction
 from opendbc.car.interfaces import LatControlInputs
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
-from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
@@ -34,12 +33,7 @@ INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 # Multipliers relative to base KP (last value = 1.0x base)
 KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0]
 
-# === Jerk Filtering (from stock comma) ===
-LP_FILTER_CUTOFF_HZ = 1.2        # Low-pass filter for jerk smoothing
-JERK_LOOKAHEAD_SECONDS = 0.19   # How far ahead to look for jerk calculation
-JERK_GAIN = 0.3                  # Weight of jerk term in friction calculation
-
-# === Delay Compensation (from stock comma) ===
+# === Delay Compensation ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 LAT_DELAY = 0.24  # ACTS-HORIZON: actuator=0.18, total lateral delay=0.24
 
@@ -87,10 +81,6 @@ class LatControlTorque(LatControl):
     # Delay compensation buffer
     self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / DT_CTRL)
     self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
-    self.lookahead_frames = int(JERK_LOOKAHEAD_SECONDS / DT_CTRL)
-
-    # Jerk filter
-    self.jerk_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), DT_CTRL)
 
     # Unwind detection state
     self.prev_desired_lateral_accel = 0.0
@@ -152,7 +142,13 @@ class LatControlTorque(LatControl):
     # Delay compensation: compare against what we requested lat_delay ago
     delay_frames = int(np.clip(LAT_DELAY / DT_CTRL + 1, 1, self.lat_accel_request_buffer_len))
     expected_lateral_accel = self.lat_accel_request_buffer[-delay_frames]
-    setpoint = expected_lateral_accel
+
+    # Jerk calculation (ACTS-HORIZON style: simple difference / delay)
+    desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / LAT_DELAY
+
+    # Setpoint with jerk prediction (ACTS-HORIZON formula)
+    # Predicts where lateral accel will be after the delay period
+    setpoint = LAT_DELAY * desired_lateral_jerk + expected_lateral_accel
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
@@ -162,20 +158,15 @@ class LatControlTorque(LatControl):
 
     error = setpoint - measurement
 
-    # Jerk calculation with lookahead and filtering
-    lookahead_idx = int(np.clip(-delay_frames + self.lookahead_frames, -self.lat_accel_request_buffer_len + 1, -2))
-    raw_lateral_jerk = (self.lat_accel_request_buffer[lookahead_idx + 1] - self.lat_accel_request_buffer[lookahead_idx - 1]) / (2 * DT_CTRL)
-    desired_lateral_jerk = self.jerk_filter.update(raw_lateral_jerk)
-
     # Feedforward: gravity-adjusted desired lateral accel
     gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
     ff = gravity_adjusted_future_lateral_accel
     # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
     ff -= self.torque_params.latAccelOffset
-    # Friction term with jerk gain (anticipates needed friction based on rate of change)
+    # Friction term (ACTS-HORIZON style: no jerk in friction, jerk is in setpoint instead)
     # Use speed-interpolated threshold: lower at low speed (helps turns), higher at highway (prevents ticking)
     friction_threshold = get_friction_threshold(CS.vEgo)
-    ff += get_friction(error + JERK_GAIN * desired_lateral_jerk, lateral_accel_deadzone, friction_threshold, self.torque_params)
+    ff += get_friction(error, lateral_accel_deadzone, friction_threshold, self.torque_params)
 
     # StarPilot unwind detection: freeze integrator when exiting a turn
     desired_lateral_accel_rate = (setpoint - self.prev_desired_lateral_accel) / DT_CTRL
