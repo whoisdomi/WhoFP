@@ -64,7 +64,7 @@ void DriverMonitorRenderer::updateState(const UIState &s) {
 }
 
 void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
-  if (!is_visible) return;
+  if (!is_visible || frogpilot_toggles.value("hide_dm_icon").toBool()) return;
 
   painter.save();
 
