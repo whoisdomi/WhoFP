@@ -118,4 +118,14 @@ class FrogPilotVCruise:
           targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
+    # Manual Stop Ahead: gradually reduce v_cruise to cause deceleration when not tracking a lead
+    if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
+      # Reduce v_cruise gradually - target a lower speed to cause deceleration
+      # Decel rate of ~1.5 m/s² means reducing target by 1.5 * DT_MDL per cycle
+      self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
+      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.5 * DT_MDL), 0)
+      v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
+    else:
+      self.manual_stop_ahead_v_cruise = v_ego
+
     return v_cruise
