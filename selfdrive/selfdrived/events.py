@@ -382,6 +382,8 @@ def longitudinal_maneuver_alert(CP: car.CarParams, CS: car.CarState, sm: messagi
 
 
 def personality_changed_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality, frogpilot_toggles: SimpleNamespace) -> Alert:
+  if frogpilot_toggles.onroad_distance_button:
+    return EmptyAlert
   personality = str(personality).title()
   return NormalPermanentAlert(f"Driving Personality: {personality}", duration=1.5)
 
