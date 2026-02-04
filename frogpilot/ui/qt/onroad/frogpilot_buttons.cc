@@ -26,10 +26,10 @@ void DrivingPersonalityButton::updateTheme() {
   QPixmap traffic_img, aggressive_img, standard_img, relaxed_img;
   QSharedPointer<QMovie> traffic_gif, aggressive_gif, standard_gif, relaxed_gif;
 
-  loadImage("../../frogpilot/assets/active_theme/distance_icons/traffic", traffic_img, traffic_gif, QSize(btn_size, btn_size), this);
-  loadImage("../../frogpilot/assets/active_theme/distance_icons/aggressive", aggressive_img, aggressive_gif, QSize(btn_size, btn_size), this);
-  loadImage("../../frogpilot/assets/active_theme/distance_icons/standard", standard_img, standard_gif, QSize(btn_size, btn_size), this);
-  loadImage("../../frogpilot/assets/active_theme/distance_icons/relaxed", relaxed_img, relaxed_gif, QSize(btn_size, btn_size), this);
+  loadImage("../../frogpilot/assets/active_theme/distance_icons/traffic_frog", traffic_img, traffic_gif, QSize(btn_size, btn_size), this);
+  loadImage("../../frogpilot/assets/active_theme/distance_icons/aggressive_frog", aggressive_img, aggressive_gif, QSize(btn_size, btn_size), this);
+  loadImage("../../frogpilot/assets/active_theme/distance_icons/standard_frog", standard_img, standard_gif, QSize(btn_size, btn_size), this);
+  loadImage("../../frogpilot/assets/active_theme/distance_icons/relaxed_frog", relaxed_img, relaxed_gif, QSize(btn_size, btn_size), this);
 
   icon_map.insert(0, qMakePair(traffic_img, traffic_gif));
   icon_map.insert(1, qMakePair(aggressive_img, aggressive_gif));
