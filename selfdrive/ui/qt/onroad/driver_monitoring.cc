@@ -64,9 +64,7 @@ void DriverMonitorRenderer::updateState(const UIState &s) {
 }
 
 void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
-  if (!is_visible || frogpilot_toggles.value("hide_dm_icon").toBool()) return;
-
-  painter.save();
+  if (!is_visible) return;
 
   int offset = UI_BORDER_SIZE + btn_size / 2;
   float x = is_rhd ? surface_rect.width() - offset : offset;
@@ -85,6 +83,16 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   if (frogpilot_toggles.value("road_name_ui").toBool()) {
     y -= UI_BORDER_SIZE;
   }
+
+  if (frogpilot_nvg) {
+    frogpilot_nvg->dmIconPosition.setX(x);
+    frogpilot_nvg->dmIconPosition.setY(y);
+    frogpilot_nvg->rightHandDM = is_rhd;
+  }
+
+  if (frogpilot_toggles.value("hide_dm_icon").toBool()) return;
+
+  painter.save();
 
   drawIcon(painter, QPoint(x, y), dm_img, QColor(0, 0, 0, 70), opacity);
 
@@ -117,11 +125,4 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   painter.drawArc(QRectF(x - arc_l / 2, std::min(y + delta_y, y), arc_l, std::abs(delta_y)), (driver_pose_sins[0] > 0 ? 0 : 180) * 16, 180 * 16);
 
   painter.restore();
-
-  // FrogPilot variables
-  if (frogpilot_nvg) {
-    frogpilot_nvg->dmIconPosition.setX(x);
-    frogpilot_nvg->dmIconPosition.setY(y);
-    frogpilot_nvg->rightHandDM = is_rhd;
-  }
 }
