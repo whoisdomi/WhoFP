@@ -31,7 +31,8 @@ DEFAULT_KI = 0.3
 # The actual base KP (rightmost value) is set dynamically from torque_params in __init__
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 # Multipliers relative to base KP (last value = 1.0x base)
-KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0]
+#KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0] #stock
+KP_MULTIPLIERS = [250, 120, 85, 40, 16, 9, 5.5, 3.0, 1.0]
 
 # === Delay Compensation ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
@@ -47,7 +48,7 @@ UNWIND_MULTIPLIER = 0.85  # Integrator decay when unwinding (0.85 = 15% decay pe
 # === Low Speed Factor (curvature-based boost for turns) ===
 # Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
 LOW_SPEED_X = [0, 10, 20, 30]  # m/s breakpoints
-LOW_SPEED_Y = [1.5, 1.25, 1.0, 1.0]
+LOW_SPEED_Y = [1.0, 1.0, 1.0, 1.0]
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
