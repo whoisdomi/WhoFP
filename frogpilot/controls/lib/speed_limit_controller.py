@@ -352,7 +352,5 @@ class SpeedLimitController:
         self.overridden_speed = float(np.clip(self.overridden_speed, self.target + self.offset, v_cruise + v_cruise_diff))
       elif self.frogpilot_toggles.speed_limit_controller_override_set_speed:
         self.overridden_speed = v_cruise + v_cruise_diff
-
-      self.source = "None"
     else:
       self.overridden_speed = 0

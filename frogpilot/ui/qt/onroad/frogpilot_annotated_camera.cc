@@ -1036,56 +1036,72 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
 
   if (frogpilot_scene.frogpilot_toggles.value("slc_priority_mode").toBool()) {
     QString activeSource = QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr());
-    QPixmap *activeIcon = nullptr;
-    QString shortName;
+    bool isOverridden = frogpilotPlan.getSlcOverriddenSpeed() > 0;
+
+    auto drawBox = [&](QRect r, QPixmap *icon, QString name, bool isRed) {
+      p.setBrush(isRed ? redColor(166) : blackColor(166));
+      p.setOpacity(1.0);
+      p.drawRoundedRect(r, 24, 24);
+
+      if (icon) {
+        p.setFont(InterFont(35, QFont::Bold));
+        QFontMetrics fm(p.font());
+        int textWidth = fm.horizontalAdvance(name);
+        int iconSize = img_size / 4;
+        int gap = 10;
+        int totalContentWidth = iconSize + gap + textWidth;
+
+        int startX = r.x() + (r.width() - totalContentWidth) / 2;
+        int contentY = r.y() + (r.height() - iconSize) / 2;
+
+        QRect iconRect(startX, contentY, iconSize, iconSize);
+        QPixmap scaledIcon = icon->scaled(iconRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        p.drawPixmap(iconRect, scaledIcon);
+
+        QRect textRect(startX + iconSize + gap, r.y(), textWidth, r.height());
+        p.setPen(QPen(whiteColor(), 6));
+        p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, name);
+      } else {
+        int iconSize = img_size / 4;
+        int startX = r.x() + (r.width() - iconSize) / 2;
+        int startY = r.y() + (r.height() - iconSize) / 2;
+        QRect iconRect(startX, startY, iconSize, iconSize);
+
+        p.setPen(QPen(redColor(), 5));
+        p.drawLine(iconRect.topLeft(), iconRect.bottomRight());
+        p.drawLine(iconRect.topRight(), iconRect.bottomLeft());
+      }
+    };
+
+    QPixmap *systemIcon = nullptr;
+    QString systemName;
 
     if (activeSource == "Dashboard") {
-      activeIcon = &dashboardIcon;
-      shortName = "Dash";
+      systemIcon = &dashboardIcon;
+      systemName = "Dash";
     } else if (activeSource == "Map Data") {
-      activeIcon = &mapDataIcon;
-      shortName = "MapD";
+      systemIcon = &mapDataIcon;
+      systemName = "MapD";
     } else if (activeSource == "Mapbox") {
-      activeIcon = &mapboxIcon;
-      shortName = "MapB";
+      systemIcon = &mapboxIcon;
+      systemName = "MapB";
     } else if (activeSource == "Upcoming") {
-      activeIcon = &nextMapsIcon;
-      shortName = "Next";
+      systemIcon = &nextMapsIcon;
+      systemName = "Next";
     }
 
-    QRect rect(speedLimitRect.x(), speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, speedLimitRect.width(), 60);
+    QRect rect1(speedLimitRect.x(), speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, speedLimitRect.width(), 60);
 
-    p.setBrush(activeIcon ? redColor(166) : blackColor(166));
-    p.setOpacity(1.0);
-    p.drawRoundedRect(rect, 24, 24);
+    if (isOverridden) {
+      // Box 1: User (Red)
+      drawBox(rect1, &gasPedalImg, "User", true);
 
-    if (activeIcon) {
-      p.setFont(InterFont(35, QFont::Bold));
-      QFontMetrics fm(p.font());
-      int textWidth = fm.horizontalAdvance(shortName);
-      int iconSize = img_size / 4;
-      int gap = 10;
-      int totalContentWidth = iconSize + gap + textWidth;
-
-      int startX = rect.x() + (rect.width() - totalContentWidth) / 2;
-      int contentY = rect.y() + (rect.height() - iconSize) / 2;
-
-      QRect iconRect(startX, contentY, iconSize, iconSize);
-      QPixmap scaledIcon = activeIcon->scaled(iconRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-      p.drawPixmap(iconRect, scaledIcon);
-
-      QRect textRect(startX + iconSize + gap, rect.y(), textWidth, rect.height());
-      p.setPen(QPen(whiteColor(), 6));
-      p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, shortName);
+      // Box 2: System (Black)
+      QRect rect2(rect1.x(), rect1.bottom() + UI_BORDER_SIZE / 2, rect1.width(), 60);
+      drawBox(rect2, systemIcon, systemName, false);
     } else {
-      int iconSize = img_size / 4;
-      int startX = rect.x() + (rect.width() - iconSize) / 2;
-      int startY = rect.y() + (rect.height() - iconSize) / 2;
-      QRect iconRect(startX, startY, iconSize, iconSize);
-
-      p.setPen(QPen(redColor(), 5));
-      p.drawLine(iconRect.topLeft(), iconRect.bottomRight());
-      p.drawLine(iconRect.topRight(), iconRect.bottomLeft());
+      // Box 1: System (Red)
+      drawBox(rect1, systemIcon, systemName, true);
     }
   } else {
     QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
