@@ -1100,8 +1100,8 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
       QRect rect2(rect1.x(), rect1.bottom() + UI_BORDER_SIZE / 2, rect1.width(), 60);
       drawBox(rect2, systemIcon, systemName, false);
     } else {
-      // Box 1: System (Red)
-      drawBox(rect1, systemIcon, systemName, true);
+      // Box 1: System (Red if valid, Black if None)
+      drawBox(rect1, systemIcon, systemName, systemIcon != nullptr);
     }
   } else {
     QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
