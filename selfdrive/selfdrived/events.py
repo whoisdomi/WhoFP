@@ -388,6 +388,26 @@ def personality_changed_alert(CP: car.CarParams, CS: car.CarState, sm: messaging
   return NormalPermanentAlert(f"Driving Personality: {personality}", duration=1.5)
 
 
+def traffic_mode_active_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality, frogpilot_toggles: SimpleNamespace) -> Alert:
+  if frogpilot_toggles.onroad_distance_button:
+    return EmptyAlert
+  return Alert(
+    "Traffic Mode enabled",
+    "",
+    FrogPilotAlertStatus.frogpilot, AlertSize.small,
+    Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.)
+
+
+def traffic_mode_inactive_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality, frogpilot_toggles: SimpleNamespace) -> Alert:
+  if frogpilot_toggles.onroad_distance_button:
+    return EmptyAlert
+  return Alert(
+    "Traffic Mode Disabled",
+    "",
+    FrogPilotAlertStatus.frogpilot, AlertSize.small,
+    Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.)
+
+
 def invalid_lkas_setting_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality, frogpilot_toggles: SimpleNamespace) -> Alert:
   text = "Toggle stock LKAS on or off to engage"
   if CP.brand == "tesla":
@@ -1182,19 +1202,11 @@ FROGPILOT_EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   },
 
   FrogPilotEventName.trafficModeActive: {
-    ET.WARNING: Alert(
-      "Traffic Mode enabled",
-      "",
-      FrogPilotAlertStatus.frogpilot, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.),
+    ET.WARNING: traffic_mode_active_alert,
   },
 
   FrogPilotEventName.trafficModeInactive: {
-    ET.WARNING: Alert(
-      "Traffic Mode Disabled",
-      "",
-      FrogPilotAlertStatus.frogpilot, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 3.),
+    ET.WARNING: traffic_mode_inactive_alert,
   },
 
   FrogPilotEventName.manualStopAheadActive: {
