@@ -1055,7 +1055,7 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
 
     QRect rect(speedLimitRect.x(), speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, speedLimitRect.width(), 60);
 
-    p.setBrush(blackColor(166));
+    p.setBrush(activeIcon ? redColor(166) : blackColor(166));
     p.setOpacity(1.0);
     p.drawRoundedRect(rect, 24, 24);
 
