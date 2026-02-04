@@ -171,8 +171,8 @@ class FrogPilotCard:
       # Cancel on 25 second timeout (2500 cycles at 100Hz)
       elif self.manual_stop_ahead_timer >= 2500:
         self.manual_stop_ahead = False
-      # Cancel when model detects a stop (handoff to normal system)
-      elif sm["frogpilotPlan"].redLight:
+      # Cancel when car reaches standstill (we've stopped)
+      elif carState.standstill:
         self.manual_stop_ahead = False
 
     frogpilotCarState.accelPressed = self.accel_pressed
