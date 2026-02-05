@@ -31,16 +31,19 @@ from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
 from openpilot.selfdrive.modeld.models.commonmodel_pyx import DrivingModelFrame, CLContext
 from openpilot.selfdrive.modeld.runners.tinygrad_helpers import qcom_tensor_from_opencl_address
 
-from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles
+from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles, MODELS_PATH
 
 
 PROCESS_NAME = "selfdrive.modeld.modeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
+# Default model paths (used for bd2/default model)
 VISION_PKL_PATH = Path(__file__).parent / 'models/driving_vision_tinygrad.pkl'
 POLICY_PKL_PATH = Path(__file__).parent / 'models/driving_policy_tinygrad.pkl'
 VISION_METADATA_PATH = Path(__file__).parent / 'models/driving_vision_metadata.pkl'
 POLICY_METADATA_PATH = Path(__file__).parent / 'models/driving_policy_metadata.pkl'
+OFF_POLICY_PKL_PATH = Path(__file__).parent / 'models/driving_off_policy_tinygrad.pkl'
+OFF_POLICY_METADATA_PATH = Path(__file__).parent / 'models/driving_off_policy_metadata.pkl'
 
 LAT_SMOOTH_SECONDS = 0.1
 LONG_SMOOTH_SECONDS = 0.3
@@ -196,14 +199,37 @@ class ModelState:
   prev_desire: np.ndarray  # for tracking the rising edge of the pulse
 
   def __init__(self, context: CLContext):
-    with open(VISION_METADATA_PATH, 'rb') as f:
+    # Get model ID and version from params for dynamic path building
+    params = Params()
+    model_id = params.get("Model", encoding="utf-8") or "bd2"
+    model_version = params.get("ModelVersion", encoding="utf-8") or "v11"
+
+    # Build paths based on model ID
+    if model_id == "bd2":
+      # Default model uses built-in files
+      vision_pkl_path = VISION_PKL_PATH
+      policy_pkl_path = POLICY_PKL_PATH
+      vision_metadata_path = VISION_METADATA_PATH
+      policy_metadata_path = POLICY_METADATA_PATH
+      off_policy_pkl_path = OFF_POLICY_PKL_PATH
+      off_policy_metadata_path = OFF_POLICY_METADATA_PATH
+    else:
+      # Custom models use /data/models/{model_id}_*.pkl
+      vision_pkl_path = MODELS_PATH / f"{model_id}_driving_vision_tinygrad.pkl"
+      policy_pkl_path = MODELS_PATH / f"{model_id}_driving_policy_tinygrad.pkl"
+      vision_metadata_path = MODELS_PATH / f"{model_id}_driving_vision_metadata.pkl"
+      policy_metadata_path = MODELS_PATH / f"{model_id}_driving_policy_metadata.pkl"
+      off_policy_pkl_path = MODELS_PATH / f"{model_id}_driving_off_policy_tinygrad.pkl"
+      off_policy_metadata_path = MODELS_PATH / f"{model_id}_driving_off_policy_metadata.pkl"
+
+    with open(vision_metadata_path, 'rb') as f:
       vision_metadata = pickle.load(f)
       self.vision_input_shapes =  vision_metadata['input_shapes']
       self.vision_input_names = list(self.vision_input_shapes.keys())
       self.vision_output_slices = vision_metadata['output_slices']
       vision_output_size = vision_metadata['output_shapes']['outputs'][1]
 
-    with open(POLICY_METADATA_PATH, 'rb') as f:
+    with open(policy_metadata_path, 'rb') as f:
       policy_metadata = pickle.load(f)
       self.policy_input_shapes =  policy_metadata['input_shapes']
       self.policy_output_slices = policy_metadata['output_slices']
@@ -226,11 +252,43 @@ class ModelState:
     self.policy_output = np.zeros(policy_output_size, dtype=np.float32)
     self.parser = Parser()
 
-    with open(VISION_PKL_PATH, "rb") as f:
+    with open(vision_pkl_path, "rb") as f:
       self.vision_run = pickle.load(f)
 
-    with open(POLICY_PKL_PATH, "rb") as f:
+    with open(policy_pkl_path, "rb") as f:
       self.policy_run = pickle.load(f)
+
+    # Off-policy model (optional, for v12 models)
+    self.off_policy_enabled = False
+    self.off_policy_output_slices: dict[str, slice] = {}
+    self.off_policy_numpy_inputs: dict[str, np.ndarray] = {}
+    self.off_policy_inputs: dict[str, Tensor] = {}
+    self.off_policy_output: np.ndarray | None = None
+    self.off_policy_parser = Parser()
+
+    # Load off-policy model if v12 or if files exist
+    if model_version == "v12" or off_policy_metadata_path.is_file():
+      try:
+        with open(off_policy_metadata_path, 'rb') as f:
+          off_policy_metadata = pickle.load(f)
+        self.off_policy_input_shapes = off_policy_metadata['input_shapes']
+        self.off_policy_output_slices = off_policy_metadata['output_slices']
+        off_policy_output_size = off_policy_metadata['output_shapes']['outputs'][1]
+
+        # Build off-policy inputs (mirror policy inputs structure)
+        self.off_policy_numpy_inputs = {k: np.zeros(self.off_policy_input_shapes[k], dtype=np.float32) for k in self.off_policy_input_shapes}
+        self.off_policy_inputs = {k: Tensor(v, device='NPY').realize() for k, v in self.off_policy_numpy_inputs.items()}
+        self.off_policy_output = np.zeros(off_policy_output_size, dtype=np.float32)
+
+        with open(off_policy_pkl_path, "rb") as f:
+          self.off_policy_run = pickle.load(f)
+
+        self.off_policy_enabled = True
+        cloudlog.warning(f"Off-policy model loaded successfully for {model_id}")
+      except FileNotFoundError as e:
+        cloudlog.warning(f"Off-policy model not available: {e}")
+      except Exception as e:
+        cloudlog.error(f"Failed to load off-policy model: {e}")
 
   def slice_outputs(self, model_outputs: np.ndarray, output_slices: dict[str, slice]) -> dict[str, np.ndarray]:
     parsed_model_outputs = {k: model_outputs[np.newaxis, v] for k,v in output_slices.items()}
@@ -270,8 +328,25 @@ class ModelState:
     policy_outputs_dict = self.parser.parse_policy_outputs(self.slice_outputs(self.policy_output, self.policy_output_slices))
 
     combined_outputs_dict = {**vision_outputs_dict, **policy_outputs_dict}
+
+    # Run off-policy model if enabled
+    if self.off_policy_enabled:
+      # Copy inputs from policy to off-policy
+      for k in ['desire_pulse', 'features_buffer']:
+        if k in self.off_policy_numpy_inputs and k in self.numpy_inputs:
+          self.off_policy_numpy_inputs[k][:] = self.numpy_inputs[k]
+      if 'traffic_convention' in self.off_policy_numpy_inputs:
+        self.off_policy_numpy_inputs['traffic_convention'][:] = inputs['traffic_convention']
+
+      self.off_policy_output = self.off_policy_run(**self.off_policy_inputs).contiguous().realize().uop.base.buffer.numpy()
+      off_policy_outputs_dict = self.off_policy_parser.parse_policy_outputs(self.slice_outputs(self.off_policy_output, self.off_policy_output_slices))
+      combined_outputs_dict.update(off_policy_outputs_dict)
+
     if SEND_RAW_PRED:
-      combined_outputs_dict['raw_pred'] = np.concatenate([self.vision_output.copy(), self.policy_output.copy()])
+      raw_pred = [self.vision_output.copy(), self.policy_output.copy()]
+      if self.off_policy_enabled and self.off_policy_output is not None:
+        raw_pred.append(self.off_policy_output.copy())
+      combined_outputs_dict['raw_pred'] = np.concatenate(raw_pred)
 
     return combined_outputs_dict
 
