@@ -22,13 +22,22 @@ class FrogPilotVCruise:
     self.override_force_stop_timer = 0
 
   def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
+    # Normal force stop condition (requires toggle + model_stopped)
     force_stop = self.frogpilot_planner.frogpilot_cem.stop_light_detected and long_control_active and frogpilot_toggles.force_stops
     force_stop &= self.frogpilot_planner.model_stopped
     force_stop &= self.override_force_stop_timer <= 0
 
+    # Manual Stop Ahead can trigger force stop immediately when light is detected
+    # (bypass model_stopped and force_stops toggle since user indicated stop ahead)
+    manual_stop_force_stop = sm["frogpilotCarState"].manualStopAhead and self.frogpilot_planner.frogpilot_cem.stop_light_detected
+    manual_stop_force_stop &= long_control_active
+    manual_stop_force_stop &= self.override_force_stop_timer <= 0
+    manual_stop_force_stop &= not self.frogpilot_planner.tracking_lead
+
     self.force_stop_timer = self.force_stop_timer + DT_MDL if force_stop else 0
 
-    force_stop_enabled = self.force_stop_timer >= 1
+    # Manual Stop Ahead bypasses the 1-second timer for immediate handoff to Force Stop
+    force_stop_enabled = self.force_stop_timer >= 1 or manual_stop_force_stop
 
     self.override_force_stop |= sm["carState"].gasPressed
     self.override_force_stop |= sm["frogpilotCarState"].accelPressed
@@ -118,14 +127,15 @@ class FrogPilotVCruise:
           targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
-    # Manual Stop Ahead: gradually reduce v_cruise to cause deceleration when not tracking a lead
-    # Once redLight is detected, stop active deceleration but maintain reduced speed (max_accel=0 prevents speedup)
+    # Manual Stop Ahead: gradually reduce v_cruise until Force Stop takes over
+    # Once stop_light_detected, Force Stop handles deceleration (via manual_stop_force_stop above)
     if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
-      self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
-      # Only actively reduce v_cruise if the model hasn't detected the stop yet
       if not self.frogpilot_planner.frogpilot_cem.stop_light_detected:
+        # Model hasn't detected stop yet - do gradual deceleration
+        self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
         self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.2 * DT_MDL), 0)
-      v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
+        v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
+      # else: Force Stop is handling it via force_stop_enabled block above
     else:
       self.manual_stop_ahead_v_cruise = v_ego
 
