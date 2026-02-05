@@ -1039,15 +1039,15 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
     bool isOverridden = frogpilotPlan.getSlcOverriddenSpeed() > 0;
 
     auto drawBox = [&](QRect r, QPixmap *icon, QString name, bool isRed) {
-    if (activeIcon) {
-      p.setBrush(redColor(166));
-      p.setPen(QPen(redColor(), 10));
-    } else {
-      p.setBrush(blackColor(166));
-      p.setPen(QPen(blackColor(), 10));
-    }
-    p.setOpacity(1.0);
-    p.drawRoundedRect(rect, 24, 24);
+      if (isRed) {
+        p.setBrush(redColor(166));
+        p.setPen(QPen(redColor(), 10));
+      } else {
+        p.setBrush(blackColor(166));
+        p.setPen(QPen(blackColor(), 10));
+      }
+      p.setOpacity(1.0);
+      p.drawRoundedRect(r, 24, 24);
 
       if (icon) {
         p.setFont(InterFont(35, QFont::Bold));
@@ -1099,14 +1099,10 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
     QRect rect1(speedLimitRect.x(), speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, speedLimitRect.width(), 60);
 
     if (isOverridden) {
-      // Box 1: User (Red)
       drawBox(rect1, &gasPedalImg, "User", true);
-
-      // Box 2: System (Black)
       QRect rect2(rect1.x(), rect1.bottom() + UI_BORDER_SIZE / 2, rect1.width(), 60);
       drawBox(rect2, systemIcon, systemName, false);
     } else {
-      // Box 1: System (Red if valid, Black if None)
       drawBox(rect1, systemIcon, systemName, systemIcon != nullptr);
     }
   } else {
