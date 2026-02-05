@@ -68,6 +68,7 @@ private:
   void paintCurveSpeedControl(QPainter &p, SubMaster &fpsm);
   void paintCurveSpeedControlTraining(QPainter &p, SubMaster &fpsm);
   void paintForceStop(QPainter &p, SubMaster &fpsm);
+  void paintManualStop(QPainter &p, SubMaster &fpsm);
   void paintLateralPaused(QPainter &p);
   void paintLongitudinalPaused(QPainter &p);
   void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm);
@@ -118,6 +119,7 @@ private:
   QPixmap curveSpeedIconFlipped;  // Pre-cached flipped version
   QPixmap dashboardIcon;
   QPixmap forceStopImg;
+  QPixmap manualStopImg;
   QPixmap mapDataIcon;
   QPixmap mapboxIcon;
   QPixmap nextMapsIcon;

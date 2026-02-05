@@ -8,6 +8,7 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   curveSpeedIconFlipped = curveSpeedIcon.transformed(QTransform().scale(-1, 1));  // Pre-cache flipped version
   dashboardIcon = loadPixmap("../../frogpilot/assets/other_images/dashboard_icon.png", {btn_size / 2, btn_size / 2});
   forceStopImg = loadPixmap("../../frogpilot/assets/other_images/force_stop.png", {btn_size, btn_size});
+  manualStopImg = loadPixmap("../../frogpilot/assets/other_images/manual_stop.png", {btn_size, btn_size});
   gasPedalImg = loadPixmap("../../frogpilot/assets/other_images/gas_pedal.png", {btn_size, btn_size});
   mapboxIcon = loadPixmap("../../frogpilot/assets/other_images/mapbox_icon.png", {btn_size / 2, btn_size / 2});
   mapDataIcon = loadPixmap("../../frogpilot/assets/other_images/offline_maps_icon.png", {btn_size / 2, btn_size / 2});
@@ -238,6 +239,8 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
 
   if (frogpilotPlan.getForcingStop()) {
     paintForceStop(p, fpsm);
+  } else if (frogpilotCarState.getManualStopAhead()) {
+    paintManualStop(p, fpsm);
   } else if (!frogpilotPlan.getSpeedLimitChanged() && !(signalStyle == "static" && carState.getLeftBlinker()) && frogpilot_toggles.value("csc_status").toBool()) {
     if (frogpilotPlan.getCscTraining()) {
       paintCurveSpeedControlTraining(p, fpsm);
@@ -624,6 +627,20 @@ void FrogPilotAnnotatedCameraWidget::paintForceStop(QPainter &p, SubMaster &fpsm
   QSize imgSize = forceStopImg.size();
   QPoint imgPoint(curveSpeedRect.x() + (curveSpeedRect.width()  - imgSize.width())  / 2, curveSpeedRect.y() + (curveSpeedRect.height() - imgSize.height()) / 2);
   p.drawPixmap(imgPoint, forceStopImg);
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintManualStop(QPainter &p, SubMaster &fpsm) {
+  p.save();
+
+  QRect curveSpeedRect(QPoint(setSpeedRect.right() + UI_BORDER_SIZE, setSpeedRect.top()), QSize(defaultSize.width() * 1.25, defaultSize.width() * 1.25));
+
+  p.setOpacity(1.0);
+
+  QSize imgSize = manualStopImg.size();
+  QPoint imgPoint(curveSpeedRect.x() + (curveSpeedRect.width()  - imgSize.width())  / 2, curveSpeedRect.y() + (curveSpeedRect.height() - imgSize.height()) / 2);
+  p.drawPixmap(imgPoint, manualStopImg);
 
   p.restore();
 }
