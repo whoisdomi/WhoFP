@@ -80,14 +80,18 @@ class FrogPilotAcceleration:
     if self.frogpilot_planner.frogpilot_weather.weather_id != 0:
       self.max_accel -= self.max_accel * self.frogpilot_planner.frogpilot_weather.reduce_acceleration
 
-    # Manual Stop Ahead: prevent acceleration when active (even after redLight detected)
-    if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
+    # Manual Stop Ahead: prevent acceleration when active (even when tracking a lead)
+    if sm["frogpilotCarState"].manualStopAhead:
       self.max_accel = 0
-      # Only set gentle decel if model hasn't detected the stop yet
-      if not self.frogpilot_planner.frogpilot_cem.stop_light_detected:
-        self.min_accel = -1.5
+      # Set min_accel based on whether we're tracking a lead or detecting a stop
+      if self.frogpilot_planner.tracking_lead:
+        # Let lead following handle deceleration
+        self.min_accel = ACCEL_MIN
+      elif not self.frogpilot_planner.frogpilot_cem.stop_light_detected:
+        # No lead, no stop detected - use stronger decel
+        self.min_accel = -2.5
       else:
-        # Once model detects stop, use standard decel limit (let force stop/CEM handle it)
+        # No lead, stop detected - let force stop handle it
         self.min_accel = ACCEL_MIN
     elif self.frogpilot_planner.tracking_lead:
       self.min_accel = ACCEL_MIN
