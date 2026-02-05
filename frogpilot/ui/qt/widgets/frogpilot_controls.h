@@ -139,7 +139,10 @@ public:
       emit buttonClicked(id);
     });
 
-    QObject::connect(this, &ToggleControl::toggleFlipped, this, &FrogPilotButtonControl::refresh);
+    QObject::connect(this, &ToggleControl::toggleFlipped, [=]() {
+      updateFrogPilotToggles();
+      refresh();
+    });
 
     refresh();
   }
@@ -294,6 +297,7 @@ public:
 
     QObject::connect(button_group, QOverload<int>::of(&QButtonGroup::buttonClicked), [=](int id) {
       params.putBool(button_params[id].toStdString(), button_group->button(id)->isChecked());
+      updateFrogPilotToggles();
       emit buttonClicked(id);
     });
   }
@@ -322,7 +326,10 @@ public:
     hlayout->insertWidget(hlayout->indexOf(&toggle) - 1, manageButton);
 
     QObject::connect(manageButton, &ButtonControl::clicked, this, &FrogPilotManageControl::manageButtonClicked);
-    QObject::connect(this, &ToggleControl::toggleFlipped, this, &FrogPilotManageControl::refresh);
+    QObject::connect(this, &ToggleControl::toggleFlipped, [=]() {
+      updateFrogPilotToggles();
+      refresh();
+    });
   }
 
   void refresh() {
@@ -504,6 +511,7 @@ public:
     } else {
       params.putFloat(key, value);
     }
+    updateFrogPilotToggles();
   }
 
   void updateValue() {
@@ -512,6 +520,7 @@ public:
     emit valueChanged(value);
 
     updateDisplay();
+    updateParam();
   }
 
 signals:
@@ -579,6 +588,7 @@ public:
     QObject::connect(button_group, QOverload<int>::of(&QButtonGroup::buttonClicked), [=](int id) {
       if (checkable) {
         params.putBool(button_params[id].toStdString(), button_group->button(id)->isChecked());
+        updateFrogPilotToggles();
       }
       emit buttonClicked(id);
     });
