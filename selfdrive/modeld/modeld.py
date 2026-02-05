@@ -201,10 +201,12 @@ class ModelState:
   def __init__(self, context: CLContext):
     # Get model ID and version from params for dynamic path building
     params = Params()
-    model_id = params.get("Model")
-    model_id = model_id.decode("utf-8") if model_id else "bd2"
-    model_version = params.get("ModelVersion")
-    model_version = model_version.decode("utf-8") if model_version else "v11"
+    model_id = params.get("Model") or "bd2"
+    if isinstance(model_id, bytes):
+      model_id = model_id.decode("utf-8")
+    model_version = params.get("ModelVersion") or "v11"
+    if isinstance(model_version, bytes):
+      model_version = model_version.decode("utf-8")
 
     # Build paths based on model ID
     if model_id == "bd2":
