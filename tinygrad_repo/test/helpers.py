@@ -1,13 +1,15 @@
 import time, struct
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 import numpy as np
 from tinygrad import Tensor, dtypes, Device
-from tinygrad.uop.ops import UOp, Ops
+from tinygrad.uop.ops import UOp, Ops, sint, graph_rewrite
+from tinygrad.shape.shapetracker import ShapeTracker
 from tinygrad.tensor import _to_np_dtype
 from tinygrad.engine.realize import Runner
-from tinygrad.dtype import DType
+from tinygrad.kernelize.kernelize import view_left
+from tinygrad.dtype import ConstType, DType
 from tinygrad.nn.state import get_parameters
-from tinygrad.helpers import T, CI
+from tinygrad.helpers import T, unwrap, CI
 from tinygrad.codegen import full_rewrite
 from tinygrad.runtime.ops_python import PythonProgram, PythonRenderer, PythonCompiler
 
@@ -38,6 +40,13 @@ def rand_for_dtype(dt:DType, size:int):
     return np.random.choice([True, False], size=size)
   return np.random.uniform(-10, 10, size=size).astype(_to_np_dtype(dt))
 
+def ast_const(dtype:DType, val:ConstType, shape:tuple[sint, ...]=(), st:Optional[ShapeTracker]=None, st_src:Optional[tuple[UOp]]=None) -> UOp:
+  if st_src is None:
+    st_src = (st.to_uop() if st is not None else ShapeTracker.from_shape(()).reshape((1,)*len(shape)).expand(shape).to_uop(),)
+  st = unwrap(st_src[0].st)
+  if all(v.mask is None for v in st.views): return UOp.const(dtype, val).replace(src=(st.to_uop(),))
+  return graph_rewrite(UOp.const(dtype, val).view(st).valid(), view_left)
+
 def timeit(fxn:Callable[..., T], *args, **kwargs) -> tuple[T, float]:
   st = time.perf_counter_ns()
   ret = fxn(*args, **kwargs)
@@ -57,8 +66,8 @@ def eval_uop(uop:UOp, inputs:list[tuple[DType, list[Any]]]|None=None):
   return out_buf.cast(uop.dtype.fmt).tolist()[0]
 
 def not_support_multi_device():
-  # CL and CUDA don't support multi device if in CI
-  return CI and REAL_DEV in ("CL", "CUDA")
+  # GPU and CUDA don't support multi device if in CI
+  return CI and REAL_DEV in ("GPU", "CUDA")
 
 # NOTE: This will open REMOTE if it's the default device
 REAL_DEV = (Device.DEFAULT if Device.DEFAULT != "REMOTE" else Device['REMOTE'].properties.real_device)

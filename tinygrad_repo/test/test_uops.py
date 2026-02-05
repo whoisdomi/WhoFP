@@ -1,33 +1,29 @@
 from typing import Optional, Any
 import unittest, math
 import numpy as np
+from tinygrad.shape.shapetracker import ShapeTracker
+from tinygrad.shape.view import View # noqa F401
 from tinygrad.tensor import Tensor, _to_np_dtype
-from tinygrad.helpers import CI, DEBUG, getenv, Timing, Context
-from tinygrad.dtype import dtypes, DType, AddrSpace
+from tinygrad.helpers import CI, DEBUG, getenv, Timing
+from tinygrad.dtype import dtypes, DType
 from tinygrad.device import Buffer, Device
-from tinygrad.uop.ops import Ops, UOp, UPat, KernelInfo, exec_alu, AxisType
-from tinygrad.uop.spec import shared_spec
+from tinygrad.uop.ops import Ops, UOp, UPat, KernelInfo, exec_alu # noqa F401
+from tinygrad.uop.spec import spec
 from tinygrad.renderer import ProgramSpec
-from tinygrad.engine.realize import CompiledRunner, get_program, get_runner, ExecItem
+from tinygrad.kernelize.kernelize import fix_kernel_ops
+from tinygrad.engine.realize import CompiledRunner, get_program
 from tinygrad.codegen import full_rewrite
 from tinygrad.uop.symbolic import sym
 from tinygrad.device import is_dtype_supported
-from tinygrad.codegen.opt import Opt, OptOps
-from tinygrad.renderer.ptx import PTXRenderer
+from tinygrad.opt.kernel import Opt, OptOps
 
-def to_uops_list(u:list[UOp], ren=None) -> list[UOp]:
-  sink = UOp.group(*u)
-  for r in sink.ranges: sink = sink.end(r)
-  # we strip the SINK here for legacy reasons
-  ret = full_rewrite(sink.sink(arg=KernelInfo(opts_to_apply=())), ren)
-  assert ret[-1].op is Ops.SINK
-  return ret[:-1]
+def to_uops_list(u:list[UOp], opts=None, skip_check=False) -> list[UOp]: return full_rewrite(UOp.sink(*u), opts)
 
 def _uops_to_prg(uops_list):
-  uops = full_rewrite(ast:=UOp.sink(*uops_list), ren=Device[Device.DEFAULT].renderer)
+  uops = full_rewrite(ast:=UOp.sink(*uops_list), opts=Device[Device.DEFAULT].renderer)
   src = Device[Device.DEFAULT].renderer.render(uops)
   has_local = Device[Device.DEFAULT].renderer.has_local
-  return CompiledRunner(ProgramSpec(uops[-1].arg.name if uops[-1].arg is not None else "test", src, Device.DEFAULT, ast, uops=uops,
+  return CompiledRunner(ProgramSpec("test", src, Device.DEFAULT, ast, uops=uops,
                                 global_size=[1,1,1] if has_local else None, local_size=[1,1,1] if has_local else None))
 
 def uop(uops:list[UOp], uop:Ops, dtype:Optional[DType], src:tuple[UOp, ...], arg:Any=None) -> UOp:
@@ -39,9 +35,9 @@ def _test_single_value(vals, op, dts):
   output_dtype = dtypes.bool if op in (Ops.CMPLT, Ops.CMPNE) else dts[-1]
   buf_store = uop(uops, Ops.DEFINE_GLOBAL, output_dtype.ptr(), (), 0)
   buf_loads = [uop(uops, Ops.DEFINE_GLOBAL, dtype.ptr(), (), i+1) for i,dtype in enumerate(dts)]
-  loads = (buf_loads[i].index(uop(uops, Ops.CONST, dtypes.int32, (), 0)) for i, dtype in enumerate(dts))
+  loads = (uop(uops, Ops.LOAD, dtype, [buf_loads[i].index(uop(uops, Ops.CONST, dtypes.int32, (), 0))]) for i, dtype in enumerate(dts))
   alu = uop(uops, op, output_dtype, loads)
-  out = uop(uops, Ops.STORE, dtypes.void, (buf_store.index(uop(uops, Ops.CONST, dtypes.int32, (), 0), ptr=True), alu))
+  out = uop(uops, Ops.STORE, dtypes.void, (buf_store.index(uop(uops, Ops.CONST, dtypes.int32, (), 0)), alu))
   buf = Buffer(Device.DEFAULT, 1, output_dtype).allocate()
   buf2 = [Buffer(Device.DEFAULT, 1, dtype).allocate().copyin(np.array([a], dtype=_to_np_dtype(dtype)).data) for a,dtype in zip(vals, dts)]
   prg = _uops_to_prg([out])
@@ -56,7 +52,7 @@ def _test_single_value_const(vals, op, dts):
   buf_store = uop(uops, Ops.DEFINE_GLOBAL, output_dtype.ptr(), (), 0)
   loads = (uop(uops, Ops.CONST, dtype, [], a) for a,dtype in zip(vals, dts))
   alu = uop(uops, op, output_dtype, loads)
-  out = buf_store[UOp.const(dtypes.int32, 0)].store(alu)
+  out = uop(uops, Ops.STORE, dtypes.void, (buf_store.index(uop(uops, Ops.CONST, dtypes.int32, (), 0)), alu))
   buf = Buffer(Device.DEFAULT, 1, output_dtype).allocate()
   prg = _uops_to_prg([out])
   prg.exec([buf])
@@ -115,7 +111,7 @@ class TestFloatUOps(TestUOps):
   def test_log2(self): self._test_uop_fxn(Ops.LOG2, lambda a: math.log2(a) if a > 0 else float('-inf' if a==0 else 'nan'))
   @unittest.skipIf(Device.DEFAULT == "CPU", 'not supported as uop')
   def test_sin(self): self._test_uop_fxn(Ops.SIN, lambda a: math.sin(a))
-  def test_recip(self): self._test_uop_fxn(Ops.RECIPROCAL, lambda a: 1/a if a != 0 else float('inf'))
+  def test_recip(self): self._test_uop_fxn(Ops.RECIP, lambda a: 1/a if a != 0 else float('inf'))
   def test_sqrt(self): self._test_uop_fxn(Ops.SQRT, lambda a: math.sqrt(a) if a >= 0 else float('nan'))
 
   def test_add(self): self._test_bop_fxn(Ops.ADD, lambda a,b: a+b)
@@ -135,9 +131,9 @@ class TestFloatUOps(TestUOps):
 class TestNonFloatUOps(TestUOps):
   def test_add_int32(self): self._test_bop_fxn(Ops.ADD, lambda a,b: int(a)+int(b), (dtypes.int32, dtypes.int32))
   def test_mul_int32(self): self._test_bop_fxn(Ops.MUL, lambda a,b: int(a)*int(b), (dtypes.int32, dtypes.int32))
-  @unittest.skipUnless(isinstance(Device[Device.DEFAULT].renderer, PTXRenderer), "only ptx uses bitshifts")
+  @unittest.skipUnless(getenv("PTX"), "only ptx uses bitshifts")
   def test_shr_int32(self): self._test_bop_fxn(Ops.SHR, lambda a,b: int(a)>>int(b), (dtypes.int32, dtypes.int32), no_b_neg=True)
-  @unittest.skipUnless(isinstance(Device[Device.DEFAULT].renderer, PTXRenderer), "only ptx uses bitshifts")
+  @unittest.skipUnless(getenv("PTX"), "only ptx uses bitshifts")
   def test_shl_int32(self): self._test_bop_fxn(Ops.SHL, lambda a,b: int(a)<<int(b), (dtypes.int32, dtypes.int32), no_b_neg=True)
   def test_div_int32(self):
     self._test_bop_fxn(Ops.IDIV, lambda a,b: int(a/b), (dtypes.int32, dtypes.int32), no_b_zero=True)
@@ -182,32 +178,6 @@ class TestBoolUOps(TestUOps):
   def test_cmplt_bool(self): self._test_bop_bool_fxn(Ops.CMPLT, lambda a,b: a < b)
   def test_where_bool(self): self._test_top_bool_fxn(Ops.WHERE, lambda a,b,c: b if a else c)
 
-class TestSafeCast(TestUOps):
-  def test_cast_folds(self):
-    a = UOp.variable("a", 1, 10, dtype=dtypes.int32)
-    self.assertEqual(a.cast(dtypes.int64).cast(dtypes.int32).simplify(), a)
-    self.assertEqual(a.cast(dtypes.double).cast(dtypes.int32).simplify(), a)
-    a = UOp.variable("a", 1, 10, dtype=dtypes.uint8)
-    self.assertEqual(a.cast(dtypes.int64).cast(dtypes.uint8).simplify(), a)
-    self.assertEqual(a.cast(dtypes.uint32).cast(dtypes.uint8).simplify(), a)
-
-  def test_remove_intermediate_cast(self):
-    a = UOp.variable("a", 0., 100., dtype=dtypes.half)
-    self.assertEqual(a.cast(dtypes.double).cast(dtypes.float).simplify(), a.cast(dtypes.float))
-    a = UOp.variable("a", 1, 10, dtype=dtypes.int32)
-    # TODO: double preserves certain int dtypes
-    self.assertEqual(a.cast(dtypes.double).cast(dtypes.float).simplify(), a.cast(dtypes.float))
-    self.assertEqual(a.cast(dtypes.int64).cast(dtypes.int16).simplify(), a.cast(dtypes.int16))
-    a = UOp.variable("a", 1, 10, dtype=dtypes.uint8)
-    self.assertEqual(a.cast(dtypes.int64).cast(dtypes.int32).simplify(), a.cast(dtypes.int32))
-
-  def test_safe_cast_using_bounds(self):
-    a = UOp.variable("a", 1, 10, dtype=dtypes.uint64)
-    self.assertEqual(a.cast(dtypes.int16).cast(dtypes.int).simplify(), a.cast(dtypes.int))
-    a = UOp.variable("a", -10, 10, dtype=dtypes.int32)
-    self.assertEqual(a.cast(dtypes.int8).cast(dtypes.int64).simplify(), a.cast(dtypes.int64))
-    self.assertEqual(a.cast(dtypes.int8).cast(dtypes.float).simplify(), a.cast(dtypes.float))
-
 class TestExecALU(TestUOps):
   def test_sqrt(self):
     self.assertEqual(exec_alu(Ops.SQRT, dtypes.float, (0.0,)), 0.0)
@@ -218,18 +188,18 @@ class TestExecALU(TestUOps):
     self.assertEqual(exec_alu(Ops.IDIV, dtypes.int8, (7, -3)), -2)
     self.assertEqual(exec_alu(Ops.IDIV, dtypes.int8, (-50, 6)), -8)
 
-    np.testing.assert_allclose(exec_alu(Ops.MUL, dtypes.float32, (7.0, exec_alu(Ops.RECIPROCAL, dtypes.float32, (3.0,)))), 2+(1.0/3.0))
-    np.testing.assert_allclose(exec_alu(Ops.MUL, dtypes.float32, (7.0, exec_alu(Ops.RECIPROCAL, dtypes.float32, (-3.0,)))), -2-(1.0/3.0))
+    np.testing.assert_allclose(exec_alu(Ops.MUL, dtypes.float32, (7.0, exec_alu(Ops.RECIP, dtypes.float32, (3.0,)))), 2+(1.0/3.0))
+    np.testing.assert_allclose(exec_alu(Ops.MUL, dtypes.float32, (7.0, exec_alu(Ops.RECIP, dtypes.float32, (-3.0,)))), -2-(1.0/3.0))
 
   def test_recip(self):
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, (8,)), 1/8)
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, (7,)), 1/7)
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, (-3,)), 1/-3)
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, (-50,)), 1/-50)
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, (8,)), 1/8)
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, (7,)), 1/7)
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, (-3,)), 1/-3)
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, (-50,)), 1/-50)
 
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, ((32+521+3),)), 1/(32+521+3))
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, ((34**2),)), 1/(34**2))
-    np.testing.assert_allclose(exec_alu(Ops.RECIPROCAL, dtypes.float32, (10,)), 1/10)
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, ((32+521+3),)), 1/(32+521+3))
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, ((34**2),)), 1/(34**2))
+    np.testing.assert_allclose(exec_alu(Ops.RECIP, dtypes.float32, (10,)), 1/10)
 
   def test_bool_cmplt(self):
     self.assertEqual(exec_alu(Ops.CMPLT, dtypes.bool, (False, False)), False)
@@ -275,9 +245,9 @@ class TestConstantFolding(unittest.TestCase):
 class TestGatedStoreRewrite(unittest.TestCase):
   def test_tiny_gate_store(self):
     gmem = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 0)
-    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (UOp.const(dtypes.int, 4),), 'gidx0')
+    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (), ('gidx0', 4))
     gate = gidx0<UOp.const(dtypes.int, 1)
-    idx = UOp(Ops.INDEX, dtypes.float.ptr(), (gmem, (gidx0 * UOp.const(dtypes.int, 2)).valid(gate)))
+    idx = UOp(Ops.INDEX, dtypes.float.ptr(), (gmem, gidx0 * UOp.const(dtypes.int, 2), gate))
     val = UOp.const(dtypes.float, 42.0)
     store = UOp(Ops.STORE, dtypes.void, (idx, val))
     uops = to_uops_list([store])
@@ -292,9 +262,9 @@ class TestGatedStoreRewrite(unittest.TestCase):
   def test_gate_some_stores(self):
     gmem0 = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 0)
     gmem1 = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 1)
-    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (UOp.const(dtypes.int, 4),), 'gidx0')
+    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (), ('gidx0', 4))
     idx = gidx0 * UOp.const(dtypes.int, 2)
-    idx0 = UOp(Ops.INDEX, dtypes.float.ptr(), (gmem0, idx.valid(gidx0<UOp.const(dtypes.int, 1))))
+    idx0 = UOp(Ops.INDEX, dtypes.float.ptr(), (gmem0, idx, gidx0<UOp.const(dtypes.int, 1)))
     idx1 = UOp(Ops.INDEX, dtypes.float.ptr(), (gmem1, idx))
     val = UOp.const(dtypes.float, 42.0)
     stores = [UOp.store(idx0, val), UOp.store(idx1, val)]
@@ -308,11 +278,10 @@ class TestGatedStoreRewrite(unittest.TestCase):
     self.assertIs(gated_uops[-1].op, Ops.STORE)
 
   # scaled down version of TestLinearizerDumb.test_unmerged_ifs
-  @unittest.skip("we don't merge ifs anymore")
   def test_merge_ifs_alt(self):
     gmem0 = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 0)
     gmem1 = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 1)
-    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (UOp.const(dtypes.int, 4),), 'gidx0')
+    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (), ('gidx0', 4))
     idx = gidx0*UOp.const(dtypes.int, 2)
     gate = gidx0<UOp.const(dtypes.int, 1)
     idx0 = UOp(Ops.INDEX, dtypes.float.ptr(), (gmem0, idx, gate))
@@ -335,20 +304,20 @@ class TestLocalAccess(unittest.TestCase):
   @unittest.skipUnless(Device[Device.DEFAULT].renderer.has_shared, "test requires shared memory")
   def test_local_basic(self):
     uops = []
-    smem = uop(uops, Ops.DEFINE_LOCAL, dtypes.float32.ptr(size=16, addrspace=AddrSpace.LOCAL), (), 'smem')
+    smem = uop(uops, Ops.DEFINE_LOCAL, dtypes.float32.ptr(size=16, local=True), (), 'smem')
     st = uop(uops, Ops.STORE, dtypes.void, (smem.index(uop(uops, Ops.CONST, dtypes.int32, (), 0)), uop(uops, Ops.CONST, dtypes.float32, (), 42.0)))
     barr = uop(uops, Ops.BARRIER, dtypes.void, (st,))
-    sres = uop(uops, Ops.LOAD, dtypes.float32, (smem.after(barr).index(uop(uops, Ops.CONST, dtypes.int32, (), 0), ptr=True),))
+    sres = uop(uops, Ops.LOAD, dtypes.float32, (smem.index(uop(uops, Ops.CONST, dtypes.int32, (), 0)), barr))
     self.assertEqual(_test_uops_result(dtypes.float32, uops, sres), 42)
 
   # NOTE: webgpu specific, since only webgpu performs bitpacking
   @unittest.skipUnless(Device.DEFAULT == "WEBGPU", "Test local access with packed data type")
   def test_local_packed(self):
     uops = []
-    smem = uop(uops, Ops.DEFINE_LOCAL, dtypes.uint8.ptr(size=16, addrspace=AddrSpace.LOCAL), (), 'smem')
+    smem = uop(uops, Ops.DEFINE_LOCAL, dtypes.uint8.ptr(size=16, local=True), (), 'smem')
     st = uop(uops, Ops.STORE, dtypes.void, (smem.index(uop(uops, Ops.CONST, dtypes.int32, (), 0)), uop(uops, Ops.CONST, dtypes.uint8, (), 42)))
     barr = uop(uops, Ops.BARRIER, dtypes.void, (st,))
-    sres = smem.after(barr).index(uop(uops, Ops.CONST, dtypes.int32, (), 0))
+    sres = uop(uops, Ops.LOAD, dtypes.uint8, (smem.index(uop(uops, Ops.CONST, dtypes.int32, (), 0)), barr))
     self.assertEqual(_test_uops_result(dtypes.uint8, uops, sres), 42)
 
   # NOTE: webgpu specific, since only webgpu performs bitpacking
@@ -357,8 +326,8 @@ class TestLocalAccess(unittest.TestCase):
     _dtypes = [dtypes.char, dtypes.uchar, dtypes.short, dtypes.ushort, dtypes.half]
     size = 16
     for dtype in _dtypes:
-      temp = UOp(Ops.DEFINE_LOCAL, dtype.ptr(size=size, addrspace=AddrSpace.LOCAL), (), 'smem')
-      uops = to_uops_list([temp], ren=Device[Device.DEFAULT].renderer)
+      temp = UOp(Ops.DEFINE_LOCAL, dtype.ptr(size=size, local=True), (), 'smem')
+      uops = to_uops_list([temp], opts=Device[Device.DEFAULT].renderer)
       out = Device[Device.DEFAULT].renderer.render(uops)
       # half is supported in wgsl, so it doesn't have to be packed
       corrected_size = size//(4//dtype.itemsize) if dtype != dtypes.half else size
@@ -368,7 +337,7 @@ class TestLocalAccess(unittest.TestCase):
   @unittest.skip("tinygrad doesn't support this behavior")
   def test_local_indirect(self):
     uops = []
-    smem = uop(uops, Ops.DEFINE_LOCAL, dtypes.int32.ptr(size=16, addrspace=AddrSpace.LOCAL), (), 'smem')
+    smem = uop(uops, Ops.DEFINE_LOCAL, dtypes.int32.ptr(size=16, local=True), (), 'smem')
     st1 = uop(uops, Ops.STORE, dtypes.void, (smem.index(uop(uops, Ops.CONST, dtypes.int32, (), 1)), uop(uops, Ops.CONST, dtypes.int32, (), 2)))
     st2 = uop(uops, Ops.STORE, dtypes.void, (smem.index(uop(uops, Ops.CONST, dtypes.int32, (), 2)), uop(uops, Ops.CONST, dtypes.int32, (), 42)))
     barr = uop(uops, Ops.BARRIER, dtypes.void, (st1,st2))
@@ -376,16 +345,16 @@ class TestLocalAccess(unittest.TestCase):
     sres = uop(uops, Ops.LOAD, dtypes.int32, (smem.index(ofs),))
     self.assertEqual(_test_uops_result(dtypes.int32, uops, sres), 42)
 
-@unittest.skipUnless(isinstance(Device[Device.DEFAULT].renderer, PTXRenderer), "This only tests assembly backends")
+@unittest.skipUnless(getenv("PTX"), "This only tests assembly backends")
 class TestAssembly(unittest.TestCase):
   def test_bitshift_left(self):
     g1 = UOp(Ops.DEFINE_GLOBAL, dtypes.int32.ptr(), (), 0)
     c1 = UOp(Ops.CONST, dtypes.int, (), 2)
     c2 = UOp(Ops.CONST, dtypes.int, (), 3)
-    l1 = g1.index(c1)
+    l1 = UOp(Ops.LOAD, dtypes.int, (g1.index(c1),))
     a1 = UOp(Ops.MUL, dtypes.int, (l1, c1))
     a2 = UOp(Ops.MUL, dtypes.int, (l1, c2))
-    uops = to_uops_list([a1,a2], ren=Device[Device.DEFAULT].renderer)
+    uops = to_uops_list([a1,a2], opts=Device[Device.DEFAULT].renderer)
     Device[Device.DEFAULT].renderer.render(uops)
     ops = [x.op for x in uops]
     self.assertIn(Ops.SHL, ops)
@@ -395,9 +364,9 @@ class TestAssembly(unittest.TestCase):
     for dt in (dtypes.int32, dtypes.uint32):
       g = UOp(Ops.DEFINE_GLOBAL, dt.ptr(), (), 0)
       c = UOp(Ops.CONST, dt, (), 2)
-      l = g.index(c)
+      l = UOp(Ops.LOAD, dt, (g.index(c),))
       a = UOp(Ops.IDIV, dt, (l, c))
-      uops = to_uops_list([a], ren=Device[Device.DEFAULT].renderer)
+      uops = to_uops_list([a], opts=Device[Device.DEFAULT].renderer)
       Device[Device.DEFAULT].renderer.render(uops)
       ops = [x.op for x in uops]
       self.assertIn(Ops.SHR, ops, f"For dtype={dt} divison by power of two did not simplify to shift")
@@ -406,16 +375,16 @@ class TestAssembly(unittest.TestCase):
   def test_fast_idiv_and_mod(self):
     g = UOp(Ops.DEFINE_GLOBAL, dtypes.uint32.ptr(), (), 0)
     c = UOp(Ops.CONST, dtypes.uint, (), 3)
-    l = g.index(c)
+    l = UOp(Ops.LOAD, dtypes.uint, (g.index(c),))
     a = UOp(Ops.IDIV, dtypes.uint, (l, c))
-    uops = to_uops_list([a], ren=Device[Device.DEFAULT].renderer)
+    uops = to_uops_list([a], opts=Device[Device.DEFAULT].renderer)
     Device[Device.DEFAULT].renderer.render(uops)
     ops = [x.op for x in uops]
     self.assertIn(Ops.SHR, ops)
     self.assertNotIn(Ops.IDIV, ops)
 
     b = UOp(Ops.MOD, dtypes.uint, (l, c))
-    uops = to_uops_list([b], ren=Device[Device.DEFAULT].renderer)
+    uops = to_uops_list([b], opts=Device[Device.DEFAULT].renderer)
     Device[Device.DEFAULT].renderer.render(uops)
     ops = [x.op for x in uops]
     self.assertIn(Ops.SHR, ops)
@@ -428,19 +397,11 @@ class TestAssembly(unittest.TestCase):
     c = UOp(Ops.CONST, dtypes.uint, (), 7)
     l = UOp(Ops.LOAD, dtypes.uint, (g.index(c),))
     a = UOp(Ops.IDIV, dtypes.uint, (l, c))
-    uops = to_uops_list([a], ren=Device[Device.DEFAULT].renderer)
+    uops = to_uops_list([a], opts=Device[Device.DEFAULT].renderer)
     Device[Device.DEFAULT].renderer.render(uops)
     ops = [x.op for x in uops]
     self.assertIn(Ops.SHR, ops)
     self.assertNotIn(Ops.IDIV, ops)
-
-  def test_fast_idiv_remove_powers_of_two(self):
-    ridx = UOp.range(2**20, 0)
-    uops = to_uops_list([ridx//(7*64)], ren=Device[Device.DEFAULT].renderer)
-    ops = [x.op for x in uops]
-    # this requires shifting out the powers of two before doing fast_idiv
-    # (((ridx0>>6)*18725)>>17) instead of (int)((((long)(ridx0)*1198373)>>29))
-    self.assertNotIn(Ops.CAST, ops)
 
   def test_mulacc_unrolled(self):
     # test that     acc = acc + a0*b0 + a1*b1 + a2*b2 + a3*b3
@@ -455,16 +416,6 @@ class TestAssembly(unittest.TestCase):
     uops = program.uops
     self.assertEqual(len([x.op for x in uops if x.op is Ops.MULACC]), 4)
 
-  def test_use_cmpeq(self):
-    g = UOp(Ops.DEFINE_GLOBAL, dtypes.uint32.ptr(), (), 0)
-    c = UOp(Ops.CONST, dtypes.uint, (), 7)
-    comp = g.index(c).ne(c).ne(True)
-    uops = to_uops_list([comp], ren=Device[Device.DEFAULT].renderer)
-    Device[Device.DEFAULT].renderer.render(uops)
-    ops = [x.op for x in uops]
-    self.assertIn(Ops.CMPEQ, ops)
-    self.assertNotIn(Ops.CMPNE, ops)
-
 class TestUOpMethod(unittest.TestCase):
   @unittest.skip("uops lt no longer ordered")
   def test_compare_alu_same_src_different_arg(self):
@@ -478,13 +429,13 @@ class TestUOpMethod(unittest.TestCase):
   def test_uop_variables(self):
     a = UOp.variable("a", 1, 10)
     uop_var = Tensor(a.bind(1))
-    st_var = Tensor.empty((2, 10))[:, :a.bind(1)]
+    st_var = Tensor.empty((2, 1)).reshape((2, a.bind(1)))
     _, var_vals = (uop_var+st_var).schedule_with_vars()
     self.assertEqual(len(var_vals), 1)
-    self.assertEqual(list(var_vals)[0], a.expr)
+    self.assertEqual(list(var_vals)[0], a)
 
   def test_const_factor(self):
-    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (UOp.const(dtypes.int, 8),), 'gidx0')
+    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (), ('gidx0', 8))
     self.assertEqual(UOp(Ops.CONST, dtypes.int, (), 17).const_factor(), 17)
     self.assertEqual(gidx0.const_factor(), 1)
     self.assertEqual((gidx0*3).const_factor(), 3)
@@ -495,6 +446,15 @@ class TestUOpMethod(unittest.TestCase):
     x = UOp(Ops.DEFINE_GLOBAL, dtypes.int.ptr(), (), 0)
     self.assertIs(x.replace(arg=None).arg, None)
     with self.assertRaises(AssertionError): x.replace(field="a")
+
+  def test_device(self):
+    x = UOp(Ops.VIEW, dtypes.int, (UOp.new_buffer(Device.DEFAULT, 1, dtypes.int), UOp.const(dtypes.int, 1)), ShapeTracker.from_shape(()))
+    self.assertEqual(x.device, Device.DEFAULT)
+    # NOTE: CONST doesn't have device
+    buffer, const = x.src
+    self.assertEqual(buffer.device, Device.DEFAULT)
+    self.assertEqual(const._device, None)
+    with self.assertRaises(AssertionError): const.device
 
 class TestUOpStr(unittest.TestCase):
   def test_uop_str(self):
@@ -508,17 +468,58 @@ class TestUOpStr(unittest.TestCase):
     assert str(eval(str(vec))) == str(vec)
 
   def test_device_arg(self):
-    device = UOp(Ops.DEVICE, arg="CL")
+    device = UOp(Ops.DEVICE, arg="GPU")
     assert str(eval(str(device))) == str(device)
 
   def test_reduceop_arg(self):
     sum_uop = Tensor.empty(32, 32).sum().uop
     assert str(eval(str(sum_uop))) == str(sum_uop)
 
+@unittest.skip("uop no longer has order like this")
+class TestIndexingOrdering(unittest.TestCase):
+  # NOTE: these tests skip type_verify since they add dtype to STORE
+  @unittest.expectedFailure
+  def test_simple_order(self):
+    buf = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 0)
+    st0 = UOp(Ops.STORE, dtypes.float.vec(4), (buf, UOp.const(dtypes.int, 0), UOp.const(dtypes.float.vec(4), 42)))
+    st1 = UOp(Ops.STORE, dtypes.float, (buf, UOp.const(dtypes.int, 4), UOp.const(dtypes.float, 10)))
+    uops = to_uops_list([st1, st0], skip_check=True)
+    stores = [st for st in uops if st.op is Ops.STORE]
+    assert stores[0].src[1] < stores[1].src[1], f"stored at idx {stores[1].src[1].arg} AFTER {stores[0].src[1].arg}"
+
+  @unittest.expectedFailure
+  def test_ordering_multi_output(self):
+    buf0 = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 0)
+    buf1 = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 1)
+    st0_0 = UOp(Ops.STORE, dtypes.float.vec(4), (buf0, UOp.const(dtypes.int, 0), UOp.const(dtypes.float.vec(4), 42)))
+    st1_0 = UOp(Ops.STORE, dtypes.float, (buf0, UOp.const(dtypes.int, 4), UOp.const(dtypes.float, 10)))
+    st0_1 = UOp(Ops.STORE, dtypes.float.vec(4), (buf1, UOp.const(dtypes.int, 0), UOp.const(dtypes.float.vec(4), 42)))
+    st1_1 = UOp(Ops.STORE, dtypes.float, (buf1, UOp.const(dtypes.int, 4), UOp.const(dtypes.float, 10)))
+    uops = to_uops_list([st0_0, st1_0, st0_1, st1_1], skip_check=True)
+    stores = [st for st in uops if st.op is Ops.STORE]
+    print("\n".join(map(str, stores)))
+    # buf0 stores come first
+    self.assertEqual(stores[0].src[0].arg, stores[1].src[0].arg)
+    # buf1 stores come next
+    self.assertEqual(stores[2].src[0].arg, stores[3].src[0].arg)
+    # both stores are aligned based on idx
+    assert stores[0].src[1] < stores[1].src[1], f"stored at idx {stores[1].src[1].arg} AFTER {stores[0].src[1].arg}"
+    assert stores[2].src[1] < stores[3].src[1], f"stored at idx {stores[1].src[1].arg} AFTER {stores[0].src[1].arg}"
+
+  def test_simple_order_with_special(self):
+    buf = UOp(Ops.DEFINE_GLOBAL, dtypes.float.ptr(), (), 0)
+    gidx0 = UOp(Ops.SPECIAL, dtypes.int, (), ('gidx0', 4))
+    st0 = UOp(Ops.STORE, dtypes.float.vec(4), (buf, gidx0+UOp.const(dtypes.int, 0), UOp.const(dtypes.float.vec(4), 42)))
+    st1 = UOp(Ops.STORE, dtypes.float, (buf, UOp.const(dtypes.int, 4), UOp.const(dtypes.float, 10)))
+    uops = full_rewrite(UOp.sink(st1, st0))
+    stores = [st for st in uops if st.op is Ops.STORE]
+    assert stores[0].src[1] < stores[1].src[1], f"stored at idx {stores[1].src[1].arg} AFTER {stores[0].src[1].arg}"
+
 class TestUPatHelpers(unittest.TestCase):
   def test_location(self):
-    self.assertEqual(sym.patterns[-1][0].location[0].replace("\\", "/").split("/")[-1], "math.py")
-    self.assertEqual(shared_spec.patterns[0][0].location[0].replace("\\", "/").split("/")[-1], "spec.py")
+    self.assertEqual(sym.patterns[-1][0].location[0].replace("\\", "/").split("/")[-1], "symbolic.py")
+    self.assertEqual(fix_kernel_ops.patterns[0][0].location[0].replace("\\", "/").split("/")[-1], "kernelize.py")
+    self.assertEqual(spec.patterns[0][0].location[0].replace("\\", "/").split("/")[-1], "spec.py")
     test_upat = UPat(Ops.CONST, dtypes.bool)
     self.assertEqual(test_upat.location[0].split("/")[-1], __file__.replace("\\", "/").split("/")[-1])
     test_upat_named = test_upat.named("test_name")
@@ -539,99 +540,122 @@ class TestUopsObject(unittest.TestCase):
     with Timing("create 10k uops:"): ret = [UOp(Ops.CONST, dtypes.int, arg=10000000+i) for i in range(10000)]
     assert len(ret) == 10000
 
-  def test_nested(self):
-    a = UOp.new_buffer(Device.DEFAULT, 1, dtypes.char)
-    for _ in range(10_000): a = a+a
-    self.assertEqual(a.device, Device.DEFAULT)
 
-class TestUOpRender(unittest.TestCase):
-  def test_render_vectorize_same(self):
-    u = UOp(Ops.VECTORIZE, dtype=dtypes.int.vec(3), src=(UOp.const(dtypes.int, 0), UOp.const(dtypes.int, 0), UOp.const(dtypes.int, 0)))
-    self.assertEqual(u.render(simplify=False), "{0, ...}")
-  def test_render_vectorize_different(self):
-    u = UOp(Ops.VECTORIZE, dtype=dtypes.int.vec(3), src=(UOp.const(dtypes.int, 0), UOp.const(dtypes.int, 1), UOp.const(dtypes.int, 2)))
-    self.assertEqual(u.render(simplify=False), "{0,1,2}")
-  def test_render_vectorize_same_simplified(self):
-    u = UOp(Ops.VECTORIZE, dtype=dtypes.int.vec(3), src=(UOp.const(dtypes.int, 0), UOp.const(dtypes.int, 0), UOp.const(dtypes.int, 0)))
-    self.assertEqual(u.render(), "0")
-  def test_render_vectorize_different_simplified(self):
-    u = UOp(Ops.VECTORIZE, dtype=dtypes.int.vec(3), src=(UOp.const(dtypes.int, 0), UOp.const(dtypes.int, 1), UOp.const(dtypes.int, 2)))
-    self.assertEqual(u.render(), "(0, 1, 2)")
+class TestShapeSpec(unittest.TestCase):
+  # ** CONST is CONST(VIEW(DEVICE)) -> RESHPAE -> EXPAND
 
-class TestZeroRange(unittest.TestCase):
-  def test_reduce_variable(self):
-    for i in range(3,-1,-1):
-      v = UOp.variable("i", 0, 5).bind(i)
-      out = Tensor.ones(10, dtype=dtypes.int).contiguous().shrink(((0,v),)).sum()
-      self.assertEqual(out.item(), i)
+  def test_expanded_const(self):
+    a = Tensor(1).uop
+    self.assertEqual(a.st, ShapeTracker.from_shape(()))
+    a = Tensor.ones((4, 4)).uop
+    self.assertEqual(a.st, ShapeTracker.from_shape(()).reshape((1,1)).expand((4,4)))
 
-class TestUOpPrograms(unittest.TestCase):
-  def _run(self, prog:UOp, *tensors:Tensor):
-    ExecItem(get_runner(Device.DEFAULT, prog), [t.uop.buffer for t in tensors]).run(wait=True)
+  def test_padded_const(self):
+    a = Tensor.ones((1, 1)).pad(((1, 1), (1, 1)))
+    ast = a.contiguous().schedule()[0].ast
+    valid_pattern = UPat(Ops.WHERE, src=(UPat(Ops.VALID), UPat.cvar(), UPat.cvar()))
+    valid_ternary = [x for x in ast.toposort() if valid_pattern.match(x, {})][0]
+    # the WHERE outputs a contiguous (3, 3)
+    self.assertEqual(valid_ternary.st, ShapeTracker.from_shape((3, 3)))
+    valid, x, y = valid_ternary.src
+    # very notably, only the first source is padded
+    self.assertIsNotNone(valid.st.views[-1].mask)
+    assert x.st.views[-1].mask is y.st.views[-1].mask is None
+    assert all(s.shape == (3, 3) for s in valid_ternary.src)
 
-  def test_simple(self):
-    out = Tensor.empty(10,10,dtype=dtypes.int)
+  # NOTE: CONST ShapeTracker comes from its source
+  def test_scalar_const(self):
+    a = Tensor(0).uop
+    self.assertEqual(a.st, ShapeTracker.from_shape(()))
 
-    ptr = UOp.placeholder(out.shape, out.dtype, slot=0)
-    i, j = UOp.range(10, axis_id=0), UOp.range(10, axis_id=1)
-    prog = ptr[i,j].set(42).end(i,j)
-    self._run(prog.sink(), out)
+  def test_scalar_var(self):
+    vv = UOp.variable("a", 1, 4).bind(2)
+    t = Tensor(vv).uop
+    self.assertEqual(t.st, ShapeTracker.from_shape(()))
 
-    with Context(DEBUG=0): self.assertTrue((out == 42).all().item())
+  # ** ASSIGN is ASSIGN(VIEW(BUFFER), new_val)
 
-  def test_matmul(self):
-    a = Tensor.randn(10,10)
-    b = Tensor.randn(10,10)
-    c = Tensor.empty(10,10)
-    ref = (a@b)
-    with Context(DEBUG=0): Tensor.realize(a, b, c, ref)
+  def test_assign_flat(self):
+    buffer = Tensor.arange(4).realize()
+    a = buffer.assign(Tensor.zeros((4,), dtype=dtypes.int))
+    assign_pattern = UPat(Ops.ASSIGN, src=(UPat(Ops.BUFFER), UPat()))
+    assert assign_pattern.match(a.uop, {})
+    a.realize()
+    self.assertEqual(buffer.tolist(), [0, 0, 0, 0])
 
-    # C[i,j] = sum_k A[i,k] * B[k,j]
-    # Shapes: A[M,K], B[K,N], C[M,N]
-    M = N = K = 10
-    DT = dtypes.float32
+  def test_assign_permuted(self):
+    buffer = Tensor.arange(4).reshape(2, 1, 2).contiguous().realize()
+    a = buffer.permute((1, 2, 0)).assign(Tensor.arange(4).reshape(1, 2, 2).contiguous())
+    a.realize()
+    self.assertEqual(buffer.tolist(), [[[0, 2]], [[1, 3]]])
 
-    # Placeholders (bind slots explicitly)
-    A = UOp.placeholder((M, K), DT, slot=0)
-    B = UOp.placeholder((K, N), DT, slot=1)
-    C = UOp.placeholder((M, N), DT, slot=2)
+  def test_assign_reshaped(self):
+    buffer = Tensor.ones((4,)).contiguous().realize()
+    a = buffer.reshape((2, 2)).assign(Tensor.zeros((2, 2)))
+    assign_pattern = UPat(Ops.ASSIGN, src=(UPat(Ops.RESHAPE, src=(UPat(Ops.BUFFER))), UPat()))
+    assert assign_pattern.match(a.uop, {})
+    a.realize()
+    self.assertEqual(buffer.tolist(), [0, 0, 0, 0])
 
-    # Axes: i,j are spatial; k is a reduction axis over the shared dim K
-    i = UOp.range(M, axis_id=0)                             # rows of A/C
-    j = UOp.range(N, axis_id=1)                             # cols of B/C
-    k = UOp.range(K, axis_id=2, axis_type=AxisType.REDUCE)  # reduction over K
+  # setitem is a partial assign
+  def test_setitem(self):
+    a = Tensor.ones((4,)).contiguous().realize()
+    assign = a.shrink(((1, 2),)).assign(Tensor.zeros((1,)))
+    # the ASSIGN UOp has size=1
+    self.assertEqual(assign.uop.size, 1)
+    # the ASSIGN views the buffer with a shrunk st
+    self.assertEqual(assign.uop.src[0].st, ShapeTracker.from_shape((4,)).shrink(((1, 2),)))
+    # the underlying BUFFER has a size=4
+    self.assertEqual(assign.uop.buf_uop.size, 4)
+    # NOTE: output shape is different from the BUFFER shape
+    self.assertNotEqual(assign.uop.shape, a.uop.shape)
+    assign.realize()
+    self.assertEqual(a.tolist(), [1, 0, 1, 1])
 
-    # Zero-init: write a scalar 0 to each (i,j).
-    C = C[i, j].set(0.0)
+  def test_buffer_st(self):
+    a = UOp.new_buffer(Device.DEFAULT, 10, dtypes.float)
+    self.assertEqual(a.st, ShapeTracker.from_shape((10,)))
 
-    # Accumulate: C_after(k) enforces the dependency along the reduction axis
-    C = C[i, j].set(C.after(k)[i, j] + A[i, k] * B[k, j])
+  def test_ops_st(self):
+    # view / mop
+    a = Tensor.empty(4, 2, 1).permute((1, 2, 0)).uop
+    self.assertEqual(a.st, ShapeTracker.from_shape((4, 2, 1)).permute((1, 2, 0)))
+    # alu / reduce
+    alu = a*2
+    self.assertEqual(alu.st, ShapeTracker.from_shape((2, 1, 4)))
+    r = Tensor.empty(4, 4).sum(axis=1)
+    self.assertEqual(r.uop.st, ShapeTracker.from_shape((4,)))
 
-    # Finalize the loop nest / schedule in (i, j, k) order
-    prog = C.end(i, j, k)
+  def test_st_wmma_none(self):
+    A = UOp(Ops.DEFINE_VAR, dtypes.float.vec(16), arg=('a', UOp.const(dtypes.float, 0), UOp.const(dtypes.float, 1)))
+    B = UOp(Ops.DEFINE_VAR, dtypes.float.vec(16), arg=('b', UOp.const(dtypes.float, 0), UOp.const(dtypes.float, 2)))
+    C = UOp(Ops.DEFINE_VAR, dtypes.float.vec(16), arg=('c', UOp.const(dtypes.float, 0), UOp.const(dtypes.float, 3)))
+    wmma = UOp(Ops.WMMA, dtypes.float.vec(16), (A, B, C))
+    assert wmma.st is None
 
-    # run program
-    # TODO: make this work with opts_to_apply
-    self._run(prog.sink(arg=KernelInfo(opts_to_apply=())), a, b, c)
+class TestUOpChildren(unittest.TestCase):
+  def test_children_exist(self):
+    a = UOp.variable("weird_name_234", 0, 10)
+    b = a*a
+    self.assertEqual(len(a.children), 1)
+    self.assertIs(list(a.children)[0](), b)
 
-    with Context(DEBUG=0): self.assertLessEqual((c-ref).square().mean().item(), 1e-6)
+  def test_children_cleaned_up(self):
+    a = UOp.variable("weird_name_235", 0, 10)
+    b = a*a
+    self.assertEqual(len(a.children), 1)
+    del b
+    self.assertEqual(len(a.children), 0)
 
-  def test_matmul_relu(self):
-    a, b, c = Tensor.randn(10,10), Tensor.randn(10,10), Tensor.empty(10,10)
-    ref = (a@b).relu()
-    with Context(DEBUG=0): Tensor.realize(a, b, c, ref)
-
-    A, B, C = a.uop.placeholder_like(0), b.uop.placeholder_like(1), c.uop.placeholder_like(2)
-    i, j, k = UOp.range(10, 0), UOp.range(10, 1), UOp.range(10, 2, axis_type=AxisType.REDUCE)
-
-    C = C[i, j].set(0.0)
-    C = C[i, j].set(C.after(k)[i, j] + A[i, k] * B[k, j], end=k)
-    C = C[i, j].set(C[i, j].maximum(0.0))
-
-    prog = C.end(i, j)
-
-    self._run(prog.sink(arg=KernelInfo(opts_to_apply=())), a, b, c)
-    with Context(DEBUG=0): self.assertLessEqual((c-ref).square().mean().item(), 1e-6)
+  def test_children_cleaned_up_two(self):
+    a = UOp.variable("weird_name_236", 0, 10)
+    b = a*a
+    c = a*2
+    self.assertEqual(len(a.children), 2)
+    del b
+    self.assertEqual(len(a.children), 1)
+    del c
+    self.assertEqual(len(a.children), 0)
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

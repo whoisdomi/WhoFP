@@ -3,9 +3,9 @@
 import sys, base64, multiprocessing, itertools, collections
 from typing import Optional, Union, Literal, List
 
-from tinygrad import Tensor, TinyJit, Variable, nn, dtypes
+from tinygrad import Tensor, TinyJit, Variable, nn
 from tinygrad.nn.state import torch_load, load_state_dict
-from tinygrad.helpers import getenv, fetch
+from tinygrad.helpers import getenv, DEBUG, fetch
 
 import numpy as np
 import librosa
@@ -109,7 +109,7 @@ class TextDecoder:
 
   def forward(self, x:Tensor, pos:Union[Variable, Literal[0]], encoded_audio:Tensor):
     seqlen = x.shape[-1]
-    x = self.token_embedding(x) + self.positional_embedding.shrink(((pos, pos+seqlen), None))
+    x = self.token_embedding(x) + self.positional_embedding.shrink(((pos, pos+seqlen), None, None))
     for block in self.blocks: x = block(x, xa=encoded_audio, mask=self.mask, len=pos)
     return self.output_tok(x)
 
@@ -244,16 +244,15 @@ def transcribe_waveform(model: Whisper, enc, waveforms, truncate=False):
 
   log_spec = prep_audio(waveforms, model.batch_size, truncate)
   nsample = model.decoder.max_tokens_to_sample
-  nctx = model.decoder.max_self_attn_cache_len
 
   def inferloop(ctx: Union[np.ndarray, List[np.ndarray]], encoded_audio):
     pos, next_tokens = 0, ctx
-    for i in range(nsample):
-      next_tokens = model.decoder(Tensor(next_tokens, dtype=dtypes.int32), pos, encoded_audio)[:, -1].argmax(axis=-1).numpy().astype(np.int32).reshape(-1, 1)
+    for i in range((nsample-len(start_tokens))*2):
+      next_tokens = model.decoder(Tensor(next_tokens), pos, encoded_audio)[:, -1].argmax(axis=-1).numpy().astype(np.int32).reshape(-1, 1)
       next_tokens[ctx[:, -1] == eot] = eot
       ctx = np.concatenate((ctx, next_tokens), axis=1)
       pos = ctx.shape[-1] - 1
-      if (next_tokens == eot).all() or pos == nctx: break
+      if (next_tokens == eot).all(): break
     return ctx
 
   def gettexttoks(line): return [tok for tok in line if tok < eot or tok > enc._special_tokens["<|notimestamps|>"]][-nsample+len(start_tokens):]
@@ -322,7 +321,7 @@ if __name__ == "__main__":
         log_spec = prep_audio(total.reshape(1, -1), model.batch_size, truncate=True)
         encoded_audio = model.encoder.encode(Tensor(log_spec))
       # pass the previously inferred tokens as 'prefix' - https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
-      out = model.decoder(Tensor([lst]), 0, encoded_audio).realize()
+      out = model.decoder(Tensor([lst]), 0, encoded_audio, streaming=True).realize()
       idx = int(out[0,-1].argmax().numpy().item())
       lst.append(idx)
       dec = enc.decode(lst)

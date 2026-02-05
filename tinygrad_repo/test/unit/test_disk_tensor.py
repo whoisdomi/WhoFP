@@ -1,4 +1,4 @@
-import os, pathlib, tempfile, unittest
+import pathlib, tempfile, unittest
 import numpy as np
 from tinygrad import Tensor, Device, dtypes
 from tinygrad.dtype import DType
@@ -307,7 +307,7 @@ class TestDiskTensor(unittest.TestCase):
     ret = t.bitcast(dtypes.uint16).to("CPU") + 1
     assert ret.tolist() == [2827, 3341, 3855, 4369]
 
-  @unittest.skipIf(OSX or Device.DEFAULT == "CL", "new LLVM has an issue on OSX, CL=1 gives the wrong output")
+  @unittest.skipIf(OSX, "new LLVM has an issue on OSX")
   def test_bf16_disk_write_read(self):
     t = Tensor([10000, -1, -1000, -10000, 20], dtype=dtypes.float32)
     t.to(f"disk:{temp('dt_bf16_disk_write_read_f32')}").realize()
@@ -318,7 +318,7 @@ class TestDiskTensor(unittest.TestCase):
     with open(temp('dt_bf16_disk_write_read_bf16'), "wb") as f: f.write(adat)
 
     t = Tensor.empty(5, dtype=dtypes.bfloat16, device=f"disk:{temp('dt_bf16_disk_write_read_bf16')}")
-    ct = t.to(Device.DEFAULT).cast(dtypes.float)
+    ct = t.llvm_bf16_cast(dtypes.float)
     assert ct.numpy().tolist() == [9984., -1, -1000, -9984, 20]
 
   def test_copy_from_disk(self):
@@ -409,39 +409,6 @@ class TestPathTensor(unittest.TestCase):
     t_cpu = t.to("CPU")
     self.assertEqual(t_cpu.device, "CPU")
     np.testing.assert_array_equal(t_cpu.numpy(), np.frombuffer(self.test_data, dtype=np.uint8))
-
-  def test_path_tensor_disk_device_bug(self):
-    test_file = pathlib.Path(self.temp_dir.name) / "disk_device_bug"
-    with open(test_file, "wb") as f: f.write(bytes(range(10)))
-    os.chmod(test_file, 0o000)
-    with self.assertRaises(PermissionError):
-      Tensor(pathlib.Path(test_file)).tolist()
-    os.chmod(test_file, 0o644)
-    assert Tensor(pathlib.Path(test_file)).tolist(), list(range(10))
-
-class TestDiskTensorMovement(unittest.TestCase):
-  def setUp(self):
-    self.fn = pathlib.Path(temp("custom_disk_range"))
-    self.fn.unlink(missing_ok=True)
-    Tensor.arange(100, dtype=dtypes.uint8).to(f"disk:{str(self.fn)}").realize()
-
-  def test_simple_read(self):
-    t = Tensor(self.fn)
-    self.assertTrue(Tensor.all(t.to(None) == Tensor.arange(100, dtype=dtypes.uint8)).item())
-
-  def test_slice_read(self):
-    t = Tensor(self.fn)
-    self.assertListEqual(t[16:18].tolist(), [16,17])
-
-  def test_slice_read_cat(self):
-    t = Tensor(self.fn)
-    with self.assertRaises(AssertionError):
-      self.assertListEqual(Tensor.cat(t[16:18], t[20:22]).tolist(), [16,17,20,21])
-
-  def test_slice_sum(self):
-    t = Tensor(self.fn)
-    with self.assertRaises(AssertionError):
-      self.assertListEqual((t[16:18]+t[20:22]).tolist(), [16+20,17+21])
 
 if __name__ == "__main__":
   unittest.main()

@@ -7,30 +7,28 @@
 
 print("******** first, the runtime ***********")
 
-from tinygrad.runtime.ops_cpu import ClangJITCompiler, CPUDevice, CPUProgram
-
-cpu = CPUDevice()
+from tinygrad.runtime.ops_cpu import ClangJITCompiler, MallocAllocator, CPUProgram
 
 # allocate some buffers
-out = cpu.allocator.alloc(4)
-a = cpu.allocator.alloc(4)
-b = cpu.allocator.alloc(4)
+out = MallocAllocator.alloc(4)
+a = MallocAllocator.alloc(4)
+b = MallocAllocator.alloc(4)
 
 # load in some values (little endian)
-cpu.allocator._copyin(a, memoryview(bytearray([2,0,0,0])))
-cpu.allocator._copyin(b, memoryview(bytearray([3,0,0,0])))
+MallocAllocator._copyin(a, memoryview(bytearray([2,0,0,0])))
+MallocAllocator._copyin(b, memoryview(bytearray([3,0,0,0])))
 
 # compile a program to a binary
 lib = ClangJITCompiler().compile("void add(int *out, int *a, int *b) { out[0] = a[0] + b[0]; }")
 
 # create a runtime for the program
-fxn = cpu.runtime("add", lib)
+fxn = CPUProgram("add", lib)
 
 # run the program
 fxn(out, a, b)
 
 # check the data out
-print(val := cpu.allocator._as_buffer(out).cast("I").tolist()[0])
+print(val := MallocAllocator._as_buffer(out).cast("I").tolist()[0])
 assert val == 5
 
 
@@ -42,20 +40,22 @@ import struct
 from tinygrad.dtype import dtypes
 from tinygrad.device import Buffer, Device
 from tinygrad.uop.ops import UOp, Ops
+from tinygrad.shape.shapetracker import ShapeTracker
 
 # allocate some buffers + load in values
 out = Buffer(DEVICE, 1, dtypes.int32).allocate()
 a = Buffer(DEVICE, 1, dtypes.int32).allocate().copyin(memoryview(bytearray(struct.pack("I", 2))))
 b = Buffer(DEVICE, 1, dtypes.int32).allocate().copyin(memoryview(bytearray(struct.pack("I", 3))))
-# NOTE: a._buf is the same as the return from cpu.allocator.alloc
+# NOTE: a._buf is the same as the return from MallocAllocator.alloc
 
 # describe the computation
-idx = UOp.const(dtypes.index, 0)
 buf_1 = UOp(Ops.DEFINE_GLOBAL, dtypes.int32.ptr(), (), 1)
 buf_2 = UOp(Ops.DEFINE_GLOBAL, dtypes.int32.ptr(), (), 2)
-alu = buf_1.index(idx) + buf_2.index(idx)
+ld_1 = UOp(Ops.LOAD, dtypes.int32, (buf_1.view(ShapeTracker.from_shape((1,))),))
+ld_2 = UOp(Ops.LOAD, dtypes.int32, (buf_2.view(ShapeTracker.from_shape((1,))),))
+alu = ld_1 + ld_2
 output_buf = UOp(Ops.DEFINE_GLOBAL, dtypes.int32.ptr(), (), 0)
-st_0 = UOp(Ops.STORE, dtypes.void, (output_buf.index(idx), alu))
+st_0 = UOp(Ops.STORE, dtypes.void, (output_buf.view(ShapeTracker.from_shape((1,))), alu))
 s = UOp(Ops.SINK, dtypes.void, (st_0,))
 
 # convert the computation to a "linearized" format (print the format)
@@ -78,7 +78,7 @@ print("******** third, the UOp ***********")
 
 from tinygrad.engine.realize import run_schedule
 from tinygrad.engine.schedule import create_schedule_with_vars
-from tinygrad.schedule.rangeify import get_rangeify_map
+from tinygrad.kernelize.kernelize import get_kernelize_map
 
 # allocate some values + load in values
 a = UOp.new_buffer(DEVICE, 1, dtypes.int32)
@@ -91,10 +91,10 @@ out = a + b
 s = UOp(Ops.SINK, dtypes.void, (out,))
 
 # group the computation into kernels
-becomes_map = get_rangeify_map(s)
+becomes_map = get_kernelize_map(s)
 
 # the compute maps to an assign
-assign = becomes_map[a+b].base
+assign = becomes_map[a+b]
 
 # the first source is the output buffer (data)
 assert assign.src[0].op is Ops.BUFFER

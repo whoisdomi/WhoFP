@@ -21,38 +21,17 @@ tinygrad: For something between [PyTorch](https://github.com/pytorch/pytorch) an
 
 ---
 
-tinygrad is an end-to-end deep learning stack:
+Despite tinygrad's size, it is a fully featured deep learning framework.
 
-- **Tensor library** with autograd
-- **IR and compiler** that fuse and lower kernels
-- **JIT + graph execution**
-- **nn / optim / datasets** for real training
+Due to its extreme simplicity, it is the easiest framework to add new accelerators to, with support for both inference and training. If XLA is CISC, tinygrad is RISC.
 
-It’s inspired by PyTorch (ergonomics), JAX (functional transforms and IR-based AD), and TVM (scheduling and codegen), but stays intentionally tiny and hackable.
+tinygrad is now beta software, we [raised some money](https://geohot.github.io/blog/jekyll/update/2023/05/24/the-tiny-corp-raised-5M.html) to make it good. Someday, we will tape out chips.
 
----
+## Features
 
-## How tinygrad compares
+### LLaMA and Stable Diffusion
 
-**PyTorch**
-
-- ✅ Similar: eager `Tensor` API, autograd, `optim`, basic datasets and layers.
-- ✅ You can write familiar training loops.
-- 🔁 Unlike PyTorch, the entire compiler and IR are visible and hackable.
-
-**JAX**
-
-- ✅ IR-based autodiff over primitives (like JAXPR + XLA).
-- ✅ Function-level JIT (`TinyJit`) that captures and replays kernels.
-- 🔁 Fewer functional transforms (no full `vmap`/`pmap` yet), but far easier to read.
-
-**TVM**
-
-- ✅ Multiple lowering passes, scheduling, and BEAM search over kernels.
-- ✅ Device “graphs” for batched execution.
-- 🔁 tinygrad also ships the **front-end framework** (tensors, nn, optim), not just the compiler.
-
----
+tinygrad can run [LLaMA](/docs/showcase.md#llama) and [Stable Diffusion](/docs/showcase.md#stable-diffusion)!
 
 ### Laziness
 
@@ -60,8 +39,9 @@ Try a matmul. See how, despite the style, it is fused into one kernel with the p
 
 ```sh
 DEBUG=3 python3 -c "from tinygrad import Tensor;
-N = 1024; a, b = Tensor.empty(N, N), Tensor.empty(N, N);
-(a.reshape(N, 1, N) * b.T.reshape(1, N, N)).sum(axis=2).realize()"
+N = 1024; a, b = Tensor.rand(N, N), Tensor.rand(N, N);
+c = (a.reshape(N, 1, N) * b.T.reshape(1, N, N)).sum(axis=2);
+print((c.numpy() - (a.numpy() @ b.numpy())).mean())"
 ```
 
 And we can change `DEBUG` to `4` to see the generated code.
@@ -100,8 +80,9 @@ See [examples/beautiful_mnist.py](examples/beautiful_mnist.py) for the full vers
 
 tinygrad already supports numerous accelerators, including:
 
-- [x] [OpenCL](tinygrad/runtime/ops_cl.py)
-- [x] [CPU](tinygrad/runtime/ops_cpu.py)
+- [x] [GPU (OpenCL)](tinygrad/runtime/ops_gpu.py)
+- [x] [CPU (C Code)](tinygrad/runtime/ops_cpu.py)
+- [x] [LLVM](tinygrad/runtime/ops_llvm.py)
 - [x] [METAL](tinygrad/runtime/ops_metal.py)
 - [x] [CUDA](tinygrad/runtime/ops_cuda.py)
 - [x] [AMD](tinygrad/runtime/ops_amd.py)

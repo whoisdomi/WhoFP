@@ -4,10 +4,9 @@ import numpy as np
 np.set_printoptions(suppress=True)
 import math, functools, time, random, statistics
 from tinygrad.helpers import DEBUG, getenv, CACHELEVEL, diskcache_get, diskcache_put, colored, Profiling
-from tinygrad.codegen.opt.kernel import Kernel
+from tinygrad.opt.kernel import Kernel
 from tinygrad.device import Buffer, Device, CompileError
-from tinygrad.codegen.opt.search import _ensure_buffer_alloc, get_kernel_actions, _time_program
-from tinygrad.engine.realize import get_program
+from tinygrad.opt.search import _ensure_buffer_alloc, get_kernel_actions, _time_program
 
 class MCTSNode:
   def __init__(self, kernel:Kernel, parent=None):
@@ -88,7 +87,7 @@ def mcts_search(lin:Kernel, rawbufs:List[Buffer], amt:int) -> Kernel:
     return ret
 
   rawbufs = _ensure_buffer_alloc(rawbufs)
-  var_vals = {k.expr:(k.vmax+k.vmin)//2 for k in lin.ast.variables()}
+  var_vals = {k:(k.vmax+k.vmin)//2 for k in lin.ast.variables()}
   dev = Device[lin.opts.device]
   root = MCTSNode(lin)
 
@@ -111,7 +110,7 @@ def mcts_search(lin:Kernel, rawbufs:List[Buffer], amt:int) -> Kernel:
       seen_asts[opt_ast.key] = node
 
       # lowering (50% of the time)
-      p = get_program(node.kernel.get_optimized_ast(name_override="test"), node.kernel.opts)
+      p = node.kernel.to_program(name_override="test")
 
       # rollout
       tm1 = time.perf_counter()

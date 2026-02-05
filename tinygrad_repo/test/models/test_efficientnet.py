@@ -1,10 +1,12 @@
-import ast, pathlib, unittest
+import ast
+import pathlib
+import unittest
 
 import numpy as np
 from PIL import Image
 
-from tinygrad import Tensor
-from tinygrad.helpers import getenv, CI
+from tinygrad.helpers import getenv
+from tinygrad.tensor import Tensor
 from extra.models.efficientnet import EfficientNet
 from extra.models.vit import ViT
 from extra.models.resnet import ResNet50
@@ -38,13 +40,19 @@ def preprocess(img, new=False):
     img /= np.array([0.229, 0.224, 0.225]).reshape((1, -1, 1, 1))
   return img
 
-def _infer(model: EfficientNet, img):
-  with Tensor.train(False):
-    out = model.forward(Tensor(img)).argmax(axis=-1)
-  return out.tolist()
 
-chicken_img = preprocess(Image.open(pathlib.Path(__file__).parent / 'efficientnet/Chicken.jpg'))
-car_img = preprocess(Image.open(pathlib.Path(__file__).parent / 'efficientnet/car.jpg'))
+def _infer(model: EfficientNet, img, bs=1):
+  old_training = Tensor.training
+  Tensor.training = False
+  img = preprocess(img)
+  # run the net
+  if bs > 1: img = img.repeat(bs, axis=0)
+  out = model.forward(Tensor(img))
+  Tensor.training = old_training
+  return _LABELS[np.argmax(out.numpy()[0])]
+
+chicken_img = Image.open(pathlib.Path(__file__).parent / 'efficientnet/Chicken.jpg')
+car_img = Image.open(pathlib.Path(__file__).parent / 'efficientnet/car.jpg')
 
 class TestEfficientNet(unittest.TestCase):
   @classmethod
@@ -56,20 +64,17 @@ class TestEfficientNet(unittest.TestCase):
   def tearDownClass(cls):
     del cls.model
 
-  @unittest.skipIf(CI, "covered by test_chicken_car")
   def test_chicken(self):
-    labels = _infer(self.model, chicken_img)
-    self.assertEqual(_LABELS[labels[0]], "hen")
+    label = _infer(self.model, chicken_img)
+    self.assertEqual(label, "hen")
 
-  @unittest.skipIf(CI, "covered by test_chicken_car")
+  def test_chicken_bigbatch(self):
+    label = _infer(self.model, chicken_img, 2)
+    self.assertEqual(label, "hen")
+
   def test_car(self):
-    labels = _infer(self.model, car_img)
-    self.assertEqual(_LABELS[labels[0]], "sports car, sport car")
-
-  def test_chicken_car(self):
-    labels = _infer(self.model, np.concat([chicken_img, car_img], axis=0))
-    self.assertEqual(_LABELS[labels[0]], "hen")
-    self.assertEqual(_LABELS[labels[1]], "sports car, sport car")
+    label = _infer(self.model, car_img)
+    self.assertEqual(label, "sports car, sport car")
 
 class TestViT(unittest.TestCase):
   @classmethod
@@ -82,12 +87,12 @@ class TestViT(unittest.TestCase):
     del cls.model
 
   def test_chicken(self):
-    labels = _infer(self.model, chicken_img)
-    self.assertEqual(_LABELS[labels[0]], "cock")
+    label = _infer(self.model, chicken_img)
+    self.assertEqual(label, "cock")
 
   def test_car(self):
-    labels = _infer(self.model, car_img)
-    self.assertEqual(_LABELS[labels[0]], "racer, race car, racing car")
+    label = _infer(self.model, car_img)
+    self.assertEqual(label, "racer, race car, racing car")
 
 class TestResNet(unittest.TestCase):
   @classmethod
@@ -100,13 +105,12 @@ class TestResNet(unittest.TestCase):
     del cls.model
 
   def test_chicken(self):
-    labels = _infer(self.model, chicken_img)
-    # NOTE: logits for these two are close
-    self.assertIn(_LABELS[labels[0]], ("hen", "cock"))
+    label = _infer(self.model, chicken_img)
+    self.assertEqual(label, "hen")
 
   def test_car(self):
-    labels = _infer(self.model, car_img)
-    self.assertEqual(_LABELS[labels[0]], "sports car, sport car")
+    label = _infer(self.model, car_img)
+    self.assertEqual(label, "sports car, sport car")
 
 if __name__ == '__main__':
   unittest.main()
