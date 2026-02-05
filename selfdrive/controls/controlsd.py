@@ -117,7 +117,10 @@ class Controls:
     standstill = abs(CS.vEgo) <= max(self.CP.minSteerSpeed, 0.3) or CS.standstill
     CC.latActive = (self.sm['selfdriveState'].active or self.sm['frogpilotCarState'].alwaysOnLateralEnabled) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.CP.steerAtStandstill) and self.sm['frogpilotPlan'].lateralCheck
-    CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and not self.sm['frogpilotCarState'].pauseLongitudinal and self.CP.openpilotLongitudinalControl
+    # SkipEcuDisable is set when car started in READY mode (ECU disable was skipped)
+    # In this case, disable longitudinal so stock ACC works instead
+    skip_ecu_disable = self.params.get_bool("SkipEcuDisable")
+    CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and not self.sm['frogpilotCarState'].pauseLongitudinal and self.CP.openpilotLongitudinalControl and not skip_ecu_disable
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
