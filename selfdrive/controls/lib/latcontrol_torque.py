@@ -32,7 +32,7 @@ DEFAULT_KI = 0.3
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 # Multipliers relative to base KP (last value = 1.0x base)
 #KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0] #stock
-KP_MULTIPLIERS = [250, 120, 85, 40, 16, 9, 5.5, 3.0, 1.0]
+KP_MULTIPLIERS = [250, 120, 75, 35, 14, 7, 4.5, 2.5, 1.0]
 
 # === Delay Compensation ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
