@@ -149,6 +149,11 @@ class AlertRenderer(Widget):
     # Return current alert
     ret = Alert(text1=ss.alertText1, text2=ss.alertText2, size=ss.alertSize.raw, status=ss.alertStatus.raw,
                 visual_alert=ss.alertHudVisual, alert_type=ss.alertType)
+
+    # Suppress lane change alerts
+    if ret.alert_type.startswith(('preLaneChange', 'laneChange', 'laneChangeBlocked')):
+      return None
+
     self._prev_alert = ret
     return ret
 
