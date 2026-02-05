@@ -110,111 +110,29 @@ def perform_ecu_disable():
         traceback.print_exc()
         return False
 
-def detect_car_state(panda, timeout=2.0):
-    """
-    Detect car state: 'ign_on' (safe to disable ECU) or 'ready' (too late).
-
-    For Ioniq 6 (CAN-FD EV), we detect by checking for messages that ONLY
-    appear when the car is in READY mode (after brake+start).
-
-    READY-only messages (not present in ACC or IGN-ON):
-    - 0x090, 0x255, 0x2e5, 0x3a0, 0x3b0, 0x3b1, 0x3b5, 0x3f0, 0x3f5
-
-    Returns: 'ign_on' or 'ready'
-    """
-    # Messages that ONLY appear in READY mode (verified from CAN captures)
-    READY_ONLY_MSGS = {0x090, 0x255, 0x2e5, 0x3a0, 0x3b0, 0x3b1, 0x3b5, 0x3f0, 0x3f5}
-
-    msgs_received = set()
-    ready_msgs_seen = set()
-
-    print(f"[ECU Disable Service] Detecting car state (reading CAN for {timeout}s)...")
-
-    start_time = time.monotonic()
-    while time.monotonic() - start_time < timeout:
-        try:
-            can_msgs = panda.can_recv()
-            for msg in can_msgs:
-                if len(msg) >= 4:
-                    addr = msg[0]
-                    bus = msg[3]
-
-                    if bus == 1:  # ECAN
-                        msgs_received.add(addr)
-                        if addr in READY_ONLY_MSGS:
-                            ready_msgs_seen.add(addr)
-
-        except Exception as e:
-            print(f"[ECU Disable Service] CAN recv error: {e}")
-
-        time.sleep(0.01)
-
-    print(f"[ECU Disable Service] Messages seen on ECAN: {len(msgs_received)} total")
-    print(f"[ECU Disable Service] READY-only messages seen: {[hex(m) for m in sorted(ready_msgs_seen)]}")
-
-    # If ANY READY-only message is present, car is in READY mode
-    if ready_msgs_seen:
-        print(f"[ECU Disable Service] Detected READY mode (found {len(ready_msgs_seen)} READY-only messages)")
-        return 'ready'
-    else:
-        # No READY-only messages = ACC or IGN-ON mode (safe to run ECU disable)
-        print("[ECU Disable Service] No READY-only messages found - safe to run ECU disable")
-        return 'ign_on'
-
-
 def main():
-    from openpilot.common.params import Params
-    params = Params()
-
     print("[ECU Disable Service] Starting service...")
 
     # Wait a bit for system to stabilize
     time.sleep(2)
 
-    # Connect to panda first
-    try:
-        panda = wait_for_ign_on()
-    except TimeoutError as e:
-        print(f"[ECU Disable Service] Failed to connect to panda: {e}")
-        sys.exit(1)
+    # Check if longitudinal is enabled
+    # (We'll attempt anyway, but this is for logging)
+    longitudinal_enabled = check_longitudinal_enabled()
 
-    # Set permissive safety mode for CAN reading
-    panda.set_safety_mode(0)
-    time.sleep(0.1)
-    panda.can_clear(0xFFFF)
-    time.sleep(0.2)
-
-    # Detect car state BEFORE attempting ECU disable
-    car_state = detect_car_state(panda)
-    print(f"[ECU Disable Service] Detected car state: {car_state.upper()}")
-
-    if car_state in ('ready', 'driving'):
-        # Car already past IGN-ON - skip ECU disable, disable longitudinal
-        print(f"[ECU Disable Service] Car in {car_state.upper()} mode - skipping ECU disable")
-        params.put_bool("SkipEcuDisable", True)
-        # Note: Disabling longitudinal automatically disables experimental mode
-        print("[ECU Disable Service] Longitudinal will be disabled (experimental auto-disabled)")
-        print("[ECU Disable Service] Stock ACC will be used, lateral control still active")
-        sys.exit(0)
-
-    # Car in IGN-ON (or ACC) mode - proceed with ECU disable
-    print("[ECU Disable Service] Car in IGN-ON mode - proceeding with ECU disable")
-    params.put_bool("SkipEcuDisable", False)
+    if longitudinal_enabled:
+        print("[ECU Disable Service] Longitudinal control appears to be enabled")
+    else:
+        print("[ECU Disable Service] Longitudinal control not enabled, but attempting ECU disable anyway")
 
     # Perform ECU disable
     success = perform_ecu_disable()
 
     if success:
-        print("[ECU Disable Service] ECU disable successful")
-        # Enable BOTH longitudinal AND experimental
-        params.put_bool("ExperimentalMode", True)
-        print("[ECU Disable Service] Longitudinal + Experimental mode ENABLED")
+        print("[ECU Disable Service] Service completed successfully")
         sys.exit(0)
     else:
-        print("[ECU Disable Service] ECU disable FAILED")
-        params.put_bool("SkipEcuDisable", True)
-        # Note: Disabling longitudinal automatically disables experimental mode
-        print("[ECU Disable Service] Longitudinal DISABLED due to failure (experimental auto-disabled)")
+        print("[ECU Disable Service] Service failed")
         sys.exit(1)
 
 if __name__ == "__main__":

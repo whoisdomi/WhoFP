@@ -168,13 +168,6 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def init(CP, can_recv, can_send, communication_control=None):
     global ECU_DISABLE_TIMESTAMP
-    from openpilot.common.params import Params
-
-    # Check if ECU disable should be skipped (car started in READY/DRIVING mode)
-    if Params().get_bool("SkipEcuDisable"):
-      ecu_log("=== SKIPPING ECU DISABLE (car started in READY/DRIVING mode) ===")
-      ecu_log("=== Stock ACC will be used, longitudinal disabled ===")
-      return
 
     # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
     # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
