@@ -66,6 +66,10 @@ class Controls:
 
     self.frogpilot_toggles = get_frogpilot_toggles()
 
+    # Check if ECU disable was skipped (car started in READY/DRIVING mode)
+    # If so, longitudinal control must be disabled to avoid cruise faults
+    self.skip_ecu_disable = self.params.get_bool("SkipEcuDisable")
+
     if self.CP.lateralTuning.which() == "torque" and (self.frogpilot_toggles.nnff or self.frogpilot_toggles.nnff_lite):
       self.LaC = LatControlNNFF(self.CP, self.CI)
 
@@ -117,7 +121,7 @@ class Controls:
     standstill = abs(CS.vEgo) <= max(self.CP.minSteerSpeed, 0.3) or CS.standstill
     CC.latActive = (self.sm['selfdriveState'].active or self.sm['frogpilotCarState'].alwaysOnLateralEnabled) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.CP.steerAtStandstill) and self.sm['frogpilotPlan'].lateralCheck
-    CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and not self.sm['frogpilotCarState'].pauseLongitudinal and self.CP.openpilotLongitudinalControl
+    CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and not self.sm['frogpilotCarState'].pauseLongitudinal and self.CP.openpilotLongitudinalControl and not self.skip_ecu_disable
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
