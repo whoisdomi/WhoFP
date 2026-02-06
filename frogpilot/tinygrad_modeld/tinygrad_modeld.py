@@ -421,9 +421,8 @@ def main(demo=False):
   if demo:
     CP = get_demo_car_params()
   else:
-    with car.CarParams.from_bytes(params.get("CarParams", block=True)) as msg:
-      CP = msg
-  cloudlog.info("tinygrad_modeld got CarParams: %s", CP.carName)
+    CP = messaging.log_from_bytes(params.get("CarParams", block=True), car.CarParams)
+  cloudlog.info("tinygrad_modeld got CarParams: %s", CP.brand)
 
   # TODO this needs more thought, use .2s extra for now to estimate other delays
   # TODO Move smooth seconds to action function
