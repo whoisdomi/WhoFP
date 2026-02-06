@@ -73,6 +73,12 @@ def allow_uploads(started: bool, params: Params, CP: car.CarParams, frogpilot_to
 def run_speed_limit_filler(started: bool, params: Params, CP: car.CarParams, frogpilot_toggles: SimpleNamespace) -> bool:
   return frogpilot_toggles.speed_limit_filler
 
+def run_tinygrad_modeld(started: bool, params: Params, CP: car.CarParams, frogpilot_toggles: SimpleNamespace) -> bool:
+  return started and getattr(frogpilot_toggles, 'tinygrad_model', False)
+
+def run_stock_modeld(started: bool, params: Params, CP: car.CarParams, frogpilot_toggles: SimpleNamespace) -> bool:
+  return started and not getattr(frogpilot_toggles, 'tinygrad_model', False)
+
 procs = [
   DaemonProcess("manage_athenad", "system.athena.manage_athenad", "AthenadPid"),
 
@@ -88,7 +94,8 @@ procs = [
   PythonProcess("micd", "system.micd", iscar),
   PythonProcess("timed", "system.timed", always_run, enabled=not PC),
 
-  PythonProcess("modeld", "selfdrive.modeld.modeld", only_onroad),
+  PythonProcess("modeld", "selfdrive.modeld.modeld", run_stock_modeld),
+  PythonProcess("tinygrad_modeld", "frogpilot.tinygrad_modeld.tinygrad_modeld", run_tinygrad_modeld),
   PythonProcess("dmonitoringmodeld", "selfdrive.modeld.dmonitoringmodeld", driverview, enabled=(WEBCAM or not PC)),
 
   PythonProcess("sensord", "system.sensord.sensord", only_onroad, enabled=not PC),

@@ -64,6 +64,9 @@ def get_accel_from_plan(speeds, accels, t_idxs, action_t=DT_MDL, vEgoStopping=0.
                  v_target_1sec < vEgoStopping)
   return a_target, should_stop
 
+# Alias for tinygrad_modeld compatibility
+get_accel_from_plan_tomb_raider = get_accel_from_plan
+
 def curv_from_psis(psi_target, psi_rate, vego, action_t):
   vego = np.clip(vego, MIN_SPEED, np.inf)
   curv_from_psi = psi_target / (vego * action_t)

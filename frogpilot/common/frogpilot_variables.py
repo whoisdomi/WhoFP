@@ -716,6 +716,7 @@ class FrogPilotVariables:
       toggle.model_name = DEFAULT_MODEL_NAME if selected_model == DEFAULT_MODEL else selected_model
 
     toggle.model_version = self.params.get("ModelVersion") or DEFAULT_MODEL_VERSION
+    toggle.tinygrad_model = toggle.model_version in {"v8", "v9", "v10", "v11", "v12"}
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)
