@@ -44,7 +44,7 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
                           lat_action_t: float, long_action_t: float, v_ego: float, mlsim: bool, is_v9: bool, frogpilot_toggles) -> log.ModelDataV2.Action:
     plan = model_output['plan'][0]
     if 'planplus' in model_output:
-      plan = plan + frogpilot_toggles.recovery_power*model_output['planplus'][0]
+      plan = plan + getattr(frogpilot_toggles, 'recovery_power', 1.0)*model_output['planplus'][0]
     desired_accel, should_stop = get_accel_from_plan_tomb_raider(plan[:,Plan.VELOCITY][:,0],
                                                                  plan[:,Plan.ACCELERATION][:,0],
                                                                  ModelConstants.T_IDXS,

@@ -107,18 +107,21 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   fill_xyzt(modelV2.orientation, ModelConstants.T_IDXS, *plan_arr[:,Plan.T_FROM_CURRENT_EULER].T)
   fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *plan_arr[:,Plan.ORIENTATION_RATE].T)
 
-  # temporal pose
-  temporal_pose = modelV2.temporalPose
-  if 'sim_pose' in net_output_data:
-    temporal_pose.trans = net_output_data['sim_pose'][0,:ModelConstants.POSE_WIDTH//2].tolist()
-    temporal_pose.transStd = net_output_data['sim_pose_stds'][0,:ModelConstants.POSE_WIDTH//2].tolist()
-    temporal_pose.rot = net_output_data['sim_pose'][0,ModelConstants.POSE_WIDTH//2:].tolist()
-    temporal_pose.rotStd = net_output_data['sim_pose_stds'][0,ModelConstants.POSE_WIDTH//2:].tolist()
-  else:
-    temporal_pose.trans = plan_arr[0,Plan.VELOCITY].tolist()
-    temporal_pose.transStd = plan_stds_arr[0,Plan.VELOCITY].tolist()
-    temporal_pose.rot = plan_arr[0,Plan.ORIENTATION_RATE].tolist()
-    temporal_pose.rotStd = plan_stds_arr[0,Plan.ORIENTATION_RATE].tolist()
+  # temporal pose (only if schema supports it)
+  try:
+    temporal_pose = modelV2.temporalPose
+    if 'sim_pose' in net_output_data:
+      temporal_pose.trans = net_output_data['sim_pose'][0,:ModelConstants.POSE_WIDTH//2].tolist()
+      temporal_pose.transStd = net_output_data['sim_pose_stds'][0,:ModelConstants.POSE_WIDTH//2].tolist()
+      temporal_pose.rot = net_output_data['sim_pose'][0,ModelConstants.POSE_WIDTH//2:].tolist()
+      temporal_pose.rotStd = net_output_data['sim_pose_stds'][0,ModelConstants.POSE_WIDTH//2:].tolist()
+    else:
+      temporal_pose.trans = plan_arr[0,Plan.VELOCITY].tolist()
+      temporal_pose.transStd = plan_stds_arr[0,Plan.VELOCITY].tolist()
+      temporal_pose.rot = plan_arr[0,Plan.ORIENTATION_RATE].tolist()
+      temporal_pose.rotStd = plan_stds_arr[0,Plan.ORIENTATION_RATE].tolist()
+  except AttributeError:
+    pass  # temporalPose not in this schema version
 
   # poly path
   fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, *plan_arr[:,Plan.POSITION].T)
