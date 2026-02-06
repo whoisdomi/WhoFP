@@ -417,7 +417,7 @@ class FrogPilotVariables:
     toggle.always_on_lateral_main = toggle.always_on_lateral and not prohibited_main_aol and not toggle.always_on_lateral_lkas
     toggle.always_on_lateral_pause_speed = self.get_value("PauseAOLOnBrake", cast=float, condition=toggle.always_on_lateral)
 
-    toggle.automatic_updates = self.get_value("AutomaticUpdates", condition=(self.release_branch or self.vetting_branch or self.frogs_go_moo), default=True) and not BACKUP_PATH.is_file()
+    toggle.automatic_updates = self.get_value("AutomaticUpdates", default=True) and not BACKUP_PATH.is_file()
 
     car_model = self.params.get("CarModel")
     toggle.force_fingerprint = self.get_value("ForceFingerprint") and car_model != self.default_values["CarModel"]
