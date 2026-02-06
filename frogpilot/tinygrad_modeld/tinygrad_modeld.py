@@ -114,12 +114,16 @@ class ModelState:
   def __init__(self, context: CLContext):
     # Dynamically build paths based on current model ID
     params = Params()
-    model_id = params.get("Model", encoding="utf-8")
+    model_id = params.get("Model") or "bd2"
+    if isinstance(model_id, bytes):
+      model_id = model_id.decode("utf-8")
 
     # Try to get ModelVersion, but handle case where parameter doesn't exist
     model_version = None
     try:
-      model_version = params.get("ModelVersion", encoding="utf-8")
+      model_version = params.get("ModelVersion")
+      if isinstance(model_version, bytes):
+        model_version = model_version.decode("utf-8")
     except Exception as e:
       cloudlog.warning(f"ModelVersion parameter not available: {e}")
 
