@@ -702,21 +702,51 @@ class FrogPilotVariables:
     toggle.lead_detection_probability = self.get_value("LeadDetectionThreshold", cast=float, condition=longitudinal_tuning, conversion=0.01, min=0.25, max=0.5)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
 
-    # Read the selected model from params and look up its display name
-    selected_model = self.params.get("Model") or DEFAULT_MODEL
-    available_models = (self.params.get("AvailableModels") or "").split(",")
-    available_model_names = (self.params.get("AvailableModelNames") or "").split(",")
+    # Read model params (NewDo-style model version lookup)
+    toggle.available_models = self.params.get("AvailableModels") or ""
+    toggle.available_model_names = self.params.get("AvailableModelNames") or ""
+    toggle.model_versions = self.params.get("ModelVersions") or ""
 
-    if selected_model in available_models and len(available_models) == len(available_model_names):
-      model_index = available_models.index(selected_model)
-      toggle.model = selected_model
-      toggle.model_name = available_model_names[model_index]
+    downloaded_models = [model for model in toggle.available_models.split(",") if model and any(MODELS_PATH.glob(f"{model}*"))]
+
+    if toggle.available_models and toggle.available_model_names and downloaded_models and toggle.model_versions:
+      # Ensure default model is in the list
+      if DEFAULT_MODEL not in toggle.available_models.split(","):
+        toggle.available_models += f",{DEFAULT_MODEL}"
+        toggle.available_model_names += f",{DEFAULT_MODEL_NAME}"
+        toggle.model_versions += f",{DEFAULT_MODEL_VERSION}"
+        downloaded_models.append(DEFAULT_MODEL)
+
+      selected_model = self.params.get("Model") or DEFAULT_MODEL
+      available_list = toggle.available_models.split(",")
+      names_list = toggle.available_model_names.split(",")
+      versions_list = toggle.model_versions.split(",")
+
+      if selected_model in downloaded_models and selected_model in available_list:
+        model_index = available_list.index(selected_model)
+        toggle.model = selected_model
+        toggle.model_name = names_list[model_index] if model_index < len(names_list) else selected_model
+        toggle.model_version = versions_list[model_index] if model_index < len(versions_list) else DEFAULT_MODEL_VERSION
+      else:
+        # Fallback to default model
+        toggle.model = DEFAULT_MODEL
+        if DEFAULT_MODEL in available_list:
+          model_index = available_list.index(DEFAULT_MODEL)
+          toggle.model_name = names_list[model_index] if model_index < len(names_list) else DEFAULT_MODEL_NAME
+          toggle.model_version = versions_list[model_index] if model_index < len(versions_list) else DEFAULT_MODEL_VERSION
+        else:
+          toggle.model_name = DEFAULT_MODEL_NAME
+          toggle.model_version = DEFAULT_MODEL_VERSION
     else:
-      toggle.model = selected_model
-      toggle.model_name = DEFAULT_MODEL_NAME if selected_model == DEFAULT_MODEL else selected_model
+      # No model list available, use direct params
+      toggle.model = self.params.get("Model") or DEFAULT_MODEL
+      toggle.model_name = DEFAULT_MODEL_NAME if toggle.model == DEFAULT_MODEL else toggle.model
+      toggle.model_version = self.params.get("ModelVersion") or DEFAULT_MODEL_VERSION
 
-    toggle.model_version = self.params.get("ModelVersion") or DEFAULT_MODEL_VERSION
+    # Set model type toggles based on version
+    toggle.classic_model = toggle.model_version in {"v1", "v2", "v3", "v4"}
     toggle.tinygrad_model = toggle.model_version in {"v8", "v9", "v10", "v11", "v12"}
+    toggle.tomb_raider = toggle.model == "space-lab"
 
     toggle.model_ui = self.get_value("ModelUI")
     toggle.dynamic_path_width = self.get_value("DynamicPathWidth", condition=toggle.model_ui)
