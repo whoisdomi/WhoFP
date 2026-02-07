@@ -303,7 +303,7 @@ std::string check_output(const std::string& command) {
 
 bool system_time_valid() {
   // Default to August 26, 2024
-  #tm min_tm = {.tm_year = 2024 - 1900, .tm_mon = 7, .tm_mday = 26};
+ //tm min_tm = {.tm_year = 2024 - 1900, .tm_mon = 7, .tm_mday = 26};
   tm min_tm = {0};
   min_tm.tm_mday = 26;
   min_tm.tm_mon = 7;
