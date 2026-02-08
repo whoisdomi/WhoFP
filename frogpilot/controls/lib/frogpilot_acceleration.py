@@ -89,7 +89,7 @@ class FrogPilotAcceleration:
         self.min_accel = ACCEL_MIN
       elif not self.frogpilot_planner.frogpilot_cem.stop_light_detected:
         # No lead, no stop detected - use stronger decel
-        self.min_accel = -2.5
+        self.min_accel = -3.25
       else:
         # No lead, stop detected - let force stop handle it
         self.min_accel = ACCEL_MIN
