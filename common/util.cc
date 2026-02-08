@@ -309,6 +309,7 @@ bool system_time_valid() {
   min_tm.tm_mday = 26;
   min_tm.tm_mon = 7;
   min_tm.tm_year = 2024 - 1900;
+  time_t min_date = mktime(&min_tm);
 
   struct stat st;
   if (stat("/lib/systemd/systemd", &st) == 0) {
