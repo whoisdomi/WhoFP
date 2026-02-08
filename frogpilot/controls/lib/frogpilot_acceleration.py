@@ -59,10 +59,7 @@ class FrogPilotAcceleration:
       if eco_gear:
         self.max_accel = get_max_accel_eco(v_ego)
       else:
-        if frogpilot_toggles.acceleration_profile == ACCELERATION_PROFILES["SPORT"]:
-          self.max_accel = get_max_accel_sport(v_ego)
-        else:
-          self.max_accel = get_max_allowed_accel(v_ego)
+        self.max_accel = get_max_allowed_accel(v_ego)
     else:
       if frogpilot_toggles.acceleration_profile == ACCELERATION_PROFILES["ECO"]:
         self.max_accel = get_max_accel_eco(v_ego)
