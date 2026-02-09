@@ -87,13 +87,10 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
 
   double acceleration = carState.getAEgo() * accelerationConversion;
 
-  static QElapsedTimer accelTimer;
-  if (acceleration > 0 && !carState.getGasPressed()) {
-    maxAcceleration = std::max(maxAcceleration, acceleration);
-    accelTimer.start();
-  } else if (accelTimer.elapsed() >= 10000) {
+  if (frogpilot_scene.standstill) {
     maxAcceleration = 0;
-    accelTimer.invalidate();
+  } else if (!carState.getGasPressed()) {
+    maxAcceleration = std::max(maxAcceleration, acceleration);
   }
 
   lateralEngagementTime += carControl.getLatActive() && !frogpilot_scene.reverse && !frogpilot_scene.standstill ? 1 : 0;
@@ -138,11 +135,7 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
   latAccelStatus = ItemStatus(QPair<QString, QString>(tr("LAT ACCEL"), QString::number(liveTorqueParameters.getLatAccelFactorFiltered(), 'f', 5)), metricColor);
   lateralEngagementStatus = ItemStatus(QPair<QString, QString>(tr("LATERAL %"), QString::number((lateralEngagementTime / totalEngagementTime) * 100.0f, 'f', 2) + "%"), metricColor);
   longitudinalEngagementStatus = ItemStatus(QPair<QString, QString>(tr("LONG %"), QString::number((longitudinalEngagementTime / totalEngagementTime) * 100.0f, 'f', 2) + "%"), metricColor);
-  QString maxAccelLabel = QString::number(acceleration, 'f', 2) + accelerationUnit;
-  if (maxAcceleration > 0) {
-    maxAccelLabel += QString(" - (%1%2)").arg(QString::number(maxAcceleration, 'f', 2), accelerationUnit);
-  }
-  maxAccelerationStatus = ItemStatus(QPair<QString, QString>(tr("ACCEL"), maxAccelLabel), metricColor);
+  maxAccelerationStatus = ItemStatus(QPair<QString, QString>(tr("MAX ACCEL"), QString::number(maxAcceleration, 'f', 2) + accelerationUnit), metricColor);
   speedJerkStatus = ItemStatus(QPair<QString, QString>(tr("SPEED JERK"), QString::number(frogpilotPlan.getSpeedJerk())), metricColor);
   steerAngleStatus = ItemStatus(QPair<QString, QString>(tr("STEER ANGLE"), steerLabel), metricColor);
   steerRatioStatus = ItemStatus(QPair<QString, QString>(tr("STEER RATIO"), QString::number(liveParameters.getSteerRatio(), 'f', 5)), metricColor);
