@@ -2,17 +2,19 @@
 import numpy as np
 
 from opendbc.car.interfaces import ACCEL_MAX
-from openpilot.selfdrive.controls.lib.longitudinal_planner import ACCEL_MIN, get_max_accel
+from openpilot.selfdrive.controls.lib.longitudinal_planner import ACCEL_MIN
 
 from openpilot.frogpilot.common.frogpilot_variables import CITY_SPEED_LIMIT
 
 A_CRUISE_MIN_ECO =   ACCEL_MIN / 2
 A_CRUISE_MIN_SPORT = ACCEL_MIN * 2
 
-                  # MPH = [0.0,  11,  22,  34,  45,  56,  89]
-A_CRUISE_MAX_BP_CUSTOM =  [0.0,  5., 10., 15., 20., 25., 40.]
-A_CRUISE_MAX_VALS_ECO =   [2.0, 1.5, 1.0, 0.8, 0.6, 0.4, 0.2]
-A_CRUISE_MAX_VALS_SPORT = [3.0, 2.5, 2.0, 1.5, 1.0, 0.8, 0.6]
+                         # MPH = [0.0,  11,  22,  34,  45,  56,  89]
+A_CRUISE_MAX_BP_CUSTOM      =  [0.0,  5., 10., 15., 20., 25., 40.]
+A_CRUISE_MAX_VALS_ECO       =  [2.0, 1.5, 1.0, 0.8, 0.6, 0.4, 0.2]
+A_CRUISE_MAX_VALS_STD       =  [1.6, 1.4, 1.2, 1.0, 0.8, 0.7, 0.6]
+A_CRUISE_MAX_VALS_SPORT     =  [3.0, 2.5, 2.0, 1.5, 1.0, 0.8, 0.6]
+A_CRUISE_MAX_VALS_SPORT_P   =  [4.0, 4.0, 3.3, 2.7, 2.0, 2.0, 2.0]
 
 ACCELERATION_PROFILES = {
   "STANDARD": 0,
@@ -30,8 +32,14 @@ DECELERATION_PROFILES = {
 def get_max_accel_eco(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP_CUSTOM, A_CRUISE_MAX_VALS_ECO)
 
+def get_max_accel_std(v_ego):
+  return np.interp(v_ego, A_CRUISE_MAX_BP_CUSTOM, A_CRUISE_MAX_VALS_STD)
+
 def get_max_accel_sport(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP_CUSTOM, A_CRUISE_MAX_VALS_SPORT)
+
+def get_max_accel_sport_plus(v_ego):
+  return np.interp(v_ego, A_CRUISE_MAX_BP_CUSTOM, A_CRUISE_MAX_VALS_SPORT_P)
 
 def get_max_accel_low_speeds(max_accel, v_cruise):
   return np.interp(v_cruise, [0., CITY_SPEED_LIMIT / 2, CITY_SPEED_LIMIT], [max_accel / 4, max_accel / 2, max_accel])
@@ -39,8 +47,6 @@ def get_max_accel_low_speeds(max_accel, v_cruise):
 def get_max_accel_ramp_off(max_accel, v_cruise, v_ego):
   return np.interp(v_cruise - v_ego, [0., 1., 5.], [0., 0.5, max_accel])
 
-def get_max_allowed_accel(v_ego):
-  return np.interp(v_ego, [0., 5., 20.], [4.0, 4.0, 2.0])  # ISO 15622:2018
 
 class FrogPilotAcceleration:
   def __init__(self, FrogPilotPlanner):
@@ -54,21 +60,21 @@ class FrogPilotAcceleration:
     sport_gear = sm["frogpilotCarState"].sportGear
 
     if sm["frogpilotCarState"].trafficModeEnabled:
-      self.max_accel = get_max_accel(v_ego)
+      self.max_accel = get_max_accel_std(v_ego)
     elif (eco_gear or sport_gear) and frogpilot_toggles.map_acceleration:
       if eco_gear:
         self.max_accel = get_max_accel_eco(v_ego)
       else:
-        self.max_accel = get_max_allowed_accel(v_ego)
+        self.max_accel = get_max_accel_sport_plus(v_ego)
     else:
       if frogpilot_toggles.acceleration_profile == ACCELERATION_PROFILES["ECO"]:
         self.max_accel = get_max_accel_eco(v_ego)
       elif frogpilot_toggles.acceleration_profile == ACCELERATION_PROFILES["SPORT"]:
         self.max_accel = get_max_accel_sport(v_ego)
       elif frogpilot_toggles.acceleration_profile == ACCELERATION_PROFILES["SPORT_PLUS"]:
-        self.max_accel = get_max_allowed_accel(v_ego)
+        self.max_accel = get_max_accel_sport_plus(v_ego)
       else:
-        self.max_accel = get_max_accel(v_ego)
+        self.max_accel = get_max_accel_std(v_ego)
 
     if frogpilot_toggles.human_acceleration:
       self.max_accel = min(get_max_accel_low_speeds(self.max_accel, self.frogpilot_planner.v_cruise), self.max_accel)
