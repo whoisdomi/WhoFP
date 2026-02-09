@@ -89,7 +89,7 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
 
   if (frogpilot_scene.standstill) {
     maxAcceleration = 0;
-  } else if (!carState.getGasPressed()) {
+  } else {
     maxAcceleration = std::max(maxAcceleration, acceleration);
   }
 
