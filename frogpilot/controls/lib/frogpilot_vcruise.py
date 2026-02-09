@@ -38,6 +38,8 @@ class FrogPilotVCruise:
 
     # Manual Stop Ahead bypasses the 1-second timer for immediate handoff to Force Stop
     force_stop_enabled = self.force_stop_timer >= 1 or manual_stop_force_stop
+    # Latch: once committed to stopping, stay committed until standstill
+    force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill
 
     self.override_force_stop |= sm["carState"].gasPressed
     self.override_force_stop |= sm["frogpilotCarState"].accelPressed
