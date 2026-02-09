@@ -312,6 +312,23 @@ class SpeedLimitController:
       self.speed_limit_changed_timer = 0
       self.unconfirmed_speed_limit = 0
 
+    # CC Main button: force-adopt the current best available speed limit
+    if self.frogpilot_planner.params_memory.get_bool("SLCAdoptSpeedLimit"):
+      self.frogpilot_planner.params_memory.remove("SLCAdoptSpeedLimit")
+      if desired_target > 0:
+        self.overridden_speed = 0
+        self.denied_target = 0
+        self.source = desired_source
+        self.target = desired_target
+        self.previous_source = desired_source
+        self.previous_target = desired_target
+        self.speed_limit_changed_timer = 0
+        self.unconfirmed_speed_limit = 0
+        self.frogpilot_planner.params.put_nonblocking("PreviousSpeedLimit", self.target)
+        new_target_with_offset = self.target + self.offset
+        if new_target_with_offset > v_cruise:
+          self.frogpilot_planner.params_memory.put("SLCAcceptedCruiseSpeed", new_target_with_offset)
+
   def update_map_speed_limit(self, v_ego):
     if not self.frogpilot_planner.gps_position:
       return
