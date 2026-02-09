@@ -20,7 +20,7 @@ from opendbc.car.car_helpers import get_car, interfaces
 from opendbc.car.interfaces import CarInterfaceBase, RadarInterfaceBase
 from opendbc.safety import ALTERNATIVE_EXPERIENCE
 from openpilot.selfdrive.pandad import can_capnp_to_list, can_list_to_can_capnp
-from openpilot.selfdrive.car.cruise import VCruiseHelper, V_CRUISE_MIN, V_CRUISE_MAX
+from openpilot.selfdrive.car.cruise import VCruiseHelper, V_CRUISE_MIN, V_CRUISE_MAX, IMPERIAL_INCREMENT
 from openpilot.selfdrive.car.car_specific import MockCarState
 
 from openpilot.frogpilot.common.frogpilot_variables import get_frogpilot_toggles, update_frogpilot_toggles
@@ -226,7 +226,10 @@ class Car:
     # Check if SLC accepted a higher speed limit and update v_cruise to match
     slc_accepted_speed = self.params_memory.get("SLCAcceptedCruiseSpeed") or 0
     if slc_accepted_speed > 0:
-      new_cruise_kph = int(round(slc_accepted_speed * CV.MS_TO_KPH))
+      if self.is_metric:
+        new_cruise_kph = round(slc_accepted_speed * CV.MS_TO_KPH)
+      else:
+        new_cruise_kph = round(slc_accepted_speed * CV.MS_TO_MPH) * IMPERIAL_INCREMENT
       if new_cruise_kph > self.v_cruise_helper.v_cruise_kph:
         self.v_cruise_helper.v_cruise_kph = min(new_cruise_kph, V_CRUISE_MAX)
         self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
