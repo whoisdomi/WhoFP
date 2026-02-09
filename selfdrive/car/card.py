@@ -226,7 +226,7 @@ class Car:
     # Check if SLC accepted a higher speed limit and update v_cruise to match
     slc_accepted_speed = self.params_memory.get("SLCAcceptedCruiseSpeed") or 0
     if slc_accepted_speed > 0:
-      new_cruise_kph = slc_accepted_speed * CV.MS_TO_KPH
+      new_cruise_kph = int(round(slc_accepted_speed * CV.MS_TO_KPH))
       if new_cruise_kph > self.v_cruise_helper.v_cruise_kph:
         self.v_cruise_helper.v_cruise_kph = min(new_cruise_kph, V_CRUISE_MAX)
         self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
