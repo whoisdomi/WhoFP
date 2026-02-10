@@ -325,9 +325,7 @@ class SpeedLimitController:
         self.speed_limit_changed_timer = 0
         self.unconfirmed_speed_limit = 0
         self.frogpilot_planner.params.put_nonblocking("PreviousSpeedLimit", self.target)
-        new_target_with_offset = self.target + self.offset
-        if new_target_with_offset > v_cruise:
-          self.frogpilot_planner.params_memory.put("SLCAcceptedCruiseSpeed", new_target_with_offset)
+        self.frogpilot_planner.params_memory.put("SLCForceCruiseSpeed", self.target + self.offset)
 
   def update_map_speed_limit(self, v_ego):
     if not self.frogpilot_planner.gps_position:

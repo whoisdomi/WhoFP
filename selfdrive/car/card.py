@@ -235,6 +235,17 @@ class Car:
         self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
       self.params_memory.remove("SLCAcceptedCruiseSpeed")
 
+    # CC Main adopt: force v_cruise to the exact speed limit + offset (both up and down)
+    slc_force_speed = self.params_memory.get("SLCForceCruiseSpeed") or 0
+    if slc_force_speed > 0:
+      if self.is_metric:
+        new_cruise_kph = round(slc_force_speed * CV.MS_TO_KPH)
+      else:
+        new_cruise_kph = round(slc_force_speed * CV.MS_TO_MPH) * IMPERIAL_INCREMENT
+      self.v_cruise_helper.v_cruise_kph = max(min(new_cruise_kph, V_CRUISE_MAX), V_CRUISE_MIN)
+      self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
+      self.params_memory.remove("SLCForceCruiseSpeed")
+
     # TODO: mirror the carState.cruiseState struct?
     CS.vCruise = float(self.v_cruise_helper.v_cruise_kph)
     CS.vCruiseCluster = float(self.v_cruise_helper.v_cruise_cluster_kph)
