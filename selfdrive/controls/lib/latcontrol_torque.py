@@ -74,7 +74,7 @@ class LatControlTorque(LatControl):
     self.current_ki = 0.0
 
     # Initialize PID (will be configured in update_pid_gains)
-    self.pid = PIDController(DEFAULT_KP, DEFAULT_KI,
+    self.pid = PIDController(DEFAULT_KP, DEFAULT_KI, k_f=1.0,
                              pos_limit=1e308, neg_limit=-1e308,
                              unwind_multiplier=UNWIND_MULTIPLIER)
     self.update_pid_gains()
