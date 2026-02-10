@@ -12,7 +12,7 @@ A_CRUISE_MIN_SPORT = ACCEL_MIN * 2
                          # MPH = [0.0,  11,  22,  34,  45,  56,  89]
 A_CRUISE_MAX_BP_CUSTOM      =  [0.0,  5., 10., 15., 20., 25., 40.]
 A_CRUISE_MAX_VALS_ECO       =  [2.0, 1.5, 1.0, 0.8, 0.6, 0.4, 0.2]
-A_CRUISE_MAX_VALS_STD       =  [2.5, 2.0, 1.8, 1.5, 1.2, 1.0, 0.8]
+A_CRUISE_MAX_VALS_STD       =  [2.5, 2.5, 2.0, 1.5, 1.2, 1.0, 0.8]
 A_CRUISE_MAX_VALS_SPORT     =  [3.0, 2.5, 2.0, 1.5, 1.0, 0.8, 0.6]
 A_CRUISE_MAX_VALS_SPORT_P   =  [5.0, 4.0, 3.3, 2.7, 2.0, 2.0, 2.0]
 
