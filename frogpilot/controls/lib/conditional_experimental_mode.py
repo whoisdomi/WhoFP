@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 import numpy as np
 
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -32,6 +33,9 @@ class ConditionalExperimentalMode:
   LIGHT_BOOSTS = [1.0, 1.2, 1.045, 1.0]
   LIGHT_MAX_TIME = 9
 
+  # Minimum time (seconds) to hold experimental mode before allowing switch to chill
+  EXPERIMENTAL_HOLD_TIME = 4.0
+
   # Default filter times
   FILTER_TIME_CURVE = 0.8
   FILTER_TIME_LEAD = 0.8
@@ -49,6 +53,7 @@ class ConditionalExperimentalMode:
     self.stop_light_detected = False
     self.slow_lead_detected = False
     self.prev_experimental_mode = False  # For hysteresis
+    self.experimental_mode_since = 0.0  # Timestamp when experimental mode was last activated
 
   def update(self, v_ego, sm, frogpilot_toggles):
     if frogpilot_toggles.experimental_mode_via_press:
@@ -74,6 +79,15 @@ class ConditionalExperimentalMode:
         self.curve_detected = self.curvature_filter.x >= THRESHOLD * hysteresis_factor and v_ego > CRUISING_SPEED
 
       self.experimental_mode = self.check_conditions(v_ego, sm, frogpilot_toggles)
+
+      # Asymmetric hold: experimental stays on for at least EXPERIMENTAL_HOLD_TIME seconds,
+      # but switching TO experimental from chill is always instant
+      if self.prev_experimental_mode and not self.experimental_mode:
+        if (time.monotonic() - self.experimental_mode_since) < self.EXPERIMENTAL_HOLD_TIME:
+          self.experimental_mode = True
+      elif self.experimental_mode and not self.prev_experimental_mode:
+        self.experimental_mode_since = time.monotonic()
+
       self.prev_experimental_mode = self.experimental_mode
       self.frogpilot_planner.params_memory.put("CEStatus", self.status_value if self.experimental_mode else CEStatus["OFF"])
     else:
