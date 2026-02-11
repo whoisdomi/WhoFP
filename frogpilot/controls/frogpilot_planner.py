@@ -49,6 +49,7 @@ class FrogPilotPlanner:
     self.v_cruise = 0
 
     self.gps_position = None
+    self._prev_gps_bearing = 0
 
     self.gps_location_service = get_gps_location_service(self.params)
 
@@ -87,7 +88,10 @@ class FrogPilotPlanner:
       "longitude": gps_location.longitude,
       "bearing": gps_location.bearingDeg,
     }
-    self.params_memory.put("LastGPSPosition", json.dumps(self.gps_position))
+
+    if frogpilot_toggles.compass and abs(gps_location.bearingDeg - self._prev_gps_bearing) > 0.5:
+      self.params_memory.put("LastGPSPosition", json.dumps(self.gps_position))
+      self._prev_gps_bearing = gps_location.bearingDeg
 
     if v_ego >= frogpilot_toggles.minimum_lane_change_speed:
       self.lane_width_left = calculate_lane_width(sm["modelV2"].laneLines[0], sm["modelV2"].laneLines[1], sm["modelV2"].roadEdges[0])
