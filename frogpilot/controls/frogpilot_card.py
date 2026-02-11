@@ -46,6 +46,9 @@ class FrogPilotCard:
     self.long_press_threshold = 30  # 0.3 seconds
     self.very_long_press_threshold = 90  # 0.9 seconds
 
+    self._onroad_distance_pressed = False
+    self._frame_counter = 0
+
     self.error_log = ERROR_LOGS_PATH / "error.txt"
 
   def handle_button_event(self, key, sm, frogpilot_toggles):
@@ -107,8 +110,13 @@ class FrogPilotCard:
       if be.type == ButtonType.gapAdjustCruise:
         self.distance_button_pressed = be.pressed
 
+    # Poll onscreen button at 10Hz instead of 100Hz (max 100ms latency, imperceptible)
+    self._frame_counter += 1
+    if self._frame_counter % 10 == 0:
+      self._onroad_distance_pressed = self.params_memory.get_bool("OnroadDistanceButtonPressed")
+
     # Combine physical button with onscreen button (OR logic)
-    frogpilotCarState.distancePressed = self.distance_button_pressed or self.params_memory.get_bool("OnroadDistanceButtonPressed")
+    frogpilotCarState.distancePressed = self.distance_button_pressed or self._onroad_distance_pressed
 
     if frogpilotCarState.distancePressed:
       self.gap_counter += 1
