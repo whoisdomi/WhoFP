@@ -85,7 +85,7 @@ class FrogPilotEvents:
       else:
         self.events.add(FrogPilotEventName.lkasDisable)
 
-    if "nnffLoaded" not in self.played_events and self.startup_seen and alerts_empty and len(self.events) == 0 and self.frogpilot_planner.params.get("NNFFModelName") is not None and frogpilot_toggles.nnff:
+    if frogpilot_toggles.nnff and "nnffLoaded" not in self.played_events and self.startup_seen and alerts_empty and len(self.events) == 0 and self.frogpilot_planner.params.get("NNFFModelName") is not None:
       self.events.add(FrogPilotEventName.nnffLoaded)
 
     if self.random_event_playing:
