@@ -54,6 +54,7 @@ class ConditionalExperimentalMode:
     self.slow_lead_detected = False
     self.prev_experimental_mode = False  # For hysteresis
     self.experimental_mode_since = 0.0  # Timestamp when experimental mode was last activated
+    self._prev_ce_status = None  # Change detection for CEStatus IPC write
 
   def update(self, v_ego, sm, frogpilot_toggles):
     if frogpilot_toggles.experimental_mode_via_press:
@@ -89,8 +90,12 @@ class ConditionalExperimentalMode:
         self.experimental_mode_since = time.monotonic()
 
       self.prev_experimental_mode = self.experimental_mode
-      self.frogpilot_planner.params_memory.put("CEStatus", self.status_value if self.experimental_mode else CEStatus["OFF"])
+      ce_write_value = self.status_value if self.experimental_mode else CEStatus["OFF"]
+      if ce_write_value != self._prev_ce_status:
+        self.frogpilot_planner.params_memory.put("CEStatus", ce_write_value)
+        self._prev_ce_status = ce_write_value
     else:
+      self._prev_ce_status = None  # Reset so first write goes through when re-entering normal mode
       self.experimental_mode = sm["carState"].standstill and self.experimental_mode and self.frogpilot_planner.model_stopped
       self.experimental_mode |= self.status_value == CEStatus["USER_OVERRIDDEN"]
       self.experimental_mode &= self.status_value != CEStatus["USER_DISABLED"]
