@@ -180,10 +180,10 @@ class ConditionalExperimentalMode:
         light_boost = 1.3
         model_time *= 1.3
 
-      # Update filter times dynamically
-      self.curvature_filter = FirstOrderFilter(self.curvature_filter.x, filter_time_curves, DT_MDL)
-      self.slow_lead_filter = FirstOrderFilter(self.slow_lead_filter.x, filter_time_leads, DT_MDL)
-      self.stop_light_filter = FirstOrderFilter(self.stop_light_filter.x, filter_time_lights, DT_MDL)
+      # Update filter time constants in-place (avoids 3 object allocations per cycle)
+      self.curvature_filter.update_alpha(filter_time_curves)
+      self.slow_lead_filter.update_alpha(filter_time_leads)
+      self.stop_light_filter.update_alpha(filter_time_lights)
 
       # Disable stoplight detection above 75 mph to prevent false positives
       if speed_mph > 75:
