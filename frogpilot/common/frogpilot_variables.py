@@ -36,7 +36,7 @@ DISPLAY_MENU_TIMER = 350                  # The length of time the following dis
 EARTH_RADIUS = 6378137                    # Radius of the Earth in meters
 MAX_ACCELERATION = 6.0                    # ISO 15622:2018
 MAX_T_FOLLOW = 3.0                        # Maximum allowed following duration. Larger values risk losing track of the lead but may be increased as models improve
-MINIMUM_LATERAL_ACCELERATION = 1.3        # m/s^2, typical minimum lateral acceleration when taking curves
+MINIMUM_LATERAL_ACCELERATION = 2.5        # m/s^2, lateral acceleration threshold before limiting throttle in turns
 PLANNER_TIME = ModelConstants.T_IDXS[-1]  # Length of time the model projects out for
 THRESHOLD = 1 - 1 / math.e                # Requires the condition to be true for ~1 second
 
