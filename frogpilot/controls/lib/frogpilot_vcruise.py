@@ -98,7 +98,7 @@ class FrogPilotVCruise:
       self.forcing_stop |= not sm["carState"].standstill
 
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL), 0)
-      v_cruise = min((self.tracked_model_length // PLANNER_TIME), v_cruise)
+      v_cruise = min(self.tracked_model_length / PLANNER_TIME, v_cruise)
 
     else:
       self.forcing_stop = False
