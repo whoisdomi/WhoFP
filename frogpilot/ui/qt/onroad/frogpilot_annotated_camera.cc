@@ -32,7 +32,9 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(widget_size, widget_size), this);
 
   QObject::connect(animationTimer, &QTimer::timeout, [this] {
-    animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
+    if (totalFrames > 0) {
+      animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
+    }
   });
   QObject::connect(frogpilotUIState(), &FrogPilotUIState::themeUpdated, this, &FrogPilotAnnotatedCameraWidget::updateSignals);
   QObject::connect(uiState(), &UIState::offroadTransition, [this] {
@@ -51,6 +53,8 @@ void FrogPilotAnnotatedCameraWidget::showEvent(QShowEvent *event) {
 }
 
 void FrogPilotAnnotatedCameraWidget::updateSignals() {
+  animationFrameIndex = 0;
+
   QVector<QPixmap>().swap(blindspotImages);
   QVector<QPixmap>().swap(blindspotImagesFlipped);
   QVector<QPixmap>().swap(signalImages);
@@ -1251,6 +1255,10 @@ void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &
 }
 
 void FrogPilotAnnotatedCameraWidget::paintTurnSignals(QPainter &p, SubMaster &sm) {
+  if (signalImages.isEmpty() || animationFrameIndex >= signalImages.size()) {
+    return;
+  }
+
   const cereal::CarState::Reader &carState = sm["carState"].getCarState();
 
   p.save();
