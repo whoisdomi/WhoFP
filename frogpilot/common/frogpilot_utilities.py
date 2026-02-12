@@ -110,16 +110,20 @@ def calculate_lane_width(lane, current_lane, road_edge=None):
 
 # Credit goes to Pfeiferj!
 def calculate_road_curvature(modelData, v_ego):
-  orientation_rate = np.array(modelData.orientationRate.z)
-  velocity = np.array(modelData.velocity.x)
-  timebase = np.array(modelData.orientationRate.t)
+  orientation_rate = modelData.orientationRate.z
+  velocity = modelData.velocity.x
+  timebase = modelData.orientationRate.t
 
-  lateral_acceleration = orientation_rate * velocity
-  index = np.argmax(np.abs(lateral_acceleration))
-  predicted_lateral_acc = float(lateral_acceleration[index])
-  time_to_curve = float(timebase[index])
+  max_abs_lat_acc = 0
+  index = 0
+  for i in range(len(orientation_rate)):
+    lat_acc = abs(orientation_rate[i] * velocity[i])
+    if lat_acc > max_abs_lat_acc:
+      max_abs_lat_acc = lat_acc
+      index = i
 
-  return predicted_lateral_acc / max(v_ego, 1)**2, max(time_to_curve, 1)
+  predicted_lateral_acc = orientation_rate[index] * velocity[index]
+  return predicted_lateral_acc / max(v_ego, 1)**2, max(timebase[index], 1)
 
 
 def capture_report(discord_user, report, frogpilot_toggles):
