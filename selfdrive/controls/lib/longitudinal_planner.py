@@ -25,7 +25,7 @@ ALLOW_THROTTLE_THRESHOLD = 0.1
 MIN_ALLOW_THROTTLE_SPEED = 5.0
 
 # Lookup table for turns
-_A_TOTAL_MAX_V = [3.0, 4.5]
+_A_TOTAL_MAX_V = [3.5, 5.0]
 _A_TOTAL_MAX_BP = [20., 40.]
 
 
@@ -146,8 +146,8 @@ class LongitudinalPlanner:
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
     if not self.allow_throttle:
-      clipped_accel_coast = max(accel_coast, accel_clip[0])
-      clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [accel_clip[1], clipped_accel_coast])
+      clipped_accel_coast = max(accel_coast, accel_clip[0], 0.0)
+      clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*3], [accel_clip[1], clipped_accel_coast])
       accel_clip[1] = min(accel_clip[1], clipped_accel_coast_interp)
 
     if force_slow_decel:
