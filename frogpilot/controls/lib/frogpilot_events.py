@@ -41,7 +41,8 @@ class FrogPilotEvents:
     current_alert = sm["selfdriveState"].alertType
     current_frogpilot_alert = sm["selfdriveState"].alertType
 
-    alerts_empty = all(sm[state].alertText1 == "" and sm[state].alertText2 == "" for state in ["selfdriveState", "frogpilotSelfdriveState"])
+    alerts_empty = (sm["selfdriveState"].alertText1 == "" and sm["selfdriveState"].alertText2 == "" and
+                    sm["frogpilotSelfdriveState"].alertText1 == "" and sm["frogpilotSelfdriveState"].alertText2 == "")
 
     self.events.clear()
 
