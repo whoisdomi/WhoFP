@@ -34,6 +34,8 @@ class SpeedLimitController:
     self.previous_source = "None"
     self.source = "None"
 
+    self._slc_adopt_counter = 0
+
     self.mapbox_requests = self.frogpilot_planner.params.get("MapBoxRequests")
     self.mapbox_requests.setdefault("total_requests", 0)
     self.mapbox_requests.setdefault("max_requests", FREE_MAPBOX_REQUESTS - (28 * 100))
@@ -312,8 +314,9 @@ class SpeedLimitController:
       self.speed_limit_changed_timer = 0
       self.unconfirmed_speed_limit = 0
 
-    # CC Main button: force-adopt the current best available speed limit
-    if self.frogpilot_planner.params_memory.get_bool("SLCAdoptSpeedLimit"):
+    # CC Main button: force-adopt the current best available speed limit (poll at 5Hz instead of 20Hz)
+    self._slc_adopt_counter += 1
+    if self._slc_adopt_counter % 4 == 0 and self.frogpilot_planner.params_memory.get_bool("SLCAdoptSpeedLimit"):
       self.frogpilot_planner.params_memory.remove("SLCAdoptSpeedLimit")
       if desired_target > 0:
         self.overridden_speed = 0
