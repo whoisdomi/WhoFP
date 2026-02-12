@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import math
+
 from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import COMFORT_BRAKE
@@ -98,7 +100,7 @@ class FrogPilotVCruise:
       self.forcing_stop |= not sm["carState"].standstill
 
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL), 0)
-      v_cruise = min(self.tracked_model_length / PLANNER_TIME, v_cruise)
+      v_cruise = min(math.sqrt(2 * COMFORT_BRAKE * self.tracked_model_length), v_cruise)
 
     else:
       self.forcing_stop = False
@@ -129,15 +131,12 @@ class FrogPilotVCruise:
           targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
-    # Manual Stop Ahead: gradually reduce v_cruise until Force Stop takes over
-    # Once stop_light_detected, Force Stop handles deceleration (via manual_stop_force_stop above)
+    # Manual Stop Ahead: gradually reduce v_cruise continuously
+    # Runs through force stop handoff - min() picks the tighter constraint
     if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
-      if not self.frogpilot_planner.frogpilot_cem.stop_light_detected:
-        # Model hasn't detected stop yet - do gradual deceleration
-        self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
-        self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.2 * DT_MDL), 0)
-        v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
-      # else: Force Stop is handling it via force_stop_enabled block above
+      self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
+      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.2 * DT_MDL), 0)
+      v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
     else:
       self.manual_stop_ahead_v_cruise = v_ego
 
