@@ -51,6 +51,7 @@ class FrogPilotPlanner:
     self.gps_position = None
     self._prev_gps_bearing = 0
     self._prev_icbm_button = None
+    self._lane_width_counter = 0
 
     self.gps_location_service = get_gps_location_service(self.params)
 
@@ -95,11 +96,14 @@ class FrogPilotPlanner:
       self._prev_gps_bearing = gps_location.bearingDeg
 
     if v_ego >= frogpilot_toggles.minimum_lane_change_speed:
-      self.lane_width_left = calculate_lane_width(sm["modelV2"].laneLines[0], sm["modelV2"].laneLines[1], sm["modelV2"].roadEdges[0])
-      self.lane_width_right = calculate_lane_width(sm["modelV2"].laneLines[3], sm["modelV2"].laneLines[2], sm["modelV2"].roadEdges[1])
+      if self._lane_width_counter % 4 == 0:  # 5Hz instead of 20Hz — lane widths change slowly
+        self.lane_width_left = calculate_lane_width(sm["modelV2"].laneLines[0], sm["modelV2"].laneLines[1], sm["modelV2"].roadEdges[0])
+        self.lane_width_right = calculate_lane_width(sm["modelV2"].laneLines[3], sm["modelV2"].laneLines[2], sm["modelV2"].roadEdges[1])
+      self._lane_width_counter += 1
     else:
       self.lane_width_left = 0
       self.lane_width_right = 0
+      self._lane_width_counter = 0
 
     self.lateral_acceleration = v_ego**2 * sm["controlsState"].curvature
 
