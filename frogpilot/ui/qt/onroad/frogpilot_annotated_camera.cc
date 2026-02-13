@@ -1146,14 +1146,39 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
       systemName = "Next";
     }
 
+    // Determine best available source from raw values (independent of accept/deny state)
+    QPixmap *availableIcon = nullptr;
+    QString availableName;
+
+    if (frogpilotCarState.getDashboardSpeedLimit() > 0) {
+      availableIcon = &dashboardIcon;
+      availableName = "Dash";
+    } else if (frogpilotPlan.getSlcMapSpeedLimit() > 0) {
+      availableIcon = &mapDataIcon;
+      availableName = "MapD";
+    } else if (frogpilotPlan.getSlcMapboxSpeedLimit() > 0) {
+      availableIcon = &mapboxIcon;
+      availableName = "MapB";
+    } else if (frogpilotPlan.getSlcNextSpeedLimit() > 0) {
+      availableIcon = &nextMapsIcon;
+      availableName = "Next";
+    }
+
     QRect rect1(speedLimitRect.x(), speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, speedLimitRect.width(), 60);
 
     if (isOverridden) {
       drawBox(rect1, &gasPedalImg, "User", true);
       QRect rect2(rect1.x(), rect1.bottom() + UI_BORDER_SIZE / 2, rect1.width(), 60);
       drawBox(rect2, systemIcon, systemName, false);
+    } else if (systemIcon != nullptr) {
+      drawBox(rect1, systemIcon, systemName, true);
+    } else if (frogpilot_scene.enabled) {
+      // OP engaged, no accepted SLC speed - show "User" + available source or red X
+      drawBox(rect1, &gasPedalImg, "User", true);
+      QRect rect2(rect1.x(), rect1.bottom() + UI_BORDER_SIZE / 2, rect1.width(), 60);
+      drawBox(rect2, availableIcon, availableName, false);
     } else {
-      drawBox(rect1, systemIcon, systemName, systemIcon != nullptr);
+      drawBox(rect1, systemIcon, systemName, false);
     }
   } else {
     QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
