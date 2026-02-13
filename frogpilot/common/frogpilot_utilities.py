@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import dataclasses
 import json
 import math
 import numpy as np
@@ -17,10 +18,13 @@ import openpilot.system.sentry as sentry
 from cereal import log, messaging
 from opendbc.can.parser import CANParser
 from opendbc.car.toyota.carcontroller import LOCK_CMD
+from openpilot.common.params import Params, ParamKeyFlag, ParamKeyType
 from openpilot.common.realtime import DT_DMON, DT_HW
+from openpilot.system.hardware import HARDWARE
+from openpilot.system.version import get_build_metadata
 from panda import Panda
 
-from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, FROGS_GO_MOO_PATH, KONIK_PATH
+from openpilot.frogpilot.common.frogpilot_variables import EARTH_RADIUS, EXCLUDED_KEYS, FROGPILOT_API, FROGS_GO_MOO_PATH, GearShifter, KONIK_PATH, update_frogpilot_toggles
 
 class ThreadManager:
   def __init__(self):
@@ -126,6 +130,85 @@ def calculate_road_curvature(modelData):
   return float(predicted_lateral_acc / max(velocity[index], 1)**2), max(time_to_curve, 1)
 
 
+def check_remote_toggles(started, params, sm=None, boot_run=False):
+  if not boot_run:
+    if started and sm["carState"].gearShifter != GearShifter.park:
+      return
+    if sm["deviceState"].screenBrightnessPercent == 0:
+      return
+
+  if not params.get_bool("PondPaired"):
+    return
+
+  if not is_url_pingable(FROGPILOT_API):
+    return
+
+  try:
+    api_token = params.get("FrogPilotApiToken")
+    dongle_id = params.get("FrogPilotDongleId")
+
+    if not dongle_id or not api_token:
+      return
+
+    response = requests.get(
+      f"{FROGPILOT_API}/pond/toggles/pending",
+      params={"dongle_id": dongle_id, "api_token": api_token},
+      headers={"Content-Type": "application/json", "User-Agent": "frogpilot-api/1.0"},
+      timeout=10,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+
+    if data.get("paired") is False:
+      params.put_bool("PondPaired", False)
+      print("Device was unpaired remotely")
+      return
+
+    toggles = data.get("toggles")
+    if not toggles:
+      return
+
+    for key, value in toggles.items():
+      if key in EXCLUDED_KEYS:
+        continue
+      try:
+        params.check_key(key)
+      except Exception:
+        print(f"Skipping unknown param key: {key}")
+        continue
+
+      if value is None:
+        continue
+
+      try:
+        casted_value = params.cpp2python(key, value.encode("utf-8") if isinstance(value, str) else value)
+        if casted_value is not None:
+          params.put(key, casted_value)
+
+      except Exception as exception:
+        print(f"Skipping remote toggle {key}: {exception}")
+        continue
+
+    update_frogpilot_toggles()
+
+    requests.post(
+      f"{FROGPILOT_API}/pond/toggles/ack",
+      json={
+        "api_token": api_token,
+        "device": HARDWARE.get_device_type(),
+        "frogpilot_dongle_id": dongle_id,
+      },
+      headers={"Content-Type": "application/json", "User-Agent": "frogpilot-api/1.0"},
+      timeout=10,
+    ).raise_for_status()
+
+    print(f"Successfully applied {len(toggles)} remote toggles")
+
+  except Exception as e:
+    print(f"Failed to check remote toggles: {e}")
+
+
 def clean_model_name(name):
   return name.replace("(Default)", "").strip()
 
@@ -142,7 +225,6 @@ def delete_file(path, print_error=True, report=True):
     run_cmd(["sudo", "rm", "-rf", str(path)], f"Deleted directory: {path}", f"Failed to delete directory: {path}", report=report)
   elif print_error:
     print(f"File not found: {path}")
-
 
 def extract_zip(zip_file, extract_path):
   with zipfile.ZipFile(zip_file, "r") as zip:
@@ -166,9 +248,38 @@ def flash_panda(params_memory):
   params_memory.remove("FlashPanda")
 
 
+def get_frogpilot_api_info():
+  params = Params()
+
+  api_token = params.get("FrogPilotApiToken")
+  build_metadata = dataclasses.asdict(get_build_metadata())
+  device_type = HARDWARE.get_device_type()
+  dongle_id = params.get("FrogPilotDongleId")
+
+  return api_token, build_metadata, device_type, dongle_id
+
+
 def get_lock_status(can_parser, can_sock):
   update_can_parser(can_parser, can_sock)
   return can_parser.vl["DOOR_LOCKS"]["LOCK_STATUS"]
+
+
+def get_sentry_dsn():
+  try:
+    api_token, build_metadata, device_type, dongle_id = get_frogpilot_api_info()
+
+    payload = {
+      "api_token": api_token,
+      "build_metadata": build_metadata,
+      "device": device_type,
+      "frogpilot_dongle_id": dongle_id,
+    }
+
+    response = requests.post(f"{FROGPILOT_API}/sentry", json=payload, headers={"Content-Type": "application/json", "User-Agent": "frogpilot-api/1.0"}, timeout=10)
+    response.raise_for_status()
+    return response.json().get("dsn", "")
+  except Exception:
+    return ""
 
 
 @cache
@@ -277,6 +388,57 @@ def update_json_file(path, data):
     os.fsync(file.fileno())
 
   os.replace(temp_path, path)
+
+
+def upload_toggles(params):
+  if not is_url_pingable(FROGPILOT_API):
+    return
+
+  try:
+    api_token, build_metadata, device_type, dongle_id = get_frogpilot_api_info()
+    if not dongle_id or not api_token:
+      return
+
+    toggles = {}
+    for key in params.all_keys():
+      key_str = key.decode("utf-8") if isinstance(key, bytes) else str(key)
+      if key_str in EXCLUDED_KEYS:
+        continue
+      if params.get_key_flag(key) & ParamKeyFlag.DONT_LOG:
+        continue
+
+      value = params.get(key)
+      if value is None:
+        continue
+
+      key_type = params.get_type(key)
+      if key_type == ParamKeyType.BYTES:
+        value = value.decode("utf-8", "replace")
+      elif key_type == ParamKeyType.TIME:
+        value = value.isoformat()
+      toggles[key_str] = value
+
+    payload = {
+      "api_token": api_token,
+      "build_metadata": build_metadata,
+      "device": device_type,
+      "dongle_id": dongle_id,
+      "frogpilot_dongle_id": dongle_id,
+      "toggles": toggles,
+    }
+
+    response = requests.post(
+      f"{FROGPILOT_API}/pond/toggles/sync",
+      json=payload,
+      headers={"Content-Type": "application/json", "User-Agent": "frogpilot-api/1.0"},
+      timeout=10,
+    )
+    response.raise_for_status()
+
+    print("Successfully uploaded toggles to FrogPilot.com")
+
+  except Exception as e:
+    print(f"Failed to upload toggles: {e}")
 
 
 @cache

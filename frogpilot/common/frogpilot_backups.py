@@ -9,7 +9,7 @@ from pathlib import Path
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 
-from openpilot.frogpilot.common.frogpilot_utilities import delete_file
+from openpilot.frogpilot.common.frogpilot_utilities import delete_file, upload_toggles
 from openpilot.frogpilot.common.frogpilot_variables import EXCLUDED_KEYS, FROGPILOT_BACKUPS, TOGGLE_BACKUPS
 
 
@@ -51,10 +51,13 @@ def backup_toggles(params, boot_run=False):
   cleanup_backups(TOGGLE_BACKUPS, maximum_backups)
 
   if not changes_found or boot_run:
-    print("Toggles are identical to the previous backup. Aborting...")
+    if not changes_found:
+      print("Toggles are identical to the previous backup. Aborting...")
     return
 
-  destination = TOGGLE_BACKUPS / f"{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_auto"
+  upload_toggles(params)
+
+  destination = TOGGLE_BACKUPS / f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_auto"
   create_backup(Path(params_backup.get_param_path()), destination, "Successfully backed up toggles!", "Failed to backup toggles...", params)
 
 

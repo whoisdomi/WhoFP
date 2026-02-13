@@ -11,7 +11,7 @@ from openpilot.common.time_helpers import system_time_valid
 from openpilot.frogpilot.assets.theme_manager import THEME_COMPONENT_PARAMS, ThemeManager
 from openpilot.frogpilot.common.frogpilot_backups import backup_toggles
 from openpilot.frogpilot.common.frogpilot_functions import capture_report, update_maps, update_openpilot
-from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, flash_panda, is_url_pingable, lock_doors
+from openpilot.frogpilot.common.frogpilot_utilities import ThreadManager, check_remote_toggles, flash_panda, is_url_pingable, lock_doors
 from openpilot.frogpilot.common.frogpilot_variables import ERROR_LOGS_PATH, FrogPilotVariables
 from openpilot.frogpilot.controls.frogpilot_planner import FrogPilotPlanner
 from openpilot.frogpilot.system.frogpilot_stats import send_stats
@@ -30,7 +30,7 @@ def check_assets(now, theme_manager, thread_manager, params, params_memory, frog
 
   report_data = params_memory.get("IssueReported")
   if report_data:
-    capture_report(report_data["DiscordUser"], report_data["Issue"], vars(frogpilot_toggles))
+    capture_report(report_data["DiscordUser"], report_data["Issue"], params, vars(frogpilot_toggles))
     params_memory.remove("IssueReported")
 
   if params_memory.get_bool("DownloadMaps"):
@@ -168,6 +168,8 @@ def frogpilot_thread():
       thread_manager.run_with_lock(backup_toggles, (params, True))
       thread_manager.run_with_lock(send_stats, (params, frogpilot_toggles))
       thread_manager.run_with_lock(update_checks, (now, theme_manager, thread_manager, params, params_memory, frogpilot_toggles, True))
+    elif rate_keeper.frame % 200 == 0:
+      thread_manager.run_with_lock(check_remote_toggles, (started, params, sm))
 
     rate_keeper.keep_time()
 

@@ -8,13 +8,22 @@ class FrogPilotUtilitiesPanel : public FrogPilotListWidget {
 public:
   explicit FrogPilotUtilitiesPanel(FrogPilotSettingsWindow *parent, bool forceOpen = false);
 
+protected:
+  void showEvent(QShowEvent *event) override;
+
 private:
   bool forceOpenDescriptions;
+
+  ButtonControl *pondButton;
 
   FrogPilotSettingsWindow *parent;
 
   Params params;
   Params params_memory{"", true};
+
+  QNetworkAccessManager *networkManager;
+
+  QTimer *pairingPollTimer;
 
   std::set<std::string> excluded_keys = {
     "AvailableModels", "AvailableModelNames", "FrogPilotStats",
