@@ -21,6 +21,7 @@ class FrogPilotVCruise:
     self.forcing_stop = False
     self.override_force_stop = False
 
+    self.green_light_timer = 0
     self.override_force_stop_timer = 0
 
   def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
@@ -28,6 +29,8 @@ class FrogPilotVCruise:
     force_stop = self.frogpilot_planner.frogpilot_cem.stop_light_detected and long_control_active and frogpilot_toggles.force_stops
     force_stop &= self.frogpilot_planner.model_stopped
     force_stop &= self.override_force_stop_timer <= 0
+    # Don't activate force stop mid-turn — model trajectory shortens in curves, causing false triggers
+    force_stop &= not self.frogpilot_planner.driving_in_curve
 
     # Manual Stop Ahead can trigger force stop immediately when light is detected
     # (bypass model_stopped and force_stops toggle since user indicated stop ahead)
@@ -40,8 +43,14 @@ class FrogPilotVCruise:
 
     # Manual Stop Ahead bypasses the 1-second timer for immediate handoff to Force Stop
     force_stop_enabled = self.force_stop_timer >= 1 or manual_stop_force_stop
-    # Latch: once committed to stopping, stay committed until standstill
-    force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill
+    # Track sustained green: both stop_light_detected and model_stopped must be False
+    stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
+    self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
+
+    # Latch: stay committed to stopping until standstill, but release if stop condition
+    # has been sustainedly cleared (light genuinely turned green, not a brief model flicker)
+    green_confirmed = self.green_light_timer >= 1.5
+    force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill and not green_confirmed
 
     self.override_force_stop |= sm["carState"].gasPressed
     self.override_force_stop |= sm["frogpilotCarState"].accelPressed
