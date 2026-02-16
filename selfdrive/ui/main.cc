@@ -1,5 +1,6 @@
 #include <sys/resource.h>
 #include <csignal>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <QApplication>
@@ -18,14 +19,23 @@ extern volatile int modelDrawStage;
 extern volatile int fpWidgetPaintStage;
 
 static void crash_handler(int sig) {
-  // Only use async-signal-safe functions here (write, _exit)
+  // Only use async-signal-safe functions here (write, open, close, _exit)
   const char *sig_name = (sig == SIGSEGV) ? "SIGSEGV" : (sig == SIGABRT) ? "SIGABRT" : "SIGFPE";
 
   char buf[256];
   int len = snprintf(buf, sizeof(buf),
-    "\n*** UI CRASH: %s | modelDrawStage=%d | fpWidgetPaintStage=%d ***\n",
+    "UI CRASH: %s | modelDrawStage=%d | fpWidgetPaintStage=%d\n",
     sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage);
+
+  // Write to stderr (journal)
   if (len > 0) write(STDERR_FILENO, buf, len);
+
+  // Write to persistent file — survives reboots, check with: cat /data/ui_crash.log
+  int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+  if (fd >= 0) {
+    write(fd, buf, len);
+    close(fd);
+  }
 
   // Re-raise to get the default handler (core dump / tombstone)
   signal(sig, SIG_DFL);
