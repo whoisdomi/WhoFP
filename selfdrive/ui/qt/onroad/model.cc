@@ -13,7 +13,7 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
 
 // Crash stage tracker for model draw — check UICrashStage param after crash
 // Stages 100+ are from model.draw(), stages 1-15 from paintFrogPilotWidgets()
-static volatile int modelDrawStage = 0;
+volatile int modelDrawStage = 0;
 
 void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   auto *s = uiState();
