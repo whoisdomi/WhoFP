@@ -1,4 +1,6 @@
 #include <sys/resource.h>
+#include <csignal>
+#include <unistd.h>
 
 #include <QApplication>
 #include <QTranslator>
@@ -8,8 +10,34 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/window.h"
 
+// Crash stage trackers set by paint methods — async-signal-safe read from handler
+// model.cc stages: 101=update_model, 102=laneLines, 103=drawPath, 104=leads, 105=adjLeads, 106=drawLeadAdj, 107=radar
+// frogpilot_annotated_camera.cc stages: 1=CEM, 2=Compass, 3=CSC, 4=LatPause, 5=LonPause,
+//   6=Pedals, 7=PendingSL, 8=Radar, 9=Road, 10=SL, 11=SLSrc, 12=Standstill, 13=StopPt, 14=Signals, 15=Weather
+extern volatile int modelDrawStage;
+extern volatile int fpWidgetPaintStage;
+
+static void crash_handler(int sig) {
+  // Only use async-signal-safe functions here (write, _exit)
+  const char *sig_name = (sig == SIGSEGV) ? "SIGSEGV" : (sig == SIGABRT) ? "SIGABRT" : "SIGFPE";
+
+  char buf[256];
+  int len = snprintf(buf, sizeof(buf),
+    "\n*** UI CRASH: %s | modelDrawStage=%d | fpWidgetPaintStage=%d ***\n",
+    sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage);
+  if (len > 0) write(STDERR_FILENO, buf, len);
+
+  // Re-raise to get the default handler (core dump / tombstone)
+  signal(sig, SIG_DFL);
+  raise(sig);
+}
+
 int main(int argc, char *argv[]) {
   setpriority(PRIO_PROCESS, 0, -20);
+
+  signal(SIGSEGV, crash_handler);
+  signal(SIGABRT, crash_handler);
+  signal(SIGFPE, crash_handler);
 
   qInstallMessageHandler(swagLogMessageHandler);
   initApp(argc, argv);

@@ -24,15 +24,15 @@ public:
   void paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point);
   void updateState(const UIState &s, const FrogPilotUIState &fs);
 
-  bool hideBottomIcons;
-  bool isCruiseSet;
-  bool rightHandDM;
+  bool hideBottomIcons = false;
+  bool isCruiseSet = false;
+  bool rightHandDM = false;
 
-  int alertHeight;
-  int speedLimitHeight;
-  int standstillDuration;
+  int alertHeight = 0;
+  int speedLimitHeight = 0;
+  int standstillDuration = 0;
 
-  float speed;
+  float speed = 0.0f;
 
   std::vector<RadarTrackData> radar_tracks;
 
@@ -83,26 +83,26 @@ private:
   void paintWeather(QPainter &p, SubMaster &fpsm);
   void updateSignals();
 
-  bool speedLimitChanged;
+  bool speedLimitChanged = false;
 
   // Cached values to avoid parsing in paint methods (20Hz)
-  int cachedBearing;
+  int cachedBearing = 0;
   QString cachedRoadName;
 
-  int animationFrameIndex;
-  int desiredFollowDistance;
-  int frogHopCount;
-  int signalAnimationLength;
-  int signalHeight;
-  int signalMovement;
-  int signalWidth;
-  int totalFrames;
+  int animationFrameIndex = 0;
+  int desiredFollowDistance = 0;
+  int frogHopCount = 0;
+  int signalAnimationLength = 0;
+  int signalHeight = 0;
+  int signalMovement = 0;
+  int signalWidth = 0;
+  int totalFrames = 0;
 
-  float distanceConversion;
-  float setSpeed;
-  float speedConversion;
-  float speedConversionMetrics;
-  float speedLimit;
+  float distanceConversion = 1.0f;
+  float setSpeed = 0.0f;
+  float speedConversion = 1.0f;
+  float speedConversionMetrics = 1.0f;
+  float speedLimit = 0.0f;
 
   Params params;
   Params params_memory{"", true};

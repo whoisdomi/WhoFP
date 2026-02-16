@@ -1,5 +1,8 @@
 #include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
 
+// Crash stage tracker — readable by signal handler in main.cc
+volatile int fpWidgetPaintStage = 0;
+
 FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) : QWidget(parent) {
   animationTimer = new QTimer(this);
 
@@ -227,6 +230,11 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   const cereal::FrogPilotCarState::Reader &frogpilotCarState = fpsm["frogpilotCarState"].getFrogpilotCarState();
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
+  // Crash stage tracker — readable by signal handler in main.cc
+  // Stages: 1=CEM, 2=Compass, 3=CSC, 4=LatPause, 5=LonPause, 6=Pedals,
+  //   7=PendingSL, 8=Radar, 9=Road, 10=SL, 11=SLSrc, 12=Standstill,
+  //   13=StopPt, 14=Signals, 15=Weather, 0=done
+  fpWidgetPaintStage = 1;  // CEMStatus
   if (!hideBottomIcons && frogpilot_toggles.value("cem_status").toBool()) {
     paintCEMStatus(p, sm);
   } else {
@@ -234,6 +242,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     cemStatusPosition.setY(0);
   }
 
+  fpWidgetPaintStage = 2;  // Compass
   if (!hideBottomIcons && frogpilot_toggles.value("compass").toBool()) {
     paintCompass(p);
   } else {
@@ -241,6 +250,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     compassPosition.setY(0);
   }
 
+  fpWidgetPaintStage = 3;  // ForceStop/ManualStop/CSC
   if (frogpilotPlan.getForcingStop()) {
     paintForceStop(p, fpsm);
   } else if (frogpilotCarState.getManualStopAhead()) {
@@ -259,6 +269,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     glowTimer.invalidate();
   }
 
+  fpWidgetPaintStage = 4;  // LateralPaused
   if (!hideBottomIcons && frogpilotCarState.getPauseLateral()) {
     paintLateralPaused(p);
   } else {
@@ -266,28 +277,34 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     lateralPausedPosition.setY(0);
   }
 
+  fpWidgetPaintStage = 5;  // LongitudinalPaused
   if (!hideBottomIcons && (frogpilotCarState.getForceCoast() || frogpilotCarState.getPauseLongitudinal())) {
     paintLongitudinalPaused(p);
   }
 
+  fpWidgetPaintStage = 6;  // PedalIcons
   if (frogpilot_toggles.value("pedals_on_ui").toBool()) {
     paintPedalIcons(p, sm, fpsm);
   }
 
+  fpWidgetPaintStage = 7;  // PendingSpeedLimit
   if (frogpilotPlan.getSpeedLimitChanged()) {
     paintPendingSpeedLimit(p, fpsm);
   } else {
     pendingLimitTimer.invalidate();
   }
 
+  fpWidgetPaintStage = 8;  // RadarTracks
   if (frogpilot_toggles.value("radar_tracks").toBool()) {
     paintRadarTracks(p);
   }
 
+  fpWidgetPaintStage = 9;  // RoadName
   if (frogpilot_toggles.value("road_name_ui").toBool()) {
     paintRoadName(p);
   }
 
+  fpWidgetPaintStage = 10;  // SpeedLimit
   bool hideSpeedLimit = !frogpilotPlan.getSpeedLimitChanged() && frogpilot_toggles.value("hide_speed_limit").toBool();
   if (!hideSpeedLimit && (frogpilot_toggles.value("show_speed_limits").toBool() || frogpilot_toggles.value("speed_limit_controller").toBool())) {
     paintSpeedLimit(p);
@@ -295,18 +312,22 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     speedLimitHeight = 0;
   }
 
+  fpWidgetPaintStage = 11;  // SpeedLimitSources
   if (frogpilot_toggles.value("speed_limit_sources").toBool()) {
     paintSpeedLimitSources(p, fpsm);
   }
 
+  fpWidgetPaintStage = 12;  // StandstillTimer
   if (standstillDuration != 0 && frogpilot_scene.started_timer / UI_FREQ >= 60) {
     paintStandstillTimer(p);
   }
 
+  fpWidgetPaintStage = 13;  // StoppingPoint
   if (track_vertices.length() >= 1 && frogpilotPlan.getRedLight() && frogpilot_toggles.value("show_stopping_point").toBool()) {
     paintStoppingPoint(p, sm);
   }
 
+  fpWidgetPaintStage = 14;  // TurnSignals
   if ((carState.getLeftBlinker() || carState.getRightBlinker()) && signalStyle != "None") {
     if (!animationTimer->isActive()) {
       animationTimer->start(signalAnimationLength);
@@ -316,9 +337,12 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     animationTimer->stop();
   }
 
+  fpWidgetPaintStage = 15;  // Weather
   if (!hideBottomIcons) {
     paintWeather(p, fpsm);
   }
+
+  fpWidgetPaintStage = 0;  // Completed successfully
 }
 
 void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &sm, SubMaster &fpsm) {
@@ -355,6 +379,12 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
     p.drawPolygon(track_adjacent_vertices[i]);
 
     if (frogpilot_toggles.value("adjacent_path_metrics").toBool()) {
+      const QPolygonF &path = track_adjacent_vertices[i];
+      if (path.isEmpty()) {
+        p.restore();
+        continue;
+      }
+
       QString text;
       if (isBlindSpot && frogpilot_toggles.value("blind_spot_path").toBool()) {
         text = tr("Vehicle in blind spot");
@@ -362,7 +392,6 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
         text = QString::number(laneWidth * distanceConversion, 'f', 2) + leadDistanceUnit;
       }
 
-      const QPolygonF &path = track_adjacent_vertices[i];
       int midIndex = path.size() / 2;
       QPointF anchorPoint = isLeft ? path[midIndex / 2] : path[midIndex + (path.size() - midIndex) / 2];
 
@@ -1280,7 +1309,8 @@ void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &
 }
 
 void FrogPilotAnnotatedCameraWidget::paintTurnSignals(QPainter &p, SubMaster &sm) {
-  if (signalImages.isEmpty() || animationFrameIndex >= signalImages.size()) {
+  if (signalImages.isEmpty() || signalImagesFlipped.isEmpty() ||
+      animationFrameIndex >= signalImages.size() || animationFrameIndex >= signalImagesFlipped.size()) {
     return;
   }
 
