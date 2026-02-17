@@ -199,7 +199,7 @@ class LatControlTorque(LatControl):
       pid_log.error = float(error)
 
       # Freeze integrator conditions (unwind_detected disabled - let UNWIND_MULTIPLIER handle decay instead of freezing)
-      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 5  # or unwind_detected
+      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5  # or unwind_detected
 
       # PID update in lat accel space
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
