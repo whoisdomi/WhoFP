@@ -47,8 +47,8 @@ UNWIND_MULTIPLIER = 0.93  # Integrator decay when unwinding (0.93 = 7% decay per
 
 # === Low Speed Factor (curvature-based boost for turns) ===
 # Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
-LOW_SPEED_X = [0, 10, 20, 30]  # m/s breakpoints
-LOW_SPEED_Y = [1.0, 1.0, 1.0, 1.0]
+LOW_SPEED_X = [0, 10, 15, 30]  # m/s breakpoints
+LOW_SPEED_Y = [3.0, 2.0, 1.0, 1.0]
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
