@@ -43,7 +43,7 @@ UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
 UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 
 # === Integrator Decay ===
-UNWIND_MULTIPLIER = 0.93  # Integrator decay when unwinding (0.93 = 7% decay per cycle)
+UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
 
 # === Low Speed Factor (curvature-based boost for turns) ===
 # Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
@@ -199,7 +199,7 @@ class LatControlTorque(LatControl):
       pid_log.error = float(error)
 
       # Freeze integrator conditions (unwind_detected disabled - let UNWIND_MULTIPLIER handle decay instead of freezing)
-      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5  # or unwind_detected
+      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5 or unwind_detected
 
       # PID update in lat accel space
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
