@@ -48,7 +48,7 @@ UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead
 # === Low Speed Factor (curvature-based boost for turns) ===
 # Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
 LOW_SPEED_X = [0, 10, 15, 30]  # m/s breakpoints
-LOW_SPEED_Y = [3.0, 2.0, 1.0, 1.0]
+LOW_SPEED_Y = [2.0, 1.3, 1.0, 1.0]
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
@@ -198,11 +198,15 @@ class LatControlTorque(LatControl):
       # Error correction in lateral acceleration space
       pid_log.error = float(error)
 
-      # Freeze integrator conditions (unwind_detected disabled - let UNWIND_MULTIPLIER handle decay instead of freezing)
-      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5 or unwind_detected
+      # Freeze integrator conditions
+      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5
 
       # PID update in lat accel space
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
+
+      # Actively decay integrator during turn exit instead of freezing it
+      if unwind_detected:
+        self.pid.i *= 0.8
 
       # Convert to torque at the end
       output_torque = self.torque_from_lateral_accel(
