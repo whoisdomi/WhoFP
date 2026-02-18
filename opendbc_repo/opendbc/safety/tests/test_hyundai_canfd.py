@@ -28,11 +28,11 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.CarSafetyTest, common.Drive
   STANDSTILL_THRESHOLD = 12  # 0.375 kph
   FWD_BLACKLISTED_ADDRS = {2: [0x50, 0x2a4]}
 
-  MAX_RATE_UP = 5
-  MAX_RATE_DOWN = 7
+  MAX_RATE_UP = 8
+  MAX_RATE_DOWN = 8
   MAX_TORQUE_LOOKUP = [0], [409]
 
-  MAX_RT_DELTA = 250
+  MAX_RT_DELTA = 300
 
   DRIVER_TORQUE_ALLOWANCE = 250
   DRIVER_TORQUE_FACTOR = 2
