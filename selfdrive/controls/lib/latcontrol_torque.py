@@ -27,12 +27,16 @@ from openpilot.common.pid import PIDController
 DEFAULT_KP = 1.0
 DEFAULT_KI = 0.3
 
-# Speed-interpolated KP: aggressive at low speed, tapering to base KP at highway
-# The actual base KP (rightmost value) is set dynamically from torque_params in __init__
-INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
-# Multipliers relative to base KP (last value = 1.0x base)
-KP_MULTIPLIERS = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, 1.0] #stock
-#KP_MULTIPLIERS = [250, 120, 75, 35, 14, 7, 4.5, 2.5, 1.0]
+# === Speed-Dependent Gain Table ===
+# KP_MULTIPLIERS: proportional gain multiplier (× base kP from UI)
+# LOW_SPEED_Y: error amplification factor (boosts P, I, and friction at low speeds)
+#
+# m/s:            1      1.5    2.0    3.0    5      7.5    10     15     30
+# mph:            2.2    3.4    4.5    6.7    11.2   16.8   22.4   33.6   67.1
+INTERP_SPEEDS =  [1,     1.5,   2.0,   3.0,   5,     7.5,   10,    15,    30   ]
+KP_MULTIPLIERS = [250,   120,   65,    22,    9,     5.5,   3.5,   2.0,   1.0  ]
+LOW_SPEED_Y =    [3.0,   2.8,   2.5,   2.5,   2.0,   1.8,   1.4,   1.0,   1.0  ]
+LOW_SPEED_X =    [1,     1.5,   2.0,   3.0,   5,     7.5,   10,    15,    30   ]
 
 # === Delay Compensation ===
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
@@ -44,11 +48,6 @@ UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
-
-# === Low Speed Factor (curvature-based boost for turns) ===
-# Disabled - KP_INTERP alone handles low-speed boost (ACTS-HORIZON approach)
-LOW_SPEED_X = [0, 10, 15, 30]  # m/s breakpoints
-LOW_SPEED_Y = [2.0, 1.3, 1.0, 1.0]
 
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
