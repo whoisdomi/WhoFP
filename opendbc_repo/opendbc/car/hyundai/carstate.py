@@ -324,6 +324,8 @@ class CarState(CarStateBase):
     fp_ret = custom.FrogPilotCarState.new_message()
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
     fp_ret.dashboardSpeedLimit = calculate_speed_limit_canfd(cp, cp_cam, self.is_metric, lka_steering)
+    bus = cp if lka_steering else cp_cam
+    fp_ret.dashboardStopSign = bus.vl["CCNC_0x162"]["SIGNS"] == 8
 
     # Drive mode detection for Map Accel/Decel to Gears feature (Ioniq 6 and other Hyundai EVs)
     if self.CP.flags & HyundaiFlags.EV:
@@ -350,11 +352,13 @@ class CarState(CarStateBase):
       ]
     # Steering wheel media buttons for Mode and Custom buttons (FrogPilot)
     msgs.append(("STEERING_WHEEL_MEDIA_BUTTONS", 50))
-    # Speed limit from camera (ISLW) - bus depends on harness type
+    # Speed limit from camera (ISLW) and stop sign detection - bus depends on harness type
     if CP.flags & HyundaiFlags.CANFD_LKA_STEERING:
       msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars
+      msgs.append(("CCNC_0x162", 10))        # Stop sign / traffic sign detection
     else:
       cam_msgs.append(("FR_CMR_02_100ms", 10))  # On CAM for other cars
+      cam_msgs.append(("CCNC_0x162", 10))
     # Drive mode for Map Accel/Decel to Gears feature (Hyundai EVs)
     if CP.flags & HyundaiFlags.EV:
       msgs.append(("DRIVE_MODE_EV", 10))

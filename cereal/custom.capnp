@@ -88,6 +88,7 @@ struct FrogPilotCarState @0xf35cc4560bbf6ec2 {
   customLongPressed @19 :Bool;
   customVeryLongPressed @20 :Bool;
   manualStopAhead @21 :Bool;
+  dashboardStopSign @22 :Bool;
 }
 
 struct FrogPilotDeviceState @0xda96579883444c35 {

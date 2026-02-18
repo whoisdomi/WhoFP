@@ -39,10 +39,19 @@ class FrogPilotVCruise:
     manual_stop_force_stop &= self.override_force_stop_timer <= 0
     manual_stop_force_stop &= not self.frogpilot_planner.tracking_lead
 
-    self.force_stop_timer = self.force_stop_timer + DT_MDL if force_stop else 0
+    # Gradual decay instead of instant reset — brief model flickers won't derail the timer
+    if force_stop:
+      self.force_stop_timer = min(self.force_stop_timer + DT_MDL, 2.0)
+    else:
+      self.force_stop_timer = max(self.force_stop_timer - (DT_MDL * 0.25), 0)
+
+    # Dashboard stop sign failsafe: car's own camera confirms a stop sign — bypass the timer
+    dashboard_stop_force_stop = sm["frogpilotCarState"].dashboardStopSign and long_control_active and frogpilot_toggles.force_stops
+    dashboard_stop_force_stop &= self.frogpilot_planner.frogpilot_cem.stop_light_detected
+    dashboard_stop_force_stop &= self.override_force_stop_timer <= 0
 
     # Manual Stop Ahead bypasses the 1-second timer for immediate handoff to Force Stop
-    force_stop_enabled = self.force_stop_timer >= 1 or manual_stop_force_stop
+    force_stop_enabled = self.force_stop_timer >= 1 or manual_stop_force_stop or dashboard_stop_force_stop
     # Track sustained green: both stop_light_detected and model_stopped must be False
     stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
     self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
