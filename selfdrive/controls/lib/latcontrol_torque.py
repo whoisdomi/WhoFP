@@ -57,7 +57,7 @@ UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead
 # m/s:                          0.5    2.0    5.0    10.0   33.5
 # mph:                          1.1    4.5    11.2   22.4   75.0
 FRICTION_THRESHOLD_SPEEDS =    [0.5,   2.0,   5.0,   10.0,  33.5]
-FRICTION_THRESHOLD_VALUES =    [0.15,  0.20,  0.30,  0.25,  0.25]
+FRICTION_THRESHOLD_VALUES =    [0.15,  0.20,  0.30,  0.35,  0.35]
 
 
 def get_friction_threshold(v_ego: float) -> float:
