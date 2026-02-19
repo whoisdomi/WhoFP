@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-import math
-
 from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_MDL
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import COMFORT_BRAKE
 
 from openpilot.frogpilot.common.frogpilot_variables import CRUISING_SPEED, PLANNER_TIME
 from openpilot.frogpilot.controls.lib.curve_speed_controller import CurveSpeedController
@@ -47,13 +44,16 @@ class FrogPilotVCruise:
     else:
       self.force_stop_timer = max(self.force_stop_timer - (DT_MDL * 0.25), 0)
 
-    # Dashboard stop sign failsafe: car's own camera confirms a stop sign — bypass the timer
+    # Dashboard stop sign failsafe: car's own camera confirms a stop sign — bypass the timer.
+    # Uses model_stopped (weaker: path ends within ~50m) rather than stop_light_detected
+    # (which requires the full filter to cross threshold) so it can act as an early trigger.
     dashboard_stop_force_stop = sm["frogpilotCarState"].dashboardStopSign and long_control_active and frogpilot_toggles.force_stops
-    dashboard_stop_force_stop &= self.frogpilot_planner.frogpilot_cem.stop_light_detected
+    dashboard_stop_force_stop &= self.frogpilot_planner.model_stopped
+    dashboard_stop_force_stop &= not self.frogpilot_planner.tracking_lead
     dashboard_stop_force_stop &= self.override_force_stop_timer <= 0
 
     # Manual Stop Ahead bypasses the 1-second timer for immediate handoff to Force Stop
-    force_stop_enabled = self.force_stop_timer >= 1 or manual_stop_force_stop or dashboard_stop_force_stop
+    force_stop_enabled = self.force_stop_timer >= 0.5 or manual_stop_force_stop or dashboard_stop_force_stop
     # Track sustained green: both stop_light_detected and model_stopped must be False
     stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
     self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
@@ -122,7 +122,7 @@ class FrogPilotVCruise:
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL), 0)
       if sm["carState"].standstill:
         self.tracked_model_length = 0
-      v_cruise = min(math.sqrt(2 * COMFORT_BRAKE * self.tracked_model_length), v_cruise)
+      v_cruise = min(self.tracked_model_length / PLANNER_TIME, v_cruise)
 
     else:
       self.forcing_stop = False
