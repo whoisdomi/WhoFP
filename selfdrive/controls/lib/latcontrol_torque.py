@@ -50,10 +50,14 @@ UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
 UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
 
 # === Friction Threshold (from StarPilot) ===
-# Speed-interpolated: lower at low speed (friction kicks in sooner for turns),
-# higher at highway (friction needs bigger error to kick in, prevents ticking)
-FRICTION_THRESHOLD_SPEEDS = [0.5, 33.5]  # m/s (approx 1 mph to 75 mph)
-FRICTION_THRESHOLD_VALUES = [0.12, 0.2]   # threshold values
+# Speed-interpolated: requires larger error before full friction fires.
+# HKG needs higher thresholds than GM to prevent ticking/wobble.
+# Effective real-world threshold = friction_threshold / LOW_SPEED_Y
+#
+# m/s:                          0.5    2.0    5.0    10.0   33.5
+# mph:                          1.1    4.5    11.2   22.4   75.0
+FRICTION_THRESHOLD_SPEEDS =    [0.5,   2.0,   5.0,   10.0,  33.5]
+FRICTION_THRESHOLD_VALUES =    [0.15,  0.20,  0.30,  0.25,  0.25]
 
 
 def get_friction_threshold(v_ego: float) -> float:
