@@ -31,6 +31,8 @@ class FrogPilotCard:
     self.traffic_mode_enabled = False
 
     self.manual_stop_ahead_timer = 0
+    self.aol_reactivation_frames = 0
+    self.prev_active = False
 
     self.gap_counter = 0
     self.mode_counter = 0
@@ -91,10 +93,20 @@ class FrogPilotCard:
     elif frogpilot_toggles.always_on_lateral_main:
       self.always_on_lateral_allowed = carState.cruiseState.available
 
+    # When engaged, auto-allow AOL so lateral persists if long disengages (e.g. brake)
     if sm["selfdriveState"].active and self.always_on_lateral_set:
       self.always_on_lateral_allowed = True
+      self.aol_reactivation_frames = 0
+    elif self.prev_active and not sm["selfdriveState"].active and self.always_on_lateral_allowed:
+      # active just went False - brief pause so car sees clean STEER_REQ=0 before AOL re-enables
+      self.aol_reactivation_frames = 5
 
-    self.always_on_lateral_enabled = self.always_on_lateral_allowed and self.always_on_lateral_set
+    if self.aol_reactivation_frames > 0:
+      self.aol_reactivation_frames -= 1
+
+    self.prev_active = sm["selfdriveState"].active
+
+    self.always_on_lateral_enabled = self.always_on_lateral_allowed and self.always_on_lateral_set and self.aol_reactivation_frames <= 0
     self.always_on_lateral_enabled &= carState.gearShifter not in NON_DRIVING_GEARS
     self.always_on_lateral_enabled &= sm["frogpilotPlan"].lateralCheck
     self.always_on_lateral_enabled &= sm["liveCalibration"].calPerc >= 1
