@@ -10,7 +10,8 @@
       "Bash(wsl bash -ic 'INSTALL_DIR=/mnt/c/Users/user/Documents/GitHub/openpilot/tools/plotjuggler/bin && rm -rf $INSTALL_DIR && mkdir -p $INSTALL_DIR && wget -O /tmp/plotjuggler.tar.gz https://github.com/commaai/PlotJuggler/releases/download/latest/Linux-x86_64.tar.gz && tar xzf /tmp/plotjuggler.tar.gz -C $INSTALL_DIR && echo SUCCESS && ls $INSTALL_DIR')",
       "Bash(wsl bash:*)",
       "Bash(del \"c:\\\\Users\\\\user\\\\Documents\\\\GitHub\\\\openpilot\\\\tools\\\\plotjuggler\\\\install_pj.sh\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pip show:*)"
     ]
   }
 }

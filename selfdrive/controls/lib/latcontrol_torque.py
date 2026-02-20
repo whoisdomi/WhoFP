@@ -44,7 +44,7 @@ LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 
 # === Unwind Detection (from StarPilot) ===
 UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
-UNWIND_LAT_ACCEL_NEAR_ZERO = 0.3   # Near straight (m/s²)
+UNWIND_LAT_ACCEL_NEAR_ZERO = 0.6   # Near straight (m/s²)
 
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
