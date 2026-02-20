@@ -38,8 +38,10 @@ class FrogPilotVCruise:
     manual_stop_force_stop &= self.override_force_stop_timer <= 0
     manual_stop_force_stop &= not self.frogpilot_planner.tracking_lead
 
-    # Gradual decay instead of instant reset — brief model flickers won't derail the timer
-    if force_stop:
+    # Gradual decay instead of instant reset — brief model flickers won't derail the timer.
+    # Don't accumulate at standstill: CEM pauses there, keeping stop_light_detected stale,
+    # which would peg the timer at max and prevent auto-release when the light turns green.
+    if force_stop and not sm["carState"].standstill:
       self.force_stop_timer = min(self.force_stop_timer + DT_MDL, 2.0)
     else:
       self.force_stop_timer = max(self.force_stop_timer - (DT_MDL * 0.25), 0)
@@ -54,14 +56,19 @@ class FrogPilotVCruise:
 
     # Manual Stop Ahead bypasses the 1-second timer for immediate handoff to Force Stop
     force_stop_enabled = self.force_stop_timer >= 0.5 or manual_stop_force_stop or dashboard_stop_force_stop
-    # Track sustained green: both stop_light_detected and model_stopped must be False
-    stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
-    self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
 
     # Latch: stay committed to stopping until standstill, but release if stop condition
     # has been sustainedly cleared (light genuinely turned green, not a brief model flicker)
+    stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
+    self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
     green_confirmed = self.green_light_timer >= 1.5
     force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill and not green_confirmed
+
+    # At standstill: CEM pauses so stop_light_detected is stale — use model_stopped directly.
+    # When the model sees the path clear ahead (light turned green), model_stopped goes False
+    # and force stop releases, allowing the car to resume on its own.
+    if sm["carState"].standstill and self.forcing_stop:
+      force_stop_enabled = self.frogpilot_planner.model_stopped
 
     self.override_force_stop |= sm["carState"].gasPressed
     self.override_force_stop |= sm["frogpilotCarState"].accelPressed
