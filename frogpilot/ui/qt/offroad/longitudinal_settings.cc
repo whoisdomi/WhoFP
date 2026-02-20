@@ -220,7 +220,7 @@ FrogPilotLongitudinalPanel::FrogPilotLongitudinalPanel(FrogPilotSettingsWindow *
       longitudinalActuatorDelayToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 1, tr(" seconds"), std::map<float, QString>(), 0.01);
       longitudinalToggle = longitudinalActuatorDelayToggle;
     } else if (param == "MaxDesiredAcceleration") {
-      longitudinalToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0.1, 6.0, tr(" m/s²"), std::map<float, QString>(), 0.1);
+      longitudinalToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0.1, 10.0, tr(" m/s²"), std::map<float, QString>(), 0.1);
     } else if (param == "StartAccel") {
       startAccelToggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 4, tr(" m/s²"), std::map<float, QString>(), 0.01, true);
       longitudinalToggle = startAccelToggle;
