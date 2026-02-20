@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QElapsedTimer>
+
 #include "selfdrive/ui/qt/sidebar.h"
 
 class DeveloperSidebar : public QFrame {
@@ -19,7 +21,12 @@ private:
   double lateralEngagementTime;
   double longitudinalEngagementTime;
   double maxAcceleration;
+  double smoothedRawAccel;
   double totalEngagementTime;
+
+  bool pullActive;
+
+  QElapsedTimer nearZeroTimer;
 
   std::vector<int> metricAssignments;
 

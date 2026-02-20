@@ -59,6 +59,9 @@ void DeveloperSidebar::resetVariables() {
   lateralEngagementTime = 0;
   longitudinalEngagementTime = 0;
   maxAcceleration = 0;
+  nearZeroTimer.invalidate();
+  pullActive = false;
+  smoothedRawAccel = 0;
   totalEngagementTime = 0;
 }
 
@@ -85,12 +88,30 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
   const QString accelerationUnit = (is_metric || use_si) ? tr(" m/s²") : tr(" ft/s²");
   const float accelerationConversion = (is_metric || use_si) ? 1.0f : METER_TO_FOOT;
 
-  double acceleration = carState.getAEgo() * accelerationConversion;
+  double rawAcceleration = carState.getAEgo();
+  double acceleration = rawAcceleration * accelerationConversion;
 
-  if (frogpilot_scene.standstill) {
-    maxAcceleration = 0;
-  } else {
-    maxAcceleration = std::max(maxAcceleration, acceleration);
+  smoothedRawAccel = 0.1 * rawAcceleration + 0.9 * smoothedRawAccel;
+
+  if (smoothedRawAccel >= 1.0) {
+    pullActive = true;
+    nearZeroTimer.invalidate();
+  }
+
+  if (pullActive) {
+    maxAcceleration = std::max(maxAcceleration, smoothedRawAccel);
+
+    if (smoothedRawAccel < 0.3) {
+      if (!nearZeroTimer.isValid()) {
+        nearZeroTimer.start();
+      } else if (nearZeroTimer.elapsed() >= 5000) {
+        maxAcceleration = 0;
+        pullActive = false;
+        nearZeroTimer.invalidate();
+      }
+    } else {
+      nearZeroTimer.invalidate();
+    }
   }
 
   lateralEngagementTime += carControl.getLatActive() && !frogpilot_scene.reverse && !frogpilot_scene.standstill ? 1 : 0;
@@ -135,7 +156,7 @@ void DeveloperSidebar::updateState(const UIState &s, const FrogPilotUIState &fs)
   latAccelStatus = ItemStatus(QPair<QString, QString>(tr("LAT ACCEL"), QString::number(liveTorqueParameters.getLatAccelFactorFiltered(), 'f', 5)), metricColor);
   lateralEngagementStatus = ItemStatus(QPair<QString, QString>(tr("LATERAL %"), QString::number((lateralEngagementTime / totalEngagementTime) * 100.0f, 'f', 2) + "%"), metricColor);
   longitudinalEngagementStatus = ItemStatus(QPair<QString, QString>(tr("LONG %"), QString::number((longitudinalEngagementTime / totalEngagementTime) * 100.0f, 'f', 2) + "%"), metricColor);
-  maxAccelerationStatus = ItemStatus(QPair<QString, QString>(tr("MAX ACCEL"), QString::number(maxAcceleration, 'f', 2) + accelerationUnit), metricColor);
+  maxAccelerationStatus = ItemStatus(QPair<QString, QString>(tr("MAX ACCEL"), QString::number(maxAcceleration * accelerationConversion, 'f', 2) + accelerationUnit), metricColor);
   speedJerkStatus = ItemStatus(QPair<QString, QString>(tr("SPEED JERK"), QString::number(frogpilotPlan.getSpeedJerk())), metricColor);
   steerAngleStatus = ItemStatus(QPair<QString, QString>(tr("STEER ANGLE"), steerLabel), metricColor);
   steerRatioStatus = ItemStatus(QPair<QString, QString>(tr("STEER RATIO"), QString::number(liveParameters.getSteerRatio(), 'f', 5)), metricColor);
