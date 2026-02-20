@@ -96,7 +96,13 @@ class ConditionalExperimentalMode:
         self._prev_ce_status = ce_write_value
     else:
       self._prev_ce_status = None  # Reset so first write goes through when re-entering normal mode
-      self.experimental_mode = sm["carState"].standstill and self.experimental_mode and self.frogpilot_planner.model_stopped
+      # At standstill: preserve existing experimental if model says stopped, OR immediately trigger if CEM speed limit applies (v_ego=0 < any positive limit)
+      cem_speed_at_stop = (frogpilot_toggles.conditional_limit > 0 and not self.frogpilot_planner.frogpilot_following.following_lead) or \
+                          (frogpilot_toggles.conditional_limit_lead > 0 and self.frogpilot_planner.frogpilot_following.following_lead)
+      self.experimental_mode = sm["carState"].standstill and (
+        (self.experimental_mode and self.frogpilot_planner.model_stopped) or  # Preserve if already experimental
+        cem_speed_at_stop  # Trigger immediately if CEM speed condition applies
+      )
       self.experimental_mode |= self.status_value == CEStatus["USER_OVERRIDDEN"]
       self.experimental_mode &= self.status_value != CEStatus["USER_DISABLED"]
 
@@ -118,8 +124,8 @@ class ConditionalExperimentalMode:
       self.status_value = CEStatus["SIGNAL"]
       return True
 
-    below_speed = not self.frogpilot_planner.frogpilot_following.following_lead and 1 <= v_ego < frogpilot_toggles.conditional_limit
-    below_speed_with_lead = self.frogpilot_planner.frogpilot_following.following_lead and 1 <= v_ego < frogpilot_toggles.conditional_limit_lead
+    below_speed = not self.frogpilot_planner.frogpilot_following.following_lead and v_ego < frogpilot_toggles.conditional_limit
+    below_speed_with_lead = self.frogpilot_planner.frogpilot_following.following_lead and v_ego < frogpilot_toggles.conditional_limit_lead
     if below_speed or below_speed_with_lead:
       self.status_value = CEStatus["SPEED"]
       return True
