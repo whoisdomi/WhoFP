@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <string>
+#include <thread>
 
 #include <QDebug>
 #include <QFile>
@@ -80,6 +81,40 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     params.putBool("DoReboot", true);
   });
   addItem(installBtn);
+
+  // quick update btn
+  quickUpdateBtn = new ButtonControl(tr("Quick Update"), tr("UPDATE"),
+    tr("Pulls the latest code, compiles, and reboots. Faster than the standard updater but has no rollback protection."));
+  connect(quickUpdateBtn, &ButtonControl::clicked, [=]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Pull latest code, compile, and reboot now?"), this)) {
+      std::thread([=]() {
+        quickUpdateBtn->setEnabled(false);
+
+        quickUpdateBtn->setValue(tr("Pulling..."));
+        if (std::system("cd /data/openpilot && git pull") != 0) {
+          quickUpdateBtn->setValue(tr("Pull failed!"));
+          util::sleep_for(3000);
+          quickUpdateBtn->setEnabled(true);
+          quickUpdateBtn->setValue("");
+          return;
+        }
+
+        quickUpdateBtn->setValue(tr("Compiling..."));
+        if (std::system("cd /data/openpilot && scons -j$(nproc)") != 0) {
+          quickUpdateBtn->setValue(tr("Compile failed!"));
+          util::sleep_for(3000);
+          quickUpdateBtn->setEnabled(true);
+          quickUpdateBtn->setValue("");
+          return;
+        }
+
+        quickUpdateBtn->setValue(tr("Rebooting..."));
+        util::sleep_for(1000);
+        Hardware::reboot();
+      }).detach();
+    }
+  });
+  addItem(quickUpdateBtn);
 
   // branch selecting
   targetBranchBtn = new ButtonControl(tr("Target Branch"), tr("SELECT"));
@@ -231,6 +266,7 @@ void SoftwarePanel::updateLabels() {
   versionLbl->setDescription(QString::fromStdString(params.get("UpdaterCurrentReleaseNotes")));
 
   installBtn->setVisible((!is_onroad || parked) && params.getBool("UpdateAvailable"));
+  quickUpdateBtn->setVisible(!is_onroad || parked);
   installBtn->setValue(QString::fromStdString(params.get("UpdaterNewDescription")));
   installBtn->setDescription(QString::fromStdString(params.get("UpdaterNewReleaseNotes")));
 

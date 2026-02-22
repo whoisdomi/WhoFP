@@ -121,6 +121,7 @@ private:
   LabelControl *versionLbl;
   ButtonControl *installBtn;
   ButtonControl *downloadBtn;
+  ButtonControl *quickUpdateBtn;
   ButtonControl *targetBranchBtn;
   ToggleControl *prebuiltToggle;
 
