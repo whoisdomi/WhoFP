@@ -127,6 +127,12 @@ class FrogPilotVCruise:
       self.forcing_stop |= not sm["carState"].standstill
 
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL), 0)
+      # If the model refines its stop prediction to a closer point, follow it downward.
+      # This fixes stop sign overshoot: the model initially predicts stopping at ~50m when
+      # model_stopped triggers, but revises closer as the car approaches the intersection.
+      # Without this, tracked_model_length stays anchored to the stale ~50m value and the
+      # car stops past the model's updated (and more accurate) stop point.
+      self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
       if sm["carState"].standstill:
         self.tracked_model_length = 0
       v_cruise = min(self.tracked_model_length / PLANNER_TIME, v_cruise)
