@@ -126,13 +126,13 @@ class LongitudinalPlanner:
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    if mode == 'acc':
-      accel_clip = [sm['frogpilotPlan'].minAcceleration, sm['frogpilotPlan'].maxAcceleration]
-      steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
-      if not sm['frogpilotPlan'].cscControllingSpeed:
-        accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
-    else:
-      accel_clip = [sm['frogpilotPlan'].minAcceleration, sm['frogpilotPlan'].maxAcceleration]
+    accel_clip = [sm['frogpilotPlan'].minAcceleration, sm['frogpilotPlan'].maxAcceleration]
+    steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
+    if not sm['frogpilotPlan'].cscControllingSpeed:
+      # Apply in both acc and blended modes: physics limits lateral+longitudinal combined
+      # acceleration regardless of mode. Without this in experimental mode the MPC can spike
+      # longitudinal acceleration mid-turn, overloading torque and causing lane departure.
+      accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
 
     if reset_state:
       self.v_desired_filter.x = v_ego
@@ -208,9 +208,12 @@ class LongitudinalPlanner:
         lead_dominated = lead_stopped_or_slow or lead_braking_hard or (lead_slower and lead_close)
 
       if not stop_ahead and not lead_dominated and output_a_target_e2e >= -0.5:
-        # Road appears clear and e2e isn't requesting significant braking
-        # Use weighted blend favoring MPC for better speed maintenance
-        output_a_target = 0.6 * output_a_target_mpc + 0.4 * output_a_target_e2e
+        # Road appears clear and e2e isn't requesting significant braking.
+        # At low speed departing a stop, E2E desiredAcceleration is conservative (it just saw a
+        # red light). Fade E2E weight in as speed builds so departure feels natural, while still
+        # letting E2E dominate stop detection (stop_ahead check above is unaffected).
+        e2e_weight = min(0.4, 0.4 * (v_ego / 3.0))
+        output_a_target = (1.0 - e2e_weight) * output_a_target_mpc + e2e_weight * output_a_target_e2e
       else:
         # Conservative mode: use minimum for safety (stop ahead, lead present, or e2e wants braking)
         output_a_target = min(output_a_target_mpc, output_a_target_e2e)
