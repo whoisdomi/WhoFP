@@ -135,7 +135,10 @@ class FrogPilotVCruise:
       self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
       if sm["carState"].standstill:
         self.tracked_model_length = 0
-      v_cruise = min(self.tracked_model_length / PLANNER_TIME, v_cruise)
+      # Floor division: when tracked_model_length < PLANNER_TIME (~10m), v_cruise becomes 0.0
+      # exactly — giving the MPC a hard "stop now" command. Float division would approach 0
+      # asymptotically and let the car roll slowly (v_ego ≈ v_cruise, MPC never brakes further).
+      v_cruise = min(self.tracked_model_length // PLANNER_TIME, v_cruise)
 
     else:
       self.forcing_stop = False
