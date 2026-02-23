@@ -25,7 +25,7 @@ ALLOW_THROTTLE_THRESHOLD = 0.1
 MIN_ALLOW_THROTTLE_SPEED = 5.0
 
 # Lookup table for turns
-_A_TOTAL_MAX_V = [3.5, 5.0]
+_A_TOTAL_MAX_V = [4.0, 5.5]
 _A_TOTAL_MAX_BP = [20., 40.]
 
 
@@ -202,8 +202,11 @@ class LongitudinalPlanner:
         lead_close_distance = max(80, closing_speed * 7)  # 7 second buffer
         lead_close = lead.dRel < lead_close_distance
 
-        # Stopped/near-stopped leads should trigger coasting behavior
-        lead_stopped_or_slow = lead_stopped or lead_near_stopped
+        # Stopped/near-stopped leads should trigger coasting behavior, but only when they're
+        # not pulling away. When following a lead that just departed a green light, vLead > v_ego
+        # (they're pulling away), so coasting would cause a growing gap and then a jerk to close it.
+        lead_pulling_away = lead.vLead > v_ego + 0.5
+        lead_stopped_or_slow = (lead_stopped or lead_near_stopped) and not lead_pulling_away
         # Conservative mode triggers: stopped, braking hard, or slower and within range
         lead_dominated = lead_stopped_or_slow or lead_braking_hard or (lead_slower and lead_close)
 
@@ -217,8 +220,8 @@ class LongitudinalPlanner:
       else:
         # Conservative mode: use minimum for safety (stop ahead, lead present, or e2e wants braking)
         output_a_target = min(output_a_target_mpc, output_a_target_e2e)
-        # Coast towards stopped/near-stopped leads (no acceleration)
-        if lead_stopped_or_slow:
+        # Coast towards stopped/near-stopped leads (no acceleration) — only when not pulling away
+        if lead_stopped_or_slow:  # already excludes pulling-away case
           output_a_target = min(output_a_target, 0.0)
 
       self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
