@@ -50,6 +50,14 @@ UNWIND_FRAMES_REQUIRED = 5         # Consecutive frames condition must hold befo
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
 
+# === Straight-Stop Suppression ===
+# Scales low_speed_factor toward 1.0 when near-straight and slow.
+# Prevents friction snap and P-term ratcheting at stops without affecting turn behavior.
+# Suppression activates below STRAIGHT_STOP_SPEED and fades out as desired_curvature
+# rises above STRAIGHT_STOP_CURVATURE (~25m radius), restoring full low_speed_factor for turns.
+STRAIGHT_STOP_SPEED = 3.0       # m/s (~6.7 mph)
+STRAIGHT_STOP_CURVATURE = 0.04  # rad/m (~25m radius)
+
 # === Friction Threshold (from StarPilot) ===
 # Speed-interpolated: requires larger error before full friction fires.
 # HKG needs higher thresholds than GM to prevent ticking/wobble.
@@ -172,6 +180,15 @@ class LatControlTorque(LatControl):
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
     low_speed_factor = float(np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y))
+
+    # Straight-stop suppression: scale low_speed_factor toward 1.0 when near-straight and slow.
+    # Prevents friction from snapping left/right at sub-6mph stops without affecting turns —
+    # curve_scale rises from 0 → 1 as desired_curvature crosses STRAIGHT_STOP_CURVATURE,
+    # so full low_speed_factor is restored by the time a real turn begins.
+    if CS.vEgo < STRAIGHT_STOP_SPEED and low_speed_factor > 1.0:
+      curve_scale = float(np.clip(abs(desired_curvature) / STRAIGHT_STOP_CURVATURE, 0.0, 1.0))
+      low_speed_factor = 1.0 + (low_speed_factor - 1.0) * curve_scale
+
     setpoint *= low_speed_factor
     measurement *= low_speed_factor
 
