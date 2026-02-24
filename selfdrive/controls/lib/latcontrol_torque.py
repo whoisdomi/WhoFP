@@ -44,7 +44,8 @@ LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 
 # === Unwind Detection (from StarPilot) ===
 UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
-UNWIND_LAT_ACCEL_NEAR_ZERO = 0.6   # Near straight (m/s²)
+UNWIND_LAT_ACCEL_NEAR_ZERO = 0.6   # Near straight (m/s²), compared against raw (unscaled) lat accel
+UNWIND_FRAMES_REQUIRED = 5         # Consecutive frames condition must hold before decay activates
 
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
@@ -92,7 +93,8 @@ class LatControlTorque(LatControl):
     self.lat_delay = CP.steerActuatorDelay + 0.1
 
     # Unwind detection state
-    self.prev_desired_lateral_accel = 0.0
+    self.prev_future_desired_lateral_accel = 0.0
+    self.unwind_frames = 0
 
   def update_live_delay(self, lateral_delay):
     """Update lateral delay from lagd (called by controlsd when liveDelay updates)."""
@@ -185,17 +187,25 @@ class LatControlTorque(LatControl):
     friction_threshold = get_friction_threshold(CS.vEgo)
     ff += get_friction(error, lateral_accel_deadzone, friction_threshold, self.torque_params)
 
-    # StarPilot unwind detection: freeze integrator when exiting a turn
-    desired_lateral_accel_rate = (setpoint - self.prev_desired_lateral_accel) / DT_CTRL
-    unwind_detected = (desired_lateral_accel_rate < UNWIND_D_DES_THRESHOLD and
-                       abs(setpoint) < UNWIND_LAT_ACCEL_NEAR_ZERO)
-    self.prev_desired_lateral_accel = setpoint
+    # Unwind detection: use raw future_desired_lateral_accel (before jerk prediction and low_speed_factor
+    # scaling) so the rate and near-zero checks are stable and in physical units (m/s²).
+    desired_lateral_accel_rate = (future_desired_lateral_accel - self.prev_future_desired_lateral_accel) / DT_CTRL
+    unwind_condition = (desired_lateral_accel_rate < UNWIND_D_DES_THRESHOLD and
+                        abs(future_desired_lateral_accel) < UNWIND_LAT_ACCEL_NEAR_ZERO)
+    self.prev_future_desired_lateral_accel = future_desired_lateral_accel
+    # Hysteresis: only activate after UNWIND_FRAMES_REQUIRED consecutive frames to prevent flicker
+    if unwind_condition:
+      self.unwind_frames = min(self.unwind_frames + 1, UNWIND_FRAMES_REQUIRED)
+    else:
+      self.unwind_frames = 0
+    unwind_detected = self.unwind_frames >= UNWIND_FRAMES_REQUIRED
 
     if not active:
       output_torque = 0.0
       pid_log.active = False
       self.pid.reset()
-      self.prev_desired_lateral_accel = 0.0
+      self.prev_future_desired_lateral_accel = 0.0
+      self.unwind_frames = 0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space
@@ -209,7 +219,7 @@ class LatControlTorque(LatControl):
 
       # Actively decay integrator during turn exit instead of freezing it
       if unwind_detected:
-        self.pid.i *= 0.8
+        self.pid.i *= 0.95
 
       # Convert to torque at the end
       output_torque = self.torque_from_lateral_accel(
