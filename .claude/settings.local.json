@@ -11,7 +11,8 @@
       "Bash(wsl bash:*)",
       "Bash(del \"c:\\\\Users\\\\user\\\\Documents\\\\GitHub\\\\openpilot\\\\tools\\\\plotjuggler\\\\install_pj.sh\")",
       "Bash(find:*)",
-      "Bash(pip show:*)"
+      "Bash(pip show:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
