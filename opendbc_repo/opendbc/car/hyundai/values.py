@@ -15,7 +15,7 @@ class CarControllerParams:
   ACCEL_MIN = -3.5 # m/s
   ACCEL_MAX = 2.0 # m/s
 
-  def __init__(self, CP):
+  def __init__(self, CP, steer_delta_up=None, steer_delta_down=None, steer_max=None):
     self.STEER_DELTA_UP = 3
     self.STEER_DELTA_DOWN = 7
     self.STEER_DRIVER_ALLOWANCE = 50
@@ -53,6 +53,15 @@ class CarControllerParams:
     # Default for most HKG
     else:
       self.STEER_MAX = 384
+
+    # FrogPilot live steer overrides (non-CANFD only)
+    if not (CP.flags & HyundaiFlags.CANFD):
+      if steer_delta_up is not None:
+        self.STEER_DELTA_UP = steer_delta_up
+      if steer_delta_down is not None:
+        self.STEER_DELTA_DOWN = steer_delta_down
+      if steer_max is not None:
+        self.STEER_MAX = steer_max
 
 
 class HyundaiSafetyFlags(IntFlag):

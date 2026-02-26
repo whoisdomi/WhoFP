@@ -59,6 +59,12 @@ class CarController(CarControllerBase):
     actuators = CC.actuators
     hud_control = CC.hudControl
 
+    # Update live steer params from FrogPilot toggles
+    self.params = CarControllerParams(self.CP,
+                                      getattr(frogpilot_toggles, 'steer_delta_up', None),
+                                      getattr(frogpilot_toggles, 'steer_delta_down', None),
+                                      getattr(frogpilot_toggles, 'steer_max', None))
+
     # steering torque
     new_torque = int(round(actuators.torque * self.params.STEER_MAX))
     apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last, CS.out.steeringTorque, self.params)
