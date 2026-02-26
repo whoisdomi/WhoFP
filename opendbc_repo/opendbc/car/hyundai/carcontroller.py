@@ -146,8 +146,8 @@ class CarController(CarControllerBase):
           can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, self.CP)] * 25)
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
-      # ICBM - Intelligent Cruise Button Management (CAN)
-      elif frogpilot_toggles.icbm_enabled:
+      # ICBM - Intelligent Cruise Button Management (CAN) - disabled for Telluride/Palisade
+      elif frogpilot_toggles.icbm_enabled and self.car_fingerprint != CAR.HYUNDAI_PALISADE:
         raw_button = self.params_memory.get("ICBMButton")
         if raw_button is None:
           icbm_button = 0
