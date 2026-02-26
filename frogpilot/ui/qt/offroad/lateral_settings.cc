@@ -75,6 +75,9 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
 
     {"QOLLateral", tr("Quality of Life"), tr("<b>Steering control changes to fine-tune how openpilot drives.</b>"), "../../frogpilot/assets/toggle_icons/icon_quality_of_life.png"},
     {"PauseLateralSpeed", tr("Pause Steering Below"), tr("<b>Pause steering below the set speed.</b>"), ""},
+    {"SteerDeltaUp", tr("Steer Rate Up (Default: 3)"), tr("<b>How quickly openpilot increases steering torque.</b> Higher values allow faster torque buildup. Capped at the panda safety limit."), ""},
+    {"SteerDeltaDown", tr("Steer Rate Down (Default: 7)"), tr("<b>How quickly openpilot decreases steering torque.</b> Higher values allow faster torque reduction. Capped at the panda safety limit."), ""},
+    {"SteerMax", tr("Max Torque (Default: 384)"), tr("<b>Maximum steering torque openpilot will request.</b> Higher values allow more aggressive steering. Capped at the panda safety limit of 500."), ""},
 
     {"IgnoreMe", "Ignore Me", "This is simply used to fix the layout when the user opens the descriptions and the menu gets wonky. No idea why it happens, but I can't be asked to properly fix it so whatever. Sue me.", ""},
     {"IgnoreMe2", "Ignore Me", "This is simply used to fix the layout when the user opens the descriptions and the menu gets wonky. No idea why it happens, but I can't be asked to properly fix it so whatever. Sue me.", ""}
@@ -209,6 +212,15 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
       std::vector<QString> pauseLateralToggles{"PauseLateralOnSignal"};
       std::vector<QString> pauseLateralToggleNames{tr("Turn Signal Only")};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0, 99, QString(), std::map<float, QString>(), 1, true, pauseLateralToggles, pauseLateralToggleNames, true);
+    } else if (param == "SteerDeltaUp") {
+      std::vector<QString> steerDeltaUpButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 3, 10, QString(), std::map<float, QString>(), 1, false, {}, steerDeltaUpButton, false, false);
+    } else if (param == "SteerDeltaDown") {
+      std::vector<QString> steerDeltaDownButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 3, 10, QString(), std::map<float, QString>(), 1, false, {}, steerDeltaDownButton, false, false);
+    } else if (param == "SteerMax") {
+      std::vector<QString> steerMaxButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 250, 500, QString(), std::map<float, QString>(), 1, false, {}, steerMaxButton, false, false);
 
     } else {
       lateralToggle = new ParamControl(param, title, desc, icon);
@@ -332,6 +344,30 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Lane Position Offset</b> to its default value?"), this)) {
       params.putFloat("LanePositionOffset", 0.0);
       lanePositionOffsetToggle->refresh();
+    }
+  });
+
+  steerDeltaUpToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerDeltaUp"]);
+  QObject::connect(steerDeltaUpToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Steer Rate Up</b> to its default value?"), this)) {
+      params.put("SteerDeltaUp", "3");
+      steerDeltaUpToggle->refresh();
+    }
+  });
+
+  steerDeltaDownToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerDeltaDown"]);
+  QObject::connect(steerDeltaDownToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Steer Rate Down</b> to its default value?"), this)) {
+      params.put("SteerDeltaDown", "7");
+      steerDeltaDownToggle->refresh();
+    }
+  });
+
+  steerMaxToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerMax"]);
+  QObject::connect(steerMaxToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Max Torque</b> to its default value?"), this)) {
+      params.put("SteerMax", "384");
+      steerMaxToggle->refresh();
     }
   });
 

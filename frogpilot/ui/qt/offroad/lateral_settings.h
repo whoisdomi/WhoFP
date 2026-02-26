@@ -29,7 +29,7 @@ private:
   QSet<QString> aolKeys = {"AlwaysOnLateralLKAS", "PauseAOLOnBrake"};
   QSet<QString> laneChangeKeys = {"LaneChangeDuration", "LaneChangeJerkResponse", "LaneChangeLateralAccel", "LaneChangeTime", "LaneDetectionWidth", "MinimumLaneChangeSpeed", "NudgelessLaneChange", "OneLaneChange"};
   QSet<QString> lateralTuneKeys = {"LanePositionOffset", "NNFF", "NNFFLite", "ResetCameraCalibration", "TurnDesires"};
-  QSet<QString> qolKeys = {"PauseLateralSpeed"};
+  QSet<QString> qolKeys = {"PauseLateralSpeed", "SteerDeltaUp", "SteerDeltaDown", "SteerMax"};
 
   QSet<QString> parentKeys;
 
@@ -41,6 +41,10 @@ private:
   FrogPilotParamValueButtonControl *steerRatioToggle;
   FrogPilotParamValueButtonControl *latSmoothSecondsToggle;
   FrogPilotParamValueButtonControl *lanePositionOffsetToggle;
+
+  FrogPilotParamValueButtonControl *steerDeltaUpToggle;
+  FrogPilotParamValueButtonControl *steerDeltaDownToggle;
+  FrogPilotParamValueButtonControl *steerMaxToggle;
 
   FrogPilotSettingsWindow *parent;
 

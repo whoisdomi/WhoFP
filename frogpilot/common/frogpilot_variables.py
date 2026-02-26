@@ -763,6 +763,9 @@ class FrogPilotVariables:
     quality_of_life_lateral = self.get_value("QOLLateral")
     toggle.pause_lateral_below_speed = self.get_value("PauseLateralSpeed", cast=float, condition=quality_of_life_lateral, conversion=speed_conversion)
     toggle.pause_lateral_below_signal = toggle.pause_lateral_below_speed != 0 and self.get_value("PauseLateralOnSignal")
+    toggle.steer_delta_up = self.get_value("SteerDeltaUp", cast=int, condition=quality_of_life_lateral, default=3, min=3, max=10)
+    toggle.steer_delta_down = self.get_value("SteerDeltaDown", cast=int, condition=quality_of_life_lateral, default=7, min=3, max=10)
+    toggle.steer_max = self.get_value("SteerMax", cast=int, condition=quality_of_life_lateral, default=384, min=250, max=500)
 
     quality_of_life_longitudinal = toggle.openpilot_longitudinal and self.get_value("QOLLongitudinal")
     toggle.cruise_increase = self.get_value("CustomCruise", cast=float, condition=(quality_of_life_longitudinal and not pcm_cruise))

@@ -15,7 +15,7 @@ class CarControllerParams:
   ACCEL_MIN = -3.5 # m/s
   ACCEL_MAX = 10.0 # m/s
 
-  def __init__(self, CP, vEgoRaw=100., taco_tune_hack=False):
+  def __init__(self, CP, vEgoRaw=100., taco_tune_hack=False, steer_delta_up=None, steer_delta_down=None, steer_max=None):
     self.STEER_DELTA_UP = 3
     self.STEER_DELTA_DOWN = 7
     self.STEER_DRIVER_ALLOWANCE = 50
@@ -64,9 +64,11 @@ class CarControllerParams:
       self.STEER_DELTA_UP = 2
       self.STEER_DELTA_DOWN = 3
 
-    # Default for most HKG
+    # Default for most HKG (FrogPilot: overridable via QOL lateral sliders)
     else:
-      self.STEER_MAX = 384
+      self.STEER_MAX = steer_max if steer_max is not None else 384
+      self.STEER_DELTA_UP = steer_delta_up if steer_delta_up is not None else self.STEER_DELTA_UP
+      self.STEER_DELTA_DOWN = steer_delta_down if steer_delta_down is not None else self.STEER_DELTA_DOWN
 
 
 class HyundaiSafetyFlags(IntFlag):
