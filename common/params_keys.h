@@ -226,7 +226,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"DownloadMaps", {CLEAR_ON_MANAGER_START, BOOL, "0", "0"}},
     {"DriverCamera", {PERSISTENT, BOOL, "0", "0", 1}},
     {"DrivingModel", {PERSISTENT, STRING, "wmi-model_default", "wmi-model_default", 1}},
-    {"DrivingModelName", {PERSISTENT, STRING, "WMI model (Default)", "WMI model (Default)", 1}},
+    {"DrivingModelName", {PERSISTENT, STRING, "South Carolina", "South Carolina", 1}},
     {"DrivingModelVersion", {PERSISTENT, STRING, "v9", "v9", 1}},
     {"DynamicPathWidth", {PERSISTENT, BOOL, "0", "0", 2}},
     {"DynamicPedalsOnUI", {PERSISTENT, BOOL, "1", "0", 1}},
