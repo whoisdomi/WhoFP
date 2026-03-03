@@ -45,7 +45,8 @@ LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 # === Unwind Detection (from StarPilot) ===
 UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
 UNWIND_LAT_ACCEL_NEAR_ZERO = 0.6   # Near straight (m/s²), compared against raw (unscaled) lat accel
-UNWIND_FRAMES_REQUIRED = 5         # Consecutive frames condition must hold before decay activates
+UNWIND_FRAMES_ACTIVATE = 5         # Counter threshold to activate decay
+UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 false frames to deactivate
 
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
@@ -210,12 +211,14 @@ class LatControlTorque(LatControl):
     unwind_condition = (desired_lateral_accel_rate < UNWIND_D_DES_THRESHOLD and
                         abs(future_desired_lateral_accel) < UNWIND_LAT_ACCEL_NEAR_ZERO)
     self.prev_future_desired_lateral_accel = future_desired_lateral_accel
-    # Hysteresis: only activate after UNWIND_FRAMES_REQUIRED consecutive frames to prevent flicker
+    # Hysteresis counter: builds at +1/frame when condition is met, drains at -1/frame when not.
+    # Activates at UNWIND_FRAMES_ACTIVATE (5 frames), saturates at UNWIND_COUNTER_MAX (15 frames).
+    # Once saturated, transient noise (< 10 false frames) can't break the detection.
     if unwind_condition:
-      self.unwind_frames = min(self.unwind_frames + 1, UNWIND_FRAMES_REQUIRED)
+      self.unwind_frames = min(self.unwind_frames + 1, UNWIND_COUNTER_MAX)
     else:
-      self.unwind_frames = 0
-    unwind_detected = self.unwind_frames >= UNWIND_FRAMES_REQUIRED
+      self.unwind_frames = max(self.unwind_frames - 1, 0)
+    unwind_detected = self.unwind_frames >= UNWIND_FRAMES_ACTIVATE
 
     if not active:
       output_torque = 0.0
