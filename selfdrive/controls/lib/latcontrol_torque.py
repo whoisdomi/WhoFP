@@ -43,8 +43,8 @@ LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 # Note: Initial lat_delay is calculated in __init__ as CP.steerActuatorDelay + 0.2 (matching lagd)
 
 # === Unwind Detection (from StarPilot) ===
-UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
-UNWIND_LAT_ACCEL_NEAR_ZERO = 0.6   # Near straight (m/s²), compared against raw (unscaled) lat accel
+UNWIND_D_DES_THRESHOLD = -0.6      # Desired accel decreasing fast (m/s³)
+UNWIND_LAT_ACCEL_NEAR_ZERO = 1.5   # Near straight (m/s²), compared against raw (unscaled) lat accel
 UNWIND_FRAMES_ACTIVATE = 5         # Counter threshold to activate decay
 UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 false frames to deactivate
 
@@ -67,7 +67,7 @@ STRAIGHT_STOP_CURVATURE = 0.04  # rad/m (~25m radius)
 # m/s:                          0.5    2.0    5.0    10.0   33.5
 # mph:                          1.1    4.5    11.2   22.4   75.0
 FRICTION_THRESHOLD_SPEEDS =    [0.5,   2.0,   5.0,   10.0,  33.5]
-FRICTION_THRESHOLD_VALUES =    [0.15,  0.20,  0.30,  0.35,  0.35]
+FRICTION_THRESHOLD_VALUES =    [0.15,  0.20,  0.38,  0.42,  0.42]
 
 
 def get_friction_threshold(v_ego: float) -> float:
@@ -239,7 +239,7 @@ class LatControlTorque(LatControl):
 
       # Actively decay integrator during turn exit instead of freezing it
       if unwind_detected:
-        self.pid.i *= 0.95
+        self.pid.i *= 0.90
 
       # Convert to torque at the end
       output_torque = self.torque_from_lateral_accel(
