@@ -23,7 +23,7 @@ import traceback
 from cereal import car, messaging
 from opendbc.can.parser import CANParser
 from openpilot.common.realtime import DT_HW
-from openpilot.selfdrive.car.toyota.carcontroller import LOCK_CMD, UNLOCK_CMD
+from opendbc.car.toyota.carcontroller import LOCK_CMD, UNLOCK_CMD
 from openpilot.system.hardware import HARDWARE, PC
 from openpilot.system.hardware.hw import Paths
 from openpilot.system.loggerd.deleter import PRESERVE_ATTR_NAME, PRESERVE_ATTR_VALUE, PRESERVE_COUNT

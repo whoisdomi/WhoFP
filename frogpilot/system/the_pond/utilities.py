@@ -17,7 +17,7 @@ from pydub import AudioSegment
 from typing import List
 from werkzeug.utils import secure_filename
 
-from openpilot.common.conversions import Conversions as CV
+from openpilot.common.constants import CV
 from openpilot.system.loggerd.config import get_available_bytes, get_used_bytes
 from openpilot.system.loggerd.deleter import PRESERVE_ATTR_NAME, PRESERVE_ATTR_VALUE
 from openpilot.system.loggerd.uploader import listdir_by_creation

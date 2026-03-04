@@ -8,6 +8,7 @@ import requests
 import subprocess
 import threading
 import time
+import tarfile
 import zipfile
 
 from functools import cache
@@ -181,6 +182,16 @@ def delete_file(path, print_error=True, report=True):
     run_cmd(["sudo", "rm", "-rf", str(path)], f"Deleted directory: {path}", f"Failed to delete directory: {path}", report=report)
   elif print_error:
     print(f"File not found: {path}")
+
+
+def extract_tar(tar_file, extract_path):
+  tar_file = Path(tar_file)
+  extract_path = Path(extract_path)
+  print(f"Extracting {tar_file} to {extract_path}")
+  with tarfile.open(tar_file, "r:gz") as tar:
+    tar.extractall(path=extract_path)
+  tar_file.unlink()
+  print(f"Extraction completed: {tar_file} has been removed")
 
 
 def extract_zip(zip_file, extract_path):
