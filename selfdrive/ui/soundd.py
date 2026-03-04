@@ -215,37 +215,42 @@ class Soundd:
     # FrogPilot variables
     sm = sm.extend(['frogpilotSelfdriveState', 'frogpilotPlan'])
 
-    with self.get_stream(sd) as stream:
-      rk = Ratekeeper(20)
+    stream = self.get_stream(sd)
+    stream.start()
+    rk = Ratekeeper(20)
 
-      cloudlog.info(f"soundd stream started: {stream.samplerate=} {stream.channels=} {stream.dtype=} {stream.device=}, {stream.blocksize=}")
-      while True:
-        sm.update(0)
+    cloudlog.info(f"soundd stream started: {stream.samplerate=} {stream.channels=} {stream.dtype=} {stream.device=}, {stream.blocksize=}")
+    while True:
+      sm.update(0)
 
-        if sm.updated['soundPressure'] and self.current_alert == AudibleAlert.none: # only update volume filter when not playing alert
-          self.spl_filter_weighted.update(sm["soundPressure"].soundPressureWeightedDb)
-          self.current_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
+      if sm.updated['soundPressure'] and self.current_alert == AudibleAlert.none: # only update volume filter when not playing alert
+        self.spl_filter_weighted.update(sm["soundPressure"].soundPressureWeightedDb)
+        self.current_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
 
-          if self.frogpilot_toggles.alert_volume_controller:
-            self.auto_volume = self.current_volume
-            self.current_volume = 0.0
+        if self.frogpilot_toggles.alert_volume_controller:
+          self.auto_volume = self.current_volume
+          self.current_volume = 0.0
 
-        elif self.current_alert in self.volume_map and self.frogpilot_toggles.alert_volume_controller:
-          self.current_volume = self.volume_map[self.current_alert]
-          if self.current_volume == 1.01:
-            self.current_volume = self.auto_volume
+      elif self.current_alert in self.volume_map and self.frogpilot_toggles.alert_volume_controller:
+        self.current_volume = self.volume_map[self.current_alert]
+        if self.current_volume == 1.01:
+          self.current_volume = self.auto_volume
 
-        self.get_audible_alert(sm)
+      self.get_audible_alert(sm)
 
-        rk.keep_time()
+      rk.keep_time()
 
-        assert stream.active
+      if not stream.active:
+        cloudlog.warning("soundd stream became inactive, restarting...")
+        stream.close()
+        stream = self.get_stream(sd)
+        stream.start()
 
-        # FrogPilot variables
-        if sm['frogpilotPlan'].togglesUpdated:
-          self.frogpilot_toggles = get_frogpilot_toggles()
+      # FrogPilot variables
+      if sm['frogpilotPlan'].togglesUpdated:
+        self.frogpilot_toggles = get_frogpilot_toggles()
 
-          stream = self.update_frogpilot_sounds(sd, stream)
+        stream = self.update_frogpilot_sounds(sd, stream)
 
   def update_frogpilot_sounds(self, sd=None, stream=None):
     self.volume_map = {
