@@ -80,6 +80,25 @@ def write_legacy_param_file(key, value):
   tmp_path.write_text(str(value), encoding="utf-8")
   os.replace(tmp_path, value_path)
 
+_layout_type_overrides = None
+
+def _get_layout_type_overrides():
+  global _layout_type_overrides
+  if _layout_type_overrides is None:
+    try:
+      layout_path = os.path.join(os.path.dirname(__file__), "assets", "components", "tools", "device_settings_layout.json")
+      with open(layout_path) as f:
+        layout_data = json.load(f)
+      _layout_type_overrides = {
+        p["key"]: p["data_type"]
+        for section in layout_data
+        for p in section.get("params", [])
+        if "key" in p and "data_type" in p
+      }
+    except Exception:
+      _layout_type_overrides = {}
+  return _layout_type_overrides
+
 def setup(app):
   model_status_debug = {
     "last_signature": None,
@@ -424,19 +443,10 @@ def setup(app):
         else:
           types[k] = str
 
-    # Override ambiguous "0"/"1" defaults using layout JSON's authoritative data_type
-    try:
-      layout_path = os.path.join(os.path.dirname(__file__), "assets", "components", "tools", "device_settings_layout.json")
-      with open(layout_path) as f:
-        layout_data = json.load(f)
-      for section in layout_data:
-        for p in section.get("params", []):
-          k = p.get("key")
-          dt = p.get("data_type")
-          if k in types and dt in ("int", "float") and types[k] == bool:
-            types[k] = float if dt == "float" else int
-    except Exception:
-      pass
+    # Override ambiguous "0"/"1" defaults using layout JSON's authoritative data_type (cached)
+    for k, dt in _get_layout_type_overrides().items():
+      if k in types and dt in ("int", "float") and types[k] == bool:
+        types[k] = float if dt == "float" else int
 
     result = {}
     for key in allowed_keys:

@@ -260,12 +260,15 @@ function ensurePolling() {
   if (pollingHandle) return;
 
   const poll = async () => {
+    if (!isModelRouteActive()) {
+      pollingHandle = null;
+      return;
+    }
+
     let nextDelay = IDLE_POLL_INTERVAL_MS;
     try {
-      if (isModelRouteActive()) {
-        await fetchStatus();
-        nextDelay = state.status.downloading ? ACTIVE_POLL_INTERVAL_MS : IDLE_POLL_INTERVAL_MS;
-      }
+      await fetchStatus();
+      nextDelay = state.status.downloading ? ACTIVE_POLL_INTERVAL_MS : IDLE_POLL_INTERVAL_MS;
     } finally {
       pollingHandle = setTimeout(poll, nextDelay);
     }
@@ -487,8 +490,8 @@ export function ModelManager() {
       state.refreshing = false;
       logDebug("Initial refresh failed", state.error);
     });
-    ensurePolling();
   }
+  ensurePolling();
 
   return html`
     <div class="mm-wrapper">
