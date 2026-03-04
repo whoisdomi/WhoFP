@@ -11,11 +11,23 @@ if _os.path.isdir(_pond_deps) and _pond_deps not in sys.path:
 try:
   import flask as _flask_check
 except ImportError:
-  subprocess.run(
-    [sys.executable, "-m", "pip", "install", "--target", _pond_deps,
-     "flask", "Pillow", "pydub"],
-    check=True
-  )
+  _pkgs = ["flask", "Pillow", "pydub"]
+  _base_cmd = ["install", "--target", _pond_deps, "--no-cache-dir"] + _pkgs
+  _attempts = [
+    [sys.executable, "-m", "pip"] + _base_cmd,
+    [sys.executable, "-m", "pip"] + _base_cmd + ["--break-system-packages"],
+    ["pip3"] + _base_cmd,
+  ]
+  _installed = False
+  for _cmd in _attempts:
+    _result = subprocess.run(_cmd, capture_output=True, text=True)
+    if _result.returncode == 0:
+      _installed = True
+      break
+    print(f"[the_pond] pip attempt failed ({_cmd[0]}): {_result.stderr[-500:]}")
+  if not _installed:
+    print("[the_pond] All pip install attempts failed — The Pond will not start.")
+    sys.exit(1)
   sys.path.insert(0, _pond_deps)
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
