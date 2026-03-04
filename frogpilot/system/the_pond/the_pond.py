@@ -66,6 +66,14 @@ from openpilot.frogpilot.common.frogpilot_variables import ACTIVE_THEME_PATH, ER
                                                            frogpilot_default_params, params, params_memory, update_frogpilot_toggles
 from openpilot.frogpilot.system.the_pond import utilities
 
+def params_get_str(key, default=""):
+  """params.get() as a decoded UTF-8 string (FP-Testing Params lacks encoding kwarg)."""
+  val = params.get(key)
+  if val is None:
+    return default
+  return val.decode("utf-8") if isinstance(val, bytes) else val
+
+
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 GITLAB_API = "https://gitlab.com/api/v4"
@@ -249,22 +257,22 @@ def setup(app):
   @app.route("/api/navigation", methods=["GET"])
   def navigation():
     last_position = json.loads(
-      params.get("LastGPSPosition", encoding="utf8") or
+      params_get_str("LastGPSPosition") or
       "{\"latitude\": 51.276824158421331, \"longitude\": 30.221928335547232, \"altitude\": 111.0}"
     )
 
     return {
-      "amap1Key": params.get("AMapKey1", encoding="utf8") or "",
-      "amap2Key": params.get("AMapKey2", encoding="utf8") or "",
-      "destination": params.get("NavDestination", encoding="utf8") or "",
+      "amap1Key": params_get_str("AMapKey1") or "",
+      "amap2Key": params_get_str("AMapKey2") or "",
+      "destination": params_get_str("NavDestination") or "",
       "isMetric": params.get_bool("IsMetric"),
       "lastPosition": {
         "latitude": str(last_position["latitude"]),
         "longitude": str(last_position["longitude"])
       },
-      "mapboxPublic": params.get("MapboxPublicKey", encoding="utf8") or "",
-      "mapboxSecret": params.get("MapboxSecretKey", encoding="utf8") or "",
-      "previousDestinations": params.get("ApiCache_NavDestinations", encoding="utf8") or "",
+      "mapboxPublic": params_get_str("MapboxPublicKey") or "",
+      "mapboxSecret": params_get_str("MapboxSecretKey") or "",
+      "previousDestinations": params_get_str("ApiCache_NavDestinations") or "",
     }
 
   @app.route("/api/navigation", methods=["POST"])
@@ -280,7 +288,7 @@ def setup(app):
   def remove_favorite_destination():
     to_remove = request.json or {}
 
-    existing = json.loads(params.get("FavoriteDestinations", encoding="utf8") or "[]")
+    existing = json.loads(params_get_str("FavoriteDestinations") or "[]")
     fid = to_remove.get("id")
     if fid:
       favorites = [f for f in existing if f.get("id") != fid]
@@ -300,7 +308,7 @@ def setup(app):
 
   @app.route("/api/navigation/favorite", methods=["GET"])
   def list_favorite_destinations():
-    favorites = json.loads(params.get("FavoriteDestinations", encoding="utf8") or "[]")
+    favorites = json.loads(params_get_str("FavoriteDestinations") or "[]")
     changed = False
     for f in favorites:
       if "id" not in f:
@@ -319,7 +327,7 @@ def setup(app):
       raw = f"{new_fav.get('longitude')},{new_fav.get('latitude')}|{new_fav.get('routeId') or ''}|{new_fav.get('name') or ''}"
       new_fav["id"] = hashlib.sha1(raw.encode()).hexdigest()
 
-    existing = json.loads(params.get("FavoriteDestinations", encoding="utf8") or "[]")
+    existing = json.loads(params_get_str("FavoriteDestinations") or "[]")
     if not any(f.get("id") == new_fav["id"] for f in existing):
       existing.append(new_fav)
 
@@ -338,7 +346,7 @@ def setup(app):
     if not fid and not route_id_to_rename:
       return jsonify({"error": "Missing id or routeId"}), 400
 
-    existing_favorites = json.loads(params.get("FavoriteDestinations", encoding="utf8") or "[]")
+    existing_favorites = json.loads(params_get_str("FavoriteDestinations") or "[]")
 
     if is_home:
       for favorite in existing_favorites:
@@ -507,7 +515,7 @@ def setup(app):
     installed = [{"value": model["value"], "label": model["label"]} for model in catalog if model["installed"]]
 
     # Keep current model selectable even if local files are currently inconsistent.
-    current_model = params.get("Model", encoding="utf-8") or ""
+    current_model = params_get_str("Model") or ""
     if current_model and all(model["value"] != current_model for model in installed):
       for model in catalog:
         if model["value"] == current_model:
@@ -521,7 +529,7 @@ def setup(app):
     models = get_model_catalog()
     return jsonify({
       "models": models,
-      "currentModel": params.get("Model", encoding="utf-8") or "",
+      "currentModel": params_get_str("Model") or "",
       "summary": {
         "installed": sum(1 for model in models if model["installed"]),
         "missing": sum(1 for model in models if not model["installed"]),
@@ -534,7 +542,7 @@ def setup(app):
     if request.method == "GET":
       return jsonify({
         "sortMode": read_legacy_param_file(MODEL_SORT_MODE_PARAM, "alphabetical"),
-        "userFavorites": [entry for entry in (params.get(MODEL_USER_FAVORITES_PARAM, encoding="utf-8") or "").split(",") if entry],
+        "userFavorites": [entry for entry in (params_get_str(MODEL_USER_FAVORITES_PARAM) or "").split(",") if entry],
       }), 200
 
     data = request.get_json() or {}
@@ -568,7 +576,7 @@ def setup(app):
     cancelling = params_memory.get_bool(MODEL_CANCEL_DOWNLOAD_PARAM)
 
     downloading = bool(model_to_download) or download_all
-    current_model = params.get("Model", encoding="utf-8") or ""
+    current_model = params_get_str("Model") or ""
     sort_mode = read_legacy_param_file(MODEL_SORT_MODE_PARAM, "alphabetical")
     terminal = progress in ("Downloaded!", "All models downloaded!") or bool(re.search(r"cancelled|exists|failed|offline|invalid|error", progress, re.IGNORECASE))
     summary = {
@@ -603,8 +611,8 @@ def setup(app):
       model_status_debug["last_log_time"] = now
 
     if summary["total"] == 0 and now - model_status_debug["last_empty_catalog_log_time"] >= 15:
-      available_models = params.get("AvailableModels", encoding="utf-8") or ""
-      available_names = params.get("AvailableModelNames", encoding="utf-8") or ""
+      available_models = params_get_str("AvailableModels") or ""
+      available_names = params_get_str("AvailableModelNames") or ""
       available_models_count = len([item for item in available_models.split(",") if item.strip()])
       available_names_count = len([item for item in available_names.split(",") if item.strip()])
       print(
@@ -715,7 +723,7 @@ def setup(app):
     if not model_key:
       return jsonify({"error": "Missing model key."}), 400
 
-    current_model = params.get("Model", encoding="utf-8") or ""
+    current_model = params_get_str("Model") or ""
     if model_key == current_model:
       return jsonify({"error": "Cannot delete the currently active model."}), 409
 
@@ -783,14 +791,14 @@ def setup(app):
     return any(file.startswith(f"{model_key}.") or file.startswith(f"{model_key}_") for file in on_disk_files)
 
   def get_model_catalog():
-    available = [model.strip() for model in (params.get("AvailableModels", encoding="utf-8") or "").split(",")]
-    names = [name.strip() for name in (params.get("AvailableModelNames", encoding="utf-8") or "").split(",")]
-    series = [entry.strip() for entry in (params.get("AvailableModelSeries", encoding="utf-8") or "").split(",")]
-    versions = [entry.strip() for entry in (params.get("ModelVersions", encoding="utf-8") or "").split(",")]
-    released_dates = [entry.strip() for entry in (params.get("ModelReleasedDates", encoding="utf-8") or "").split(",")]
+    available = [model.strip() for model in (params_get_str("AvailableModels") or "").split(",")]
+    names = [name.strip() for name in (params_get_str("AvailableModelNames") or "").split(",")]
+    series = [entry.strip() for entry in (params_get_str("AvailableModelSeries") or "").split(",")]
+    versions = [entry.strip() for entry in (params_get_str("ModelVersions") or "").split(",")]
+    released_dates = [entry.strip() for entry in (params_get_str("ModelReleasedDates") or "").split(",")]
 
-    community_favorites = {entry.strip() for entry in (params.get("CommunityFavorites", encoding="utf-8") or "").split(",") if entry.strip()}
-    user_favorites = {entry.strip() for entry in (params.get(MODEL_USER_FAVORITES_PARAM, encoding="utf-8") or "").split(",") if entry.strip()}
+    community_favorites = {entry.strip() for entry in (params_get_str("CommunityFavorites") or "").split(",") if entry.strip()}
+    user_favorites = {entry.strip() for entry in (params_get_str(MODEL_USER_FAVORITES_PARAM) or "").split(",") if entry.strip()}
 
     models_dir = "/data/models"
     try:
@@ -1174,7 +1182,7 @@ def setup(app):
         env = short_branch
 
       try:
-        response = requests.get(f"https://api.comma.ai/v1/devices/{params.get('DongleId', encoding='utf8')}/firehose_stats", timeout=10)
+        response = requests.get(f"https://api.comma.ai/v1/devices/{params_get_str('DongleId')}/firehose_stats", timeout=10)
         response.raise_for_status()
         firehose_stats = response.json().get("firehose", 0)
       except Exception:
@@ -1206,7 +1214,7 @@ def setup(app):
       paired = GALAXY_AUTH_FILE.is_file() and len(GALAXY_AUTH_FILE.read_text().strip()) == 64
     except Exception:
       paired = False
-    dongle_id = params.get("DongleId", encoding="utf8") or ""
+    dongle_id = params_get_str("DongleId") or ""
     return jsonify({
       "paired": paired,
       "url": f"https://galaxy.firestar.link/{dongle_id}" if dongle_id else "",
@@ -1223,7 +1231,7 @@ def setup(app):
     GALAXY_DIR.mkdir(parents=True, exist_ok=True)
     GALAXY_AUTH_FILE.write_text(pw_hash)
 
-    dongle_id = params.get("DongleId", encoding="utf8") or ""
+    dongle_id = params_get_str("DongleId") or ""
     return jsonify({
       "message": "Pairing successful!",
       "url": f"https://galaxy.firestar.link/{dongle_id}" if dongle_id else "",
@@ -1553,7 +1561,7 @@ def setup(app):
         "WheelIcon": "steeringWheel"
       }
       for param, theme_key in theme_param_map.items():
-        param_value = params.get(param, encoding="utf-8")
+        param_value = params_get_str(param)
         if param_value:
           theme_data["theme_names"][theme_key] = utilities.normalize_theme_name(param_value)
 

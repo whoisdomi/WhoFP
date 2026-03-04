@@ -471,7 +471,8 @@ def get_disk_usage():
   }]
 
 def get_drive_stats():
-  stats = json.loads(params.get("ApiCache_DriveStats", encoding="utf-8") or "{}")
+  raw = params.get("ApiCache_DriveStats")
+  stats = json.loads(raw if raw else b"{}")
   frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
 
   is_metric = params.get_bool("IsMetric")

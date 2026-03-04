@@ -147,11 +147,11 @@ def main():
   try:
     # Wait for DongleId to be set (usually set on boot/pairing)
     glog("Checking DongleId...")
-    dongle_id = params.get("DongleId", encoding='utf8')
+    dongle_id = (params.get("DongleId") or b"").decode("utf-8") or None
     while not dongle_id:
       glog("Waiting for DongleId...")
       time.sleep(5)
-      dongle_id = params.get("DongleId", encoding='utf8')
+      dongle_id = (params.get("DongleId") or b"").decode("utf-8") or None
 
     glog(f"DongleId: {dongle_id}")
   except Exception as e:
