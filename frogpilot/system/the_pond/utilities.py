@@ -426,12 +426,13 @@ def ffmpeg_mp4_wrap_process_builder(filename):
   return open(cache_path, "rb")
 
 def format_git_date(raw_date: str):
-  date_object = datetime.strptime(raw_date.split()[1], "%Y-%m-%d")
-
-  day = date_object.day
-  suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
-
-  return date_object.strftime(f"%B {day}{suffix}, %Y")
+  try:
+    date_object = datetime.strptime(raw_date.split()[1], "%Y-%m-%d")
+    day = date_object.day
+    suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    return date_object.strftime(f"%B {day}{suffix}, %Y")
+  except (IndexError, ValueError):
+    return raw_date
 
 def get_all_segment_names(footage_path):
   entries = listdir_by_creation(footage_path)
@@ -466,7 +467,7 @@ def get_disk_usage():
     "free": to_gb(free),
     "size": to_gb(total),
     "used": to_gb(used),
-    "usedPercentage": f"{(used / total) * 100:.2f}%"
+    "usedPercentage": f"{(used / total) * 100:.2f}%" if total > 0 else "0.00%"
   }]
 
 def get_drive_stats():

@@ -123,7 +123,12 @@ def main():
 
   while True:
     glxyauth_file = GALAXY_DIR / "glxyauth"
-    galaxy_password_hash = glxyauth_file.read_text().strip() if glxyauth_file.exists() else None
+    if glxyauth_file.exists():
+      galaxy_password_hash = glxyauth_file.read_text().strip()
+      print(f"Galaxy: glxyauth found, hash length={len(galaxy_password_hash)}")
+    else:
+      galaxy_password_hash = None
+      print("Galaxy: glxyauth not found, not paired")
     is_paired = galaxy_password_hash and len(galaxy_password_hash) == 64
 
     if is_paired:
