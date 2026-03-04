@@ -73,9 +73,9 @@ GITLAB_SUBMISSIONS_PROJECT_ID = "71992109"
 GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN", "")
 
 FOOTAGE_PATHS = [
-  Paths.log_root(HD=True, raw=True),
-  Paths.log_root(konik=True, raw=True),
-  Paths.log_root(raw=True),
+  '/data/media/0/realdata_HD/',
+  '/data/media/0/realdata_konik/',
+  '/data/media/0/realdata/',
 ]
 
 KEYS = {
