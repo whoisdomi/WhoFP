@@ -472,8 +472,9 @@ def get_disk_usage():
 
 def get_drive_stats():
   raw = params.get("ApiCache_DriveStats")
-  stats = json.loads(raw if raw else b"{}")
-  frogpilot_stats = json.loads(params.get("FrogPilotStats") or "{}")
+  stats = raw if isinstance(raw, dict) else json.loads(raw if raw else "{}")
+  raw_fp = params.get("FrogPilotStats")
+  frogpilot_stats = raw_fp if isinstance(raw_fp, dict) else json.loads(raw_fp if raw_fp else "{}")
 
   is_metric = params.get_bool("IsMetric")
   unit = "kilometers" if is_metric else "miles"
