@@ -129,21 +129,37 @@ def setup_frpc():
 
 def main():
   global process
-  params = Params()
+
+  glog("Starting up...")
+
+  try:
+    params = Params()
+    glog("Params initialized")
+  except Exception as e:
+    glog(f"FATAL: Failed to create Params: {e}")
+    import traceback
+    glog(traceback.format_exc())
+    raise
 
   signal.signal(signal.SIGTERM, cleanup_frpc)
   signal.signal(signal.SIGINT, cleanup_frpc)
 
-  glog("Starting up...")
-
-  # Wait for DongleId to be set (usually set on boot/pairing)
-  dongle_id = params.get("DongleId", encoding='utf8')
-  while not dongle_id:
-    glog("Waiting for DongleId...")
-    time.sleep(5)
+  try:
+    # Wait for DongleId to be set (usually set on boot/pairing)
+    glog("Checking DongleId...")
     dongle_id = params.get("DongleId", encoding='utf8')
+    while not dongle_id:
+      glog("Waiting for DongleId...")
+      time.sleep(5)
+      dongle_id = params.get("DongleId", encoding='utf8')
 
-  glog(f"DongleId: {dongle_id}")
+    glog(f"DongleId: {dongle_id}")
+  except Exception as e:
+    glog(f"FATAL: DongleId check failed: {e}")
+    import traceback
+    glog(traceback.format_exc())
+    raise
+
   glog("Starting manager loop...")
 
   was_paired = None
