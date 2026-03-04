@@ -32,7 +32,7 @@ function createRoute(id, path, component) {
 
 function Root() {
   let routes = [
-    createRoute("device_settings", "/device_settings", DeviceSettings),
+    createRoute("device_settings", "/device_settings/:section?", DeviceSettings),
     createRoute("doors", "/lock_or_unlock_doors", DoorControl),
     createRoute("errorLogs", "/manage_error_logs", ErrorLogs),
     createRoute("galaxy", "/galaxy", GalaxyPairing),

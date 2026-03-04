@@ -39,7 +39,11 @@ const state = reactive({
 
 export function Sidebar() {
   const currentPath = window.location.pathname;
-  const activeItem = Object.values(MenuItems).flat().find(item => item.link === currentPath);
+  const matchesPath = (link) => {
+    if (link === "/") return currentPath === "/";
+    return currentPath === link || currentPath.startsWith(`${link}/`);
+  };
+  const activeItem = Object.values(MenuItems).flat().find(item => matchesPath(item.link));
   state.activeRoute = activeItem?.name ?? "";
 
   if (!state.isDoorsFetched) {
