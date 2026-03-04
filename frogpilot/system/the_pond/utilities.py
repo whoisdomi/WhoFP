@@ -455,8 +455,8 @@ def get_available_cameras(segment_path):
   ]
 
 def get_disk_usage():
-  free = get_available_bytes()
-  used = get_used_bytes()
+  free = get_available_bytes(default=0)
+  used = get_used_bytes(default=0)
   total = used + free
 
   def to_gb(b):
