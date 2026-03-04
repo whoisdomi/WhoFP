@@ -1158,40 +1158,43 @@ def setup(app):
 
   @app.route("/api/stats", methods=["GET"])
   def get_stats():
-    build_metadata = get_build_metadata()
-
-    short_branch = build_metadata.channel
-    if short_branch == "FrogPilot-Development":
-      env = "Development"
-    elif build_metadata.release_channel:
-      env = "Release"
-    elif short_branch == "FrogPilot-Testing":
-      env = "Testing"
-    elif build_metadata.tested_channel:
-      env = "Staging"
-    else:
-      env = short_branch
-
     try:
-      response = requests.get(f"https://api.comma.ai/v1/devices/{params.get('DongleId', encoding='utf8')}/firehose_stats", timeout=10)
-      response.raise_for_status()
-      firehose_stats = response.json().get("firehose", 0)
-    except (requests.RequestException, ValueError) as e:
-      firehose_stats = 0
+      build_metadata = get_build_metadata()
 
-    return {
-      "diskUsage": utilities.get_disk_usage(),
-      "driveStats": utilities.get_drive_stats(),
-      "firehoseStats": {"segments": firehose_stats},
-      "softwareInfo": {
-        "branchName": build_metadata.channel,
-        "buildEnvironment": env,
-        "commitHash": build_metadata.openpilot.git_commit,
-        "forkMaintainer": utilities.get_repo_owner(build_metadata.openpilot.git_normalized_origin),
-        "updateAvailable": "Yes" if params.get_bool("UpdaterFetchAvailable") else "No",
-        "versionDate": utilities.format_git_date(build_metadata.openpilot.git_commit_date),
-      },
-    }
+      short_branch = build_metadata.channel
+      if short_branch == "FrogPilot-Development":
+        env = "Development"
+      elif build_metadata.release_channel:
+        env = "Release"
+      elif short_branch == "FrogPilot-Testing":
+        env = "Testing"
+      elif build_metadata.tested_channel:
+        env = "Staging"
+      else:
+        env = short_branch
+
+      try:
+        response = requests.get(f"https://api.comma.ai/v1/devices/{params.get('DongleId', encoding='utf8')}/firehose_stats", timeout=10)
+        response.raise_for_status()
+        firehose_stats = response.json().get("firehose", 0)
+      except Exception:
+        firehose_stats = 0
+
+      return {
+        "diskUsage": utilities.get_disk_usage(),
+        "driveStats": utilities.get_drive_stats(),
+        "firehoseStats": {"segments": firehose_stats},
+        "softwareInfo": {
+          "branchName": build_metadata.channel,
+          "buildEnvironment": env,
+          "commitHash": build_metadata.openpilot.git_commit,
+          "forkMaintainer": utilities.get_repo_owner(build_metadata.openpilot.git_normalized_origin),
+          "updateAvailable": "Yes" if params.get_bool("UpdaterFetchAvailable") else "No",
+          "versionDate": utilities.format_git_date(build_metadata.openpilot.git_commit_date),
+        },
+      }
+    except Exception as e:
+      return jsonify({"error": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc()}), 500
 
   # ── Galaxy pairing (mirrors settings.cc L262-282) ──────────────────
   GALAXY_DIR = Path("/data/galaxy")

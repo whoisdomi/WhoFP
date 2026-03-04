@@ -15,10 +15,27 @@ from openpilot.common.params import Params
 GALAXY_DIR = Path("/data/galaxy")
 FRPC_VERSION = "0.67.0"
 FRPC_LOG = GALAXY_DIR / "frpc.log"
+GALAXY_LOG = GALAXY_DIR / "galaxy.log"
 AUTH_PORT = 8083
 
 process = None
 auth_server = None
+_log_file = None
+
+
+def glog(msg: str) -> None:
+  """Write to both stdout and /data/galaxy/galaxy.log."""
+  global _log_file
+  line = f"[Galaxy] {msg}"
+  print(line, flush=True)
+  try:
+    if _log_file is None:
+      GALAXY_DIR.mkdir(parents=True, exist_ok=True)
+      _log_file = open(GALAXY_LOG, 'a', buffering=1)
+    _log_file.write(line + "\n")
+    _log_file.flush()
+  except Exception:
+    pass
 
 
 class AuthHandler(BaseHTTPRequestHandler):
@@ -48,7 +65,7 @@ def start_auth_server():
   auth_server = HTTPServer(("127.0.0.1", AUTH_PORT), AuthHandler)
   thread = threading.Thread(target=auth_server.serve_forever, daemon=True)
   thread.start()
-  print(f"Galaxy: Auth server listening on 127.0.0.1:{AUTH_PORT}")
+  glog(f"Auth server listening on 127.0.0.1:{AUTH_PORT}")
 
 
 def cleanup_frpc(*_):
@@ -76,17 +93,21 @@ def setup_frpc():
   frpc_bin = GALAXY_DIR / "frpc"
 
   if not frpc_bin.exists():
-    print("Galaxy: Downloading frpc...")
+    glog("Downloading frpc...")
     url, folder_name = get_arch_url()
     if not url:
-      print("Galaxy: Unsupported architecture")
+      glog(f"Unsupported architecture: {platform.machine()}")
       return False
 
     tar_path = GALAXY_DIR / "frp.tar.gz"
     try:
       urllib.request.urlretrieve(url, tar_path)
       with tarfile.open(tar_path, "r:gz") as tar:
-        tar.extractall(path=GALAXY_DIR, filter='data')
+        try:
+          tar.extractall(path=GALAXY_DIR, filter='data')
+        except TypeError:
+          # filter='data' requires Python 3.11.4+ — fall back for older builds
+          tar.extractall(path=GALAXY_DIR)
 
       # Move binary
       extracted_bin = GALAXY_DIR / folder_name / "frpc"
@@ -96,9 +117,11 @@ def setup_frpc():
       # Cleanup
       tar_path.unlink()
       shutil.rmtree(GALAXY_DIR / folder_name)
-      print("Galaxy: frpc downloaded and installed.")
+      glog("frpc downloaded and installed.")
     except Exception as e:
-      print(f"Galaxy: Failed to install frpc: {e}")
+      glog(f"Failed to install frpc: {e}")
+      if tar_path.exists():
+        tar_path.unlink(missing_ok=True)
       return False
 
   return True
@@ -111,42 +134,49 @@ def main():
   signal.signal(signal.SIGTERM, cleanup_frpc)
   signal.signal(signal.SIGINT, cleanup_frpc)
 
+  glog("Starting up...")
+
   # Wait for DongleId to be set (usually set on boot/pairing)
   dongle_id = params.get("DongleId", encoding='utf8')
   while not dongle_id:
-    print("Galaxy: Waiting for DongleId...")
+    glog("Waiting for DongleId...")
     time.sleep(5)
     dongle_id = params.get("DongleId", encoding='utf8')
 
-  print(f"Galaxy: DongleId: {dongle_id}")
-  print("Galaxy: Starting manager loop...")
+  glog(f"DongleId: {dongle_id}")
+  glog("Starting manager loop...")
+
+  was_paired = None
 
   while True:
-    glxyauth_file = GALAXY_DIR / "glxyauth"
-    if glxyauth_file.exists():
-      galaxy_password_hash = glxyauth_file.read_text().strip()
-      print(f"Galaxy: glxyauth found, hash length={len(galaxy_password_hash)}")
-    else:
-      galaxy_password_hash = None
-      print("Galaxy: glxyauth not found, not paired")
-    is_paired = galaxy_password_hash and len(galaxy_password_hash) == 64
+    try:
+      glxyauth_file = GALAXY_DIR / "glxyauth"
+      if glxyauth_file.exists():
+        galaxy_password_hash = glxyauth_file.read_text().strip()
+      else:
+        galaxy_password_hash = None
+      is_paired = bool(galaxy_password_hash) and len(galaxy_password_hash) == 64
 
-    if is_paired:
-      if process is None or process.poll() is not None:
-        if process is not None:
-          print(f"Galaxy: frpc exited with code {process.returncode}. Restarting...")
+      if is_paired != was_paired:
+        glog(f"Paired state changed: {was_paired} -> {is_paired}")
+        was_paired = is_paired
 
-        print("Galaxy: Password set. Preparing frpc tunnel...")
-        if not setup_frpc():
-          print("Galaxy: FRPC setup failed. Retrying later...")
-          time.sleep(10)
-          continue
+      if is_paired:
+        if process is None or process.poll() is not None:
+          if process is not None:
+            glog(f"frpc exited with code {process.returncode}. Restarting...")
 
-        # Start the tiny auth HTTP server (serves /glxyauth on localhost)
-        start_auth_server()
+          glog("Password set. Preparing frpc tunnel...")
+          if not setup_frpc():
+            glog("FRPC setup failed. Retrying in 30s...")
+            time.sleep(30)
+            continue
 
-        frpc_toml = GALAXY_DIR / "frpc.toml"
-        config = f"""\
+          # Start the tiny auth HTTP server (serves /glxyauth on localhost)
+          start_auth_server()
+
+          frpc_toml = GALAXY_DIR / "frpc.toml"
+          config = f"""\
 serverAddr = "galaxy.firestar.link"
 serverPort = 7000
 
@@ -169,23 +199,25 @@ localIP = "127.0.0.1"
 localPort = {AUTH_PORT}
 customDomains = ["auth-{dongle_id}.devices.local"]
 """
-        frpc_toml.write_text(config)
+          frpc_toml.write_text(config)
 
-        print("Galaxy: Starting frpc tunnel...")
-        log_file = open(FRPC_LOG, 'a')
-        process = subprocess.Popen(
-          [str(GALAXY_DIR / "frpc"), "-c", str(frpc_toml)],
-          stdout=log_file,
-          stderr=log_file
-        )
-    else:
-      if process is not None and process.poll() is None:
-        print("Galaxy: Password cleared. Stopping frpc tunnel...")
-        cleanup_frpc()
+          glog("Starting frpc tunnel...")
+          log_file = open(FRPC_LOG, 'a')
+          process = subprocess.Popen(
+            [str(GALAXY_DIR / "frpc"), "-c", str(frpc_toml)],
+            stdout=log_file,
+            stderr=log_file
+          )
+      else:
+        if process is not None and process.poll() is None:
+          glog("Password cleared. Stopping frpc tunnel...")
+          cleanup_frpc()
+
+    except Exception as e:
+      glog(f"Error in main loop: {e}")
 
     time.sleep(3)
 
 
 if __name__ == "__main__":
   main()
-
