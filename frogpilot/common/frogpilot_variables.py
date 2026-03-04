@@ -89,6 +89,20 @@ params = Params()
 params_default = Params("/dev/shm/params_default")
 params_memory = Params("/dev/shm/params")
 
+def _build_frogpilot_default_params():
+  """Build a list of (key, default_val, tuning_level, default_str) for all params."""
+  _p = Params(return_defaults=True)
+  result = []
+  for key_bytes in _p.all_keys():
+    key = key_bytes.decode() if isinstance(key_bytes, bytes) else key_bytes
+    default_val = _p.get_default_value(key_bytes)
+    tuning_level = _p.get_tuning_level(key_bytes)
+    default_str = str(default_val) if default_val is not None else ""
+    result.append((key, default_val, tuning_level, default_str))
+  return result
+
+frogpilot_default_params = _build_frogpilot_default_params()
+
 BUTTON_FUNCTIONS = {
   "NOTHING": 0,
   "PERSONALITY_PROFILE": 1,
