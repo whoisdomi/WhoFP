@@ -1,4 +1,23 @@
 #!/usr/bin/env python3
+import subprocess
+import sys
+
+# Auto-install flask and friends if not present
+_pond_deps = "/data/pond_deps"
+import os as _os
+if _os.path.isdir(_pond_deps) and _pond_deps not in sys.path:
+  sys.path.insert(0, _pond_deps)
+
+try:
+  import flask as _flask_check
+except ImportError:
+  subprocess.run(
+    [sys.executable, "-m", "pip", "install", "--target", _pond_deps,
+     "flask", "Pillow", "pydub"],
+    check=True
+  )
+  sys.path.insert(0, _pond_deps)
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from flask import Flask, Response, jsonify, make_response, render_template, request, send_file, send_from_directory
@@ -16,7 +35,6 @@ import requests
 import secrets
 import shutil
 import signal
-import subprocess
 import time
 import traceback
 

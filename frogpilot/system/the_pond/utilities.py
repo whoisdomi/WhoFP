@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
+import subprocess
+import sys
+
+# Ensure pond deps are on path if flask was installed to /data/pond_deps
+_pond_deps = "/data/pond_deps"
+import os
+if os.path.isdir(_pond_deps) and _pond_deps not in sys.path:
+  sys.path.insert(0, _pond_deps)
+
 import base64
 import hashlib
 import json
-import os
 import re
 import secrets
 import shutil
-import subprocess
 import time
 import uuid
 
