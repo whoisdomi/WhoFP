@@ -1962,7 +1962,8 @@ def setup(app):
         },
       }
     except Exception as e:
-      return jsonify({"error": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc()}), 500
+      print(f"[Stats] Error: {type(e).__name__}: {e}\n{traceback.format_exc()}")
+      return jsonify({"error": f"{type(e).__name__}: {e}"}), 500
 
   @app.route("/api/update/fast/status", methods=["GET"])
   def get_fast_update_status():
