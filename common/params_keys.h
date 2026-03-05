@@ -213,6 +213,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"DeviceShutdown", {PERSISTENT, INT, "9", "33", 1}},
     {"DisableOnroadUploads", {PERSISTENT, BOOL, "0", "0", 2}},
     {"DisableOpenpilotLongitudinal", {PERSISTENT, BOOL, "0", "0", 0}},
+    {"EcuDisableFailed", {CLEAR_ON_MANAGER_START, BOOL, "0", "0", 0}},
     {"DiscordUsername", {PERSISTENT, STRING, "", "", 0}},
     {"DistanceButtonControl", {PERSISTENT, INT, "1", "0", 2}},
     {"DistanceIconPack", {PERSISTENT, STRING, "stock", "stock", 0}},

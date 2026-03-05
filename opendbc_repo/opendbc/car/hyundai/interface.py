@@ -168,6 +168,8 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def init(CP, can_recv, can_send, communication_control=None):
     global ECU_DISABLE_TIMESTAMP
+    from openpilot.common.params import Params
+    params = Params()
 
     # Build communication control command (don't use 0x80 suppress bit so we can see ECU response)
     # Use ENABLE_RX_DISABLE_TX (0x01) instead of DISABLE_RX_DISABLE_TX (0x03)
@@ -187,8 +189,14 @@ class CarInterface(CarInterfaceBase):
       # Only enable CAN error suppression if ECU disable actually succeeded
       if ecu_disabled:
         ECU_DISABLE_TIMESTAMP = time.monotonic()
+        params.put_bool("EcuDisableFailed", False)
+        params.put_bool("ExperimentalMode", True)
+        ecu_log("=== ECU DISABLE SUCCESS - Longitudinal + Experimental ENABLED ===")
       else:
-        ecu_log("=== ECU DISABLE FAILED (start from IGN-ON, not READY) ===")
+        # ECU disable failed (car started in READY mode - NRC 0x22)
+        # Set param so controlsd disables longitudinal, letting stock ACC work
+        params.put_bool("EcuDisableFailed", True)
+        ecu_log("=== ECU DISABLE FAILED - Setting EcuDisableFailed, longitudinal will be disabled ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
