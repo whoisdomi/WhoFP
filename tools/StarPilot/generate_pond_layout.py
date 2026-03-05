@@ -119,6 +119,29 @@ for cmap in PARENT_KEYS_MAPPING.values():
     for parent in cmap.values():
         ALL_PARENT_KEYS.add(parent)
 
+def _parse_params_keys_h():
+    """Parse common/params_keys.h to get all param keys and their types.
+    Format: {"KeyName", {PERSISTENT, TYPE, "default", ...}}
+    """
+    filepath = os.path.join(REPO_ROOT, "common/params_keys.h")
+    keys = set()
+    types = {}
+    if not os.path.exists(filepath):
+        return keys, types
+
+    type_map = {"BOOL": "bool", "INT": "int", "FLOAT": "float", "STRING": "string", "JSON": "string"}
+    pattern = re.compile(r'\{"(\w+)",\s*\{PERSISTENT,\s*(\w+)')
+
+    with open(filepath, 'r', encoding='utf-8') as f:
+        for line in f:
+            m = pattern.search(line)
+            if m:
+                key, ptype = m.group(1), m.group(2)
+                keys.add(key)
+                types[key] = type_map.get(ptype, "unknown")
+
+    return keys, types
+
 def get_variables_data():
     filepath = os.path.join(REPO_ROOT, "frogpilot/common/frogpilot_variables.py")
     excluded = set()
@@ -153,7 +176,6 @@ def get_variables_data():
                                 else:
                                     defaults[key] = "unknown"
                             elif isinstance(val_node, ast.Call) and isinstance(val_node.func, ast.Name) and val_node.func.id == "str":
-                                # str(<numeric expression>) is used for several numeric defaults.
                                 defaults[key] = "float"
                             else:
                                 defaults[key] = "unknown"
@@ -173,6 +195,12 @@ def get_variables_data():
         elif isinstance(node, ast.AnnAssign):
             if getattr(node.target, 'id', '') in ('frogpilot_default_params', 'misc_tuning_levels'):
                 parse_params_list(node.value)
+
+    # FP-Testing builds frogpilot_default_params dynamically at runtime, so the
+    # AST parser above may find nothing.  Fall back to params_keys.h which is the
+    # authoritative source of truth for all param definitions.
+    if not defaults:
+        _, defaults = _parse_params_keys_h()
 
     return excluded, defaults
 
@@ -202,6 +230,11 @@ def get_editable_keys():
             for elt in value_node.elts:
                 if isinstance(elt, ast.Tuple) and elt.elts and isinstance(elt.elts[0], ast.Constant):
                     editable.add(elt.elts[0].value)
+
+    # Fallback: if frogpilot_default_params is built dynamically (FP-Testing),
+    # treat all params from params_keys.h as editable.
+    if not editable:
+        editable, _ = _parse_params_keys_h()
 
     return editable
 
