@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+import os, sys
+_pond_deps = "/data/pond_deps"
+if os.path.isdir(_pond_deps) and _pond_deps not in sys.path:
+  sys.path.insert(0, _pond_deps)
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from flask import Flask, Response, jsonify, make_response, render_template, request, send_file, send_from_directory
