@@ -1922,11 +1922,11 @@ def setup(app):
 
   @app.route("/api/speed_limits", methods=["GET"])
   def speed_limits():
-    data = json.loads(params.get("SpeedLimitsFiltered") or "[]")
+    data = params.get("SpeedLimitsFiltered") or []
     current_time = (datetime.now(timezone.utc) - timedelta(days=6, hours=23)).isoformat()
     data = [{**e, "last_vetted": current_time} for e in data]
 
-    params.put("SpeedLimitsFiltered", json.dumps(data))
+    params.put("SpeedLimitsFiltered", data)
 
     buffer = BytesIO(json.dumps(data, indent=2).encode())
     buffer.seek(0)
