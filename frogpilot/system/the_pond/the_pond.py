@@ -73,6 +73,13 @@ def params_get_str(key, default=""):
     return default
   return val.decode("utf-8") if isinstance(val, bytes) else val
 
+def params_memory_get_str(key, default=""):
+  """params_memory.get() as a decoded UTF-8 string (FP-Testing Params lacks encoding kwarg)."""
+  val = params_memory.get(key)
+  if val is None:
+    return default
+  return val.decode("utf-8") if isinstance(val, bytes) else val
+
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
@@ -570,9 +577,9 @@ def setup(app):
   @app.route("/api/models/status", methods=["GET"])
   def get_models_status():
     models = get_model_catalog()
-    model_to_download = params_memory.get(MODEL_DOWNLOAD_PARAM, encoding="utf-8") or ""
+    model_to_download = params_memory_get_str(MODEL_DOWNLOAD_PARAM) or ""
     download_all = params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM)
-    progress = params_memory.get(MODEL_DOWNLOAD_PROGRESS_PARAM, encoding="utf-8") or ""
+    progress = params_memory_get_str(MODEL_DOWNLOAD_PROGRESS_PARAM) or ""
     cancelling = params_memory.get_bool(MODEL_CANCEL_DOWNLOAD_PARAM)
 
     downloading = bool(model_to_download) or download_all
@@ -640,7 +647,7 @@ def setup(app):
     if params.get_bool("IsOnroad"):
       return jsonify({"error": "Cannot refresh model manifest while driving."}), 403
 
-    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory.get(MODEL_DOWNLOAD_PARAM, encoding="utf-8") or ""):
+    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory_get_str(MODEL_DOWNLOAD_PARAM) or ""):
       return jsonify({"error": "Cannot refresh model manifest while a download is in progress."}), 409
 
     try:
@@ -658,7 +665,7 @@ def setup(app):
     if params.get_bool("IsOnroad"):
       return jsonify({"error": "Cannot download models while driving."}), 403
 
-    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory.get(MODEL_DOWNLOAD_PARAM, encoding="utf-8") or ""):
+    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory_get_str(MODEL_DOWNLOAD_PARAM) or ""):
       return jsonify({"error": "A model download is already in progress."}), 409
 
     data = request.get_json() or {}
@@ -686,7 +693,7 @@ def setup(app):
     if params.get_bool("IsOnroad"):
       return jsonify({"error": "Cannot download models while driving."}), 403
 
-    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory.get(MODEL_DOWNLOAD_PARAM, encoding="utf-8") or ""):
+    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory_get_str(MODEL_DOWNLOAD_PARAM) or ""):
       return jsonify({"error": "A model download is already in progress."}), 409
 
     missing_models = [model for model in get_model_catalog() if not model["installed"]]
@@ -702,7 +709,7 @@ def setup(app):
 
   @app.route("/api/models/cancel", methods=["POST"])
   def cancel_model_download():
-    model_to_download = params_memory.get(MODEL_DOWNLOAD_PARAM, encoding="utf-8") or ""
+    model_to_download = params_memory_get_str(MODEL_DOWNLOAD_PARAM) or ""
     download_all = params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM)
     if not model_to_download and not download_all:
       return jsonify({"message": "No active model download to cancel."}), 200
@@ -715,7 +722,7 @@ def setup(app):
     if params.get_bool("IsOnroad"):
       return jsonify({"error": "Cannot delete model files while driving."}), 403
 
-    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory.get(MODEL_DOWNLOAD_PARAM, encoding="utf-8") or ""):
+    if params_memory.get_bool(MODEL_DOWNLOAD_ALL_PARAM) or (params_memory_get_str(MODEL_DOWNLOAD_PARAM) or ""):
       return jsonify({"error": "Cannot delete model files while a download is in progress."}), 409
 
     data = request.get_json() or {}
