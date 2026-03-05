@@ -116,7 +116,7 @@ export function Home() {
       }
 
       if (state.data) {
-        const { driveStats, firehoseStats, softwareInfo } = state.data;
+        const { driveStats, softwareInfo } = state.data;
         return html`
             <h1>Galaxy</h1>
 
@@ -129,14 +129,6 @@ export function Home() {
             <h2>Disk Usage</h2>
             <div class="diskUsage">
               ${renderDiskUsageSection(state.data)}
-            </div>
-
-            <h2>Firehose Segments</h2>
-            <div class="firehoseStats">
-              <p>
-                <strong>${(firehoseStats?.segments ?? 0).toLocaleString("en-US")}</strong>
-                segments in training data.
-              </p>
             </div>
 
             <h2>Software Info</h2>

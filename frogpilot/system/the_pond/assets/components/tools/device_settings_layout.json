@@ -2179,6 +2179,29 @@
     "icon": "bi-car-front",
     "params": [
       {
+        "key": "CarMake",
+        "label": "Car Make",
+        "description": "Select your car make.",
+        "data_type": "str",
+        "ui_type": "dropdown",
+        "options_endpoint": "/api/fingerprints/makes"
+      },
+      {
+        "key": "CarModel",
+        "label": "Car Model (Fingerprint)",
+        "description": "Choose the fingerprint platform to use when automatic detection is disabled.",
+        "data_type": "str",
+        "ui_type": "dropdown",
+        "options_endpoint": "/api/fingerprints/models?make={CarMake}"
+      },
+      {
+        "key": "ForceFingerprint",
+        "label": "Disable Automatic Fingerprint Detection",
+        "description": "Force the selected fingerprint and prevent it from changing automatically.",
+        "data_type": "bool",
+        "ui_type": "toggle"
+      },
+      {
         "key": "GMPedalLongitudinal",
         "label": "Use Pedal for Longitudinal Control",
         "description": "Use the pedal interceptor for longitudinal control instead of camera ACC/Redneck when available.",

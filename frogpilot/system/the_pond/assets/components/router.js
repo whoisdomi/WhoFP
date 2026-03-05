@@ -2,8 +2,8 @@ import { html, reactive } from "https://esm.sh/@arrow-js/core"
 import { createBrowserHistory, createRouter } from "https://esm.sh/@remix-run/router@1.3.1"
 import { hideSidebar } from "/assets/js/utils.js"
 import { DeviceSettings } from "/assets/components/tools/device_settings.js"
-import { DoorControl } from "/assets/components/tools/doors.js"
 import { ErrorLogs } from "/assets/components/tools/error_logs.js"
+import { VehicleFeatures } from "/assets/components/tools/vehicle_features.js"
 import { GalaxyPairing } from "/assets/components/tools/galaxy.js"
 import { Home } from "/assets/components/home/home.js"
 import { NavDestination } from "/assets/components/navigation/navigation_destination.js"
@@ -17,7 +17,7 @@ import { ModelManager } from "/assets/components/tools/model_manager.js?v=202603
 import { ThemeMaker } from "/assets/components/tools/theme_maker.js"
 import { TmuxLog } from "/assets/components/tools/tmux.js"
 import { ToggleControl } from "/assets/components/tools/toggles.js"
-import { TSKManager } from "/assets/components/tools/tsk_manager.js"
+import { UpdateManager } from "/assets/components/tools/update_manager.js"
 
 let router, routerState
 
@@ -33,7 +33,6 @@ function createRoute(id, path, component) {
 function Root() {
   let routes = [
     createRoute("device_settings", "/device_settings/:section?", DeviceSettings),
-    createRoute("doors", "/lock_or_unlock_doors", DoorControl),
     createRoute("errorLogs", "/manage_error_logs", ErrorLogs),
     createRoute("galaxy", "/galaxy", GalaxyPairing),
     createRoute("navdestination", "/set_navigation_destination", NavDestination),
@@ -47,7 +46,8 @@ function Root() {
     createRoute("thememaker", "/theme_maker", ThemeMaker),
     createRoute("tmux", "/manage_tmux", TmuxLog),
     createRoute("toggles", "/manage_toggles", ToggleControl),
-    createRoute("tsk_manager", "/tsk_manager", TSKManager),
+    createRoute("updates", "/manage_updates", UpdateManager),
+    createRoute("vehicle_features", "/vehicle_features", VehicleFeatures),
   ]
 
   router = createRouter({

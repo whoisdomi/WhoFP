@@ -4,6 +4,10 @@ import { Navigate } from "/assets/components/router.js"
 const endpointOptionsCache = {}
 const endpointOptionsInflight = {}
 
+// Plain variables — scheduling/routing flags that must NOT be reactive
+let syncScheduled = false
+let lastParams = null
+
 // Module-level state (persists across route changes)
 const state = reactive({
   layout: [],
@@ -15,7 +19,6 @@ const state = reactive({
   filter: "",
   expanded: {},
   fetched: false,
-  syncScheduled: false,
   activeSectionSlug: "",
 })
 
@@ -37,11 +40,18 @@ function toSelectValue(value) {
   return value === null || value === undefined ? "" : String(value)
 }
 
+function resolveEndpointTemplate(template) {
+  if (!template) return ""
+  return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, (_, key) => {
+    return encodeURIComponent(toSelectValue(state.values[key]))
+  })
+}
+
 function scheduleSyncInputs() {
-  if (state.syncScheduled) return
-  state.syncScheduled = true
+  if (syncScheduled) return
+  syncScheduled = true
   requestAnimationFrame(() => {
-    state.syncScheduled = false
+    syncScheduled = false
     syncInputs()
   })
 }
@@ -86,11 +96,16 @@ async function hydrateEndpointOptions(el, key, endpoint) {
 }
 
 function syncInputs() {
-  const selects = document.querySelectorAll("select.ds-select[id^='ds-']")
+  // Sync checkboxes — set DOM property directly (attribute alone is unreliable)
+  for (const el of document.querySelectorAll("input[type='checkbox'].ds-toggle[id^='ds-']")) {
+    el.checked = !!state.values[el.id.slice(3)]
+  }
 
-  for (const el of selects) {
+  // Sync selects — hydrate options + set value
+  for (const el of document.querySelectorAll("select.ds-select[id^='ds-']")) {
     const key = el.id.slice(3)
-    const endpoint = el.getAttribute("data-endpoint")
+    const endpointTemplate = el.getAttribute("data-endpoint")
+    const endpoint = resolveEndpointTemplate(endpointTemplate)
     const inlineOptions = state.paramMetaByKey[key]?.options
 
     if (endpoint) {
@@ -156,6 +171,8 @@ async function fetchLayoutAndParams() {
   }
   state.loadingValues = false
 
+  // Resolve slug now that layout is available (uses stored route params)
+  resolveActiveSectionSlug(lastParams)
   scheduleSyncInputs()
 }
 
@@ -256,7 +273,8 @@ async function updateParam(key, elType) {
     const data = await res.json()
 
     if (res.ok) {
-      state.values = { ...state.values, [key]: formattedVal }
+      const updated = (data.updated && typeof data.updated === "object") ? data.updated : {}
+      state.values = { ...state.values, [key]: formattedVal, ...updated }
       showSnackbar(data.message || `${key} updated`)
       scheduleSyncInputs()
     } else {
@@ -314,7 +332,7 @@ function matchesFilter(p) {
 }
 
 function renderSettingRow(p) {
-  if (p.parent_key) {
+  if (p.parent_key && !state.filter) {
     if (!state.values[p.parent_key]) return ""
     if (!state.expanded[p.parent_key]) return ""
   }
@@ -342,8 +360,8 @@ function renderSettingRow(p) {
       ${isNumeric ? html`
         <div class="ds-slider-container">
           ${(() => {
-            const bounds = numericBounds(p)
-            return html`
+        const bounds = numericBounds(p)
+        return html`
               <input
                 type="range"
                 class="ds-slider"
@@ -356,7 +374,7 @@ function renderSettingRow(p) {
                 @input="${(e) => handleSliderInput(e, p.key)}"
                 @change="${() => updateParam(p.key, "numeric")}" />
             `
-          })()}
+      })()}
         </div>
       ` : p.ui_type === "dropdown" ? html`
         <select
@@ -371,18 +389,39 @@ function renderSettingRow(p) {
           type="checkbox"
           class="ds-toggle"
           id="ds-${p.key}"
-          .checked="${!!state.values[p.key]}"
           @change="${() => updateParam(p.key, "checkbox")}" />
       `}
     </div>
   `
 }
 
+// Resolve the active section slug imperatively — NEVER inside a reactive expression
+function resolveActiveSectionSlug(params) {
+  if (state.layout.length === 0) return
+
+  const sections = getSectionsWithSlug()
+  const validSlugs = new Set(sections.map(s => s.slug))
+  const requestedSlug = String(params?.section || "").toLowerCase()
+  const fallbackSlug = sections[0].slug
+  const nextSlug = validSlugs.has(requestedSlug)
+    ? requestedSlug
+    : (validSlugs.has(state.activeSectionSlug) ? state.activeSectionSlug : fallbackSlug)
+
+  if (state.activeSectionSlug !== nextSlug) {
+    state.activeSectionSlug = nextSlug
+  }
+}
+
 export function DeviceSettings({ params }) {
+  lastParams = params
+
   if (!state.fetched) {
     state.fetched = true
     fetchLayoutAndParams()
   }
+
+  // Resolve slug imperatively (safe: runs in function body, not reactive context)
+  resolveActiveSectionSlug(params)
 
   return html`
     <div class="ds-wrapper">
@@ -393,45 +432,69 @@ export function DeviceSettings({ params }) {
         type="text"
         placeholder="Search settings..."
         @input="${(e) => {
-          state.filter = e.target.value
-          scheduleSyncInputs()
-        }}" />
+      state.filter = e.target.value
+      scheduleSyncInputs()
+    }}" />
 
       ${() => {
-        if (state.loadingLayout || state.loadingValues) {
-          return html`<div class="ds-loading">Loading configuration...</div>`
-        }
+      if (state.loadingLayout || state.loadingValues) {
+        return html`<div class="ds-loading">Loading configuration...</div>`
+      }
 
-        const sections = getSectionsWithSlug()
-        if (sections.length === 0) {
-          return html`<div class="ds-empty">No settings available.</div>`
-        }
+      const sections = getSectionsWithSlug()
+      if (sections.length === 0) {
+        return html`<div class="ds-empty">No settings available.</div>`
+      }
 
-        const validSlugs = new Set(sections.map(s => s.slug))
-        const requestedSlug = String(params?.section || "").toLowerCase()
-        const fallbackSlug = sections[0].slug
-        const nextSlug = validSlugs.has(requestedSlug)
-          ? requestedSlug
-          : (validSlugs.has(state.activeSectionSlug) ? state.activeSectionSlug : fallbackSlug)
+      // Sync DOM inputs after ArrowJS renders (safe: syncScheduled is non-reactive)
+      scheduleSyncInputs()
 
-        if (state.activeSectionSlug !== nextSlug) {
-          state.activeSectionSlug = nextSlug
-          scheduleSyncInputs()
-        }
+      // Search active → show matching results from ALL sections
+      if (state.filter) {
+        const MAX_PER_SECTION = 25
+        const searchResults = sections
+          .map(s => ({ ...s, matches: s.params.filter(p => matchesFilter(p)) }))
+          .filter(s => s.matches.length > 0)
 
-        const activeSection = sections.find(s => s.slug === state.activeSectionSlug) || sections[0]
-        const visibleParams = activeSection.params.filter(p => matchesFilter(p))
+        const totalMatches = searchResults.reduce((n, s) => n + s.matches.length, 0)
 
         return html`
+          <div class="ds-status-bar">
+            <span>${totalMatches} result${totalMatches !== 1 ? "s" : ""} across ${searchResults.length} section${searchResults.length !== 1 ? "s" : ""}</span>
+            <span>${state.allKeys.length} total mapped</span>
+          </div>
+
+          ${searchResults.map(section => html`
+            <div class="ds-section">
+              <div class="ds-section-header ds-static-header">
+                <i class="bi ${section.icon}"></i>
+                <span class="ds-section-title">${section.name} (${section.matches.length})</span>
+              </div>
+              <div class="ds-section-body">
+                ${section.matches.slice(0, MAX_PER_SECTION).map(p => renderSettingRow(p))}
+                ${section.matches.length > MAX_PER_SECTION ? html`<div class="ds-row"><span class="ds-row-label" style="opacity:0.5">+${section.matches.length - MAX_PER_SECTION} more — refine your search</span></div>` : ""}
+              </div>
+            </div>
+          `)}
+
+          ${totalMatches === 0 ? html`<div class="ds-empty">No settings match your search.</div>` : ""}
+        `
+      }
+
+      // No search → normal tab-based single-section view
+      const activeSection = sections.find(s => s.slug === state.activeSectionSlug) || sections[0]
+      const visibleParams = activeSection.params.filter(p => matchesFilter(p))
+
+      return html`
           <div class="ds-tabs">
             ${sections.map(section => html`
               <button
                 class="ds-tab ${section.slug === state.activeSectionSlug ? "active" : ""}"
                 @click="${() => {
-                  if (section.slug !== state.activeSectionSlug) {
-                    Navigate(`/device_settings/${section.slug}`)
-                  }
-                }}">
+          if (section.slug !== state.activeSectionSlug) {
+            Navigate("/device_settings/" + section.slug)
+          }
+        }}">
                 <i class="bi ${section.icon}"></i>
                 <span>${section.name}</span>
               </button>
@@ -455,7 +518,7 @@ export function DeviceSettings({ params }) {
 
           ${visibleParams.length === 0 ? html`<div class="ds-empty">No settings match your search.</div>` : ""}
         `
-      }}
+    }}
     </div>
   `
 }
