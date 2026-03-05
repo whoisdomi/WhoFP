@@ -1186,13 +1186,7 @@ def setup(app):
       key = data["key"]
       val = data["value"]
 
-      # Python json parses true/false as boolean
-      if isinstance(val, bool):
-        str_val = "1" if val else "0"
-      else:
-        str_val = str(val)
-
-      allowed_keys, _ = _get_param_type_info()
+      allowed_keys, param_types = _get_param_type_info()
       if key not in allowed_keys:
         return jsonify({"error": f"Parameter '{key}' is not editable."}), 403
 
@@ -1213,6 +1207,7 @@ def setup(app):
         return jsonify({"error": "Cannot change Automatic Updates while driving."}), 403
 
       if key == "CarMake":
+        str_val = str(val)
         catalog = _get_fingerprint_catalog()
         normalized_make = _normalize_fingerprint_make_key(str_val)
         stored_make = catalog["make_label_by_key"].get(normalized_make, str_val.strip())
@@ -1224,16 +1219,16 @@ def setup(app):
         }), 200
 
       if key == "CarModel":
-        selected_model = str_val.strip()
-        if not selected_model:
+        str_val = str(val).strip()
+        if not str_val:
           return jsonify({"error": "Car model cannot be empty."}), 400
 
         catalog = _get_fingerprint_catalog()
-        model_label = catalog["model_to_label"].get(selected_model)
-        make_label = catalog["model_to_make"].get(selected_model)
+        model_label = catalog["model_to_label"].get(str_val)
+        make_label = catalog["model_to_make"].get(str_val)
 
-        params.put("CarModel", selected_model)
-        updated = {"CarModel": selected_model}
+        params.put("CarModel", str_val)
+        updated = {"CarModel": str_val}
 
         if model_label:
           params.put("CarModelName", model_label)
@@ -1248,15 +1243,27 @@ def setup(app):
 
         update_frogpilot_toggles()
         return jsonify({
-          "message": f"Fingerprint set to '{model_label or selected_model}'.",
+          "message": f"Fingerprint set to '{model_label or str_val}'.",
           "updated": updated,
         }), 200
 
-      params.put(key, str_val)
+      # Cast value to the correct Python type for FP-Testing's typed params.put()
+      expected_type = param_types.get(key, str)
+      if expected_type == bool:
+        typed_val = val if isinstance(val, bool) else str(val).lower() in ("1", "true", "yes")
+      elif expected_type == float:
+        typed_val = float(val)
+      elif expected_type == int:
+        typed_val = int(val)
+      else:
+        typed_val = str(val)
+
+      params.put(key, typed_val)
 
       if key == "Model":
-        # 2. Sync ModelVersion explicitly
+        # Sync ModelVersion explicitly
         try:
+          str_val = str(val)
           with open("/data/models/.model_versions.json", "r") as f:
             versions = json.load(f)
             if str_val in versions:
@@ -2957,12 +2964,24 @@ def setup(app):
     if not request_data or "data" not in request_data:
       return jsonify({"success": False, "message": "Missing 'data' in request."}), 400
 
-    allowed_keys = {key for key, _, _, _ in frogpilot_default_params if key not in EXCLUDED_KEYS}
+    allowed_keys, param_types = _get_param_type_info()
 
     toggle_values = utilities.decode_parameters(request_data["data"])
     for key, value in toggle_values.items():
       if key in allowed_keys:
-        params.put(key, value)
+        expected_type = param_types.get(key, str)
+        try:
+          if expected_type == bool:
+            typed_val = str(value).lower() in ("1", "true", "yes")
+          elif expected_type == float:
+            typed_val = float(value)
+          elif expected_type == int:
+            typed_val = int(value)
+          else:
+            typed_val = str(value)
+          params.put(key, typed_val)
+        except (ValueError, TypeError):
+          params.put(key, str(value))
 
     update_frogpilot_toggles()
     return jsonify({"success": True, "message": "Toggles restored!"})
