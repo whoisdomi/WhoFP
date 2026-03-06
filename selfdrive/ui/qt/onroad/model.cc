@@ -11,6 +11,7 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
   return max_idx;
 }
 
+volatile int modelDrawStage = 0;
 
 void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   auto *s = uiState();
@@ -32,10 +33,14 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   const auto &radar_state = sm["radarState"].getRadarState();
   const auto &lead_one = radar_state.getLeadOne();
 
+  modelDrawStage = 101;
   update_model(model, lead_one, surface_rect.height());
+  modelDrawStage = 102;
   drawLaneLines(painter);
+  modelDrawStage = 103;
   drawPath(painter, model, surface_rect.height());
 
+  modelDrawStage = 104;
   if ((longitudinal_control || frogpilot_toggles.value("lead_info").toBool()) && sm.alive("radarState") && !frogpilot_toggles.value("hide_lead_marker").toBool()) {
     update_leads(radar_state, model.getPosition());
     const auto &lead_two = radar_state.getLeadTwo();
@@ -54,6 +59,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     }
 
     // FrogPilot variables
+    modelDrawStage = 105;
     SubMaster &fpsm = *(frogpilotUIState()->sm);
     const cereal::FrogPilotRadarState::Reader &frogpilot_radar_state = fpsm["frogpilotRadarState"].getFrogpilotRadarState();
 
@@ -64,6 +70,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
     frogpilot_nvg->adjacentLeadTextRect = QRect();
 
+    modelDrawStage = 106;
     if (lead_left.getStatus() && lead_right.getStatus() && (lead_left.getDRel() < lead_right.getDRel())) {
       drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_left), adjacent_lead_vertices[0], surface_rect, frogpilot_nvg->blueColor(), true);
       drawLead(painter, reinterpret_cast<const cereal::RadarState::LeadData::Reader&>(lead_right), adjacent_lead_vertices[1], surface_rect, frogpilot_nvg->purpleColor(), true);
@@ -78,10 +85,12 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   }
 
   // FrogPilot variables
+  modelDrawStage = 107;
   if (frogpilot_toggles.value("radar_tracks").toBool()) {
     updateRadarTracks(model.getPosition());
   }
 
+  modelDrawStage = 0;
   painter.restore();
 }
 
