@@ -177,60 +177,28 @@ class CarInterface(CarInterfaceBase):
     if communication_control is None:
       communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
 
-    ecu_log(f"=== init() called: opLong={CP.openpilotLongitudinalControl}, flags=0x{CP.flags:x} ===")
-    ecu_log(f"=== safetyParam before: {CP.safetyConfigs[-1].safetyParam} ===")
+    ecu_log(f"=== init() called: opLong={CP.openpilotLongitudinalControl}, flags=0x{CP.flags:x}, safetyParam={CP.safetyConfigs[-1].safetyParam} ===")
 
     if CP.openpilotLongitudinalControl and not (CP.flags & (HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.CAMERA_SCC)):
       addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
 
-      # Check if car is in READY mode by looking for READY-only CAN messages
-      # These messages only appear after brake+start (motor running), not in IGN-ON
-      # Sending UDS commands in READY mode causes cruise faults and dash errors
-      # Scan for full 1 second and require multiple unique READY messages to avoid false positives
-      READY_ONLY_MSGS = {0x255, 0x2e5, 0x3a0, 0x3b0, 0x3b1, 0x3b5, 0x3f0, 0x3f5}
-      READY_THRESHOLD = 3  # Need at least 3 different READY-only messages
-      ready_msgs_seen = set()
-      ecu_log(f"=== Checking for READY mode: addr=0x{addr:x}, bus={bus} ===")
-      all_msgs_seen = set()
-      start_time = time.monotonic()
-      while time.monotonic() - start_time < 1.0:
-        for can_packets in can_recv(wait_for_one=True):
-          for packet in can_packets:
-            if packet.src == bus:
-              all_msgs_seen.add(packet.address)
-              if packet.address in READY_ONLY_MSGS:
-                ready_msgs_seen.add(packet.address)
-        if len(ready_msgs_seen) >= READY_THRESHOLD:
-          break
-      ready_detected = len(ready_msgs_seen) >= READY_THRESHOLD
-      ecu_log(f"=== READY scan: ready_msgs={[hex(m) for m in ready_msgs_seen]}, total_bus_msgs={len(all_msgs_seen)}, elapsed={time.monotonic()-start_time:.2f}s ===")
+      # Try ECU disable. If it succeeds (IGN-ON mode), enable longitudinal.
+      # If it fails (READY mode returns NRC 0x22, or timeout), strip LONG safety flag
+      # so panda forwards stock SCC messages normally (lateral-only mode).
+      ecu_log(f"=== ECU DISABLE attempt: addr=0x{addr:x}, bus={bus} ===")
+      ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
 
-      if ready_detected:
-        # Car is in READY mode - do NOT send UDS commands, just disable longitudinal
-        params.put_bool("EcuDisableFailed", True)
-        # Strip LONG safety flag so panda doesn't block stock SCC messages
-        # This prevents dashboard errors by letting stock radar ECU communicate normally
-        CP.safetyConfigs[-1].safetyParam &= ~HyundaiSafetyFlags.LONG.value
-        ecu_log(f"=== safetyParam after strip: {CP.safetyConfigs[-1].safetyParam} ===")
-        ecu_log("=== SKIPPING ECU DISABLE (car in READY mode) - stripped LONG safety flag ===")
+      if ecu_disabled:
+        ECU_DISABLE_TIMESTAMP = time.monotonic()
+        params.put_bool("EcuDisableFailed", False)
+        params.put_bool("ExperimentalMode", True)
+        ecu_log("=== ECU DISABLE SUCCESS - Longitudinal + Experimental ENABLED ===")
       else:
-        # Car is in IGN-ON mode - safe to run ECU disable
-        ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
-        ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
-
-        if ecu_disabled:
-          ECU_DISABLE_TIMESTAMP = time.monotonic()
-          params.put_bool("EcuDisableFailed", False)
-          params.put_bool("ExperimentalMode", True)
-          ecu_log("=== ECU DISABLE SUCCESS - Longitudinal + Experimental ENABLED ===")
-        else:
-          params.put_bool("EcuDisableFailed", True)
-          # Strip LONG safety flag so panda doesn't block stock SCC messages
-          CP.safetyConfigs[-1].safetyParam &= ~HyundaiSafetyFlags.LONG.value
-          ecu_log(f"=== safetyParam after strip: {CP.safetyConfigs[-1].safetyParam} ===")
-          ecu_log("=== ECU DISABLE FAILED - stripped LONG safety flag, longitudinal will be disabled ===")
+        params.put_bool("EcuDisableFailed", True)
+        CP.safetyConfigs[-1].safetyParam &= ~HyundaiSafetyFlags.LONG.value
+        ecu_log(f"=== ECU DISABLE FAILED - safetyParam stripped to {CP.safetyConfigs[-1].safetyParam}, lateral-only mode ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
