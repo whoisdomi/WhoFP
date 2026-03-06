@@ -204,7 +204,11 @@ class CarInterface(CarInterfaceBase):
       if ready_detected:
         # Car is in READY mode - do NOT send UDS commands, just disable longitudinal
         params.put_bool("EcuDisableFailed", True)
-        ecu_log("=== SKIPPING ECU DISABLE (car in READY mode) - longitudinal will be disabled ===")
+        # Strip LONG safety flag so panda doesn't block stock SCC messages
+        # This prevents dashboard errors by letting stock radar ECU communicate normally
+        CP.safetyConfigs[-1].safetyParam &= ~HyundaiSafetyFlags.LONG.value
+        params.put("CarParams", CP.to_bytes())
+        ecu_log("=== SKIPPING ECU DISABLE (car in READY mode) - stripped LONG safety flag ===")
       else:
         # Car is in IGN-ON mode - safe to run ECU disable
         ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
@@ -217,7 +221,10 @@ class CarInterface(CarInterfaceBase):
           ecu_log("=== ECU DISABLE SUCCESS - Longitudinal + Experimental ENABLED ===")
         else:
           params.put_bool("EcuDisableFailed", True)
-          ecu_log("=== ECU DISABLE FAILED - Setting EcuDisableFailed, longitudinal will be disabled ===")
+          # Strip LONG safety flag so panda doesn't block stock SCC messages
+          CP.safetyConfigs[-1].safetyParam &= ~HyundaiSafetyFlags.LONG.value
+          params.put("CarParams", CP.to_bytes())
+          ecu_log("=== ECU DISABLE FAILED - stripped LONG safety flag, longitudinal will be disabled ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:

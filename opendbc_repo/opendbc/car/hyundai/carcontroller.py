@@ -59,6 +59,7 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.ecu_disable_failed = False
     self._ecu_disable_checked = False
+    self.long_active_ecu = self.CP.openpilotLongitudinalControl
 
   def update(self, CC, CS, now_nanos, frogpilot_toggles):
     actuators = CC.actuators
@@ -99,12 +100,12 @@ class CarController(CarControllerBase):
 
     # When ECU disable was skipped (car started in READY mode), don't send any
     # longitudinal messages - stock ECU is still active and these would conflict
-    long_active_ecu = self.CP.openpilotLongitudinalControl and not self.ecu_disable_failed
+    self.long_active_ecu = self.CP.openpilotLongitudinalControl and not self.ecu_disable_failed
 
     # *** common hyundai stuff ***
 
     # tester present - w/ no response (keeps relevant ECU disabled)
-    if self.frame % 100 == 0 and not (self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC) and long_active_ecu:
+    if self.frame % 100 == 0 and not (self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC) and self.long_active_ecu:
       # for longitudinal control, either radar or ADAS driving ECU
       addr, bus = 0x7d0, self.CAN.ECAN if self.CP.flags & HyundaiFlags.CANFD else 0
       if self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
@@ -144,7 +145,7 @@ class CarController(CarControllerBase):
                                               left_lane_warning, right_lane_warning))
 
     # Button messages
-    if not long_active_ecu:
+    if not self.long_active_ecu:
       if CC.cruiseControl.cancel:
         can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.CANCEL, self.CP))
       elif CC.cruiseControl.resume:
@@ -169,7 +170,7 @@ class CarController(CarControllerBase):
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
 
-    if self.frame % 2 == 0 and long_active_ecu:
+    if self.frame % 2 == 0 and self.long_active_ecu:
       # TODO: unclear if this is needed
       jerk = 3.0 if actuators.longControlState == LongCtrlState.pid else 1.0
       use_fca = self.CP.flags & HyundaiFlags.USE_FCA.value
@@ -182,11 +183,11 @@ class CarController(CarControllerBase):
       can_sends.append(hyundaican.create_lfahda_mfc(self.packer, CC.enabled))
 
     # 5 Hz ACC options
-    if self.frame % 20 == 0 and long_active_ecu:
+    if self.frame % 20 == 0 and self.long_active_ecu:
       can_sends.extend(hyundaican.create_acc_opt(self.packer, self.CP))
 
     # 2 Hz front radar options
-    if self.frame % 50 == 0 and long_active_ecu:
+    if self.frame % 50 == 0 and self.long_active_ecu:
       can_sends.append(hyundaican.create_frt_radar_opt(self.packer))
 
     return can_sends
@@ -195,8 +196,7 @@ class CarController(CarControllerBase):
     can_sends = []
 
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
-    long_active_ecu = self.CP.openpilotLongitudinalControl and not self.ecu_disable_failed
-    lka_steering_long = lka_steering and long_active_ecu
+    lka_steering_long = lka_steering and self.long_active_ecu
 
     # steering control
     can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled, apply_steer_req, apply_torque))
@@ -214,7 +214,7 @@ class CarController(CarControllerBase):
     if lka_steering and self.CP.flags & HyundaiFlags.ENABLE_BLINKERS:
       can_sends.extend(hyundaicanfd.create_spas_messages(self.packer, self.CAN, CC.leftBlinker, CC.rightBlinker))
 
-    if long_active_ecu:
+    if self.long_active_ecu:
       if lka_steering:
         can_sends.extend(hyundaicanfd.create_adrv_messages(self.packer, self.CAN, self.frame))
       else:
