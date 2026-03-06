@@ -304,10 +304,16 @@ class Car:
       # Initialize CarInterface, once controls are ready
       # TODO: this can make us miss at least a few cycles when doing an ECU knockout
       self.CI.init(self.CP, *self.can_callbacks)
-      # If ECU disable was skipped/failed, rewrite CarParams with updated safety config
-      # init() strips the LONG safety flag so panda doesn't block stock SCC messages
+      # If ECU disable was skipped/failed, strip LONG safety flag from BOTH CarParams
+      # and FrogPilotCarParams (pandad ORs both safetyParams together)
       if self.CP.openpilotLongitudinalControl and self.params.get_bool("EcuDisableFailed"):
+        LONG_FLAG = 4  # HyundaiSafetyFlags.LONG
+        for cfg in self.CP.safetyConfigs:
+          cfg.safetyParam &= ~LONG_FLAG
         self.params.put("CarParams", self.CP.to_bytes())
+        for cfg in self.FPCP.safetyConfigs:
+          cfg.safetyParam &= ~LONG_FLAG
+        self.params.put("FrogPilotCarParams", self.FPCP.to_bytes())
       # signal pandad to switch to car safety mode
       self.params.put_bool_nonblocking("ControlsReady", True)
 
