@@ -246,12 +246,10 @@ class CarInterface(CarInterfaceBase):
     # Call base class update - returns (CarState, FrogPilotCarState) tuple
     ret, fp_ret = super().update(can_packets, frogpilot_toggles)
 
-    # When ECU disable has been done for longitudinal control, we need to handle CAN errors carefully:
-    # - TIMEOUT errors (messages stop coming): Expected after ECU disable, should be suppressed
-    # - COUNTER errors (checksum/counter failures): Real CAN problems, should NOT be suppressed
-    # Also suppress CAN errors when ECU disable was skipped (READY mode boot)
-    # The panda is in LONG safety mode but stock ECU is still active, causing mismatches
-    if not hasattr(self, '_ecu_disable_failed_cached'):
+    # When ECU disable was skipped (READY mode boot) or failed, suppress CAN timeout errors.
+    # Keep checking param until it's True (init() sets it AFTER first update() call),
+    # then cache to avoid per-frame param reads.
+    if not getattr(self, '_ecu_disable_failed_cached', False):
       from openpilot.common.params import Params
       self._ecu_disable_failed_cached = Params().get_bool("EcuDisableFailed")
     if self._ecu_disable_failed_cached and not ret.canValid:
