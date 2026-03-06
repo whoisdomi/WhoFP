@@ -29,7 +29,7 @@ class CarControllerParams:
       if vEgoRaw < 15.:  # Low speed (~34 mph) - maximum aggression
         self.STEER_MAX = 409
         self.STEER_DELTA_UP = 10
-        self.STEER_DELTA_DOWN = 10
+        self.STEER_DELTA_DOWN = 8
       else:  # High speed - slightly conservative
         self.STEER_MAX = 409
         self.STEER_DELTA_UP = 2
