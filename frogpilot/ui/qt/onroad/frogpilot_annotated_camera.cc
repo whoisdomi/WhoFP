@@ -1,6 +1,7 @@
 #include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
 
 volatile int fpWidgetPaintStage = 0;
+volatile int fpUpdateStage = 0;
 
 FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) : QWidget(parent) {
   animationTimer = new QTimer(this);
@@ -55,6 +56,7 @@ void FrogPilotAnnotatedCameraWidget::showEvent(QShowEvent *event) {
 }
 
 void FrogPilotAnnotatedCameraWidget::updateSignals() {
+  fpUpdateStage = 50;  // updateSignals start
   animationFrameIndex = 0;
 
   QVector<QPixmap>().swap(blindspotImages);
@@ -62,6 +64,7 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
   QVector<QPixmap>().swap(signalImages);
   QVector<QPixmap>().swap(signalImagesFlipped);
 
+  fpUpdateStage = 51;  // loading signal files
   bool isGif = false;
 
   QFileInfoList files = QDir("../../frogpilot/assets/active_theme/signals/").entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
@@ -122,6 +125,7 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
     signalStyle = "None";
   }
 
+  fpUpdateStage = 52;  // pre-cache flipped
   // Pre-cache flipped versions to avoid transforms at 20Hz during paint
   QTransform flipTransform;
   flipTransform.scale(-1, 1);
@@ -135,9 +139,11 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
   for (const QPixmap &img : blindspotImages) {
     blindspotImagesFlipped.append(img.transformed(flipTransform));
   }
+  fpUpdateStage = 0;  // updateSignals done
 }
 
 void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState &fs) {
+  fpUpdateStage = 30;  // updateState start
   const UIScene &scene = s.scene;
 
   const SubMaster &sm = *(s.sm);
@@ -166,6 +172,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
     speedConversionMetrics = MS_TO_MPH;
   }
 
+  fpUpdateStage = 31;  // cereal reads
   desiredFollowDistance = frogpilotPlan.getDesiredFollowDistance();
 
   hideBottomIcons = selfdriveState.getAlertSize() != cereal::SelfdriveState::AlertSize::NONE;
@@ -198,6 +205,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   }
   lastFrameIndex = animationFrameIndex;
 
+  fpUpdateStage = 32;  // cache/params
   // Cache values to avoid parsing in paint methods (saves CPU at 20Hz)
   if (frogpilot_toggles.value("compass").toBool()) {
     double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
@@ -207,6 +215,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
     cachedRoadName = QString::fromStdString(params_memory.get("RoadName"));
   }
 
+  fpUpdateStage = 0;  // updateState done
   update();
 }
 

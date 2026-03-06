@@ -2,6 +2,7 @@
 #include <csignal>
 #include <fcntl.h>
 #include <unistd.h>
+#include <execinfo.h>
 
 #include <QApplication>
 #include <QTranslator>
@@ -13,19 +14,33 @@
 
 extern volatile int modelDrawStage;
 extern volatile int fpWidgetPaintStage;
+extern volatile int fpUpdateStage;
 
 static void crash_handler(int sig) {
   const char *sig_name = (sig == SIGSEGV) ? "SIGSEGV" : (sig == SIGABRT) ? "SIGABRT" : "SIGFPE";
-  char buf[256];
+  char buf[512];
   int len = snprintf(buf, sizeof(buf),
-    "UI CRASH: %s | modelDrawStage=%d | fpWidgetPaintStage=%d\n",
-    sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage);
-  if (len > 0) write(STDERR_FILENO, buf, len);
+    "UI CRASH: %s | modelDraw=%d | fpPaint=%d | fpUpdate=%d\n",
+    sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage, (int)fpUpdateStage);
+
   int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+  if (len > 0) {
+    write(STDERR_FILENO, buf, len);
+    if (fd >= 0) write(fd, buf, len);
+  }
+
+  // Capture backtrace
+  void *bt[32];
+  int bt_size = backtrace(bt, 32);
   if (fd >= 0) {
-    write(fd, buf, len);
+    const char hdr[] = "--- backtrace ---\n";
+    write(fd, hdr, sizeof(hdr) - 1);
+    backtrace_symbols_fd(bt, bt_size, fd);
+    const char end[] = "--- end ---\n";
+    write(fd, end, sizeof(end) - 1);
     close(fd);
   }
+
   signal(sig, SIG_DFL);
   raise(sig);
 }
