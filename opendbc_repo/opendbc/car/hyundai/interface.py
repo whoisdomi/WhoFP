@@ -182,21 +182,42 @@ class CarInterface(CarInterfaceBase):
       if CP.flags & HyundaiFlags.CANFD_LKA_STEERING.value:
         addr, bus = 0x730, CanBus(CP).ECAN
 
-      # ECU disable must happen in IGN-ON state BEFORE entering READY mode
-      ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
-      ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
+      # Check if car is in READY mode by looking for READY-only CAN messages
+      # These messages only appear after brake+start (motor running), not in IGN-ON
+      # Sending UDS commands in READY mode causes cruise faults and dash errors
+      READY_ONLY_MSGS = {0x090, 0x255, 0x2e5, 0x3a0, 0x3b0, 0x3b1, 0x3b5, 0x3f0, 0x3f5}
+      ready_detected = False
+      ecu_log("=== Checking for READY mode before ECU disable... ===")
+      start_time = time.monotonic()
+      while time.monotonic() - start_time < 1.0:
+        for can_packets in can_recv(wait_for_one=True):
+          for packet in can_packets:
+            if packet.src == bus and packet.address in READY_ONLY_MSGS:
+              ecu_log(f"=== READY mode detected (msg 0x{packet.address:x} on bus {bus}) ===")
+              ready_detected = True
+              break
+          if ready_detected:
+            break
+        if ready_detected:
+          break
 
-      # Only enable CAN error suppression if ECU disable actually succeeded
-      if ecu_disabled:
-        ECU_DISABLE_TIMESTAMP = time.monotonic()
-        params.put_bool("EcuDisableFailed", False)
-        params.put_bool("ExperimentalMode", True)
-        ecu_log("=== ECU DISABLE SUCCESS - Longitudinal + Experimental ENABLED ===")
-      else:
-        # ECU disable failed (car started in READY mode - NRC 0x22)
-        # Set param so controlsd disables longitudinal, letting stock ACC work
+      if ready_detected:
+        # Car is in READY mode - do NOT send UDS commands, just disable longitudinal
         params.put_bool("EcuDisableFailed", True)
-        ecu_log("=== ECU DISABLE FAILED - Setting EcuDisableFailed, longitudinal will be disabled ===")
+        ecu_log("=== SKIPPING ECU DISABLE (car in READY mode) - longitudinal will be disabled ===")
+      else:
+        # Car is in IGN-ON mode - safe to run ECU disable
+        ecu_log(f"=== ECU DISABLE: addr=0x{addr:x}, bus={bus} ===")
+        ecu_disabled = disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=communication_control)
+
+        if ecu_disabled:
+          ECU_DISABLE_TIMESTAMP = time.monotonic()
+          params.put_bool("EcuDisableFailed", False)
+          params.put_bool("ExperimentalMode", True)
+          ecu_log("=== ECU DISABLE SUCCESS - Longitudinal + Experimental ENABLED ===")
+        else:
+          params.put_bool("EcuDisableFailed", True)
+          ecu_log("=== ECU DISABLE FAILED - Setting EcuDisableFailed, longitudinal will be disabled ===")
 
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
