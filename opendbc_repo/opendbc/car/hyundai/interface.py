@@ -188,25 +188,24 @@ class CarInterface(CarInterfaceBase):
       # Check if car is in READY mode by looking for READY-only CAN messages
       # These messages only appear after brake+start (motor running), not in IGN-ON
       # Sending UDS commands in READY mode causes cruise faults and dash errors
-      READY_ONLY_MSGS = {0x090, 0x255, 0x2e5, 0x3a0, 0x3b0, 0x3b1, 0x3b5, 0x3f0, 0x3f5}
-      ready_detected = False
+      # Scan for full 1 second and require multiple unique READY messages to avoid false positives
+      READY_ONLY_MSGS = {0x255, 0x2e5, 0x3a0, 0x3b0, 0x3b1, 0x3b5, 0x3f0, 0x3f5}
+      READY_THRESHOLD = 3  # Need at least 3 different READY-only messages
+      ready_msgs_seen = set()
       ecu_log(f"=== Checking for READY mode: addr=0x{addr:x}, bus={bus} ===")
-      msgs_seen = set()
+      all_msgs_seen = set()
       start_time = time.monotonic()
       while time.monotonic() - start_time < 1.0:
         for can_packets in can_recv(wait_for_one=True):
           for packet in can_packets:
             if packet.src == bus:
-              msgs_seen.add(packet.address)
+              all_msgs_seen.add(packet.address)
               if packet.address in READY_ONLY_MSGS:
-                ecu_log(f"=== READY mode detected (msg 0x{packet.address:x} on bus {bus}) ===")
-                ready_detected = True
-                break
-          if ready_detected:
-            break
-        if ready_detected:
+                ready_msgs_seen.add(packet.address)
+        if len(ready_msgs_seen) >= READY_THRESHOLD:
           break
-      ecu_log(f"=== READY scan done: detected={ready_detected}, msgs_on_bus={len(msgs_seen)}, elapsed={time.monotonic()-start_time:.2f}s ===")
+      ready_detected = len(ready_msgs_seen) >= READY_THRESHOLD
+      ecu_log(f"=== READY scan: ready_msgs={[hex(m) for m in ready_msgs_seen]}, total_bus_msgs={len(all_msgs_seen)}, elapsed={time.monotonic()-start_time:.2f}s ===")
 
       if ready_detected:
         # Car is in READY mode - do NOT send UDS commands, just disable longitudinal
