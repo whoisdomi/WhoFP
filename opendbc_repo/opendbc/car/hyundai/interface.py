@@ -235,6 +235,14 @@ class CarInterface(CarInterfaceBase):
     # When ECU disable has been done for longitudinal control, we need to handle CAN errors carefully:
     # - TIMEOUT errors (messages stop coming): Expected after ECU disable, should be suppressed
     # - COUNTER errors (checksum/counter failures): Real CAN problems, should NOT be suppressed
+    # Also suppress CAN errors when ECU disable was skipped (READY mode boot)
+    # The panda is in LONG safety mode but stock ECU is still active, causing mismatches
+    if not hasattr(self, '_ecu_disable_failed_cached'):
+      from openpilot.common.params import Params
+      self._ecu_disable_failed_cached = Params().get_bool("EcuDisableFailed")
+    if self._ecu_disable_failed_cached and not ret.canValid:
+      ret.canValid = True
+
     global ECU_DISABLE_TIMESTAMP
     if ECU_DISABLE_TIMESTAMP > 0 and not ret.canValid:
       # Check if any parser has counter/checksum errors (real CAN issues)
