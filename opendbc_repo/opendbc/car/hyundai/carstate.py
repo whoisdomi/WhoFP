@@ -283,7 +283,7 @@ class CarState(CarStateBase):
     # cruise state
     # CAN FD cars enable on main button press, set available if no TCS faults preventing engagement
     ret.cruiseState.available = cp.vl["TCS"]["ACCEnable"] == 0
-    if self.CP.openpilotLongitudinalControl:
+    if self.CP.openpilotLongitudinalControl and not self.CP.pcmCruise:
       # These are not used for engage/disengage since openpilot keeps track of state using the buttons
       ret.cruiseState.enabled = cp.vl["TCS"]["ACC_REQ"] == 1
       ret.cruiseState.standstill = False
