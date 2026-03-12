@@ -52,6 +52,10 @@ int main(int argc, char *argv[]) {
   signal(SIGABRT, crash_handler);
   signal(SIGFPE, crash_handler);
 
+  // Allow Qt Wayland client to recover from compositor disconnects
+  // instead of calling qFatal/abort (Qt 5.15.3+)
+  setenv("QT_WAYLAND_RECONNECT", "1", 0);
+
   qInstallMessageHandler(swagLogMessageHandler);
   initApp(argc, argv);
 
@@ -63,6 +67,11 @@ int main(int argc, char *argv[]) {
 
   QApplication a(argc, argv);
   a.installTranslator(&translator);
+
+  // Log Qt version and Wayland platform info for crash debugging
+  fprintf(stderr, "UI started: Qt %s | platform=%s | QT_WAYLAND_RECONNECT=%s\n",
+    qVersion(), qApp->platformName().toUtf8().constData(),
+    getenv("QT_WAYLAND_RECONNECT") ? getenv("QT_WAYLAND_RECONNECT") : "unset");
 
   MainWindow w;
   setMainWindow(&w);
