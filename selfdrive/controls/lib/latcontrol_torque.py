@@ -43,8 +43,8 @@ LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 # Note: Initial lat_delay is calculated in __init__ as CP.steerActuatorDelay + 0.2 (matching lagd)
 
 # === Unwind Detection (from StarPilot) ===
-UNWIND_D_DES_THRESHOLD = -0.4      # Desired accel decreasing fast (m/s³)
-UNWIND_LAT_ACCEL_NEAR_ZERO = 1.5   # Near straight (m/s²), compared against raw (unscaled) lat accel
+UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
+UNWIND_LAT_ACCEL_NEAR_ZERO = 0.8   # Near straight (m/s²), compared against raw (unscaled) lat accel
 UNWIND_FRAMES_ACTIVATE = 5         # Counter threshold to activate decay
 UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 false frames to deactivate
 
@@ -171,12 +171,13 @@ class LatControlTorque(LatControl):
     delay_frames = int(np.clip(lat_delay / DT_CTRL + 1, 1, self.lat_accel_request_buffer_len))
     expected_lateral_accel = self.lat_accel_request_buffer[-delay_frames]
 
-    # Jerk calculation (ACTS-HORIZON style: simple difference / delay)
+    # Jerk calculation: rate of change of desired lateral accel over the delay period
     desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / lat_delay
 
-    # Setpoint with jerk prediction (ACTS-HORIZON formula)
-    # Predicts where lateral accel will be after the delay period
-    setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
+    # Delay-compensated setpoint: predict where the desired lateral accel will be
+    # lat_delay into the future, so the controller leads the target instead of chasing it.
+    # setpoint = current_desired + jerk * lat_delay = 2*future - expected
+    setpoint = future_desired_lateral_accel + desired_lateral_jerk * lat_delay
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
@@ -208,8 +209,8 @@ class LatControlTorque(LatControl):
     # Unwind detection: use raw future_desired_lateral_accel (before jerk prediction and low_speed_factor
     # scaling) so the rate and near-zero checks are stable and in physical units (m/s²).
     desired_lateral_accel_rate = (future_desired_lateral_accel - self.prev_future_desired_lateral_accel) / DT_CTRL
-    unwind_condition = (desired_lateral_accel_rate < UNWIND_D_DES_THRESHOLD or
-                        (abs(future_desired_lateral_accel) < UNWIND_LAT_ACCEL_NEAR_ZERO and desired_lateral_accel_rate < 0))
+    unwind_condition = (desired_lateral_accel_rate < UNWIND_D_DES_THRESHOLD and
+                        abs(future_desired_lateral_accel) < UNWIND_LAT_ACCEL_NEAR_ZERO)
     self.prev_future_desired_lateral_accel = future_desired_lateral_accel
     # Hysteresis counter: builds at +1/frame when condition is met, drains at -1/frame when not.
     # Activates at UNWIND_FRAMES_ACTIVATE (5 frames), saturates at UNWIND_COUNTER_MAX (15 frames).
@@ -231,15 +232,17 @@ class LatControlTorque(LatControl):
       # Error correction in lateral acceleration space
       pid_log.error = float(error)
 
-      # Freeze integrator conditions
-      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5 or unwind_detected
+      # Freeze integrator conditions (unwind_detected NOT included — decay alone handles turn exit,
+      # freezing creates a hard on/off boundary that causes "section" oscillation)
+      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5
 
       # PID update in lat accel space
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
 
-      # Actively decay integrator during turn exit instead of freezing it
+      # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
+      # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
       if unwind_detected:
-        self.pid.i *= 0.90
+        self.pid.i *= 0.95
 
       # Convert to torque at the end
       output_torque = self.torque_from_lateral_accel(
