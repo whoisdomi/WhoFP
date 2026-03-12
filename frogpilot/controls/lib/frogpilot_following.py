@@ -11,6 +11,7 @@ class FrogPilotFollowing:
   def __init__(self, FrogPilotPlanner):
     self.frogpilot_planner = FrogPilotPlanner
 
+    self.disable_throttle = False
     self.following_lead = False
 
     self.acceleration_jerk = 0
@@ -74,6 +75,27 @@ class FrogPilotFollowing:
       self.desired_follow_distance = desired_follow_distance(v_ego, self.frogpilot_planner.lead_one.vLead, self.t_follow)
     else:
       self.desired_follow_distance = 0
+
+    # Coast when approaching a slower lead that is still at a comfortable distance.
+    # Cuts throttle early so we don't keep accelerating toward them and then brake hard.
+    self.disable_throttle = False
+    if self.frogpilot_planner.tracking_lead and self.frogpilot_planner.lead_one.status:
+      lead_distance = self.frogpilot_planner.lead_one.dRel
+      v_lead = self.frogpilot_planner.lead_one.vLead
+      closing_speed = max(0.0, v_ego - v_lead)
+      desired_gap = float(desired_follow_distance(v_ego, v_lead, self.t_follow))
+      ttc = lead_distance / max(closing_speed, 1e-3) if closing_speed > 0.1 else 1e6
+
+      # Coast window: far enough from desired gap to not need braking yet,
+      # but close enough that continued acceleration would be wasteful.
+      coast_window_open = lead_distance > desired_gap + max(4.0, 0.2 * v_ego)
+      coast_window_far = lead_distance < desired_gap + max(25.0, 1.2 * v_ego)
+      gentle_closing = closing_speed < max(2.0, 0.12 * v_ego)
+
+      self.disable_throttle = (not self.following_lead and v_ego > 5.0 and coast_window_open and
+                               coast_window_far and gentle_closing)
+      # Never coast when we are entering a potentially late-braking scenario.
+      self.disable_throttle &= ttc > 6.0 and lead_distance > desired_gap + 6.0
 
   def update_follow_values(self, lead_distance, v_ego, v_lead):
     # Offset by FrogAi for FrogPilot for a more natural approach to a faster lead

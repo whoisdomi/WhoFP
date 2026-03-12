@@ -175,6 +175,7 @@ class FrogPilotPlanner:
     frogpilotPlan.cscTraining = self.frogpilot_vcruise.csc.enable_training
 
     frogpilotPlan.desiredFollowDistance = int(self.frogpilot_following.desired_follow_distance)
+    frogpilotPlan.disableThrottle = bool(self.frogpilot_following.disable_throttle)
 
     frogpilotPlan.experimentalMode = self.frogpilot_cem.experimental_mode or self.frogpilot_vcruise.slc.experimental_mode
 

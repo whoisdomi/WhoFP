@@ -9,7 +9,7 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, desired_follow_distance
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
@@ -74,6 +74,9 @@ class LongitudinalPlanner:
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
+
+    # Filtered lead distance for anticipatory pre-braking
+    self.lead_dist_f = None
 
   @staticmethod
   def parse_model(model_msg, v_ego, taco_tune):
@@ -150,6 +153,11 @@ class LongitudinalPlanner:
       clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*3], [accel_clip[1], clipped_accel_coast])
       accel_clip[1] = min(accel_clip[1], clipped_accel_coast_interp)
 
+    # When approaching a slower lead, cap acceleration to coast (no throttle)
+    # so we don't keep accelerating toward them before the MPC reacts.
+    if sm['frogpilotPlan'].disableThrottle:
+      accel_clip[1] = min(accel_clip[1], max(accel_coast, 0.0))
+
     if force_slow_decel:
       v_cruise = 0.0
 
@@ -170,6 +178,39 @@ class LongitudinalPlanner:
     a_prev = self.a_desired
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
+
+    # Anticipatory pre-braking: apply a small decel bias when closing on a lead,
+    # bridging the gap between coasting and the MPC's braking response.
+    lead = sm['radarState'].leadOne
+    if lead.status:
+      rel_v = max(0.0, v_ego - lead.vLead)
+
+      # Adaptive lead distance smoothing — react faster when closing
+      alpha = max(0.02, min(0.15, 0.05 + 0.002 * v_ego))
+      if rel_v > 0.8:
+        alpha = max(alpha, np.interp(rel_v, [0.8, 2.0, 4.0], [0.15, 0.25, 0.35]))
+
+      if self.lead_dist_f is None:
+        self.lead_dist_f = lead.dRel
+      else:
+        self.lead_dist_f = self.lead_dist_f * (1 - alpha) + lead.dRel * alpha
+
+      t_follow = sm['frogpilotPlan'].tFollow
+      desired_gap = t_follow * v_ego + 6.0
+      ttc = self.lead_dist_f / max(rel_v, 0.1) if rel_v > 0.1 else 1e6
+      gap_shortfall = max(0.0, desired_gap - self.lead_dist_f)
+
+      pre_brake_trigger = desired_gap + np.interp(v_ego, [0.0, 10.0, 20.0, 30.0], [5.0, 5.8, 6.8, 8.0])
+      if rel_v > 0.5 and self.lead_dist_f < pre_brake_trigger:
+        pre_brake = 0.0
+        pre_brake += np.interp(rel_v, [0.5, 2.0, 5.0, 8.0], [0.0, 0.02, 0.06, 0.11])
+        pre_brake += np.interp(ttc, [1.4, 2.2, 3.5, 5.0, 7.5], [0.16, 0.09, 0.04, 0.01, 0.0])
+        pre_brake += np.interp(gap_shortfall, [0.0, 2.0, 6.0, 10.0], [0.0, 0.015, 0.04, 0.07])
+        pre_brake *= np.interp(v_ego, [0.0, 8.0, 15.0, 25.0], [0.50, 0.68, 0.88, 1.00])
+        pre_brake = min(pre_brake, np.interp(v_ego, [0.0, 5.0, 15.0, 30.0], [0.05, 0.08, 0.13, 0.16]))
+        self.a_desired = float(self.a_desired - pre_brake)
+    else:
+      self.lead_dist_f = None
 
     action_t = frogpilot_toggles.longitudinalActuatorDelay + DT_MDL
     output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
