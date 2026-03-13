@@ -1,64 +1,80 @@
 #!/usr/bin/env python3
 """
-Verify stop sign detection: dash distance vs model distance.
+Find the real stop sign signal.
 
 Run on the comma device via SSH while openpilot is running:
   python3 /data/openpilot/frogpilot/tools/verify_dash_stop_sign.py
 
-Only prints when a stop sign is detected (0x120 SIGN_TYPE==8)
-and dash distance is available (0x362 BYTE22 > 0).
+Press ENTER when dash stop sign appears/disappears.
+Shows 0x120 bytes + 0x362 distance on each change.
 
 Press Ctrl+C to stop.
 """
 import cereal.messaging as messaging
+import sys
+import select
+import termios
+import tty
 import time
 
+def check_keypress():
+  if select.select([sys.stdin], [], [], 0)[0]:
+    sys.stdin.read(1)
+    return True
+  return False
+
 def main():
-  sm = messaging.SubMaster(["can", "frogpilotPlan", "carState"])
+  old_settings = termios.tcgetattr(sys.stdin)
+  tty.setcbreak(sys.stdin.fileno())
 
-  sign_type = 0
-  prev_362_dist = -1
-  stop_active = False
-  t0 = time.monotonic()
+  try:
+    sm = messaging.SubMaster(["can"])
 
-  print("Stop sign: dash distance vs model distance")
-  print(f"  {'Time':>6s}  {'Dash':>5s}  {'Model':>7s}  {'Diff':>6s}  {'Speed':>5s}")
-  print("-" * 50)
+    dash_on = False
+    prev_120 = None
+    prev_362_dist = -1
+    t0 = time.monotonic()
 
-  while True:
-    sm.update(100)
+    print("Press ENTER when dash stop sign appears/disappears")
+    print("-" * 70)
 
-    if sm.updated["can"]:
-      for msg in sm["can"]:
-        data = bytes(msg.dat)
+    while True:
+      sm.update(100)
 
-        # Track current sign type from 0x120 Bus 1 BYTE[4]
-        if msg.address == 0x120 and msg.src == 1 and len(data) > 4:
-          new_type = data[4]
-          if new_type != sign_type:
-            if new_type == 8 and sign_type != 8:
+      if check_keypress():
+        dash_on = not dash_on
+        elapsed = time.monotonic() - t0
+        tag = ">>> DASH ON" if dash_on else "<<< DASH OFF"
+        print(f"  {elapsed:6.1f}  {tag}")
+
+      if sm.updated["can"]:
+        for msg in sm["can"]:
+          data = bytes(msg.dat)
+
+          # Show all 0x120 bytes when any change
+          if msg.address == 0x120 and msg.src == 1 and len(data) >= 8:
+            current = tuple(data[:8])
+            if current != prev_120:
               elapsed = time.monotonic() - t0
-              print(f"  {elapsed:6.1f}  >>> STOP SIGN DETECTED")
-              stop_active = True
-            elif sign_type == 8 and new_type != 8:
-              elapsed = time.monotonic() - t0
-              print(f"  {elapsed:6.1f}  <<< STOP SIGN GONE")
-              stop_active = False
-            sign_type = new_type
+              hex_str = " ".join(f"{b:02X}" for b in data[:8])
+              icon = " <DASH>" if dash_on else ""
+              print(f"  {elapsed:6.1f}  0x120: {hex_str}{icon}")
+              prev_120 = current
 
-        # Show dash vs model distance only during stop sign detection
-        if msg.address == 0x362 and msg.src == 2 and len(data) > 22:
-          dist = data[22]
-          if stop_active and dist != prev_362_dist and dist > 0:
-            elapsed = time.monotonic() - t0
-            model_dist = sm["frogpilotPlan"].forcingStopLength
-            speed_mph = sm["carState"].vEgo * 2.237
-            diff = dist - model_dist
-            print(f"  {elapsed:6.1f}  {dist:>4d}m  {model_dist:>6.1f}m  {diff:>+5.0f}m  {speed_mph:4.0f}")
-          prev_362_dist = dist
+          # Show 0x362 distance changes
+          if msg.address == 0x362 and msg.src == 2 and len(data) > 22:
+            dist = data[22]
+            if dist != prev_362_dist:
+              if dist > 0 or prev_362_dist > 0:
+                elapsed = time.monotonic() - t0
+                icon = " <DASH>" if dash_on else ""
+                print(f"  {elapsed:6.1f}  0x362 dist={dist:<3d}{icon}")
+              prev_362_dist = dist
+
+  except KeyboardInterrupt:
+    pass
+  finally:
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
 if __name__ == "__main__":
-  try:
-    main()
-  except KeyboardInterrupt:
-    print("\nDone.")
+  main()
