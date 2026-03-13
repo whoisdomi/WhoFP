@@ -199,7 +199,7 @@ class FrogPilotPlanner:
     frogpilotPlan.maxAcceleration = float(self.frogpilot_acceleration.max_accel)
     frogpilotPlan.minAcceleration = float(self.frogpilot_acceleration.min_accel)
 
-    frogpilotPlan.redLight = self.frogpilot_cem.stop_light_detected or bool(sm["frogpilotCarState"].dashboardStopSign)
+    frogpilotPlan.redLight = self.frogpilot_cem.stop_light_detected
 
     frogpilotPlan.roadCurvature = self.road_curvature
 
