@@ -45,6 +45,8 @@ class CarState(CarStateBase):
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.lda_button = 0
     self.steering_wheel_buttons = {}
+    self.stop_sign_hold_frames = 0
+    self.stop_sign_last_dist = 0
 
     self.gear_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                           "GEAR_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS else \
@@ -327,9 +329,15 @@ class CarState(CarStateBase):
     bus = cp if lka_steering else cp_cam
     # Stop sign: both BYTE22 (any sign distance) AND BYTE24 (stop-specific) must be non-zero
     # BYTE24 alone has false positives; requiring both filters those out
+    # Hold for 5 frames (~0.5s at 10Hz) to smooth brief single-frame dropouts
     b22 = int(cp_cam.vl["CAM_0x362"]["BYTE22"])
     b24 = int(cp_cam.vl["CAM_0x362"]["BYTE24"])
-    fp_ret.dashboardStopSign = b24 if (b22 > 0 and b24 > 0) else 0
+    if b22 > 0 and b24 > 0:
+      self.stop_sign_hold_frames = 5
+      self.stop_sign_last_dist = b24
+    elif self.stop_sign_hold_frames > 0:
+      self.stop_sign_hold_frames -= 1
+    fp_ret.dashboardStopSign = self.stop_sign_last_dist if self.stop_sign_hold_frames > 0 else 0
 
     # Drive mode detection for Map Accel/Decel to Gears feature (Ioniq 6 and other Hyundai EVs)
     if self.CP.flags & HyundaiFlags.EV:
