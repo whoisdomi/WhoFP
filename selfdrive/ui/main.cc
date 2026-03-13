@@ -16,6 +16,35 @@ extern volatile int modelDrawStage;
 extern volatile int fpWidgetPaintStage;
 extern volatile int fpUpdateStage;
 
+// Intercept Qt fatal messages from Wayland disconnect and exit cleanly
+// instead of letting Qt call abort(). The manager will restart the UI.
+// Qt 5.12.8 doesn't support QT_WAYLAND_RECONNECT, so this is the only way.
+static void waylandAwareMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+  // Forward non-fatal messages to the normal handler
+  if (type != QtMsgType::QtFatalMsg) {
+    swagLogMessageHandler(type, context, msg);
+    return;
+  }
+
+  // Log the fatal message
+  swagLogMessageHandler(type, context, msg);
+
+  // Check if this is a Wayland disconnect fatal
+  QByteArray msgBytes = msg.toUtf8();
+  bool isWaylandFatal = msgBytes.contains("ayland") || msgBytes.contains("wl_display");
+
+  if (isWaylandFatal) {
+    // Log to crash file and exit cleanly — manager will restart us
+    const char logmsg[] = "UI WAYLAND DISCONNECT: exiting cleanly for restart\n";
+    int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd >= 0) { write(fd, logmsg, sizeof(logmsg) - 1); close(fd); }
+    write(STDERR_FILENO, logmsg, sizeof(logmsg) - 1);
+    _exit(0);  // Clean exit before Qt calls abort()
+  }
+
+  // Non-Wayland fatal: let Qt abort normally so crash_handler captures it
+}
+
 static void crash_handler(int sig) {
   const char *sig_name = (sig == SIGSEGV) ? "SIGSEGV" : (sig == SIGABRT) ? "SIGABRT" : "SIGFPE";
   char buf[512];
@@ -52,11 +81,7 @@ int main(int argc, char *argv[]) {
   signal(SIGABRT, crash_handler);
   signal(SIGFPE, crash_handler);
 
-  // Allow Qt Wayland client to recover from compositor disconnects
-  // instead of calling qFatal/abort (Qt 5.15.3+)
-  setenv("QT_WAYLAND_RECONNECT", "1", 0);
-
-  qInstallMessageHandler(swagLogMessageHandler);
+  qInstallMessageHandler(waylandAwareMessageHandler);
   initApp(argc, argv);
 
   QTranslator translator;
@@ -72,9 +97,8 @@ int main(int argc, char *argv[]) {
   {
     char info[512];
     int len = snprintf(info, sizeof(info),
-      "UI STARTED: Qt %s | platform=%s | QT_WAYLAND_RECONNECT=%s | pid=%d\n",
+      "UI STARTED: Qt %s | platform=%s | pid=%d\n",
       qVersion(), qApp->platformName().toUtf8().constData(),
-      getenv("QT_WAYLAND_RECONNECT") ? getenv("QT_WAYLAND_RECONNECT") : "unset",
       getpid());
     if (len > 0) {
       fprintf(stderr, "%s", info);
