@@ -34,8 +34,8 @@ DEFAULT_KI = 0.3
 # m/s:            1      1.5    2.0    3.0    5      7.5    10     15     30
 # mph:            2.2    3.4    4.5    6.7    11.2   16.8   22.4   33.6   67.1
 INTERP_SPEEDS =  [1,     1.5,   2.0,   3.0,   5,     7.5,   10,    15,    30   ]
-KP_MULTIPLIERS = [250,   120,   65,    22,    9,     5.5,   3.5,   2.0,   1.0  ]
-LOW_SPEED_Y =    [3.0,   2.8,   2.5,   2.5,   2.0,   1.8,   1.4,   1.0,   1.0  ]
+KP_MULTIPLIERS = [250,   120,   65,    22,    7,     4.0,   2.5,   1.5,   1.0  ]
+LOW_SPEED_Y =    [3.0,   2.8,   2.5,   2.5,   1.6,   1.4,   1.2,   1.0,   1.0  ]
 LOW_SPEED_X =    [1,     1.5,   2.0,   3.0,   5,     7.5,   10,    15,    30   ]
 
 # === Delay Compensation ===
@@ -180,8 +180,11 @@ class LatControlTorque(LatControl):
     #   - Turn entry: prediction can at most double the setpoint (good anticipation)
     #   - Turn exit: prediction can at most zero the setpoint (no sign reversal / overshoot)
     #   - Straights: with future ≈ 0, jerk offset is clamped to ≈ 0 (no noise amplification)
+    # Faded out below 8 m/s (18 mph) where high KP already amplifies noise — jerk just adds wobble
     jerk_offset = desired_lateral_jerk * lat_delay
     jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel), abs(future_desired_lateral_accel)))
+    jerk_fade = float(np.clip((CS.vEgo - 3.0) / 5.0, 0.0, 1.0))  # 0 below 3 m/s, 1 above 8 m/s
+    jerk_offset *= jerk_fade
     setpoint = future_desired_lateral_accel + jerk_offset
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
