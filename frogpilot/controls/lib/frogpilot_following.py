@@ -110,12 +110,17 @@ class FrogPilotFollowing:
 
     # Offset by FrogAi for FrogPilot for a more natural approach to a slower lead
     if v_lead < v_ego:
-      distance_factor = max(lead_distance - (v_lead * self.t_follow), 1)
-      braking_offset = np.clip(min(v_ego - v_lead, v_lead) - COMFORT_BRAKE, 1, distance_factor)
-
-      if lead_distance >= 100:
-        far_lead_offset = max(lead_distance - (v_ego * self.t_follow) - STOP_DISTANCE, 0)
-        braking_offset += far_lead_offset
-
       self.danger_factor += ((v_ego - v_lead) / 100)
-      self.t_follow /= braking_offset
+
+      # Only reduce t_follow when we're already well within the desired gap and
+      # closing slowly — i.e. settling into car-following, not still approaching.
+      # The old logic would slash t_follow to near-zero when far from a slower lead,
+      # which told the MPC "you don't need much gap" and delayed braking.
+      desired_gap = desired_follow_distance(v_ego, v_lead, self.t_follow)
+      closing_speed = v_ego - v_lead
+      already_following = lead_distance < desired_gap * 1.3 and closing_speed < 1.5
+
+      if already_following:
+        distance_factor = max(lead_distance - (v_lead * self.t_follow), 1)
+        braking_offset = np.clip(min(closing_speed, v_lead) - COMFORT_BRAKE, 1, distance_factor)
+        self.t_follow /= braking_offset
