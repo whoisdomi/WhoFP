@@ -176,8 +176,13 @@ class LatControlTorque(LatControl):
 
     # Delay-compensated setpoint: predict where the desired lateral accel will be
     # lat_delay into the future, so the controller leads the target instead of chasing it.
-    # setpoint = current_desired + jerk * lat_delay = 2*future - expected
-    setpoint = future_desired_lateral_accel + desired_lateral_jerk * lat_delay
+    # Clamped so the jerk offset can never exceed |future_desired|:
+    #   - Turn entry: prediction can at most double the setpoint (good anticipation)
+    #   - Turn exit: prediction can at most zero the setpoint (no sign reversal / overshoot)
+    #   - Straights: with future ≈ 0, jerk offset is clamped to ≈ 0 (no noise amplification)
+    jerk_offset = desired_lateral_jerk * lat_delay
+    jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel), abs(future_desired_lateral_accel)))
+    setpoint = future_desired_lateral_accel + jerk_offset
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
