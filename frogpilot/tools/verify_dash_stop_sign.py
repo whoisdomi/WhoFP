@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 """
-Full-bus stop sign identifier with ENTER key marking.
+Focused test on 0x360 — candidate stop sign type message.
 
 Run on the comma device via SSH while openpilot is running:
   python3 /data/openpilot/frogpilot/tools/verify_dash_stop_sign.py
 
-Phase 1 (10 sec): Learn noisy bytes. Drive with NO stop sign on dash.
-Phase 2: Drive toward stop signs.
-  - Press ENTER when dash stop sign icon APPEARS
-  - Press ENTER again when it DISAPPEARS
-  - Repeat for multiple stop signs if possible.
-  - Press Ctrl+C when done — shows summary of signals that correlate.
+Shows 0x360 bytes continuously while 0x362 BYTE22 is active (any sign detected).
+Press ENTER to mark when dash stop sign icon is ON/OFF.
 
-The script finds bytes that ONLY changed during the ON window.
+Press Ctrl+C to stop.
 """
 import cereal.messaging as messaging
 import sys
@@ -27,6 +23,9 @@ def check_keypress():
     return True
   return False
 
+def fmt_hex(data, start, end):
+  return " ".join(f"{data[i]:02X}" for i in range(start, min(end, len(data))))
+
 def main():
   old_settings = termios.tcgetattr(sys.stdin)
   tty.setcbreak(sys.stdin.fileno())
@@ -34,131 +33,92 @@ def main():
   try:
     sm = messaging.SubMaster(["can"])
 
-    # Phase 1: Learn noisy bytes
-    print("Phase 1: Learning noisy bytes (10 seconds)...")
-    print("         Drive normally — NO stop sign on dash!")
-    print()
-
-    baseline = {}
-    noisy_bytes = set()
-    frames = 0
-    target = 200
-
-    while frames < target:
-      sm.update(100)
-      if sm.updated["can"]:
-        for msg in sm["can"]:
-          key = (msg.src, msg.address)
-          data = bytes(msg.dat)
-          if key in baseline:
-            old = baseline[key]
-            for i in range(min(len(old), len(data))):
-              if old[i] != data[i]:
-                noisy_bytes.add((msg.src, msg.address, i))
-          baseline[key] = data
-        frames += 1
-
-    print(f"Learned {len(noisy_bytes)} noisy byte positions")
-    print()
-    print("Phase 2: Drive toward stop signs.")
-    print("  Press ENTER when dash stop sign icon APPEARS")
-    print("  Press ENTER again when it DISAPPEARS")
-    print("  Repeat for multiple stop signs. Ctrl+C when done.")
-    print("-" * 60)
-
-    # Phase 2: Track changes correlated with ENTER presses
+    msg_360 = None
+    msg_362 = None
+    prev_active = False
     dash_on = False
-    # For each (bus, addr, byte_idx): track how many times it changed
-    # during ON windows vs OFF windows
-    on_changes = {}   # (bus, addr, byte_idx) -> count of changes during ON
-    off_changes = {}  # (bus, addr, byte_idx) -> count of changes during OFF
-    on_windows = 0
-    # Track values at ON/OFF transitions
-    on_snapshots = []   # list of baseline dicts at moment of ON press
-    off_snapshots = []  # list of baseline dicts at moment of OFF press
+    detection_count = 0
+    detections = []  # (det#, dist, 0x360_snap, tagged_as_stop)
+
+    print("0x360 focused test")
+    print("Press ENTER to mark dash stop sign ON/OFF")
+    print("-" * 70)
 
     while True:
       sm.update(100)
 
       if check_keypress():
         dash_on = not dash_on
-        if dash_on:
-          on_windows += 1
-          on_snapshots.append(dict(baseline))
-          print(f"  >>> DASH ON  (window #{on_windows})")
-        else:
-          off_snapshots.append(dict(baseline))
-          print(f"  >>> DASH OFF (window #{on_windows})")
+        tag = "DASH ON" if dash_on else "DASH OFF"
+        print(f"  >>> {tag}")
+        # Tag the current/most recent detection
+        if dash_on and detections:
+          detections[-1] = (*detections[-1][:3], True)
+          print(f"      (tagged #{detections[-1][0]} as STOP SIGN)")
 
       if sm.updated["can"]:
         for msg in sm["can"]:
-          key = (msg.src, msg.address)
+          if msg.src != 2:
+            continue
           data = bytes(msg.dat)
-          if key in baseline:
-            old = baseline[key]
-            for i in range(min(len(old), len(data))):
-              change_key = (msg.src, msg.address, i)
-              if old[i] != data[i] and change_key not in noisy_bytes:
-                if dash_on:
-                  on_changes[change_key] = on_changes.get(change_key, 0) + 1
-                else:
-                  off_changes[change_key] = off_changes.get(change_key, 0) + 1
-          baseline[key] = data
+          if msg.address == 0x360:
+            msg_360 = data
+          elif msg.address == 0x362:
+            msg_362 = data
+
+        if msg_360 is None or msg_362 is None:
+          continue
+
+        dist = msg_362[22] if len(msg_362) > 22 else 0
+        active = dist > 0
+
+        if active and not prev_active:
+          detection_count += 1
+          snap = bytes(msg_360)
+          detections.append((detection_count, dist, snap, False))
+          icon = " <DASH>" if dash_on else ""
+          print(f"\n=== Det #{detection_count} (dist={dist}){icon} ===")
+          # Show key bytes from 0x360: 5,6,12,13,20,21,22,28,29,30
+          print(f"  0x360: {fmt_hex(snap, 0, 16)}")
+          print(f"         {fmt_hex(snap, 16, 32)}")
+
+        if not active and prev_active:
+          print(f"  --- #{detection_count} cleared ---")
+
+        prev_active = active
 
   except KeyboardInterrupt:
     pass
   finally:
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
-  # Analysis
+  # Summary
   print("\n" + "=" * 60)
-  print(f"ANALYSIS — {on_windows} ON/OFF window(s) recorded")
+  print("SUMMARY")
   print("=" * 60)
 
-  if not on_snapshots:
-    print("No ON windows recorded.")
-    return
+  stop_dets = [d for d in detections if d[3]]
+  other_dets = [d for d in detections if not d[3]]
 
-  # Find bytes that changed ONLY during ON (not during OFF)
-  on_only = set(on_changes.keys()) - set(off_changes.keys())
-  # Find bytes that changed during ON AND OFF
-  both = set(on_changes.keys()) & set(off_changes.keys())
-  # Find bytes that changed much more during ON than OFF
-  biased = {}
-  for k in both:
-    ratio = on_changes[k] / max(off_changes[k], 1)
-    if ratio > 3:
-      biased[k] = ratio
+  print(f"\nKey bytes from 0x360 (bytes 5,6,12,13,20,21,22,28,29,30):")
+  print(f"{'#':>3s} {'type':>5s} {'dist':>4s} | B5  B6  B12 B13 B20 B21 B22 B28 B29 B30")
+  print("-" * 70)
+  for det_num, dist, snap, is_stop in detections:
+    label = "STOP" if is_stop else "other"
+    b = snap
+    if len(b) >= 31:
+      print(f"#{det_num:<3d} {label:>5s} d={dist:<3d} | "
+            f"{b[5]:>3d} {b[6]:>3d} {b[12]:>3d} {b[13]:>3d} "
+            f"{b[20]:>3d} {b[21]:>3d} {b[22]:>3d} {b[28]:>3d} {b[29]:>3d} {b[30]:>3d}")
 
-  if on_only:
-    print(f"\nBytes that ONLY changed during DASH ON ({len(on_only)}):")
-    sorted_keys = sorted(on_only, key=lambda k: (-on_changes[k], k))
-    for bus, addr, byte_idx in sorted_keys:
-      count = on_changes[(bus, addr, byte_idx)]
-      # Show value at ON and OFF snapshots
-      vals_on = []
-      vals_off = []
-      for snap in on_snapshots:
-        key = (bus, addr)
-        if key in snap and byte_idx < len(snap[key]):
-          vals_on.append(snap[key][byte_idx])
-      for snap in off_snapshots:
-        key = (bus, addr)
-        if key in snap and byte_idx < len(snap[key]):
-          vals_off.append(snap[key][byte_idx])
-      print(f"  Bus {bus:>3d}  Msg 0x{addr:03X} ({addr:>4d})  BYTE[{byte_idx:>2d}]  "
-            f"changes={count}  at_ON={vals_on}  at_OFF={vals_off}")
-
-  if biased:
-    print(f"\nBytes that changed MUCH MORE during DASH ON ({len(biased)}):")
-    sorted_keys = sorted(biased.keys(), key=lambda k: -biased[k])
-    for bus, addr, byte_idx in sorted_keys[:20]:
-      ratio = biased[(bus, addr, byte_idx)]
-      print(f"  Bus {bus:>3d}  Msg 0x{addr:03X} ({addr:>4d})  BYTE[{byte_idx:>2d}]  "
-            f"ON={on_changes[(bus,addr,byte_idx)]}x  OFF={off_changes[(bus,addr,byte_idx)]}x  ratio={ratio:.1f}")
-
-  if not on_only and not biased:
-    print("\nNo strong candidates found. Try with more ON/OFF windows.")
+  # Highlight differences
+  if stop_dets and other_dets:
+    print(f"\n--- Byte-by-byte comparison ---")
+    for i in range(min(32, len(stop_dets[0][2]))):
+      stop_vals = set(d[2][i] for d in stop_dets if i < len(d[2]))
+      other_vals = set(d[2][i] for d in other_dets if i < len(d[2]))
+      if stop_vals and other_vals and not stop_vals & other_vals:
+        print(f"  BYTE[{i:>2d}]: STOP={stop_vals}  others={other_vals}")
 
 if __name__ == "__main__":
   main()
