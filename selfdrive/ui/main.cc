@@ -68,10 +68,20 @@ int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
   a.installTranslator(&translator);
 
-  // Log Qt version and Wayland platform info for crash debugging
-  fprintf(stderr, "UI started: Qt %s | platform=%s | QT_WAYLAND_RECONNECT=%s\n",
-    qVersion(), qApp->platformName().toUtf8().constData(),
-    getenv("QT_WAYLAND_RECONNECT") ? getenv("QT_WAYLAND_RECONNECT") : "unset");
+  // Log Qt version and Wayland platform info to crash log for debugging
+  {
+    char info[512];
+    int len = snprintf(info, sizeof(info),
+      "UI STARTED: Qt %s | platform=%s | QT_WAYLAND_RECONNECT=%s | pid=%d\n",
+      qVersion(), qApp->platformName().toUtf8().constData(),
+      getenv("QT_WAYLAND_RECONNECT") ? getenv("QT_WAYLAND_RECONNECT") : "unset",
+      getpid());
+    if (len > 0) {
+      fprintf(stderr, "%s", info);
+      int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+      if (fd >= 0) { write(fd, info, len); close(fd); }
+    }
+  }
 
   MainWindow w;
   setMainWindow(&w);
