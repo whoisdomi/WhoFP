@@ -125,8 +125,9 @@ class FrogPilotVCruise:
       # Without this, tracked_model_length stays anchored to the stale ~50m value and the
       # car stops past the model's updated (and more accurate) stop point.
       self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
-      # Dashboard camera stop sign distance: use the closer of model vs dashboard estimate.
-      # BYTE22 counts down in meters as the car approaches the stop sign.
+      # Dashboard camera sign distance: BYTE22 = distance to any detected road sign.
+      # Safe to use here because force_stop_enabled already confirms it's a stop sign
+      # (requires model_stopped + stop_light_detected). BYTE22 just provides better distance.
       dashboard_stop_dist = sm["frogpilotCarState"].dashboardStopSign
       if dashboard_stop_dist > 0:
         self.tracked_model_length = min(self.tracked_model_length, float(dashboard_stop_dist))

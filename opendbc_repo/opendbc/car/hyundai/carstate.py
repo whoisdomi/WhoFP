@@ -45,8 +45,6 @@ class CarState(CarStateBase):
     self.main_buttons: deque = deque([Buttons.NONE] * PREV_BUTTON_SAMPLES, maxlen=PREV_BUTTON_SAMPLES)
     self.lda_button = 0
     self.steering_wheel_buttons = {}
-    self.stop_sign_hold_frames = 0
-    self.stop_sign_last_dist = 0
 
     self.gear_msg_canfd = "ACCELERATOR" if CP.flags & HyundaiFlags.EV else \
                           "GEAR_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_GEARS else \
@@ -327,17 +325,11 @@ class CarState(CarStateBase):
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
     fp_ret.dashboardSpeedLimit = calculate_speed_limit_canfd(cp, cp_cam, self.is_metric, lka_steering)
     bus = cp if lka_steering else cp_cam
-    # Stop sign: both BYTE22 (any sign distance) AND BYTE24 (stop-specific) must be non-zero
-    # BYTE24 alone has false positives; requiring both filters those out
-    # Hold for 5 frames (~0.5s at 10Hz) to smooth brief single-frame dropouts
-    b22 = int(cp_cam.vl["CAM_0x362"]["BYTE22"])
-    b24 = int(cp_cam.vl["CAM_0x362"]["BYTE24"])
-    if b22 > 0 and b24 > 0:
-      self.stop_sign_hold_frames = 5
-      self.stop_sign_last_dist = b24
-    elif self.stop_sign_hold_frames > 0:
-      self.stop_sign_hold_frames -= 1
-    fp_ret.dashboardStopSign = self.stop_sign_last_dist if self.stop_sign_hold_frames > 0 else 0
+    # BYTE22 = distance to any detected sign (counts down as car approaches)
+    # No reliable CAN-level stop sign type discriminator exists; force stop logic
+    # already requires model_stopped + stop_light_detected before using this distance,
+    # so we can safely publish the generic sign distance here.
+    fp_ret.dashboardStopSign = int(cp_cam.vl["CAM_0x362"]["BYTE22"])
 
     # Drive mode detection for Map Accel/Decel to Gears feature (Ioniq 6 and other Hyundai EVs)
     if self.CP.flags & HyundaiFlags.EV:
@@ -369,7 +361,7 @@ class CarState(CarStateBase):
       msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars
     else:
       cam_msgs.append(("FR_CMR_02_100ms", 10))  # On CAM for other cars
-    # Stop sign detection: CAM_0x362 BYTE24 is non-zero only for stop signs
+    # Sign distance detection: CAM_0x362 BYTE22 = distance to any detected road sign
     cam_msgs.append(("CAM_0x362", 10))
     # Drive mode for Map Accel/Decel to Gears feature (Hyundai EVs)
     if CP.flags & HyundaiFlags.EV:
