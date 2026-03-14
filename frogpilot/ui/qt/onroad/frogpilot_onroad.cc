@@ -36,7 +36,10 @@ void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState
   showSignal = (turnSignalLeft || turnSignalRight) && frogpilot_toggles.value("signal_metrics").toBool();
   showSteering = frogpilot_toggles.value("steering_metrics").toBool();
 
-  update();
+  // Only repaint when something visible needs drawing
+  if (showBlindspot || showSignal || showSteering || showFPS) {
+    update();
+  }
 }
 
 void FrogPilotOnroadWindow::paintEvent(QPaintEvent *event) {

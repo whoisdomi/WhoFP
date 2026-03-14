@@ -216,7 +216,10 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   }
 
   fpUpdateStage = 0;  // updateState done
-  update();
+  // Note: no update() needed here — painting is done via paintFrogPilotWidgets()
+  // called from AnnotatedCameraWidget::paintEvent, which is already triggered
+  // by camera frames and the UI timer. Calling update() here just schedules
+  // a redundant no-op repaint (this widget has no paintEvent override).
 }
 
 void FrogPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *mouseEvent) {
