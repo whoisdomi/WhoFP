@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <execinfo.h>
+#include <dlfcn.h>
 
 #include <QApplication>
 #include <QTranslator>
@@ -45,8 +46,44 @@ static void waylandAwareMessageHandler(QtMsgType type, const QMessageLogContext 
   // Non-Wayland fatal: let Qt abort normally so crash_handler captures it
 }
 
+// Check if a backtrace frame is inside a Wayland/EGL library
+static bool is_wayland_frame(void *addr) {
+  Dl_info info;
+  if (dladdr(addr, &info) && info.dli_fname) {
+    const char *name = info.dli_fname;
+    // Check for wayland client, EGL wayland driver, or Qt wayland plugin
+    for (const char *needle : {"wayland", "Wayland", "eglSub"}) {
+      for (const char *p = name; *p; ++p) {
+        const char *n = needle;
+        const char *q = p;
+        while (*n && *q == *n) { ++q; ++n; }
+        if (!*n) return true;
+      }
+    }
+  }
+  return false;
+}
+
 static void crash_handler(int sig) {
   const char *sig_name = (sig == SIGSEGV) ? "SIGSEGV" : (sig == SIGABRT) ? "SIGABRT" : "SIGFPE";
+
+  // Check backtrace for Wayland-related crash (EGL thread SIGSEGV)
+  void *bt[32];
+  int bt_size = backtrace(bt, 32);
+
+  if (sig == SIGSEGV) {
+    for (int i = 0; i < bt_size; ++i) {
+      if (is_wayland_frame(bt[i])) {
+        const char logmsg[] = "UI WAYLAND EGL CRASH: exiting cleanly for restart\n";
+        int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if (fd >= 0) { write(fd, logmsg, sizeof(logmsg) - 1); close(fd); }
+        write(STDERR_FILENO, logmsg, sizeof(logmsg) - 1);
+        _exit(0);
+      }
+    }
+  }
+
+  // Non-Wayland crash: log full details
   char buf[512];
   int len = snprintf(buf, sizeof(buf),
     "UI CRASH: %s | modelDraw=%d | fpPaint=%d | fpUpdate=%d\n",
@@ -59,8 +96,6 @@ static void crash_handler(int sig) {
   }
 
   // Capture backtrace
-  void *bt[32];
-  int bt_size = backtrace(bt, 32);
   if (fd >= 0) {
     const char hdr[] = "--- backtrace ---\n";
     write(fd, hdr, sizeof(hdr) - 1);
