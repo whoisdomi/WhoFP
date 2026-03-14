@@ -1,151 +1,52 @@
 #!/usr/bin/env python3
 """
-Scan 0x362 bytes to find the stop sign discriminator.
+Scan ALL CAN messages to find the stop sign dashboard indicator.
 
 Run on the comma device via SSH while openpilot is running:
   python3 /data/openpilot/frogpilot/tools/scan_stop_sign.py
 
 HOW TO USE:
-  1. Drive normally until you see a stop sign icon on the dashboard
-  2. Turn ON hazard lights to mark "stop sign visible"
-  3. When the stop sign icon disappears, turn OFF hazard lights
-  4. Repeat for multiple stop signs
-  5. Ctrl+C to stop — prints summary of bytes that differ between ON/OFF
+  1. Drive normally for ~30s first (builds baseline of "no stop sign" values)
+  2. When stop sign icon appears on dashboard — turn ON hazard lights
+  3. When the stop sign icon disappears — turn OFF hazard lights
+  4. Repeat for 2+ stop signs (more = better)
+  5. Ctrl+C to stop — prints bytes that ONLY appear during stop sign
 
-The script captures all 32 bytes of 0x362 during hazard-ON (stop sign visible)
-and hazard-OFF (no stop sign) windows, then shows which bytes are unique to
-each state.
+NOTE: When you press hazards ON, the script automatically includes the
+previous 2 seconds of CAN data as "ON" (since the stop sign was likely
+already visible before you could react and press the button).
+
+Scans ALL addresses on ALL buses. Results show which (address, bus, byte)
+combinations have values unique to the stop sign ON state.
 """
 import cereal.messaging as messaging
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
+
+LOOKBACK = 2.0  # seconds of data to include before hazard ON press
 
 def main():
   sm = messaging.SubMaster(["can", "carState"])
 
   t0 = time.monotonic()
-  hazard_on = False
-  prev_hazard = False
-  marking = False  # True when user has marked "stop sign visible"
-
-  on_vals = defaultdict(set)   # byte values during stop sign visible
-  off_vals = defaultdict(set)  # byte values during no stop sign
-  on_count = 0
-  off_count = 0
-  mark_count = 0
-
-  print("Stop sign byte scanner: use HAZARD LIGHTS to mark stop sign on dash")
-  print("  Hazards ON  = stop sign visible on dashboard")
-  print("  Hazards OFF = no stop sign on dashboard")
-  print("  Ctrl+C      = stop and show results")
-  print("-" * 60)
-
-  while True:
-    sm.update(100)
-
-    # Check hazard state from carState
-    if sm.updated["carState"]:
-      hazard_on = sm["carState"].leftBlinker and sm["carState"].rightBlinker
-      if hazard_on and not prev_hazard:
-        marking = True
-        mark_count += 1
-        elapsed = time.monotonic() - t0
-        print(f"  {elapsed:6.1f}s  >>> MARKING ON (stop sign #{mark_count} visible)")
-      elif not hazard_on and prev_hazard and marking:
-        marking = False
-        elapsed = time.monotonic() - t0
-        print(f"  {elapsed:6.1f}s  <<< MARKING OFF (stop sign gone)")
-      prev_hazard = hazard_on
-
-    # Capture 0x362 bytes
-    if sm.updated["can"]:
-      for msg in sm["can"]:
-        if msg.address == 0x362 and msg.src == 2:
-          data = bytes(msg.dat)
-          elapsed = time.monotonic() - t0
-
-          if marking:
-            on_count += 1
-            for i, val in enumerate(data):
-              on_vals[i].add(val)
-          else:
-            off_count += 1
-            for i, val in enumerate(data):
-              off_vals[i].add(val)
-
-          # Show B22 changes during marking for reference
-          if marking and len(data) > 22:
-            b22 = data[22]
-            if on_count == 1 or on_count % 5 == 0:
-              print(f"  {elapsed:6.1f}s    B22={b22}")
-
-  # This runs on Ctrl+C via the except below
-
-def print_results(on_vals, off_vals, on_count, off_count, mark_count):
-  print(f"\n{'=' * 60}")
-  print(f"RESULTS: {mark_count} stop sign(s) marked")
-  print(f"  ON frames:  {on_count}")
-  print(f"  OFF frames: {off_count}")
-  print(f"{'=' * 60}")
-
-  if on_count == 0:
-    print("\nNo stop signs were marked! Drive past stop signs with hazards ON.")
-    return
-
-  if off_count == 0:
-    print("\nNo OFF data collected! Need some driving without hazards too.")
-    return
-
-  print("\nBytes that DIFFER between stop sign ON vs OFF:")
-  print(f"  {'Byte':>6s}  {'ON-only values':>30s}  {'OFF-only values':>30s}  Note")
-  print("-" * 80)
-
-  candidates = []
-  for i in sorted(set(on_vals.keys()) | set(off_vals.keys())):
-    sv = on_vals.get(i, set())
-    ov = off_vals.get(i, set())
-    on_only = sv - ov
-    off_only = ov - sv
-
-    if on_only or off_only:
-      note = ""
-      # Flag bytes where ON has values that never appear in OFF
-      if on_only and not off_only:
-        note = "<<< STOP-ONLY"
-        candidates.append((i, on_only, "stop-only values"))
-      elif off_only and not on_only:
-        note = "(off-only)"
-      else:
-        note = "overlap"
-        candidates.append((i, on_only, "different but overlapping"))
-
-      print(f"  B[{i:>2d}]  {str(sorted(on_only)):>30s}  {str(sorted(off_only)):>30s}  {note}")
-
-  if candidates:
-    print(f"\n{'=' * 60}")
-    print("BEST CANDIDATES (values only present during stop sign):")
-    for i, vals, desc in candidates:
-      print(f"  BYTE[{i}]: values {sorted(vals)} — {desc}")
-  else:
-    print("\nNo clear discriminator found. Try marking more stop signs.")
-
-
-if __name__ == "__main__":
-  _on_vals = defaultdict(set)
-  _off_vals = defaultdict(set)
-  _on_count = 0
-  _off_count = 0
-  _mark_count = 0
-
-  sm = messaging.SubMaster(["can", "carState"])
-  t0 = time.monotonic()
-  hazard_on = False
   prev_hazard = False
   marking = False
+  mark_count = 0
 
-  print("Stop sign byte scanner: use HAZARD LIGHTS to mark stop sign on dash")
+  # Track values per (address, bus, byte_index)
+  on_vals = defaultdict(set)
+  off_vals = defaultdict(set)
+  on_addrs = set()
+  off_addrs = set()
+
+  # Rolling buffer: list of (timestamp, [(addr, bus, data), ...]) for lookback
+  buffer = deque()
+
+  print("Full CAN scanner: use HAZARD LIGHTS to mark stop sign on dash")
   print("  Hazards ON  = stop sign visible on dashboard")
   print("  Hazards OFF = no stop sign on dashboard")
+  print(f"  Includes {LOOKBACK:.0f}s of data BEFORE hazard press (reaction time)")
+  print("  Drive ~30s before first marking to build baseline")
   print("  Ctrl+C      = stop and show results")
   print("-" * 60)
 
@@ -157,9 +58,27 @@ if __name__ == "__main__":
         hazard_on = sm["carState"].leftBlinker and sm["carState"].rightBlinker
         if hazard_on and not prev_hazard:
           marking = True
-          _mark_count += 1
+          mark_count += 1
           elapsed = time.monotonic() - t0
-          print(f"  {elapsed:6.1f}s  >>> MARKING ON (stop sign #{_mark_count} visible)")
+          print(f"  {elapsed:6.1f}s  >>> MARKING ON (stop sign #{mark_count} visible)")
+
+          # Retroactively move buffered data from OFF to ON
+          now = time.monotonic()
+          moved = 0
+          for buf_time, buf_msgs in buffer:
+            if now - buf_time <= LOOKBACK:
+              for addr, bus, data in buf_msgs:
+                on_addrs.add((addr, bus))
+                for i, val in enumerate(data):
+                  key = (addr, bus, i)
+                  on_vals[key].add(val)
+                  # Remove from off_vals is too expensive/complex,
+                  # but since we're looking for ON-only values,
+                  # adding to ON is what matters
+              moved += 1
+          if moved > 0:
+            print(f"          (included {moved} buffered frames from before press)")
+
         elif not hazard_on and prev_hazard and marking:
           marking = False
           elapsed = time.monotonic() - t0
@@ -167,26 +86,82 @@ if __name__ == "__main__":
         prev_hazard = hazard_on
 
       if sm.updated["can"]:
+        frame_msgs = []
+        now = time.monotonic()
+
         for msg in sm["can"]:
-          if msg.address == 0x362 and msg.src == 2:
-            data = bytes(msg.dat)
-            elapsed = time.monotonic() - t0
+          addr = msg.address
+          bus = msg.src
+          data = bytes(msg.dat)
 
-            if marking:
-              _on_count += 1
-              for i, val in enumerate(data):
-                _on_vals[i].add(val)
-            else:
-              _off_count += 1
-              for i, val in enumerate(data):
-                _off_vals[i].add(val)
+          if marking:
+            on_addrs.add((addr, bus))
+            for i, val in enumerate(data):
+              on_vals[(addr, bus, i)].add(val)
+          else:
+            off_addrs.add((addr, bus))
+            for i, val in enumerate(data):
+              off_vals[(addr, bus, i)].add(val)
+            frame_msgs.append((addr, bus, data))
 
-            if marking and len(data) > 22:
-              b22 = data[22]
-              if _on_count == 1 or _on_count % 5 == 0:
-                print(f"  {elapsed:6.1f}s    B22={b22}")
+        # Buffer non-marking frames for lookback
+        if not marking and frame_msgs:
+          buffer.append((now, frame_msgs))
+          # Trim buffer to keep only recent data
+          while buffer and now - buffer[0][0] > LOOKBACK + 1:
+            buffer.popleft()
 
   except KeyboardInterrupt:
-    print("\n")
-    print_results(_on_vals, _off_vals, _on_count, _off_count, _mark_count)
-    print("\nDone.")
+    pass
+
+  print(f"\n{'=' * 70}")
+  print(f"RESULTS: {mark_count} stop sign(s) marked")
+  print(f"  ON addresses:  {len(on_addrs)}")
+  print(f"  OFF addresses: {len(off_addrs)}")
+  print(f"{'=' * 70}")
+
+  if mark_count == 0:
+    print("\nNo stop signs marked! Use hazard lights to mark.")
+    return
+
+  # Find bytes with ON-only values (values that NEVER appear during OFF)
+  candidates = []
+  for key in sorted(on_vals.keys()):
+    addr, bus, byte_idx = key
+    sv = on_vals[key]
+    ov = off_vals.get(key, set())
+    on_only = sv - ov
+
+    if on_only:
+      # Skip bytes that are just noisy counters/checksums (too many unique values)
+      if len(sv) > 100:
+        continue
+      candidates.append((addr, bus, byte_idx, sorted(on_only), sorted(sv), sorted(ov)))
+
+  if candidates:
+    print(f"\nBytes with STOP-SIGN-ONLY values ({len(candidates)} found):")
+    print(f"  {'Addr':>6s}  {'Bus':>3s}  {'Byte':>4s}  {'ON-only':>30s}  {'All ON':>30s}")
+    print("-" * 80)
+    for addr, bus, byte_idx, on_only, all_on, all_off in candidates:
+      # Highlight strong candidates: few ON-only values, not too many total
+      strength = ""
+      if len(all_on) <= 10:
+        strength = " <<< STRONG"
+      elif len(all_on) <= 30:
+        strength = " << moderate"
+      print(f"  0x{addr:03X}  {bus:>3d}  B[{byte_idx:>2d}]  {str(on_only):>30s}  {str(all_on):>30s}{strength}")
+  else:
+    print("\nNo bytes found with stop-sign-only values.")
+    print("Try marking more stop signs or driving longer between them.")
+
+  # Also show addresses that only appear during ON (rare but possible)
+  on_only_addrs = on_addrs - off_addrs
+  if on_only_addrs:
+    print(f"\nAddresses that ONLY appeared during stop sign marking:")
+    for addr, bus in sorted(on_only_addrs):
+      print(f"  0x{addr:03X} bus {bus}")
+
+  print("\nDone.")
+
+if __name__ == "__main__":
+  main()
