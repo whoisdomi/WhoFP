@@ -5,17 +5,15 @@
       "LS",
       "Grep",
       "Glob",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(xargs *)",
+      "Bash(head *)",
+      "Bash(cat *)",
       "Bash(ls *)",
       "Bash(tree *)",
-      "Bash(find *)",
-      "Bash(cat *)",
-      "Bash(grep *)",
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(pip show *)",
-      "Bash(python3 --version)",
-      "Bash(wsl *)",
-      "WebFetch(github.com)"
+      "Bash(git *)",
+      "Bash(wsl *)"
     ]
   }
 }
