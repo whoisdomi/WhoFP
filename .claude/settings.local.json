@@ -1,18 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tree:*)",
-      "Bash(python3:*)",
-      "Bash(ls:*)",
-      "Read(//c/Users/user/Documents/GitHub/openpilot/**)",
-      "Bash(wsl -e bash -c \"cd /mnt/c/Users/user/Documents/GitHub/openpilot && python3 tools/plotjuggler/juggle.py --install\":*)",
-      "Bash(wsl -e bash:*)",
-      "Bash(wsl bash -ic 'INSTALL_DIR=/mnt/c/Users/user/Documents/GitHub/openpilot/tools/plotjuggler/bin && rm -rf $INSTALL_DIR && mkdir -p $INSTALL_DIR && wget -O /tmp/plotjuggler.tar.gz https://github.com/commaai/PlotJuggler/releases/download/latest/Linux-x86_64.tar.gz && tar xzf /tmp/plotjuggler.tar.gz -C $INSTALL_DIR && echo SUCCESS && ls $INSTALL_DIR')",
-      "Bash(wsl bash:*)",
-      "Bash(del \"c:\\\\Users\\\\user\\\\Documents\\\\GitHub\\\\openpilot\\\\tools\\\\plotjuggler\\\\install_pj.sh\")",
-      "Bash(find:*)",
-      "Bash(pip show:*)",
-      "WebFetch(domain:github.com)"
+      "Read",
+      "LS",
+      "Grep",
+      "Glob",
+      "Bash(ls *)",
+      "Bash(tree *)",
+      "Bash(find *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(pip show *)",
+      "Bash(python3 --version)",
+      "Bash(wsl *)",
+      "WebFetch(github.com)"
     ]
   }
 }
