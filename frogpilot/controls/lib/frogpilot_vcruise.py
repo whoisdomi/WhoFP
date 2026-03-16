@@ -130,11 +130,6 @@ class FrogPilotVCruise:
       # Without this, tracked_model_length stays anchored to the stale ~50m value and the
       # car stops past the model's updated (and more accurate) stop point.
       self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
-      # Dashboard stop sign distance: only set when CAM_0x361 confirms it's a stop sign (type 15)
-      # and CAM_0x362 BYTE22 provides the distance. Use the closer of model vs dashboard.
-      dashboard_stop_dist = sm["frogpilotCarState"].dashboardStopSign
-      if dashboard_stop_dist > 0:
-        self.tracked_model_length = min(self.tracked_model_length, float(dashboard_stop_dist))
       if sm["carState"].standstill:
         self.tracked_model_length = 0
       # Floor division: when tracked_model_length < PLANNER_TIME (~10m), v_cruise becomes 0.0
