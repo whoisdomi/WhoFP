@@ -38,11 +38,16 @@ class FrogPilotVCruise:
     manual_stop_force_stop &= self.override_force_stop_timer <= 0
     manual_stop_force_stop &= not self.frogpilot_planner.tracking_lead
 
+    # Dashboard stop sign confirmation from camera ECU (CAM_0x361 SIGN_TYPE == 15)
+    dashboard_stop_sign = sm["frogpilotCarState"].dashboardStopSign > 0
+
     # Gradual decay instead of instant reset — brief model flickers won't derail the timer.
     # Don't accumulate at standstill: CEM pauses there, keeping stop_light_detected stale,
     # which would peg the timer at max and prevent auto-release when the light turns green.
     if force_stop and not sm["carState"].standstill:
-      self.force_stop_timer = min(self.force_stop_timer + DT_MDL, 2.0)
+      # Dashboard confirmation doubles accumulation rate for faster commitment
+      rate = DT_MDL * 2 if dashboard_stop_sign else DT_MDL
+      self.force_stop_timer = min(self.force_stop_timer + rate, 2.0)
     else:
       self.force_stop_timer = max(self.force_stop_timer - (DT_MDL * 0.25), 0)
 
@@ -125,12 +130,6 @@ class FrogPilotVCruise:
       # Without this, tracked_model_length stays anchored to the stale ~50m value and the
       # car stops past the model's updated (and more accurate) stop point.
       self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
-      # Dashboard camera sign distance: BYTE22 = distance to any detected road sign.
-      # Safe to use here because force_stop_enabled already confirms it's a stop sign
-      # (requires model_stopped + stop_light_detected). BYTE22 just provides better distance.
-      dashboard_stop_dist = sm["frogpilotCarState"].dashboardStopSign
-      if dashboard_stop_dist > 0:
-        self.tracked_model_length = min(self.tracked_model_length, float(dashboard_stop_dist))
       if sm["carState"].standstill:
         self.tracked_model_length = 0
       # Floor division: when tracked_model_length < PLANNER_TIME (~10m), v_cruise becomes 0.0

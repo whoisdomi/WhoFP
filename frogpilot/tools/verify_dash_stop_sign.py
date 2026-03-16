@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-Verify sign distance (B22) vs model distance during force stop.
+Verify stop sign detection via CAM_0x361 SIGN_TYPE (B[26]).
 
 Run on the comma device via SSH while openpilot is running:
   python3 /data/openpilot/frogpilot/tools/verify_dash_stop_sign.py
 
-Shows B22 (dashboard sign distance) alongside model distance.
-Since force stop only activates when the model detects a stop sign,
-B22 just needs to provide accurate distance — not identify sign type.
+SIGN_TYPE values:
+  15 = stop sign on dashboard
+  32 = no sign
+  16 = other sign type
 
 Press Ctrl+C to stop.
 """
@@ -18,39 +19,40 @@ def main():
   sm = messaging.SubMaster(["can", "frogpilotPlan", "carState"])
 
   t0 = time.monotonic()
-  prev_b22 = 0
-  sign_active = False
+  active = False
+  prev_sign_type = -1
 
-  print("Sign distance verifier: B22 (any sign) vs model distance")
-  print(f"  {'Time':>6s}  {'B22':>4s}  {'Model':>7s}  {'Speed':>5s}  {'ForceStop':>9s}")
-  print("-" * 55)
+  print("Stop sign verifier: 0x361 B[26] SIGN_TYPE")
+  print(f"  {'Time':>6s}  {'Type':>4s}  {'Model':>7s}  {'Speed':>5s}  {'ForceStop':>9s}")
+  print("-" * 50)
 
   while True:
     sm.update(100)
 
     if sm.updated["can"]:
       for msg in sm["can"]:
-        if msg.address == 0x362 and msg.src == 2:
+        if msg.address == 0x361 and msg.src == 2:
           data = bytes(msg.dat)
-          if len(data) > 24:
-            b22 = data[22]
+          if len(data) > 26:
+            sign_type = data[26]
             elapsed = time.monotonic() - t0
 
-            if b22 > 0 and not sign_active:
-              print(f"  {elapsed:6.1f}  >>> SIGN DETECTED (B22={b22})")
-              sign_active = True
+            if sign_type == 15 and not active:
+              print(f"  {elapsed:6.1f}  >>> STOP SIGN ON DASH")
+              active = True
 
-            if sign_active and b22 != prev_b22:
+            if sign_type != prev_sign_type:
               model_dist = sm["frogpilotPlan"].forcingStopLength
               speed_mph = sm["carState"].vEgo * 2.237
               forcing = sm["frogpilotPlan"].forcingStop
-              print(f"  {elapsed:6.1f}  {b22:>4d}  {model_dist:>6.1f}m  {speed_mph:4.0f}  {'YES' if forcing else ''}")
+              label = {15: "STOP", 16: "OTHER", 32: "NONE"}.get(sign_type, f"?{sign_type}")
+              print(f"  {elapsed:6.1f}  {label:>4s}  {model_dist:>6.1f}m  {speed_mph:4.0f}  {'YES' if forcing else ''}")
 
-            if b22 == 0 and sign_active:
-              print(f"  {elapsed:6.1f}  <<< SIGN GONE")
-              sign_active = False
+            if sign_type != 15 and active:
+              print(f"  {elapsed:6.1f}  <<< STOP SIGN OFF")
+              active = False
 
-            prev_b22 = b22
+            prev_sign_type = sign_type
 
 if __name__ == "__main__":
   try:

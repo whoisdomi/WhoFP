@@ -325,11 +325,10 @@ class CarState(CarStateBase):
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
     fp_ret.dashboardSpeedLimit = calculate_speed_limit_canfd(cp, cp_cam, self.is_metric, lka_steering)
     bus = cp if lka_steering else cp_cam
-    # BYTE22 = distance to any detected sign (counts down as car approaches)
-    # No reliable CAN-level stop sign type discriminator exists; force stop logic
-    # already requires model_stopped + stop_light_detected before using this distance,
-    # so we can safely publish the generic sign distance here.
-    fp_ret.dashboardStopSign = int(cp_cam.vl["CAM_0x362"]["BYTE22"])
+    # CAM_0x361 SIGN_TYPE (B[26]): 15 = stop sign on dashboard, 32 = no sign, 16 = other sign
+    # Publish 1 when stop sign is detected, 0 otherwise
+    sign_type = int(cp_cam.vl["CAM_0x361"]["SIGN_TYPE"])
+    fp_ret.dashboardStopSign = 1 if sign_type == 15 else 0
 
     # Drive mode detection for Map Accel/Decel to Gears feature (Ioniq 6 and other Hyundai EVs)
     if self.CP.flags & HyundaiFlags.EV:
@@ -361,8 +360,8 @@ class CarState(CarStateBase):
       msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars
     else:
       cam_msgs.append(("FR_CMR_02_100ms", 10))  # On CAM for other cars
-    # Sign distance detection: CAM_0x362 BYTE22 = distance to any detected road sign
-    cam_msgs.append(("CAM_0x362", 10))
+    # Stop sign detection: CAM_0x361 SIGN_TYPE B[26] = 15 when stop sign icon is on dashboard
+    cam_msgs.append(("CAM_0x361", 10))
     # Drive mode for Map Accel/Decel to Gears feature (Hyundai EVs)
     if CP.flags & HyundaiFlags.EV:
       msgs.append(("DRIVE_MODE_EV", 10))
