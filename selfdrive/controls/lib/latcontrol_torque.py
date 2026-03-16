@@ -49,7 +49,7 @@ UNWIND_FRAMES_ACTIVATE = 5         # Counter threshold to activate decay
 UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 false frames to deactivate
 
 # === Integrator Decay ===
-UNWIND_MULTIPLIER = 1.0  # Disabled - unwind_detected handles turn exits instead of global decay
+UNWIND_MULTIPLIER = 0.95  # PID built-in: decays integrator when error opposes it (centering after turns)
 
 # === Straight-Stop Suppression ===
 # Scales low_speed_factor toward 1.0 when near-straight and slow.
@@ -182,7 +182,10 @@ class LatControlTorque(LatControl):
     #   - Straights: with future ≈ 0, jerk offset is clamped to ≈ 0 (no noise amplification)
     # Faded out below 8 m/s (18 mph) where high KP already amplifies noise — jerk just adds wobble
     jerk_offset = desired_lateral_jerk * lat_delay
-    jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel), abs(future_desired_lateral_accel)))
+    # Clamp to ±50% of |future|: turn entry gets up to 1.5× anticipation (still fast),
+    # turn exit setpoint can only drop to 0.5× future (never reaches zero prematurely,
+    # so the integrator doesn't build opposite-sign energy that causes centering wobble)
+    jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel) * 0.5, abs(future_desired_lateral_accel) * 0.5))
     jerk_fade = float(np.clip((CS.vEgo - 3.0) / 5.0, 0.0, 1.0))  # 0 below 3 m/s, 1 above 8 m/s
     jerk_offset *= jerk_fade
     setpoint = future_desired_lateral_accel + jerk_offset
