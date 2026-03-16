@@ -168,9 +168,12 @@ class FrogPilotVCruise:
 
     # Manual Stop Ahead: gradually reduce v_cruise continuously
     # Runs through force stop handoff - min() picks the tighter constraint
-    if sm["frogpilotCarState"].manualStopAhead and not self.frogpilot_planner.tracking_lead:
+    # Works with or without a lead — when tracking a lead, the MPC will
+    # use the lower v_cruise to decelerate more aggressively.
+    if sm["frogpilotCarState"].manualStopAhead:
       self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
-      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (1.2 * DT_MDL), 0)
+      # Decel rate: 2.0 m/s per second (~4.5 mph/s) — firm but comfortable
+      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (2.0 * DT_MDL), 0)
       v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
     else:
       self.manual_stop_ahead_v_cruise = v_ego

@@ -184,6 +184,7 @@ class LongitudinalPlanner:
     # Applied to both a_desired (feeds next MPC iteration) and output_a_target
     # (affects current frame's actual acceleration command).
     self.pre_brake = 0.0
+    manual_stop = sm['frogpilotCarState'].manualStopAhead
     lead = sm['radarState'].leadOne
     if lead.status:
       rel_v = max(0.0, v_ego - lead.vLead)
@@ -213,6 +214,18 @@ class LongitudinalPlanner:
         self.a_desired = float(self.a_desired - self.pre_brake)
     else:
       self.lead_dist_f = None
+
+    # Manual Stop Ahead: apply active deceleration immediately when button is pressed.
+    # Works regardless of lead presence — the v_cruise ramp-down handles the MPC side,
+    # this handles the direct output side for immediate driver-felt response.
+    if manual_stop and v_ego > 0.5:
+      # Speed-scaled decel: harder at highway speeds, gentle at low speeds
+      manual_decel = float(np.interp(v_ego, [0.5, 5.0, 15.0, 30.0], [0.2, 0.5, 1.0, 1.5]))
+      # Only apply the additional decel beyond what pre_brake already provides
+      if manual_decel > self.pre_brake:
+        additional = manual_decel - self.pre_brake
+        self.a_desired = float(self.a_desired - additional)
+        self.pre_brake = manual_decel
 
     action_t = frogpilot_toggles.longitudinalActuatorDelay + DT_MDL
     output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
