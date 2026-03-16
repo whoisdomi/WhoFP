@@ -110,14 +110,28 @@ class FrogPilotFollowing:
 
     # Offset by FrogAi for FrogPilot for a more natural approach to a slower lead
     if v_lead < v_ego:
-      self.danger_factor += ((v_ego - v_lead) / 100)
+      closing_speed = v_ego - v_lead
+      desired_gap = desired_follow_distance(v_ego, v_lead, self.t_follow)
+
+      # Scale danger_factor based on how aggressively we're closing and how
+      # close we are relative to the desired gap. This extends the MPC's
+      # danger zone outward so it starts braking earlier.
+      # Closing speed contribution: up to +0.25 at 8 m/s closing
+      closing_danger = float(np.interp(closing_speed, [0.5, 2.0, 5.0, 8.0], [0.0, 0.05, 0.15, 0.25]))
+      # Proximity contribution: ramps up as we get closer to desired gap
+      gap_ratio = lead_distance / max(desired_gap, 1.0)
+      proximity_danger = float(np.interp(gap_ratio, [1.0, 1.5, 2.0, 3.0], [0.20, 0.10, 0.03, 0.0]))
+      self.danger_factor += closing_danger + proximity_danger
+
+      # Boost speed_jerk (allows MPC to use more jerk for braking) when closing
+      speed_jerk_boost = float(np.interp(closing_speed, [1.0, 3.0, 6.0], [1.0, 1.5, 2.5]))
+      if gap_ratio < 2.0:
+        self.speed_jerk *= speed_jerk_boost
 
       # Only reduce t_follow when we're already well within the desired gap and
       # closing slowly — i.e. settling into car-following, not still approaching.
       # The old logic would slash t_follow to near-zero when far from a slower lead,
       # which told the MPC "you don't need much gap" and delayed braking.
-      desired_gap = desired_follow_distance(v_ego, v_lead, self.t_follow)
-      closing_speed = v_ego - v_lead
       already_following = lead_distance < desired_gap * 1.3 and closing_speed < 1.5
 
       if already_following:

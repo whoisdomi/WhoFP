@@ -77,6 +77,7 @@ class LongitudinalPlanner:
 
     # Filtered lead distance for anticipatory pre-braking
     self.lead_dist_f = None
+    self.pre_brake = 0.0
 
   @staticmethod
   def parse_model(model_msg, v_ego, taco_tune):
@@ -179,8 +180,10 @@ class LongitudinalPlanner:
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
-    # Anticipatory pre-braking: apply a small decel bias when closing on a lead,
-    # bridging the gap between coasting and the MPC's braking response.
+    # Anticipatory pre-braking: compute decel bias when closing on a lead.
+    # Applied to both a_desired (feeds next MPC iteration) and output_a_target
+    # (affects current frame's actual acceleration command).
+    self.pre_brake = 0.0
     lead = sm['radarState'].leadOne
     if lead.status:
       rel_v = max(0.0, v_ego - lead.vLead)
@@ -202,13 +205,12 @@ class LongitudinalPlanner:
 
       pre_brake_trigger = desired_gap + np.interp(v_ego, [0.0, 10.0, 20.0, 30.0], [8.0, 12.0, 18.0, 25.0])
       if rel_v > 0.5 and self.lead_dist_f < pre_brake_trigger:
-        pre_brake = 0.0
-        pre_brake += np.interp(rel_v, [0.5, 2.0, 5.0, 8.0], [0.0, 0.05, 0.15, 0.30])
-        pre_brake += np.interp(ttc, [1.4, 2.5, 4.0, 6.0, 9.0], [0.45, 0.25, 0.12, 0.04, 0.0])
-        pre_brake += np.interp(gap_shortfall, [0.0, 5.0, 15.0, 30.0], [0.0, 0.06, 0.18, 0.35])
-        pre_brake *= np.interp(v_ego, [0.0, 8.0, 15.0, 25.0], [0.50, 0.70, 0.90, 1.00])
-        pre_brake = min(pre_brake, np.interp(v_ego, [0.0, 5.0, 15.0, 30.0], [0.15, 0.30, 0.55, 0.80]))
-        self.a_desired = float(self.a_desired - pre_brake)
+        self.pre_brake += np.interp(rel_v, [0.5, 2.0, 5.0, 8.0], [0.0, 0.05, 0.15, 0.30])
+        self.pre_brake += np.interp(ttc, [1.4, 2.5, 4.0, 6.0, 9.0], [0.45, 0.25, 0.12, 0.04, 0.0])
+        self.pre_brake += np.interp(gap_shortfall, [0.0, 5.0, 15.0, 30.0], [0.0, 0.06, 0.18, 0.35])
+        self.pre_brake *= np.interp(v_ego, [0.0, 8.0, 15.0, 25.0], [0.50, 0.70, 0.90, 1.00])
+        self.pre_brake = min(self.pre_brake, np.interp(v_ego, [0.0, 5.0, 15.0, 30.0], [0.15, 0.30, 0.55, 0.80]))
+        self.a_desired = float(self.a_desired - self.pre_brake)
     else:
       self.lead_dist_f = None
 
@@ -266,6 +268,11 @@ class LongitudinalPlanner:
           output_a_target = min(output_a_target, 0.0)
 
       self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
+
+    # Apply pre-braking to current frame output so it takes effect immediately,
+    # not just on the next MPC iteration.
+    if self.pre_brake > 0.0:
+      output_a_target = float(output_a_target - self.pre_brake)
 
     for idx in range(2):
       accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
