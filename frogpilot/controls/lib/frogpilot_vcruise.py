@@ -129,7 +129,14 @@ class FrogPilotVCruise:
       # model_stopped triggers, but revises closer as the car approaches the intersection.
       # Without this, tracked_model_length stays anchored to the stale ~50m value and the
       # car stops past the model's updated (and more accurate) stop point.
-      self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
+      #
+      # However, when a lead is present, model_length gets truncated by the lead's position
+      # (model predicts it can't travel past the stopped car). This causes tracked_model_length
+      # to plummet and the car stops far too early with a huge gap to the lead.
+      # In that case, skip the model clamp — the kinematic decay and MPC lead-following
+      # will handle stopping at the right distance behind the lead.
+      if not self.frogpilot_planner.tracking_lead:
+        self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
       if sm["carState"].standstill:
         self.tracked_model_length = 0
       # Floor division: when tracked_model_length < PLANNER_TIME (~10m), v_cruise becomes 0.0
