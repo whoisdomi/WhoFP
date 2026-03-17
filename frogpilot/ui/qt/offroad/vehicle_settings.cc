@@ -176,6 +176,7 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
     {"VoltSNG", tr("Stop-and-Go Hack"), tr("<b>Force stop-and-go</b> on the 2017 Chevy Volt."), ""},
 
     {"HKGToggles", tr("Hyundai/Kia/Genesis Settings"), tr("<b>FrogPilot features for Genesis, Hyundai, and Kia vehicles.</b>"), ""},
+    {"DampFactor", tr("Damp Factor (Default: 100)"), tr("<b>Adjust the CAN-FD steering damp factor.</b> Lower values give more responsive steering, higher values give smoother steering. Range: 3-200."), ""},
     {"TacoTuneHacks", tr("\"Taco Bell Run\" Torque Hack"), tr("<b>The steering torque hack from comma's 2022 \"Taco Bell Run\".</b> Designed to increase steering torque at low speeds for left and right turns."), ""},
 
     {"SubaruToggles", tr("Subaru Settings"), tr("<b>FrogPilot features for Subaru vehicles.</b>"), ""},
@@ -250,6 +251,17 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(FrogPilotSettingsWindow *parent, 
         clusterOffsetToggle->refresh();
       });
       vehicleToggle = clusterOffsetToggle;
+
+    } else if (param == "DampFactor") {
+      std::vector<QString> dampFactorButton{"Reset"};
+      FrogPilotParamValueButtonControl *dampFactorToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 3, 200, QString(), std::map<float, QString>(), 20, false, {}, dampFactorButton, false, false);
+      QObject::connect(dampFactorToggle, &FrogPilotParamValueButtonControl::buttonClicked, [dampFactorToggle, this]() {
+        if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Damp Factor</b> to its default value?"), this)) {
+          params.putFloat("DampFactor", 100.0);
+          dampFactorToggle->refresh();
+        }
+      });
+      vehicleToggle = dampFactorToggle;
 
     } else if (param == "VehicleInfo") {
       ButtonControl *VehicleInfoButton = new ButtonControl(title, tr("VIEW"), desc);
@@ -400,6 +412,10 @@ void FrogPilotVehiclesPanel::updateToggles() {
 
     else if (key == "SubaruSNG") {
       setVisible &= parent->hasSNG;
+    }
+
+    else if (key == "DampFactor") {
+      setVisible &= parent->isHKGCanFd;
     }
 
     else if (key == "TacoTuneHacks") {

@@ -865,6 +865,7 @@ class FrogPilotVariables:
     toggle.subaru_sng = self.get_value("SubaruSNG", condition=toggle.openpilot_longitudinal and toggle.car_make == "subaru" and not (CP.flags & SubaruFlags.GLOBAL_GEN2 or CP.flags & SubaruFlags.HYBRID))
 
     toggle.taco_tune_hack = self.get_value("TacoTuneHacks", condition=toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD))
+    toggle.damp_factor = self.get_value("DampFactor", cast=float, condition=toggle.car_make == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD), default=100.0, min=3, max=200)
 
     toggle.tethering_config = self.get_value("TetheringEnabled", cast=float)
 
