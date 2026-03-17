@@ -130,12 +130,14 @@ class FrogPilotVCruise:
       # Without this, tracked_model_length stays anchored to the stale ~50m value and the
       # car stops past the model's updated (and more accurate) stop point.
       #
-      # However, when a lead is present, model_length gets truncated by the lead's position
-      # (model predicts it can't travel past the stopped car). This causes tracked_model_length
-      # to plummet and the car stops far too early with a huge gap to the lead.
-      # In that case, skip the model clamp — the kinematic decay and MPC lead-following
-      # will handle stopping at the right distance behind the lead.
-      if not self.frogpilot_planner.tracking_lead:
+      # However, skip the model clamp when:
+      # - A lead is present: model_length gets truncated by the lead's position
+      #   (model predicts it can't travel past the stopped car), causing premature stops.
+      # - Manual Stop is active: the pre-deceleration from Manual Stop causes the model
+      #   to predict very short travel distances, so model_length is artificially low by
+      #   the time force stop activates. The kinematic decay is more accurate here.
+      # In both cases the kinematic decay (v_ego * DT_MDL) handles the countdown correctly.
+      if not self.frogpilot_planner.tracking_lead and not sm["frogpilotCarState"].manualStopAhead:
         self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
       if sm["carState"].standstill:
         self.tracked_model_length = 0
