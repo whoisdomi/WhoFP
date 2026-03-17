@@ -291,6 +291,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"LastMapsUpdate", {PERSISTENT, STRING, "", ""}},
     {"LateralTune", {PERSISTENT, BOOL, "1", "0", 1}},
     {"LatSmoothSeconds", {PERSISTENT, FLOAT, "0.1", "0.1", 3}},
+    {"LowPassFilterAlpha", {PERSISTENT, FLOAT, "0.0", "0.0", 3}},
     {"LeadDepartingAlert", {PERSISTENT, BOOL, "0", "0", 0}},
     {"LeadDetectionThreshold", {PERSISTENT, INT, "35", "50", 3}},
     {"LeadInfo", {PERSISTENT, BOOL, "1", "0", 3}},

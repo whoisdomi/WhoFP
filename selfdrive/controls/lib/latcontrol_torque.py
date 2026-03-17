@@ -105,6 +105,10 @@ class LatControlTorque(LatControl):
     self.prev_future_desired_lateral_accel = 0.0
     self.unwind_frames = 0
 
+    # Low-pass filter state for measured lateral accel
+    self.filtered_measurement = 0.0
+    self.low_pass_alpha = 1.0  # 1.0 = no filtering (off)
+
   def update_live_delay(self, lateral_delay):
     """Update lateral delay from lagd (called by controlsd when liveDelay updates)."""
     if lateral_delay > 0:
@@ -117,6 +121,9 @@ class LatControlTorque(LatControl):
       # steerKp is [[speeds], [values]] format, get the first (only) value
       base_kp = frogpilot_toggles.steerKp[1][0] if frogpilot_toggles.steerKp else DEFAULT_KP
       base_ki = frogpilot_toggles.steerKi if hasattr(frogpilot_toggles, 'steerKi') else DEFAULT_KI
+      # Low-pass filter alpha: 0 = off (use 1.0 passthrough), otherwise use the set value
+      alpha = getattr(frogpilot_toggles, 'lowPassFilterAlpha', 0.0)
+      self.low_pass_alpha = 1.0 if alpha == 0.0 else alpha
     else:
       # Fall back to torque_params (startup values)
       base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
@@ -156,7 +163,10 @@ class LatControlTorque(LatControl):
 
     # Calculate current state
     measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
-    measurement = measured_curvature * CS.vEgo ** 2
+    raw_measurement = measured_curvature * CS.vEgo ** 2
+    # Low-pass filter: alpha=1.0 is passthrough (off), lower alpha = stronger smoothing
+    self.filtered_measurement += self.low_pass_alpha * (raw_measurement - self.filtered_measurement)
+    measurement = self.filtered_measurement
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
 
@@ -238,6 +248,7 @@ class LatControlTorque(LatControl):
       self.pid.reset()
       self.prev_future_desired_lateral_accel = 0.0
       self.unwind_frames = 0
+      self.filtered_measurement = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space

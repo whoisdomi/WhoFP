@@ -40,6 +40,7 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"SteerKP", parent->steerKp != 0 ? QString(tr("Kp Factor (Default: %1)")).arg(QString::number(parent->steerKp, 'f', 2)) : tr("Kp Factor"), tr("<b>How strongly openpilot corrects lane position.</b> Higher is tighter but twitchier; lower is smoother but slower. Auto-learned by default."), ""},
     {"SteerKi", tr("Ki Factor (Default: 0.30)"), tr("<b>Integral gain - how quickly openpilot corrects persistent lane offset.</b> Higher values correct offset faster but may cause overshoot after turns. Lower values give cleaner turn unwind but slower offset correction."), ""},
     {"LatSmoothSeconds", tr("Lat Smooth Seconds (Default: 0.10)"), tr("<b>Smoothing time for lateral curvature changes.</b> Lower values make steering more responsive but potentially jerkier. Higher values are smoother but may feel sluggish. Set to 0 for no smoothing."), ""},
+    {"LowPassFilterAlpha", tr("Low-Pass Filter Alpha (Default: Off)"), tr("<b>Smooths steering angle measurement noise to reduce torque chatter.</b> Lower values = stronger filtering (smoother but slightly slower response). Higher values = lighter filtering. Set to 0 to disable. Recommended starting value: 0.15."), ""},
     {"SteerLatAccel", parent->latAccelFactor != 0 ? QString(tr("Lateral Acceleration (Default: %1)")).arg(QString::number(parent->latAccelFactor, 'f', 2)) : tr("Lateral Acceleration"), tr("<b>Maps steering torque to turning response.</b> Increase for sharper turns; decrease for gentler steering. Auto-learned by default."), ""},
     {"SteerRatio", parent->steerRatio != 0 ? QString(tr("Steer Ratio (Default: %1)")).arg(QString::number(parent->steerRatio, 'f', 2)) : tr("Steer Ratio"), tr("<b>The relationship between steering wheel rotation and road wheel angle.</b> Increase if steering feels too quick or twitchy; decrease if it feels too slow or weak. Auto-learned by default."), ""},
     {"ForceAutoTune", tr("Force Auto-Tune On"), tr("<b>Force-enable openpilot's live auto-tuning for \"Friction\" and \"Lateral Acceleration\".</b>"), ""},
@@ -104,6 +105,11 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     } else if (param == "LatSmoothSeconds") {
       std::vector<QString> latSmoothButton{"Reset"};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0, 0.3, QString(), std::map<float, QString>(), 0.01, false, {}, latSmoothButton, false, false);
+    } else if (param == "LowPassFilterAlpha") {
+      std::vector<QString> lowPassFilterButton{"Reset"};
+      std::map<float, QString> lowPassFilterLabels;
+      lowPassFilterLabels[0] = tr("Off");
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0, 0.30, QString(), lowPassFilterLabels, 0.01, false, {}, lowPassFilterButton, false, false);
     } else if (param == "SteerLatAccel") {
       std::vector<QString> steerLatAccelButton{"Reset"};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, parent->latAccelFactor * 0.75, parent->latAccelFactor * 1.25, QString(), std::map<float, QString>(), 0.01, false, {}, steerLatAccelButton, false, false);
@@ -308,6 +314,14 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Lat Smooth Seconds</b> to its default value?"), this)) {
       params.putFloat("LatSmoothSeconds", 0.1);
       latSmoothSecondsToggle->refresh();
+    }
+  });
+
+  lowPassFilterAlphaToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["LowPassFilterAlpha"]);
+  QObject::connect(lowPassFilterAlphaToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Low-Pass Filter Alpha</b> to its default value?"), this)) {
+      params.putFloat("LowPassFilterAlpha", 0.0);
+      lowPassFilterAlphaToggle->refresh();
     }
   });
 
