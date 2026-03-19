@@ -51,13 +51,21 @@ UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 f
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 0.95  # PID built-in: decays integrator when error opposes it (centering after turns)
 
-# === Highway Curvature Deadzone ===
-# Ignores tiny curvature requests at highway speed to break the
-# camera → model → steering → camera feedback loop that causes slow weaving.
-# Fades in from DEADZONE_MIN_SPEED to DEADZONE_FULL_SPEED.
-CURVATURE_DEADZONE = 0.00015       # rad/m (~6700m radius) — catches ±0.0002 oscillation
-DEADZONE_MIN_SPEED = 22.0          # m/s (~49 mph) — start fading in
-DEADZONE_FULL_SPEED = 25.0         # m/s (~56 mph) — full deadzone
+# === Highway Curvature Stabilization ===
+# Breaks the camera → model → steering → camera feedback loop that causes slow weaving.
+# Two mechanisms, both fade in above 50 mph:
+#
+# 1. Change deadzone: holds previous curvature unless the model moves by more than
+#    CURVATURE_CHANGE_DEADZONE from the held value. Small oscillations are ignored,
+#    large changes (lane changes, real curves) pass through immediately.
+#
+# 2. Rate limiter: caps how fast curvature can change per second at highway speed.
+#    Oscillation rate (~0.0001 rad/m/s) is limited; lane changes (~0.002 rad/m/s)
+#    are barely affected.
+CURVATURE_CHANGE_DEADZONE = 0.0002   # rad/m — ignore changes smaller than this
+CURVATURE_RATE_LIMIT = 0.0005        # rad/m per second — max curvature change rate
+HIGHWAY_MIN_SPEED = 17.9             # m/s (~40 mph) — start fading in
+HIGHWAY_FULL_SPEED = 20.1            # m/s (~45 mph) — full effect
 
 # === Straight-Stop Suppression ===
 # Scales low_speed_factor toward 1.0 when near-straight and slow.
@@ -117,6 +125,10 @@ class LatControlTorque(LatControl):
     self.filtered_measurement = 0.0
     self.low_pass_alpha = 1.0  # 1.0 = no filtering (off)
 
+    # Highway curvature stabilization state
+    self.held_curvature = 0.0          # last accepted curvature (change deadzone)
+    self.rate_limited_curvature = 0.0  # rate-limited curvature output
+
   def update_live_delay(self, lateral_delay):
     """Update lateral delay from lagd (called by controlsd when liveDelay updates)."""
     if lateral_delay > 0:
@@ -175,13 +187,28 @@ class LatControlTorque(LatControl):
     # Low-pass filter: alpha=1.0 is passthrough (off), lower alpha = stronger smoothing
     self.filtered_measurement += self.low_pass_alpha * (raw_measurement - self.filtered_measurement)
     measurement = self.filtered_measurement
-    # Highway curvature deadzone: zero out tiny curvature requests at high speed
-    # to break the camera-model-steering feedback loop that causes slow weaving
-    if CS.vEgo > DEADZONE_MIN_SPEED:
-      deadzone_scale = float(np.clip((CS.vEgo - DEADZONE_MIN_SPEED) / (DEADZONE_FULL_SPEED - DEADZONE_MIN_SPEED), 0.0, 1.0))
-      effective_deadzone = CURVATURE_DEADZONE * deadzone_scale
-      if abs(desired_curvature) < effective_deadzone:
-        desired_curvature = 0.0
+    # Highway curvature stabilization: change deadzone + rate limiter
+    # Fades in above 50 mph to break camera-model-steering feedback loop
+    if CS.vEgo > HIGHWAY_MIN_SPEED:
+      highway_scale = float(np.clip((CS.vEgo - HIGHWAY_MIN_SPEED) / (HIGHWAY_FULL_SPEED - HIGHWAY_MIN_SPEED), 0.0, 1.0))
+
+      # 1. Change deadzone: only update held curvature when model moves enough
+      effective_change_dz = CURVATURE_CHANGE_DEADZONE * highway_scale
+      if abs(desired_curvature - self.held_curvature) >= effective_change_dz:
+        self.held_curvature = desired_curvature
+      desired_curvature = self.held_curvature
+
+      # 2. Rate limiter: cap how fast curvature can change per frame
+      max_change = CURVATURE_RATE_LIMIT * DT_CTRL * highway_scale
+      if max_change > 0:
+        desired_curvature = float(np.clip(desired_curvature,
+                                          self.rate_limited_curvature - max_change,
+                                          self.rate_limited_curvature + max_change))
+      self.rate_limited_curvature = desired_curvature
+    else:
+      # Below highway speed: track actual curvature so there's no jump when crossing threshold
+      self.held_curvature = desired_curvature
+      self.rate_limited_curvature = desired_curvature
 
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
@@ -265,6 +292,8 @@ class LatControlTorque(LatControl):
       self.prev_future_desired_lateral_accel = 0.0
       self.unwind_frames = 0
       self.filtered_measurement = 0.0
+      self.held_curvature = 0.0
+      self.rate_limited_curvature = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space
