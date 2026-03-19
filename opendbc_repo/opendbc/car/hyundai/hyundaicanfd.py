@@ -36,7 +36,13 @@ class CanBus(CanBusBase):
     return self._cam
 
 
-def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque, damp_factor=100):
+# Speed-interpolated damp factor [3, 200]
+# Speeds in m/s:        0 mph    30 mph   50 mph   60 mph   70 mph
+DAMP_FACTOR_SPEED = [0,       13.41,   22.35,   26.82,   31.29]
+DAMP_FACTOR =       [20,      60,      100,     120,     200]
+
+
+def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque, v_ego=0.):
   common_values = {
     "LKA_MODE": 2,
     "LKA_ICON": 2 if enabled else 1,
@@ -46,7 +52,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque,
     "STEER_MODE": 0,
     "HAS_LANE_SAFETY": 0,  # hide LKAS settings
     "NEW_SIGNAL_2": 0,
-    "DAMP_FACTOR": int(damp_factor),  # can potentially tuned for better perf [3, 200]
+    "DAMP_FACTOR": int(np.interp(v_ego, DAMP_FACTOR_SPEED, DAMP_FACTOR)),
   }
 
   lkas_values = copy.copy(common_values)

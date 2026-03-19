@@ -475,7 +475,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SubaruSNG", {PERSISTENT, BOOL, "1", "0", 2}},
     {"TacoTune", {PERSISTENT, BOOL, "0", "0", 2}},
     {"TacoTuneHacks", {PERSISTENT, BOOL, "0", "0", 2}},
-    {"DampFactor", {PERSISTENT, FLOAT, "100.0", "100.0", 2}},
     {"TestAlert", {CLEAR_ON_MANAGER_START, STRING, "", ""}},
     {"TetheringEnabled", {PERSISTENT, INT, "0", "0", 0}},
     {"ThemeDownloadProgress", {CLEAR_ON_MANAGER_START, STRING, "", ""}},
