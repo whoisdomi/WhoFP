@@ -105,6 +105,15 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     else:
       lat_smooth = frogpilot_toggles.latSmoothSeconds if frogpilot_toggles else LAT_SMOOTH_SECONDS
 
+    # Only apply lat smoothing above 40 mph (~17.9 m/s), fade in from 35-40 mph
+    LAT_SMOOTH_MIN_SPEED = 15.6  # m/s (~35 mph)
+    LAT_SMOOTH_FULL_SPEED = 17.9  # m/s (~40 mph)
+    if v_ego < LAT_SMOOTH_MIN_SPEED:
+      lat_smooth = 0
+    elif v_ego < LAT_SMOOTH_FULL_SPEED and lat_smooth > 0:
+      speed_fade = (v_ego - LAT_SMOOTH_MIN_SPEED) / (LAT_SMOOTH_FULL_SPEED - LAT_SMOOTH_MIN_SPEED)
+      lat_smooth = lat_smooth * speed_fade
+
     # Apply lane position offset as curvature correction
     # Positive offset = shift right = need negative curvature (steer right)
     if frogpilot_toggles and v_ego > MIN_LAT_CONTROL_SPEED:
