@@ -51,6 +51,14 @@ UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 f
 # === Integrator Decay ===
 UNWIND_MULTIPLIER = 0.95  # PID built-in: decays integrator when error opposes it (centering after turns)
 
+# === Highway Curvature Deadzone ===
+# Ignores tiny curvature requests at highway speed to break the
+# camera → model → steering → camera feedback loop that causes slow weaving.
+# Fades in from DEADZONE_MIN_SPEED to DEADZONE_FULL_SPEED.
+CURVATURE_DEADZONE = 0.00015       # rad/m (~6700m radius) — catches ±0.0002 oscillation
+DEADZONE_MIN_SPEED = 22.0          # m/s (~49 mph) — start fading in
+DEADZONE_FULL_SPEED = 25.0         # m/s (~56 mph) — full deadzone
+
 # === Straight-Stop Suppression ===
 # Scales low_speed_factor toward 1.0 when near-straight and slow.
 # Prevents friction snap and P-term ratcheting at stops without affecting turn behavior.
@@ -167,6 +175,14 @@ class LatControlTorque(LatControl):
     # Low-pass filter: alpha=1.0 is passthrough (off), lower alpha = stronger smoothing
     self.filtered_measurement += self.low_pass_alpha * (raw_measurement - self.filtered_measurement)
     measurement = self.filtered_measurement
+    # Highway curvature deadzone: zero out tiny curvature requests at high speed
+    # to break the camera-model-steering feedback loop that causes slow weaving
+    if CS.vEgo > DEADZONE_MIN_SPEED:
+      deadzone_scale = float(np.clip((CS.vEgo - DEADZONE_MIN_SPEED) / (DEADZONE_FULL_SPEED - DEADZONE_MIN_SPEED), 0.0, 1.0))
+      effective_deadzone = CURVATURE_DEADZONE * deadzone_scale
+      if abs(desired_curvature) < effective_deadzone:
+        desired_curvature = 0.0
+
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
 
