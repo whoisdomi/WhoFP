@@ -200,6 +200,13 @@ QObject::connect(paramToggle, &FrogPilotParamValueButtonControl::buttonClicked, 
 
 ### 4. Header Declaration
 **File:** `frogpilot/ui/qt/offroad/<section>_settings.h`
+
+Add the param key to the appropriate panel key set (CRITICAL — without this, the toggle won't appear in the UI):
+```cpp
+QSet<QString> advancedLateralTuneKeys = {"...", "ParamName", "..."};
+```
+
+Add the toggle pointer declaration:
 ```cpp
 FrogPilotParamValueButtonControl *paramToggle;
 ```
