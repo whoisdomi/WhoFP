@@ -91,8 +91,17 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
         quickUpdateBtn->setEnabled(false);
 
         quickUpdateBtn->setValue(tr("Pulling..."));
-        if (std::system("cd /data/openpilot && git pull") != 0) {
+        if (std::system("cd /data/openpilot && git fetch --depth=1 origin && git reset --hard origin/$(git branch --show-current)") != 0) {
           quickUpdateBtn->setValue(tr("Pull failed!"));
+          util::sleep_for(3000);
+          quickUpdateBtn->setEnabled(true);
+          quickUpdateBtn->setValue("");
+          return;
+        }
+
+        quickUpdateBtn->setValue(tr("Updating submodules..."));
+        if (std::system("cd /data/openpilot && git submodule update --init --recursive --depth=1") != 0) {
+          quickUpdateBtn->setValue(tr("Submodule update failed!"));
           util::sleep_for(3000);
           quickUpdateBtn->setEnabled(true);
           quickUpdateBtn->setValue("");
