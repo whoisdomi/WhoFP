@@ -82,10 +82,15 @@ class CarController(CarControllerBase):
       apply_torque = 0
 
     # Detect unwind: torque magnitude decreasing, same direction, not zero
+    # Detect unwind: torque magnitude decreasing, same direction, not zero
     unwind_detected = (abs(apply_torque) < abs(self.apply_torque_last) and
                        np.sign(apply_torque) == np.sign(self.apply_torque_last) and
                        apply_torque != 0)
-    if unwind_detected:
+    # Detect winding up (turn entry): torque magnitude increasing
+    winding_up = abs(apply_torque) > abs(self.apply_torque_last)
+    if winding_up:
+      self.unwind_hold_timer = 0  # Cancel boost immediately on turn entry
+    elif unwind_detected:
       self.unwind_hold_timer = 3.0 / DT_CTRL  # 3 seconds at 100 Hz = 300 frames
     elif self.unwind_hold_timer > 0:
       self.unwind_hold_timer -= 1
