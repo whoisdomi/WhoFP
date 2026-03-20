@@ -89,9 +89,13 @@ class LatControlTorque(LatControl):
     self.current_kf = 1.0
 
     # Initialize PID (will be configured in update_pid_gains)
+    # ki_deadband=0.05: stop integrator accumulation when lateral accel error < 0.05 m/s²
+    # This prevents slow I-term drift from tiny noise at highway speed without affecting turns
+    # (real turns produce errors of 0.2+ m/s², well above the deadband)
     self.pid = PIDController(DEFAULT_KP, DEFAULT_KI, k_f=1.0,
                              pos_limit=1e308, neg_limit=-1e308,
-                             unwind_multiplier=UNWIND_MULTIPLIER)
+                             unwind_multiplier=UNWIND_MULTIPLIER,
+                             ki_deadband=0.05)
     self.update_pid_gains()
 
     # Delay compensation buffer
@@ -110,6 +114,11 @@ class LatControlTorque(LatControl):
     # Low-pass filter state for measured lateral accel
     self.filtered_measurement = 0.0
     self.low_pass_alpha = 1.0  # 1.0 = no filtering (off)
+
+    # Feedforward low-pass filter: smooths the FF path to prevent model noise
+    # from spiking torque, while allowing full FF amplitude for sustained turns
+    self.filtered_ff = 0.0
+    self.ff_filter_alpha = 0.15  # ~67ms time constant at 100Hz
 
 
   def update_live_delay(self, lateral_delay):
@@ -226,9 +235,18 @@ class LatControlTorque(LatControl):
 
     # Feedforward: gravity-adjusted desired lateral accel
     gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
-    ff = gravity_adjusted_future_lateral_accel
+    ff_raw = gravity_adjusted_future_lateral_accel
     # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
-    ff -= self.torque_params.latAccelOffset
+    ff_raw -= self.torque_params.latAccelOffset
+    # Low-pass filter on FF path: smooths model noise spikes while allowing full FF amplitude
+    # for sustained turns. Only applied above 40 mph where model oscillation causes highway weave.
+    highway_ff_fade = float(np.clip((CS.vEgo - 15.6) / 2.2, 0.0, 1.0))  # 0 below 35mph, 1 above 40mph
+    if highway_ff_fade > 0.0:
+      self.filtered_ff += self.ff_filter_alpha * (ff_raw - self.filtered_ff)
+      ff = highway_ff_fade * self.filtered_ff + (1.0 - highway_ff_fade) * ff_raw
+    else:
+      ff = ff_raw
+      self.filtered_ff = ff_raw  # Track raw value so filter doesn't lag when fading in
     # Friction term (ACTS-HORIZON style: no jerk in friction, jerk is in setpoint instead)
     # Use speed-interpolated threshold: lower at low speed (helps turns), higher at highway (prevents ticking)
     friction_threshold = get_friction_threshold(CS.vEgo)
@@ -256,6 +274,7 @@ class LatControlTorque(LatControl):
       self.prev_future_desired_lateral_accel = 0.0
       self.unwind_frames = 0
       self.filtered_measurement = 0.0
+      self.filtered_ff = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space

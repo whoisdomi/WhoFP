@@ -2,12 +2,13 @@ import numpy as np
 from numbers import Number
 
 class PIDController:
-  def __init__(self, k_p, k_i, k_f=0., k_d=0., pos_limit=1e308, neg_limit=-1e308, rate=100, unwind_multiplier=1.0):
+  def __init__(self, k_p, k_i, k_f=0., k_d=0., pos_limit=1e308, neg_limit=-1e308, rate=100, unwind_multiplier=1.0, ki_deadband=0.0):
     self._k_p = k_p
     self._k_i = k_i
     self._k_d = k_d
     self.k_f = k_f   # feedforward gain
     self.unwind_multiplier = unwind_multiplier  # decay factor for integrator when unwinding (0.95 = 5% decay per cycle)
+    self.ki_deadband = ki_deadband  # error threshold below which integrator stops accumulating (anti-windup)
     if isinstance(self._k_p, Number):
       self._k_p = [[0], [self._k_p]]
     if isinstance(self._k_i, Number):
@@ -58,7 +59,13 @@ class PIDController:
       self.i -= self.i_unwind_rate * float(np.sign(self.i))
     else:
       if not freeze_integrator:
-        self.i = self.i + error * self.k_i * self.i_rate
+        # Anti-windup: don't accumulate integrator for errors below deadband threshold
+        # Prevents slow integrator drift from tiny noise-driven errors (highway oscillation)
+        # P and FF still handle centering during these moments
+        if self.ki_deadband > 0 and abs(error) < self.ki_deadband:
+          pass  # Skip integrator accumulation
+        else:
+          self.i = self.i + error * self.k_i * self.i_rate
 
         # Decay integrator when unwinding (error opposes integrator)
         if self.unwind_multiplier < 1.0 and np.sign(error) != np.sign(self.i) and abs(self.i) > 0.01:
