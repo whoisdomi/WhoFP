@@ -40,7 +40,7 @@ class CanBus(CanBusBase):
 # Speeds in m/s:        0 mph    30 mph   50 mph   60 mph   70 mph
 DAMP_FACTOR_SPEED = [0,       13.41,   22.35,   26.82,   31.29]
 DAMP_FACTOR =       [20,      60,      100,     120,     200]
-DAMP_UNWIND_BOOST = 50
+DAMP_UNWIND_BOOST = 80
 
 
 def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque, v_ego=0., unwinding=False):

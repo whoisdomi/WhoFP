@@ -55,6 +55,7 @@ class CarController(CarControllerBase):
 
     self.accel_last = 0
     self.apply_torque_last = 0
+    self.unwind_hold_timer = 0
     self.car_fingerprint = CP.carFingerprint
     self.last_button_frame = 0
     self.ecu_disable_failed = False
@@ -81,9 +82,14 @@ class CarController(CarControllerBase):
       apply_torque = 0
 
     # Detect unwind: torque magnitude decreasing, same direction, not zero
-    self.unwinding = (abs(apply_torque) < abs(self.apply_torque_last) and
-                      np.sign(apply_torque) == np.sign(self.apply_torque_last) and
-                      apply_torque != 0)
+    unwind_detected = (abs(apply_torque) < abs(self.apply_torque_last) and
+                       np.sign(apply_torque) == np.sign(self.apply_torque_last) and
+                       apply_torque != 0)
+    if unwind_detected:
+      self.unwind_hold_timer = 3.0 / DT_CTRL  # 3 seconds at 100 Hz = 300 frames
+    elif self.unwind_hold_timer > 0:
+      self.unwind_hold_timer -= 1
+    self.unwinding = self.unwind_hold_timer > 0
 
     # Hold torque with induced temporary fault when cutting the actuation bit
     # FIXME: we don't use this with CAN FD?
