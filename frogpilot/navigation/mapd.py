@@ -13,7 +13,6 @@ from pathlib import Path
 
 from openpilot.common.params import Params
 
-from openpilot.frogpilot.common.frogpilot_utilities import is_url_pingable
 from openpilot.frogpilot.common.frogpilot_variables import MAPD_PATH, RESOURCES_REPO
 
 VERSION = "v2"
@@ -43,20 +42,30 @@ def cleanup_temp_files():
   except OSError as exception:
     print(f"Skipping cleanup in {parent} due to I/O error: {exception}")
 
+def get_latest_version():
+  for url in [GITHUB_VERSION_URL, GITLAB_VERSION_URL]:
+    try:
+      with urllib.request.urlopen(url, timeout=10) as response:
+        return json.loads(response.read().decode("utf-8"))["version"]
+    except Exception as exception:
+      print(f"Error fetching mapd version from {url}: {exception}")
+  return None
+
 def download():
   Path(MAPD_PATH).parent.mkdir(parents=True, exist_ok=True)
 
-  while not (is_url_pingable("https://github.com") or is_url_pingable("https://gitlab.com")):
-    time.sleep(60)
-
   latest_version = get_latest_version()
+  if latest_version is None:
+    print("Could not fetch mapd version, will retry later")
+    return False
+
   urls = [
     f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{latest_version}/mapd",
     f"https://gitlab.com/{RESOURCES_REPO}/-/raw/Mapd/{latest_version}"
   ]
   for url in urls:
     try:
-      with urllib.request.urlopen(url) as response:
+      with urllib.request.urlopen(url, timeout=30) as response:
         with tempfile.NamedTemporaryFile("wb", delete=False, dir=MAPD_PATH.parent) as temp_file:
           shutil.copyfileobj(response, temp_file)
           temp_file_path = Path(temp_file.name)
@@ -69,48 +78,18 @@ def download():
         version_file.write(latest_version)
         os.fsync(version_file.fileno())
 
-      return
+      return True
     except Exception as exception:
       print(f"Failed to download mapd from {url}: {exception}")
       if "temp_file_path" in locals() and temp_file_path.exists():
         temp_file_path.unlink(missing_ok=True)
-
-def get_latest_version():
-  while not (is_url_pingable("https://github.com") or is_url_pingable("https://gitlab.com")):
-    time.sleep(60)
-
-  for url in [GITHUB_VERSION_URL, GITLAB_VERSION_URL]:
-    try:
-      with urllib.request.urlopen(url, timeout=10) as response:
-        return json.loads(response.read().decode("utf-8"))["version"]
-    except Exception as exception:
-      print(f"Error fetching mapd version from {url}: {exception}")
-  return "v0"
+  return False
 
 def update_mapd():
-  if not MAPD_PATH.exists():
-    print(f"{MAPD_PATH} not found. Downloading...")
-    download()
-    return False
-
-  if not VERSION_PATH.exists():
-    print(f"{VERSION_PATH} not found. Downloading mapd...")
-    download()
-    return False
-
-  if is_url_pingable("https://github.com") or is_url_pingable("https://gitlab.com"):
-    try:
-      with open(VERSION_PATH) as version_file:
-        local_version = version_file.read().strip()
-      if local_version != get_latest_version():
-        print("New mapd version available. Updating...")
-        download()
-        return False
-      else:
-        return True
-    except Exception as exception:
-      print(f"Error checking version: {exception}")
-      return False
+  if not MAPD_PATH.exists() or not VERSION_PATH.exists():
+    missing = "mapd binary" if not MAPD_PATH.exists() else "version file"
+    print(f"{missing} not found. Downloading...")
+    return download()
 
   if not os.access(MAPD_PATH, os.X_OK):
     print(f"{MAPD_PATH} is not executable. Fixing permissions...")
@@ -119,6 +98,17 @@ def update_mapd():
     except Exception as exception:
       print(f"Failed to set executable permissions on {MAPD_PATH}: {exception}")
     return False
+
+  # Check for updates — if network is unavailable, just use what we have
+  try:
+    with open(VERSION_PATH) as version_file:
+      local_version = version_file.read().strip()
+    latest_version = get_latest_version()
+    if latest_version is not None and local_version != latest_version:
+      print("New mapd version available. Updating...")
+      return download()
+  except Exception as exception:
+    print(f"Error checking version: {exception}")
 
   return True
 
@@ -136,7 +126,7 @@ def mapd_thread():
       continue
 
     while not update_mapd():
-      time.sleep(60)
+      time.sleep(10)
       continue
 
     try:

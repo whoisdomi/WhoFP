@@ -3,6 +3,7 @@ import datetime
 import os
 import signal
 import sys
+import threading
 import time
 import traceback
 
@@ -75,11 +76,19 @@ def manager_init() -> None:
   params.put("HardwareSerial", serial)
 
   # set dongle id
-  reg_res = register(show_spinner=True)
-  if reg_res:
-    dongle_id = reg_res
+  # Use cached DongleId if available to avoid blocking on network at boot
+  cached_dongle_id = params.get("DongleId")
+  if cached_dongle_id is not None:
+    dongle_id = cached_dongle_id
+    # Re-register in background to keep registration fresh
+    threading.Thread(target=register, kwargs={"show_spinner": False}, daemon=True).start()
   else:
-    raise Exception(f"Registration failed for device {serial}")
+    # First boot — must block to get a dongle id
+    reg_res = register(show_spinner=True)
+    if reg_res:
+      dongle_id = reg_res
+    else:
+      raise Exception(f"Registration failed for device {serial}")
   os.environ['DONGLE_ID'] = dongle_id  # Needed for swaglog
   os.environ['GIT_ORIGIN'] = build_metadata.openpilot.git_normalized_origin # Needed for swaglog
   os.environ['GIT_BRANCH'] = build_metadata.channel # Needed for swaglog

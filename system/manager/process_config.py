@@ -141,10 +141,10 @@ elif TICI:
   procs.append(NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run, watchdog_max_dt=(5 if not PC else None))),
 procs += [
   PythonProcess("frogpilot_process", "frogpilot.frogpilot_process", always_run),
-  PythonProcess("mapd", "frogpilot.navigation.mapd", always_run),
+  PythonProcess("mapd", "frogpilot.navigation.mapd", always_run, defer_preimport=True),
   PythonProcess("speed_limit_filler", "frogpilot.system.speed_limit_filler", run_speed_limit_filler),
-  PythonProcess("the_pond", "frogpilot.system.the_pond.the_pond", always_run, nice=15),
-  PythonProcess("galaxy", "frogpilot.system.galaxy.galaxy", always_run),
+  PythonProcess("the_pond", "frogpilot.system.the_pond.the_pond_launcher", always_run, nice=15, defer_preimport=True),
+  PythonProcess("galaxy", "frogpilot.system.galaxy.galaxy", always_run, defer_preimport=True),
 ]
 
 managed_processes = {p.name: p for p in procs}
