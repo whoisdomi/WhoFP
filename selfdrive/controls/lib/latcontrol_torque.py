@@ -83,9 +83,10 @@ class LatControlTorque(LatControl):
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
 
-    # Store current KP/KI for live update detection
+    # Store current KP/KI/KF for live update detection
     self.current_kp = 0.0
     self.current_ki = 0.0
+    self.current_kf = 1.0
 
     # Initialize PID (will be configured in update_pid_gains)
     self.pid = PIDController(DEFAULT_KP, DEFAULT_KI, k_f=1.0,
@@ -122,6 +123,7 @@ class LatControlTorque(LatControl):
     if frogpilot_toggles is not None and hasattr(frogpilot_toggles, 'steerKp'):
       # steerKp is [[speeds], [values]] format, get the first (only) value
       base_kp = frogpilot_toggles.steerKp[1][0] if frogpilot_toggles.steerKp else DEFAULT_KP
+      base_kf = frogpilot_toggles.steerKf if hasattr(frogpilot_toggles, 'steerKf') else 1.0
       base_ki = frogpilot_toggles.steerKi if hasattr(frogpilot_toggles, 'steerKi') else DEFAULT_KI
       # Low-pass filter alpha: 0 = off (use 1.0 passthrough), otherwise use the set value
       alpha = getattr(frogpilot_toggles, 'lowPassFilterAlpha', 0.0)
@@ -129,11 +131,13 @@ class LatControlTorque(LatControl):
     else:
       # Fall back to torque_params (startup values)
       base_kp = self.torque_params.kp if self.torque_params.kp > 0 else DEFAULT_KP
+      base_kf = 1.0
       base_ki = self.torque_params.ki if self.torque_params.ki > 0 else DEFAULT_KI
 
     # Only update if gains changed
-    if base_kp != self.current_kp or base_ki != self.current_ki:
+    if base_kp != self.current_kp or base_kf != self.current_kf or base_ki != self.current_ki:
       self.current_kp = base_kp
+      self.current_kf = base_kf
       self.current_ki = base_ki
 
       # Scale KP multipliers by the base KP from settings
@@ -141,6 +145,7 @@ class LatControlTorque(LatControl):
 
       # Update PID gains
       self.pid._k_p = [INTERP_SPEEDS, kp_interp]
+      self.pid.k_f = base_kf
       self.pid._k_i = [[0], [base_ki]]
 
       # Calculate PID limits based on latAccelFactor

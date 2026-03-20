@@ -38,6 +38,7 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     {"SteerDelay", parent->steerActuatorDelay != 0 ? QString(tr("Actuator Delay (Default: %1)")).arg(QString::number(parent->steerActuatorDelay, 'f', 2)) : tr("Actuator Delay"), tr("<b>The time between openpilot's steering command and the vehicle's response.</b> Increase if the vehicle reacts late; decrease if it feels jumpy. Auto-learned by default."), ""},
     {"SteerFriction", parent->friction != 0 ? QString(tr("Friction (Default: %1)")).arg(QString::number(parent->friction, 'f', 2)) : tr("Friction"), tr("<b>Compensates for steering friction.</b> Increase if the wheel sticks near center; decrease if it jitters. Auto-learned by default."), ""},
     {"SteerKP", parent->steerKp != 0 ? QString(tr("Kp Factor (Default: %1)")).arg(QString::number(parent->steerKp, 'f', 2)) : tr("Kp Factor"), tr("<b>How strongly openpilot corrects lane position.</b> Higher is tighter but twitchier; lower is smoother but slower. Auto-learned by default."), ""},
+    {"SteerKf", tr("Kf Factor (Default: 1.00)"), tr("<b>Feedforward gain - directly converts desired curvature to steering torque.</b> Lower values reduce highway oscillation but may slow turn entry. Higher values give faster turn response but amplify model noise at speed."), ""},
     {"SteerKi", tr("Ki Factor (Default: 0.30)"), tr("<b>Integral gain - how quickly openpilot corrects persistent lane offset.</b> Higher values correct offset faster but may cause overshoot after turns. Lower values give cleaner turn unwind but slower offset correction."), ""},
     {"LatSmoothSeconds", tr("Lat Smooth Seconds (Default: 0.10)"), tr("<b>Smoothing time for lateral curvature changes.</b> Lower values make steering more responsive but potentially jerkier. Higher values are smoother but may feel sluggish. Set to 0 for no smoothing."), ""},
     {"LowPassFilterAlpha", tr("Low-Pass Filter Alpha (Default: Off)"), tr("<b>Smooths steering angle measurement noise to reduce torque chatter.</b> Lower values = stronger filtering (smoother but slightly slower response). Higher values = lighter filtering. Set to 0 to disable. Recommended starting value: 0.15."), ""},
@@ -99,6 +100,9 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     } else if (param == "SteerKP") {
       std::vector<QString> steerKPButton{"Reset"};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, parent->steerKp * 0.5, parent->steerKp * 1.5, QString(), std::map<float, QString>(), 0.01, false, {}, steerKPButton, false, false);
+    } else if (param == "SteerKf") {
+      std::vector<QString> steerKfButton{"Reset"};
+      lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0.5, 1.5, QString(), std::map<float, QString>(), 0.05, false, {}, steerKfButton, false, false);
     } else if (param == "SteerKi") {
       std::vector<QString> steerKiButton{"Reset"};
       lateralToggle = new FrogPilotParamValueButtonControl(param, title, desc, icon, 0.1, 0.7, QString(), std::map<float, QString>(), 0.05, false, {}, steerKiButton, false, false);
@@ -298,6 +302,14 @@ FrogPilotLateralPanel::FrogPilotLateralPanel(FrogPilotSettingsWindow *parent, bo
     if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Kp Factor</b> to its default value?"), this)) {
       params.putFloat("SteerKP", parent->steerKp);
       steerKPToggle->refresh();
+    }
+  });
+
+  steerKfToggle = static_cast<FrogPilotParamValueButtonControl*>(toggles["SteerKf"]);
+  QObject::connect(steerKfToggle, &FrogPilotParamValueButtonControl::buttonClicked, [this]() {
+    if (FrogPilotConfirmationDialog::yesorno(tr("Reset <b>Kf Factor</b> to its default value?"), this)) {
+      params.putFloat("SteerKf", 1.0);
+      steerKfToggle->refresh();
     }
   });
 

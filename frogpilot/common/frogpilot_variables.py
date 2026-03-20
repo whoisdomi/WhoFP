@@ -401,6 +401,7 @@ class FrogPilotVariables:
     toggle.friction = self.get_value("SteerFriction", cast=float, condition=advanced_lateral_tuning, default=friction, min=0, max=0.5)
     toggle.use_custom_friction = bool(round(toggle.friction, 2) != round(friction, 2)) and is_torque_car and (not toggle.force_auto_tune or toggle.force_auto_tune_off)
     toggle.steerKp = [[0], [self.get_value("SteerKP", cast=float, condition=advanced_lateral_tuning and is_torque_car, default=steerKp, min=steerKp * 0.5, max=steerKp * 1.5)]]
+    toggle.steerKf = self.get_value("SteerKf", cast=float, condition=advanced_lateral_tuning and is_torque_car, default=1.0, min=0.5, max=1.5)
     toggle.steerKi = self.get_value("SteerKi", cast=float, condition=advanced_lateral_tuning and is_torque_car, default=0.3, min=0.1, max=0.7)
     toggle.latSmoothSeconds = self.get_value("LatSmoothSeconds", cast=float, condition=advanced_lateral_tuning, default=0.1, min=0, max=0.3)
     toggle.lowPassFilterAlpha = self.get_value("LowPassFilterAlpha", cast=float, condition=advanced_lateral_tuning, default=0.0, min=0, max=0.30)

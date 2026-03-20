@@ -36,6 +36,7 @@ private:
   FrogPilotParamValueButtonControl *lowPassFilterAlphaToggle;
   FrogPilotParamValueButtonControl *steerDelayToggle;
   FrogPilotParamValueButtonControl *steerFrictionToggle;
+  FrogPilotParamValueButtonControl *steerKfToggle;
   FrogPilotParamValueButtonControl *steerKiToggle;
   FrogPilotParamValueButtonControl *steerKPToggle;
   FrogPilotParamValueButtonControl *steerLatAccelToggle;
