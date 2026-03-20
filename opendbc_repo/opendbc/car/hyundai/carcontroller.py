@@ -80,6 +80,11 @@ class CarController(CarControllerBase):
     if not CC.latActive:
       apply_torque = 0
 
+    # Detect unwind: torque magnitude decreasing, same direction, not zero
+    self.unwinding = (abs(apply_torque) < abs(self.apply_torque_last) and
+                      np.sign(apply_torque) == np.sign(self.apply_torque_last) and
+                      apply_torque != 0)
+
     # Hold torque with induced temporary fault when cutting the actuation bit
     # FIXME: we don't use this with CAN FD?
     torque_fault = CC.latActive and not apply_steer_req
@@ -199,7 +204,7 @@ class CarController(CarControllerBase):
     lka_steering_long = lka_steering and self.long_active_ecu
 
     # steering control
-    can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled, apply_steer_req, apply_torque, CS.out.vEgoRaw))
+    can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled, apply_steer_req, apply_torque, CS.out.vEgoRaw, self.unwinding))
 
     # prevent LFA from activating on LKA steering cars by sending "no lane lines detected" to ADAS ECU
     if self.frame % 5 == 0 and lka_steering:
