@@ -118,12 +118,17 @@ private:
   QPixmap curveSpeedIcon;
   QPixmap curveSpeedIconFlipped;  // Pre-cached flipped version
   QPixmap dashboardIcon;
+  QPixmap dashboardIconScaled;
   QPixmap forceStopImg;
   QPixmap manualStopImg;
   QPixmap mapDataIcon;
+  QPixmap mapDataIconScaled;
   QPixmap mapboxIcon;
+  QPixmap mapboxIconScaled;
   QPixmap nextMapsIcon;
+  QPixmap nextMapsIconScaled;
   QPixmap gasPedalImg;
+  QPixmap gasPedalImgScaled;
   QPixmap pausedIcon;
   QPixmap speedIcon;
   QPixmap stopSignImg;
