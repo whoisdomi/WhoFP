@@ -1,7 +1,7 @@
 from tinygrad import Tensor, dtypes, Device
 from tinygrad.helpers import getenv, DEBUG
-from tinygrad.opt.kernel import Kernel, Opt, OptOps
-from tinygrad.engine.realize import CompiledRunner, ExecItem
+from tinygrad.codegen.opt.kernel import Kernel, Opt, OptOps
+from tinygrad.engine.realize import CompiledRunner, ExecItem, get_program
 from dataclasses import replace
 
 N = 4096
@@ -29,9 +29,9 @@ if __name__ == "__main__":
       Opt(op=OptOps.LOCAL, axis=0, amt=2),
     ]
   k.apply_opts(opts)
-  prg = k.to_program()
+  prg = get_program(k.ast, k.opts, k.applied_opts)
   new_src = prg.src
   # can mod source here
   prg = replace(prg, src=new_src)
-  ei = ExecItem(CompiledRunner(prg), [x.ensure_allocated() for x in si.bufs], si.metadata)
+  ei = ExecItem(si.ast, [x.ensure_allocated() for x in si.bufs], si.metadata, prg=CompiledRunner(prg))
   for i in range(5): ei.run(wait=True)

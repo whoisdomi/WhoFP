@@ -1,4 +1,4 @@
-import os, random, pickle, queue
+import os, random, pickle, queue, struct, math, functools, hashlib, time
 from typing import List
 from pathlib import Path
 from multiprocessing import Queue, Process, shared_memory, connection, Lock, cpu_count
@@ -6,6 +6,7 @@ from multiprocessing import Queue, Process, shared_memory, connection, Lock, cpu
 import numpy as np
 from tinygrad import dtypes, Tensor
 from tinygrad.helpers import getenv, prod, Context, round_up, tqdm, OSX
+from tinygrad.nn.state import TensorIO
 
 ### ResNet
 
@@ -71,7 +72,7 @@ def loader_process(q_in, q_out, X:Tensor, seed):
       #storage_tensor._copyin(img_tensor.numpy())
 
       # faster
-      X[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = img.tobytes()
+      X[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = img.tobytes()
 
       # ideal
       #X[idx].assign(img.tobytes())   # NOTE: this is slow!
@@ -212,12 +213,13 @@ class InterleavedDataset:
     self.queues[queue_index].queue.extend(load_file(file))
 
 # Reference: https://github.com/mlcommons/training/blob/1c8a098ae3e70962a4f7422c0b0bd35ae639e357/language_model/tensorflow/bert/run_pretraining.py, Line 394
-def batch_load_train_bert(BS:int):
+def batch_load_train_bert(BS:int, seed:int|None=None):
   from extra.datasets.wikipedia import get_wiki_train_files
+  rng = random.Random(seed)
   fs = sorted(get_wiki_train_files())
   train_files = []
   while fs: # TF shuffle
-    random.shuffle(fs)
+    rng.shuffle(fs)
     train_files.append(fs.pop(0))
 
   cycle_length = min(getenv("NUM_CPU_THREADS", min(os.cpu_count(), 8)), len(train_files))
@@ -262,8 +264,8 @@ def load_unet3d_data(preprocessed_dataset_dir, seed, queue_in, queue_out, X:Tens
       x = random_brightness_augmentation(x)
       x = gaussian_noise(x)
 
-    X[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = x.tobytes()
-    Y[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = y.tobytes()
+    X[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = x.tobytes()
+    Y[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = y.tobytes()
 
     queue_out.put(idx)
   queue_out.put(None)
@@ -377,12 +379,12 @@ def load_retinanet_data(base_dir:Path, val:bool, queue_in:Queue, queue_out:Queue
       clipped_match_idxs = np.clip(match_idxs, 0, None)
       clipped_boxes, clipped_labels = tgt["boxes"][clipped_match_idxs], tgt["labels"][clipped_match_idxs]
 
-      boxes[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = clipped_boxes.tobytes()
-      labels[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = clipped_labels.tobytes()
-      matches[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = match_idxs.tobytes()
-      anchors[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = anchor.tobytes()
+      boxes[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = clipped_boxes.tobytes()
+      labels[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = clipped_labels.tobytes()
+      matches[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = match_idxs.tobytes()
+      anchors[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = anchor.tobytes()
 
-    imgs[idx].contiguous().realize().uop.base.realized.as_buffer(force_zero_copy=True)[:] = img.tobytes()
+    imgs[idx].contiguous().realize().uop.base.realized.as_memoryview(force_zero_copy=True)[:] = img.tobytes()
 
     queue_out.put(idx)
   queue_out.put(None)
@@ -510,6 +512,280 @@ def batch_load_retinanet(dataset, val:bool, base_dir:Path, batch_size:int=32, sh
       # happens with BENCHMARK set
       pass
 
+# stable diffusion callbacks to match mlperf ref; declared here because they're pickled
+def filter_dataset(sample:dict): return {k:v for k,v in sample.items() if k in {'npy', 'txt'}}
+def collate(batch:list[dict]):
+  ret = {"npy": [], "txt": [], "__key__": []}
+  for sample in batch:
+    for k,v in sample.items():
+      ret[k].append(v)
+  return ret
+def collate_fn(batch): return batch
+
+# Reference (code): https://github.com/mlcommons/training/blob/2f4a93fb4888180755a8ef55f4b977ef8f60a89e/stable_diffusion/ldm/data/webdatasets.py, Line 55
+# Reference (params): https://github.com/mlcommons/training/blob/ab4ae1ca718d7fe62c369710a316dff18768d04b/stable_diffusion/configs/train_01x08x08.yaml, Line 107
+def batch_load_train_stable_diffusion(urls:str, BS:int):
+  import webdataset
+  dataset = webdataset.WebDataset(urls=urls, resampled=True, cache_size=-1, cache_dir=None)
+  dataset = dataset.shuffle(size=1000)
+  dataset = dataset.decode()
+  dataset = dataset.map(filter_dataset)
+  dataset = dataset.batched(BS, partial=False, collation_fn=collate)
+  dataset = webdataset.WebLoader(dataset, batch_size=None, shuffle=False, num_workers=1, persistent_workers=True, collate_fn=collate_fn)
+
+  for x in dataset:
+    assert isinstance(x, dict) and all(isinstance(k, str) for k in x.keys()) and all(isinstance(v, list) for v in x.values())
+    assert all(isinstance(moment_mean_logvar, np.ndarray) and moment_mean_logvar.shape==(1,8,64,64) for moment_mean_logvar in x["npy"])
+    assert all(isinstance(caption, str) for caption in x["txt"])
+    yield x
+
+# llama3
+
+class BinIdxDataset:
+  def __init__(self, base_path:Path):
+    self.idx_t = Tensor(base_path.with_name(f"{base_path.name}.idx"))
+    self.idx = TensorIO(self.idx_t)
+
+    # parse idx file
+    magic = self.idx.read(9)
+    assert magic == b"MMIDIDX\x00\x00", "invalid index file format"
+    version, = struct.unpack("<Q", self.idx.read(8))
+    assert version == 1, "unsupported index version"
+    dtype_code, = struct.unpack("<B", self.idx.read(1))
+    self.dtype = {1:np.dtype(np.uint8), 2:np.dtype(np.int8), 3:np.dtype(np.int16), 4:np.dtype(np.int32), 5:np.dtype(np.int64), 6:np.dtype(np.float64), 7:np.dtype(np.double), 8:np.dtype(np.uint16)}[dtype_code]
+    self.count, = struct.unpack("<Q", self.idx.read(8))
+    doc_count, = struct.unpack("<Q", self.idx.read(8))
+
+    start = self.idx.tell()
+    end = start + self.count * dtypes.int32.itemsize
+    self.sizes = self.idx_t[start:end].bitcast(dtypes.int32).numpy()
+
+    start = end
+    end = start + self.count * dtypes.int64.itemsize
+    self.pointers = self.idx_t[start:end].bitcast(dtypes.int64).numpy()
+
+    start = end
+    end = start + doc_count * dtypes.int64.itemsize
+    self.doc_idx = self.idx_t[start:end].bitcast(dtypes.int64).numpy()
+
+    # bin file
+    self.bin_t = Tensor(base_path.with_name(f"{base_path.name}.bin")).numpy()
+
+  def _index(self, idx) -> tuple[int, int]:
+    return int(self.pointers[idx]), int(self.sizes[idx])
+
+  def get(self, idx, offset:int=0, length:int|None=None):
+    ptr, size = self._index(idx)
+    if length is None: length = size - offset
+    ptr += offset * self.dtype.itemsize
+    return self.bin_t[ptr:ptr+length*self.dtype.itemsize].view(self.dtype)
+
+# https://docs.nvidia.com/megatron-core/developer-guide/latest/api-guide/datasets.html
+class GPTDataset:
+  def __init__(self, base_path:Path, samples:int, seqlen:int, seed:int, shuffle:bool):
+    self.samples, self.seqlen = samples, seqlen
+    self.shuffle = shuffle
+    self.rng = np.random.RandomState(seed)
+
+    self.indexed_dataset = BinIdxDataset(base_path)
+
+    # check for cache
+    cache_hash = hashlib.sha256(f"{samples}:{seqlen}:{seed}:{shuffle}".encode()).hexdigest()
+    cache_path = base_path.with_name(f"{base_path.name}.{cache_hash}.index_cache")
+    print(f"try loading GPTDataset from {cache_path}...")
+    if cache_path.exists():
+      print("cache found, loading...")
+      with open(cache_path, "rb") as f:
+        self.doc_idx, self.sample_idx, self.shuffle_idx = pickle.load(f)
+    else:
+      print("cache not found, building index...")
+      self.doc_idx = self._build_doc_idx()
+      self.sample_idx = self._build_sample_idx()
+      self.shuffle_idx = self._build_shuffle_idx()
+      # save cache
+      with open(cache_path, "wb") as f:
+        pickle.dump((self.doc_idx, self.sample_idx, self.shuffle_idx), f)
+
+  def __getitem__(self, idx):
+    if idx is None:
+      text = self._get(0)
+    else:
+      text = self._get(idx)
+
+    return text
+
+  def _get(self, idx):
+    idx = self.shuffle_idx[idx]
+
+    doc_idx_beg, doc_idx_beg_offset = self.sample_idx[idx]
+    doc_idx_end, doc_idx_end_offset = self.sample_idx[idx + 1]
+
+    doc_ids, sample_parts = [], []
+
+    if doc_idx_beg == doc_idx_end:
+      doc_ids.append(self.doc_idx[doc_idx_beg])
+
+      sample_parts.append(
+          self.indexed_dataset.get(
+            int(self.doc_idx[doc_idx_beg]), offset=int(doc_idx_beg_offset), length=int(doc_idx_end_offset - doc_idx_beg_offset + 1)))
+    else:
+      for i in range(doc_idx_beg, doc_idx_end + 1):
+        doc_ids.append(self.doc_idx[i])
+
+        offset = 0 if i > doc_idx_beg else doc_idx_beg_offset
+        length = None if i < doc_idx_end else int(doc_idx_end_offset + 1)
+        sample_parts.append(self.indexed_dataset.get(int(self.doc_idx[i]), offset=int(offset), length=length))
+
+    # concat all parts
+    text = np.concatenate(sample_parts, axis=0)
+
+    return text
+
+  @functools.cached_property
+  def tokens_per_epoch(self) -> int:
+    return sum(self.indexed_dataset.sizes.tolist())
+
+  @functools.cached_property
+  def num_epochs(self) -> int:
+    # we need enough epochs to cover the requested amount of tokens
+    num_epochs = 1
+    num_tokens = self.tokens_per_epoch
+    while num_tokens < self.samples * self.seqlen:
+      num_epochs += 1
+      num_tokens += self.tokens_per_epoch
+    return num_epochs
+
+  # https://github.com/NVIDIA/Megatron-LM/blob/94bd476bd840c2fd4c3ebfc7448c2af220f4832b/megatron/core/datasets/gpt_dataset.py#L558
+  def _build_doc_idx(self):
+    print(f"building doc_idx for {self.num_epochs=}, {self.indexed_dataset.count=}")
+    st = time.perf_counter()
+    # doc_idx = np.mgrid[:self.num_epochs, :self.indexed_dataset.count][1]
+    doc_idx = np.arange(self.indexed_dataset.count).reshape(1, -1).repeat(self.num_epochs, axis=0).flatten()
+    doc_idx = doc_idx.astype(np.int32)
+    at = time.perf_counter()
+    if self.shuffle: self.rng.shuffle(doc_idx)
+    print(f"doc_idx built in {at - st:.3f}s, shuffled in {time.perf_counter() - at:.3f}s")
+    return doc_idx
+
+  def _build_sample_idx(self):
+    print(f"building sample_idx for {self.samples=}, {self.seqlen=}, {self.doc_idx.shape[0]=}")
+    sample_idx_max = max(self.doc_idx.shape[0], self.indexed_dataset.sizes.max())
+    sample_idx = np.empty((self.samples + 1, 2), dtype=np.int64 if sample_idx_max > dtypes.int32.max else np.int32)
+
+    sample_idx_idx, doc_idx_idx, doc_offset = 0, 0, 0
+    sample_idx[sample_idx_idx, 0], sample_idx[sample_idx_idx, 1] = doc_idx_idx, doc_offset
+    sample_idx_idx += 1
+
+    for _ in tqdm(range(1, self.samples + 1)):
+      remaining_seqlen = self.seqlen + 1
+      while remaining_seqlen > 0:
+        doc_idx = int(self.doc_idx[doc_idx_idx])
+        doc_len = int(self.indexed_dataset.sizes[doc_idx]) - doc_offset
+        remaining_seqlen -= doc_len
+        if remaining_seqlen <= 0:
+          doc_offset += remaining_seqlen + doc_len - 1
+          remaining_seqlen = 0
+        else:
+          if doc_idx_idx == len(self.doc_idx) - 1:
+            assert sample_idx_idx == self.samples
+            doc_idx = int(self.doc_idx[doc_idx_idx])
+            doc_offset = int(self.indexed_dataset.sizes[doc_idx]) - 1
+            break
+          doc_idx_idx += 1
+          doc_offset = 0
+
+      sample_idx[sample_idx_idx, 0], sample_idx[sample_idx_idx, 1] = doc_idx_idx, doc_offset
+      sample_idx_idx += 1
+
+    return sample_idx
+
+  def _build_shuffle_idx(self):
+    print(f"building shuffle_idx for {self.samples=}")
+    st = time.perf_counter()
+    shuffle_idx = np.arange(self.samples, dtype=np.int32)
+    at = time.perf_counter()
+    if self.shuffle: self.rng.shuffle(shuffle_idx)
+    print(f"shuffle_idx built in {at - st:.3f}s, shuffled in {time.perf_counter() - at:.3f}s")
+    return shuffle_idx
+
+class BlendedGPTDataset:
+  def __init__(self, paths:list[Path], weights:list[float], samples:int, seqlen:int, seed:int, shuffle:bool):
+    self.shuffle = shuffle
+    self.rng = np.random.RandomState(seed)
+
+    # normalize weights
+    total_weight = sum(weights)
+    self.weights = [w / total_weight for w in weights]
+
+    self.samples = samples
+    surplus = 0.005
+    samples_per_blend = [math.ceil(math.ceil(self.samples * w) * (1 + surplus)) for w in self.weights]
+
+    self.datasets = [GPTDataset(path, samples_per_blend[i], seqlen, seed + i, shuffle) for i,path in enumerate(paths)]
+
+    # check for cache
+    cache_hash = hashlib.sha256(f"{samples}:{seqlen}:{seed}:{shuffle}".encode()).hexdigest()
+    cache_path = paths[0].with_name(f"{paths[0].name}.{cache_hash}.blend_cache")
+    print(f"try loading BlendedGPTDataset from {cache_path}...")
+    if cache_path.exists():
+      print("cache found, loading...")
+      with open(cache_path, "rb") as f:
+        self.dataset_idx, self.dataset_sample_idx = pickle.load(f)
+    else:
+      print("cache not found, building index...")
+      self.dataset_idx, self.dataset_sample_idx = self._build_blend_idx()
+      # save cache
+      with open(cache_path, "wb") as f:
+        pickle.dump((self.dataset_idx, self.dataset_sample_idx), f)
+
+  def get(self, idx:int):
+    tokens = self.datasets[self.dataset_idx[idx]][self.dataset_sample_idx[idx]]
+    return tokens
+
+  def _build_blend_idx(self):
+    dataset_idx = np.zeros(self.samples, dtype=np.int16)
+    dataset_sample_idx = np.zeros(self.samples, dtype=np.int64)
+
+    unspent_datasets = set(range(len(self.datasets)))
+    dataset_sample_counts = [0] * len(self.datasets)
+
+    for i in tqdm(range(self.samples)):
+      error_argmax, error_max = 0, 0.0
+      for di in unspent_datasets:
+        error = self.weights[di] * max(i, 1) - dataset_sample_counts[di]
+        if error > error_max:
+          error_max = error
+          error_argmax = di
+
+      dataset_idx[i] = error_argmax
+      dataset_sample_idx[i] = dataset_sample_counts[error_argmax]
+
+      dataset_sample_counts[error_argmax] += 1
+
+    return dataset_idx, dataset_sample_idx
+
+def get_llama3_dataset(samples:int, seqlen:int, base_dir:Path, seed:int=0, val:bool=True, small:bool=False) -> BlendedGPTDataset:
+  if small:
+    if val:
+      return BlendedGPTDataset(
+        [base_dir / "c4-validation-91205-samples.en_text_document"], [1.0], samples, seqlen, seed, shuffle=False)
+    return BlendedGPTDataset(
+      [base_dir / "c4-train.en_6_text_document"], [1.0], samples, seqlen, seed, shuffle=True)
+  if val:
+    return BlendedGPTDataset(
+      [base_dir / "validation" / "c4-validationn-91205-samples.en_text_document"], [1.0], samples, seqlen, seed, shuffle=False)
+  return BlendedGPTDataset(
+    [base_dir / "c4-train.en_6_text_document", base_dir / "c4-train.en_7_text_document"], [1.0, 1.0], samples, seqlen, seed, shuffle=True)
+
+def iterate_llama3_dataset(dataset:BlendedGPTDataset, bs:int):
+  for b in range(math.ceil(dataset.samples / bs)):
+    batch = [dataset.get(b * bs + i) for i in range(bs)]
+    stacked = np.stack(batch, axis=0)
+    yield Tensor(stacked, device="NPY")
+
+def batch_load_llama3(bs:int, samples:int, seqlen:int, base_dir:Path, seed:int=0, val:bool=True, small:bool=False):
+  return iterate_llama3_dataset(get_llama3_dataset(samples, seqlen, base_dir, seed, val, small), bs)
+
 if __name__ == "__main__":
   def load_unet3d(val):
     assert not val, "validation set is not supported due to different sizes on inputs"
@@ -537,6 +813,18 @@ if __name__ == "__main__":
     with tqdm(total=len(dataset.imgs.keys())) as pbar:
       for x in batch_load_retinanet(dataset, val, base_dir):
         pbar.update(x[0].shape[0])
+
+  def load_llama3(val):
+    bs = 24
+    samples = 5760 if val else 1_200_000 * 1152
+    seqlen = 8192
+
+    max_, min_ = 0, math.inf
+    for tokens in tqdm(batch_load_llama3(bs, samples, seqlen, Path(getenv("BASEDIR", "/raid/datasets/c4/")), seed=5760, val=bool(val)), total=samples//bs):
+      max_ = max(max_, tokens.shape[1])
+      min_ = min(min_, tokens.shape[1])
+    print(f"max seq length: {max_}")
+    print(f"min seq length: {min_}")
 
   load_fn_name = f"load_{getenv('MODEL', 'resnet')}"
   if load_fn_name in globals():

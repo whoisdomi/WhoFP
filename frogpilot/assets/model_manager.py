@@ -13,7 +13,7 @@ from openpilot.frogpilot.assets.download_functions import GITLAB_URL, download_f
 from openpilot.frogpilot.common.frogpilot_utilities import delete_file
 from openpilot.frogpilot.common.frogpilot_variables import DEFAULT_MODEL, MODELS_PATH, params, params_default, params_memory
 
-VERSION = "v20"
+VERSION = "v21"
 
 CANCEL_DOWNLOAD_PARAM = "CancelModelDownload"
 DOWNLOAD_PROGRESS_PARAM = "ModelDownloadProgress"

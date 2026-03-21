@@ -3,9 +3,9 @@ from pathlib import Path
 import multiprocessing
 
 from tinygrad import Device, GlobalCounters, Tensor, TinyJit, dtypes
-from tinygrad.helpers import getenv, BEAM, WINO, round_up, diskcache_clear, FUSE_CONV_BW, Profiling
-from tinygrad.nn.state import get_parameters, get_state_dict, safe_load, safe_save
-from tinygrad.nn.optim import LAMB, LARS, SGD, OptimizerGroup, Adam
+from tinygrad.helpers import getenv, BEAM, WINO, round_up, diskcache_clear, Profiling, profile_marker
+from tinygrad.nn.state import get_parameters, get_state_dict, load_state_dict, safe_load, safe_save
+from tinygrad.nn.optim import LAMB, LARS, SGD, OptimizerGroup, Adam, AdamW
 
 from extra.lr_scheduler import LRSchedulerGroup
 from examples.mlperf.helpers import get_training_state, load_training_state
@@ -252,6 +252,10 @@ def train_resnet():
         print(f"epoch global_ops: {steps_in_train_epoch * GlobalCounters.global_ops:_}, "
               f"epoch global_mem: {steps_in_train_epoch * GlobalCounters.global_mem:_}")
         # if we are doing beam search, run the first eval too
+        if (assert_time:=getenv("ASSERT_MIN_STEP_TIME")):
+          min_time = min(step_times)
+          assert min_time < assert_time, f"Speed regression, expected min step time of < {assert_time} ms but took: {min_time} ms"
+
         if (TRAIN_BEAM or EVAL_BEAM) and e == start_epoch: break
         return
     if MLLOGGER and RUNMLPERF:
@@ -343,6 +347,8 @@ def train_resnet():
           fn = f"./ckpts/{time.strftime('%Y%m%d_%H%M%S')}_e{e}.safe"
         print(f"saving ckpt to {fn}")
         safe_save(get_training_state(model, optimizer_group, scheduler_group), fn)
+
+
 
 def train_retinanet():
   from contextlib import redirect_stdout
@@ -701,7 +707,7 @@ def train_unet3d():
   ```BASEDIR=<folder_path> ./examples/mlperf/scripts/setup_kits19_dataset.sh```
 
   2) To start training the model, run the following:
-  ```time PYTHONPATH=. WANDB=1 TRAIN_BEAM=3 FUSE_CONV_BW=1 GPUS=6 BS=6 MODEL=unet3d python3 examples/mlperf/model_train.py```
+  ```time PYTHONPATH=. WANDB=1 TRAIN_BEAM=3 GPUS=6 BS=6 MODEL=unet3d python3 examples/mlperf/model_train.py```
   """
   from examples.mlperf.losses import dice_ce_loss
   from examples.mlperf.metrics import dice_score
@@ -743,7 +749,6 @@ def train_unet3d():
     "train_beam": TRAIN_BEAM,
     "eval_beam": EVAL_BEAM,
     "wino": WINO.value,
-    "fuse_conv_bw": FUSE_CONV_BW.value,
     "gpus": GPUS,
     "default_float": dtypes.default_float.name
   }
@@ -914,40 +919,6 @@ def train_rnnt():
   pass
 
 @TinyJit
-def train_step_bert(model, optimizer, scheduler, loss_scaler:float, GPUS, grad_acc:int, **kwargs):
-  optimizer.zero_grad()
-
-  for i in range(grad_acc):
-    input_ids, segment_ids = kwargs[f"input_ids{i}"], kwargs[f"segment_ids{i}"]
-    # NOTE: these two have different names
-    attention_mask, masked_positions = kwargs[f"input_mask{i}"], kwargs[f"masked_lm_positions{i}"]
-    masked_lm_ids, masked_lm_weights, next_sentence_labels = kwargs[f"masked_lm_ids{i}"], kwargs[f"masked_lm_weights{i}"], kwargs[f"next_sentence_labels{i}"]
-
-    for t in [input_ids, segment_ids, attention_mask, masked_positions, masked_lm_ids, masked_lm_weights, next_sentence_labels]:
-      if len(GPUS) > 1: t.shard_(GPUS, axis=0)
-      else: t.to_(GPUS[0])
-
-    lm_logits, seq_relationship_logits = model(input_ids, attention_mask, masked_positions, segment_ids)
-    loss = model.loss(lm_logits, seq_relationship_logits, masked_lm_ids, masked_lm_weights, next_sentence_labels)
-    (loss * loss_scaler).backward()
-    # TODO: OOM without this realize with large grad_acc
-    Tensor.realize(*[p.grad for p in optimizer.params])
-
-  global_norm = Tensor([0.0], dtype=dtypes.float32, device=optimizer[0].device)
-  for p in optimizer.params:
-    p.grad = p.grad / loss_scaler
-    global_norm += p.grad.float().square().sum()
-  global_norm = global_norm.sqrt().contiguous()
-  for p in optimizer.params:
-    p.grad = (global_norm > 1.0).where((p.grad/global_norm).cast(p.grad.dtype), p.grad)
-
-  optimizer.step()
-  scheduler.step()
-  # TODO: no to("CPU") here because it blocks and messes the python time
-  Tensor.realize(loss, global_norm, optimizer.optimizers[0].lr)
-  return loss, global_norm, optimizer.optimizers[0].lr
-
-@TinyJit
 def eval_step_bert(model, input_ids:Tensor, segment_ids:Tensor, attention_mask:Tensor, masked_positions:Tensor, masked_lm_ids:Tensor,
                    masked_lm_weights:Tensor, next_sentence_labels:Tensor, GPUS):
   for t in [input_ids, segment_ids, attention_mask, masked_positions, masked_lm_ids, masked_lm_weights, next_sentence_labels]:
@@ -1009,7 +980,8 @@ def train_bert():
   # ** hyperparameters **
   BS                 = config["BS"]                     = getenv("BS", 11 * len(GPUS) if dtypes.default_float in (dtypes.float16, dtypes.bfloat16) else 8 * len(GPUS))
   grad_acc           = config["GRADIENT_ACC_STEPS"]     = getenv("GRADIENT_ACC_STEPS", 1)
-  # TODO: mlperf logging
+  # TODO: implement grad accumulation + mlperf logging
+  assert grad_acc == 1
   GBS                = config["GLOBAL_BATCH_SIZE"]      = BS * grad_acc
   EVAL_BS            = config["EVAL_BS"]                = getenv("EVAL_BS", 1 * len(GPUS))
   max_lr             = config["OPT_BASE_LEARNING_RATE"] = getenv("OPT_BASE_LEARNING_RATE", 0.000175 * math.sqrt(GBS/96))
@@ -1036,6 +1008,7 @@ def train_bert():
   config["DISABLE_DROPOUT"] = getenv("DISABLE_DROPOUT", 0)
   config["TRAIN_BEAM"]    = TRAIN_BEAM = getenv("TRAIN_BEAM", BEAM.value)
   config["EVAL_BEAM"]     = EVAL_BEAM  = getenv("EVAL_BEAM", BEAM.value)
+  config["FP8_TRAIN"]     = getenv("FP8_TRAIN", 0)
 
   Tensor.manual_seed(seed)  # seed for weight initialization
 
@@ -1068,8 +1041,8 @@ def train_bert():
 
   # ** Optimizer **
   parameters_no_wd = [v for k, v in get_state_dict(model).items() if "bias" in k or "LayerNorm" in k]
-  parameters = [x for x in parameters if x not in set(parameters_no_wd)]
-  optimizer_wd = LAMB(parameters, lr=max_lr, b1=opt_lamb_beta_1, b2=opt_lamb_beta_2, eps=epsilon, weight_decay=decay, adam=False)
+  parameters_wd = [x for x in parameters if x not in set(parameters_no_wd)]
+  optimizer_wd = LAMB(parameters_wd, lr=max_lr, b1=opt_lamb_beta_1, b2=opt_lamb_beta_2, eps=epsilon, weight_decay=decay, adam=False)
   optimizer_no_wd = LAMB(parameters_no_wd, lr=max_lr, b1=opt_lamb_beta_1, b2=opt_lamb_beta_2, eps=epsilon, weight_decay=0.0, adam=False)
   optimizer_group = OptimizerGroup(optimizer_wd, optimizer_no_wd)
 
@@ -1113,7 +1086,7 @@ def train_bert():
   if RUNMLPERF:
     # only load real data with RUNMLPERF
     eval_it = iter(batch_load_val_bert(EVAL_BS))
-    train_it = iter(tqdm(batch_load_train_bert(BS), total=train_steps, disable=BENCHMARK))
+    train_it = iter(tqdm(batch_load_train_bert(BS, seed=seed), total=train_steps, disable=BENCHMARK))
     for _ in range(start_step): next(train_it) # Fast forward
   else:
     # repeat fake data
@@ -1126,11 +1099,37 @@ def train_bert():
   # ** train loop **
   wc_start = time.perf_counter()
 
-  i, train_data = start_step, [next(train_it) for _ in range(grad_acc)]
+  i, train_data = start_step, next(train_it)
 
   if RUNMLPERF:
     if MLLOGGER:
       MLLOGGER.start(key=mllog_constants.EPOCH_START, value=i*GBS, metadata={"epoch_num": i*GBS})
+
+  @TinyJit
+  def train_step_bert(input_ids:Tensor, segment_ids:Tensor, attention_mask:Tensor,
+                      masked_positions:Tensor, masked_lm_ids:Tensor, masked_lm_weights:Tensor, next_sentence_labels:Tensor):
+    for t in [input_ids, segment_ids, attention_mask, masked_positions, masked_lm_ids, masked_lm_weights, next_sentence_labels]:
+      if len(GPUS) > 1: t.shard_(GPUS, axis=0)
+      else: t.to_(GPUS[0])
+    optimizer_group.zero_grad()
+
+    lm_logits, seq_relationship_logits = model(input_ids, attention_mask, masked_positions, segment_ids)
+    loss = model.loss(lm_logits, seq_relationship_logits, masked_lm_ids, masked_lm_weights, next_sentence_labels)
+    (loss * loss_scaler).backward()
+
+    global_norm = Tensor(0.0, dtype=dtypes.float32, device=optimizer_group[0].device)
+    for p in optimizer_group.params:
+      p.grad = p.grad / loss_scaler
+      global_norm += p.grad.float().square().sum()
+    global_norm = global_norm.sqrt().contiguous()
+    for p in optimizer_group.params:
+      p.grad = (global_norm > 1.0).where((p.grad/global_norm).cast(p.grad.dtype), p.grad)
+
+    optimizer_group.step()
+    scheduler_group.step()
+    # TODO: no to("CPU") here because it blocks and messes the python time
+    Tensor.realize(loss, global_norm, optimizer_group.optimizers[0].lr)
+    return loss, global_norm, optimizer_group.optimizers[0].lr
 
   while train_data is not None and i < train_steps and not achieved:
     if getenv("TRAIN", 1):
@@ -1139,21 +1138,17 @@ def train_bert():
       st = time.perf_counter()
       GlobalCounters.reset()
       with WallTimeEvent(BenchEvent.STEP):
-        data = {f"{k}{i}":v for i,d in enumerate(train_data) for k,v in d.items()}
-        loss, global_norm, lr = train_step_bert(model, optimizer_group, scheduler_group, loss_scaler, GPUS, grad_acc, **data)
+        loss, global_norm, lr = train_step_bert(
+          train_data["input_ids"], train_data["segment_ids"], train_data["input_mask"], train_data["masked_lm_positions"], \
+          train_data["masked_lm_ids"], train_data["masked_lm_weights"], train_data["next_sentence_labels"])
 
         pt = time.perf_counter()
-
-        try:
-          next_data = [next(train_it) for _ in range(grad_acc)]
-        except StopIteration:
-          next_data = None
-
+        next_data = next(train_it)
         dt = time.perf_counter()
 
         device_str = parameters[0].device if isinstance(parameters[0].device, str) else f"{parameters[0].device[0]} * {len(parameters[0].device)}"
         loss = loss.item()
-        assert not math.isnan(loss)
+        if not getenv("FP8_TRAIN"): assert not math.isnan(loss)
         lr = lr.item()
 
       cl = time.perf_counter()
@@ -1166,7 +1161,7 @@ def train_bert():
       if WANDB:
         wandb.log({"lr": lr, "train/loss": loss, "train/global_norm": global_norm.item(), "train/step_time": cl - st,
                     "train/python_time": pt - st, "train/data_time": dt - pt, "train/cl_time": cl - dt,
-                    "train/GFLOPS": GlobalCounters.global_ops * 1e-9 / (cl - st), "epoch": (i+1)*GBS})
+                    "train/mem":GlobalCounters.mem_used / 1e9, "train/GFLOPS": GlobalCounters.global_ops * 1e-9 / (cl - st), "epoch": (i+1)*GBS})
 
       train_data, next_data = next_data, None
       i += 1
@@ -1183,7 +1178,9 @@ def train_bert():
       if MLLOGGER and RUNMLPERF:
         MLLOGGER.start(key=mllog_constants.EVAL_START, value=None, metadata={"epoch_num": i*GBS, "step_num": i})
       if getenv("RESET_STEP"): train_step_bert.reset()
-      elif getenv("FREE_INTERMEDIATE", 1) and train_step_bert.captured is not None: train_step_bert.captured.free_intermediates()
+      elif getenv("FREE_INTERMEDIATE") and train_step_bert.captured is not None:
+        # TODO: this hangs on tiny green after 90 minutes of training
+        train_step_bert.captured.free_intermediates()
       eval_lm_losses = []
       eval_clsf_losses = []
       eval_lm_accs = []
@@ -1217,7 +1214,7 @@ def train_bert():
           return
 
       if getenv("RESET_STEP"): eval_step_bert.reset()
-      elif getenv("FREE_INTERMEDIATE", 1) and eval_step_bert.captured is not None: eval_step_bert.captured.free_intermediates()
+      elif getenv("FREE_INTERMEDIATE") and eval_step_bert.captured is not None: eval_step_bert.captured.free_intermediates()
 
       del eval_data
       avg_lm_loss = sum(eval_lm_losses) / len(eval_lm_losses)
@@ -1284,6 +1281,441 @@ def train_bert():
         MLLOGGER.start(key=mllog_constants.BLOCK_START, value=None, metadata={"first_epoch_num": 1, "epoch_num": 1, "epoch_count": 1, "samples_count": i * GBS, "step_num": i, "first_step_num": i+1})
         previous_step = i
 
+def train_llama3():
+  from extra.models.llama import Transformer
+  from examples.llama3 import MODEL_PARAMS
+  from examples.mlperf.lr_schedulers import CosineAnnealingLRWithWarmup
+
+  BENCHMARK = getenv("BENCHMARK")
+
+  config = {}
+  BASEDIR            = config["BASEDIR"]                = Path(getenv("BASEDIR", "/raid/datasets/c4/"))
+  BS                 = config["BS"]                     = getenv("BS", 16)
+  grad_acc           = config["GRADIENT_ACC_STEPS"]     = getenv("GRADIENT_ACC_STEPS", 1)
+  GBS                = config["GLOBAL_BATCH_SIZE"]      = BS * grad_acc
+  SEED               = config["SEED"]                   = getenv("SEED", 5760)
+  DATA_SEED          = config["DATA_SEED"]              = getenv("DATA_SEED", SEED)
+  SEQLEN             = config["SEQLEN"]                 = getenv("SEQLEN", 8192)
+  TRAIN_ON_VAL       = config["TRAIN_ON_VAL"]           = getenv("TRAIN_ON_VAL", 0)
+  SMALL              = config["SMALL"]                  = getenv("SMALL", 0)
+  SAMPLES            = config["SAMPLES"]                = getenv("SAMPLES", 5_760 if TRAIN_ON_VAL else 1_200_000 * 1152)
+  EVAL_SAMPLES       = config["EVAL_SAMPLES"]           = getenv("EVAL_SAMPLES", 5760 if not SMALL else 1024)
+  MAX_STEPS          = config["MAX_STEPS"]              = getenv("MAX_STEPS", math.ceil(1_200_000 * 1152 / GBS))
+  WARMUP_STEPS       = config["WARMUP_STEPS"]           = getenv("WARMUP_STEPS", math.ceil(8000 * 1152 / GBS))
+  LR                 = config["LR"]                     = getenv("LR", 8e-5 * GBS / 1152)
+  END_LR             = config["END_LR"]                 = getenv("END_LR", 8e-7)
+  EVAL_FREQ          = config["EVAL_FREQ"]              = getenv("EVAL_FREQ", 46080)
+  EVAL_BS            = config["EVAL_BS"]                = getenv("EVAL_BS", 16)
+  EVAL_TARGET        = config["EVAL_TARGET"]            = getenv("EVAL_TARGET", 5.6)
+
+  # LR=1e-4 TRAIN_ON_VAL=1 DEFAULT_FLOAT=bfloat16 JITBEAM=2 OPTIM_DTYPE=bfloat16 LLAMA3_SIZE=1B WARMUP_STEPS=36 DECAY_STEPS=360 SEQLEN=512 PYTHONPATH=. AMD=1 AMD_LLVM=0 MODEL=llama3 python3 examples/mlperf/model_train.py
+  # trains to 7
+
+  opt_adamw_beta_1 = 0.9
+  opt_adamw_beta_2 = 0.95
+  opt_adamw_epsilon = 1e-5
+  opt_adamw_weight_decay = 0.1
+
+  opt_gradient_clip_norm = 1.0
+  opt_learning_rate_warmup_steps = WARMUP_STEPS
+  opt_learning_rate_decay_steps = MAX_STEPS - opt_learning_rate_warmup_steps
+  opt_base_learning_rate = LR
+  opt_end_learning_rate = END_LR
+
+  Tensor.manual_seed(SEED)  # seed for weight initialization
+
+  # ** init wandb **
+  WANDB = getenv("WANDB")
+  if WANDB:
+    import wandb
+    wandb_args = {"id": wandb_id, "resume": "must"} if (wandb_id := getenv("WANDB_RESUME", "")) else {}
+    wandb.init(config=config, **wandb_args, project="MLPerf-LLaMA3")
+
+  model_params = MODEL_PARAMS[getenv("LLAMA3_SIZE", "8B")]["args"]
+  # vocab_size from the mixtral tokenizer
+  if not SMALL: model_params |= {"vocab_size": 32000}
+  if (llama_layers:=getenv("LLAMA_LAYERS")) != 0: model_params['n_layers'] = llama_layers
+  print(f"model parameters: {model_params}")
+
+  model = Transformer(**model_params, max_context=SEQLEN, jit=False, disable_kv_cache=True)
+  params = get_parameters(model)
+  # weights are all bfloat16 for now
+  assert params and all(p.dtype == dtypes.bfloat16 for p in params)
+
+  if getenv("FAKEDATA"):
+    for v in get_parameters(model):
+      v = v.assign(Tensor.empty(v.shape))
+
+  if (DP := getenv("DP", 1)) > 1:
+    device = tuple(f"{Device.DEFAULT}:{i}" for i in range(DP))
+    for v in get_parameters(model):
+      v.shard_(device, axis=None)
+
+  if (MP := getenv("MP", 1)) > 1:
+    device = tuple(f"{Device.DEFAULT}:{i}" for i in range(MP))
+    for k,v in get_state_dict(model).items():
+      if 'scale' in k: v.shard_(device, axis=None)  # from quantized
+      elif '.attention.wq' in k: v.shard_(device, axis=0)
+      elif '.attention.wk' in k: v.shard_(device, axis=0)
+      elif '.attention.wv' in k: v.shard_(device, axis=0)
+      elif '.attention.wo' in k: v.shard_(device, axis=1)
+      elif '.feed_forward.w1.' in k: v.shard_(device, axis=0)
+      elif '.feed_forward.w2.' in k: v.shard_(device, axis=1)
+      elif '.feed_forward.w3.' in k: v.shard_(device, axis=0)
+      elif 'tok_embeddings.weight' in k: v.shard_(device, axis=0)
+      elif 'output.weight' in k: v.shard_(device, axis=0)
+      else:
+        # attention_norm, ffn_norm, norm
+        v.shard_(device, axis=None)
+      # prevents memory spike on device 0
+      v.realize()
+
+  optim = AdamW(get_parameters(model), lr=0.0,
+                b1=opt_adamw_beta_1, b2=opt_adamw_beta_2, eps=opt_adamw_epsilon, weight_decay=opt_adamw_weight_decay)
+
+  # init grads
+  for p in optim.params:
+    p.grad = p.zeros_like().contiguous().realize()
+  grads = [p.grad for p in optim.params]
+
+  scheduler = CosineAnnealingLRWithWarmup(optim, opt_base_learning_rate, opt_end_learning_rate, opt_learning_rate_warmup_steps, opt_learning_rate_decay_steps)
+
+  if resume_ckpt := getenv("RESUME_CKPT"):
+    fn = f"./ckpts/llama3_{resume_ckpt}.safe"
+    print(f"loading initial checkpoint from {fn}")
+    load_state_dict(model, safe_load(fn), realize=False)
+
+    fn = f"./ckpts/llama3_{resume_ckpt}_optim.safe"
+    print(f"loading optim checkpoint from {fn}")
+    load_state_dict(scheduler, safe_load(fn), realize=False)
+
+  @TinyJit
+  def minibatch(tokens:Tensor):
+    tokens = tokens.to(None)
+    if (DP := getenv("DP", 1)) > 1:
+      device = tuple(f"{Device.DEFAULT}:{i}" for i in range(DP))
+      tokens = tokens.shard(device, 0)
+    if (MP := getenv("MP", 1)) > 1:
+      device = tuple(f"{Device.DEFAULT}:{i}" for i in range(MP))
+      tokens = tokens.shard(device)
+    logits:Tensor = model(tokens[:, :-1], start_pos=0, temperature=math.nan)
+    loss = logits.sparse_categorical_crossentropy(tokens[:, 1:])
+    loss.backward()
+    assert all(p.grad is g for p,g in zip(optim.params, grads))
+    Tensor.realize(loss, *grads)
+    return loss.flatten().float().to("CPU")
+
+  @TinyJit
+  def optim_step():
+    for p in optim.params:
+      p.grad.assign(p.grad / grad_acc)
+
+    # L2 norm grad clip
+    # https://github.com/NVIDIA/NeMo/blob/3368c3fc0b4a186ab33a1d68a504315100c0b2a6/nemo/collections/nlp/modules/common/megatron/clip_grads.py#L57
+    # https://docs.pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html
+    if not getenv("DISABLE_GRAD_CLIP_NORM"):
+      total_norm = Tensor(0.0, dtype=dtypes.float32, device=optim.params[0].device)
+      for g in grads:
+        total_norm += g.float().square().sum()
+      total_norm = total_norm.sqrt().contiguous().realize()
+      for g in grads:
+        g.assign((g * (opt_gradient_clip_norm / (total_norm + 1e-6)).clamp(max_=1.0)).cast(g.dtype)).realize()
+
+    optim.step()
+    scheduler.step()
+
+    for g in grads:
+      g.assign(g.zeros_like().contiguous()).realize()
+
+    lr = optim.lr
+    Tensor.realize(lr, *grads)
+
+    return lr.float().to("CPU")
+
+  @TinyJit
+  @Tensor.train(False)
+  def eval_step(tokens:Tensor):
+    tokens = tokens.to(None)
+    if (DP := getenv("DP", 1)) > 1:
+      device = tuple(f"{Device.DEFAULT}:{i}" for i in range(DP))
+      tokens = tokens.shard(device, 0)
+    if (MP := getenv("MP", 1)) > 1:
+      device = tuple(f"{Device.DEFAULT}:{i}" for i in range(MP))
+      tokens = tokens.shard(device)
+    logits:Tensor = model(tokens[:, :-1], start_pos=0, temperature=math.nan)
+    loss = logits.sparse_categorical_crossentropy(tokens[:, 1:])
+    return loss.flatten().float().to("CPU")
+
+  # ** data iters **
+  def fake_data(bs, samples):
+    for _ in range(samples // bs):
+      yield Tensor.randint(bs, SEQLEN + 1, low=0, high=model_params["vocab_size"], dtype=dtypes.int32, device=Device.DEFAULT)
+
+  def get_train_iter():
+    if getenv("FAKEDATA", 0):
+      return fake_data(BS, SAMPLES)
+    else:
+      from examples.mlperf.dataloader import batch_load_llama3
+      return batch_load_llama3(BS, SAMPLES, SEQLEN, BASEDIR, seed=DATA_SEED, val=bool(TRAIN_ON_VAL), small=bool(SMALL))
+
+  if getenv("FAKEDATA", 0):
+    eval_dataset = None
+  else:
+    from examples.mlperf.dataloader import get_llama3_dataset
+    eval_dataset = get_llama3_dataset(EVAL_SAMPLES, SEQLEN, BASEDIR, val=True, small=bool(SMALL))
+
+  def get_eval_iter():
+    if eval_dataset is None:
+      return fake_data(EVAL_BS, EVAL_SAMPLES)
+    from examples.mlperf.dataloader import iterate_llama3_dataset
+    return iterate_llama3_dataset(eval_dataset, EVAL_BS)
+
+  num_params = sum(p.numel() for p in params) - model_params["vocab_size"]*model_params["dim"]
+  train_iter = get_train_iter()
+  i, sequences_seen = resume_ckpt, 0
+  step_times = []
+  while i < MAX_STEPS:
+    GlobalCounters.reset()
+    if getenv("TRAIN", 1):
+      profile_marker(f"train @ {i}")
+      st = time.perf_counter()
+
+      stopped = False
+      for _ in range(grad_acc):
+        ist = time.perf_counter()
+        try: tokens = next(train_iter)
+        except StopIteration:
+          stopped = True
+          break
+        dt = time.perf_counter()
+        loss = minibatch(tokens)
+      if stopped: break
+
+      gt = time.perf_counter()
+      lr = optim_step()
+      ot = time.perf_counter()
+
+      loss = loss.float().item()
+      lr = lr.item()
+
+      et = time.perf_counter()
+      step_time = et - st
+      gbs_time = gt - st
+      optim_time = ot - gt
+      data_time = dt - ist
+      dev_time = step_time - data_time * grad_acc
+      if BENCHMARK: step_times.append(step_time)
+
+      i += 1
+      sequences_seen += GBS
+
+      mem_gb = GlobalCounters.mem_used / 1e9
+      gflops = GlobalCounters.global_ops / 1e9 / dev_time
+      mfu = ((6 * num_params * SEQLEN * GBS) / (dev_time * max(getenv("DP", 1), getenv("MP", 1)) * 2.3e15)) * 100
+      tqdm.write(
+          f"{i:5} {step_time:.3f} s step, {gbs_time:.3f} s gbs, {optim_time:.3f} s optim, {data_time:.3f} s data, {loss:.4f} loss, " \
+          f"{lr:.12f} LR, {mem_gb:.2f} GB used, {gflops:9.2f} GFLOPS, {mfu:5.2f}% MFU")
+
+      if WANDB:
+        wandb.log({
+          "lr": lr, "train/loss": loss,
+          "train/step_time": step_time,
+          "train/gbs_time": gbs_time,
+          "train/optim_time": optim_time,
+          "train/dev_time": dev_time,
+          "train/data_time": data_time,
+          "train/mem": mem_gb,
+          "train/GFLOPS": gflops,
+          "train/MFU": mfu,
+          "train/sequences_seen": sequences_seen
+        })
+
+      if (ckpt_freq := getenv("CKPT")) and (i % ckpt_freq == 0 and (i != 1 or ckpt_freq == 1)):
+        tqdm.write("saving checkpoint")
+        if not os.path.exists(ckpt_dir := "./ckpts"): os.mkdir(ckpt_dir)
+        fn = f"{ckpt_dir}/llama3_{i}.safe"
+        safe_save(get_state_dict(model), fn)
+
+        tqdm.write("saving optim checkpoint")
+        fn = f"{ckpt_dir}/llama3_{i}_optim.safe"
+        safe_save(get_state_dict(scheduler), fn)
+
+      if i == BENCHMARK:
+        median_step_time = sorted(step_times)[(BENCHMARK + 1) // 2]
+        estimated_total_minutes = int(median_step_time * (SAMPLES // GBS) / 60)
+        print(f"Estimated training time: {estimated_total_minutes // 60}h{estimated_total_minutes % 60}m")
+        print(f"epoch global_ops: {GlobalCounters.global_ops:_}, "
+              f"epoch global_mem: {GlobalCounters.global_mem:_}")
+
+    if (sequences_seen % EVAL_FREQ == 0 and (i != 1 or EVAL_FREQ == 1)) or (BENCHMARK and i == BENCHMARK):
+      if EVAL_BS == 0: return
+      tqdm.write(f"evaluating after {sequences_seen} sequences")
+      profile_marker(f"eval @ {i}")
+
+      # run eval
+      eval_losses = []
+      eval_iter = get_eval_iter()
+      tqdm.write(f"evaluating {5760//EVAL_BS} batches of {EVAL_BS} sequences")
+
+      for j,tokens in tqdm(enumerate(eval_iter), total=EVAL_SAMPLES//EVAL_BS):
+        eval_losses += eval_step(tokens).tolist()
+
+        if BENCHMARK and (j+1) == min(BENCHMARK, EVAL_SAMPLES//EVAL_BS):
+          return
+
+      log_perplexity = Tensor(eval_losses).mean().float().item()
+
+      tqdm.write(f"eval log perplexity: {log_perplexity:.4f}")
+
+      if WANDB:
+        wandb.log({"eval/log_perplexity": log_perplexity, "eval/sequences_seen": sequences_seen})
+
+      if log_perplexity < EVAL_TARGET:
+        tqdm.write(f"target achieved after {sequences_seen} sequences")
+        if getenv("CKPT"):
+          if not os.path.exists(ckpt_dir := "./ckpts"): os.mkdir(ckpt_dir)
+          fn = f"{ckpt_dir}/llama3.safe"
+          safe_save(get_state_dict(model), fn)
+        break
+
+def train_stable_diffusion():
+  from extra.models.unet import UNetModel
+  from examples.mlperf.dataloader import batch_load_train_stable_diffusion
+  from examples.mlperf.lr_schedulers import LambdaLR, LambdaLinearScheduler
+  from examples.mlperf.initializers import init_stable_diffusion
+  from examples.mlperf.helpers import get_training_state
+  import numpy as np
+
+  config = {}
+  GPUS               = config["GPUS"]                   = [f"{Device.DEFAULT}:{i}" for i in range(getenv("GPUS", 1))]
+  seed               = config["seed"]                   = getenv("SEED", 12345)
+  # ** hyperparameters **
+  BS                 = config["BS"]                     = getenv("BS", 1 * len(GPUS))
+  BASE_LR            = config["LEARNING_RATE"]          = getenv("LEARNING_RATE", 2.5e-7)
+  # https://github.com/mlcommons/training_policies/blob/cfa99da479b8d5931f7a3c67612d021dfb47510a/training_rules.adoc#benchmark_specific_rules
+  # "Checkpoint must be collected every 512,000 images. CEIL(512000 / global_batch_size) if 512000 is not divisible by GBS."
+  # NOTE: It's inferred that "steps" is the unit for the output of the CEIL formula, based on all other cases of CEIL in the rules
+  CKPT_STEP_INTERVAL = config["CKPT_STEP_INTERVAL"]     = getenv("CKPT_STEP_INTERVAL", math.ceil(512_000 / BS))
+  CKPTDIR            = config["CKPTDIR"]                = Path(getenv("CKPTDIR", "./checkpoints"))
+  DATADIR            = config["DATADIR"]                = Path(getenv("DATADIR", "./datasets"))
+  UNET_CKPTDIR       = config["UNET_CKPTDIR"]           = Path(getenv("UNET_CKPTDIR", "./checkpoints"))
+  TOTAL_CKPTS        = config["TOTAL_CKPTS"]            = getenv("TOTAL_CKPTS", 0)
+
+  print(f"training on {GPUS}")
+  lr = BS * BASE_LR
+  print(f"BS={BS}, BASE_LR={BASE_LR}, lr={lr}")
+  print(f"CKPT_STEP_INTERVAL = {CKPT_STEP_INTERVAL}")
+  for x in GPUS: Device[x]
+  if (WANDB := getenv("WANDB", "")):
+    import wandb
+    wandb.init(config=config, project="MLPerf-Stable-Diffusion")
+
+  Tensor.manual_seed(seed)  # seed for weight initialization
+  model, unet, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumprod = init_stable_diffusion("v2-mlperf-train", CKPTDIR / "sd" / "512-base-ema.ckpt", GPUS)
+
+  optimizer = AdamW(get_parameters(unet))
+  lambda_lr_callback = LambdaLinearScheduler(1000, 1.0, 1.0, 1e-06, 10000000000000).schedule
+  lr_scheduler = LambdaLR(optimizer, Tensor(lr, dtype=dtypes.float, device=optimizer.device), lambda_lr_callback)
+
+  @TinyJit
+  def train_step(mean:Tensor, logvar:Tensor, tokens:Tensor, unet:UNetModel, optimizer:LAMB, lr_scheduler:LambdaLR) -> Tensor:
+    optimizer.zero_grad()
+
+    timestep = Tensor.randint(BS, low=0, high=model.alphas_cumprod.shape[0], dtype=dtypes.int, device=GPUS[0])
+    latent_randn = Tensor.randn(*mean.shape, device=GPUS[0])
+    noise = Tensor.randn(*mean.shape, device=GPUS[0])
+    for t in (mean, logvar, tokens, timestep, latent_randn, noise):
+      t.shard_(GPUS, axis=0)
+
+    std = Tensor.exp(0.5 * logvar.clamp(-30.0, 20.0))
+    latent = (mean + std * latent_randn) * 0.18215
+
+    sqrt_alphas_cumprod_t = sqrt_alphas_cumprod[timestep].reshape(timestep.shape[0], 1, 1, 1)
+    sqrt_one_minus_alphas_cumprod_t = sqrt_one_minus_alphas_cumprod[timestep].reshape(timestep.shape[0], 1, 1, 1)
+    latent_with_noise = sqrt_alphas_cumprod_t * latent + sqrt_one_minus_alphas_cumprod_t * noise
+    v_true = sqrt_alphas_cumprod_t * noise - sqrt_one_minus_alphas_cumprod_t * latent
+
+    context = model.cond_stage_model.embed_tokens(tokens)
+
+    out = unet(latent_with_noise, timestep, context)
+    loss = ((out - v_true) ** 2).mean()
+    del mean, logvar, std, latent, noise, sqrt_alphas_cumprod_t, sqrt_one_minus_alphas_cumprod_t
+    del out, v_true, context, latent_randn, tokens, timestep
+    loss.backward()
+
+    optimizer.step()
+    lr_scheduler.step()
+    loss, out_lr = loss.detach().to("CPU"), optimizer.lr.to("CPU")
+    Tensor.realize(loss, out_lr)
+    return loss, out_lr
+
+  # checkpointing takes ~9 minutes without this, and ~1 minute with this
+  @TinyJit
+  def ckpt_to_cpu():
+    ckpt = get_training_state(unet, optimizer, lr_scheduler)
+    # move to CPU first so more GPU bufs aren't created (can trigger OOM)
+    for k,v in ckpt.items(): ckpt[k] = v.detach().to("CPU")
+    Tensor.realize(*[v for v in ckpt.values()])
+    for k,v in ckpt.items(): ckpt[k] = v.cast(v.dtype.base).contiguous()
+    Tensor.realize(*[v for v in ckpt.values()])
+    return ckpt
+
+  # training loop
+  dl = batch_load_train_stable_diffusion(f'{DATADIR}/laion-400m/webdataset-moments-filtered/{{00000..00831}}.tar', BS)
+  # for tests
+  saved_checkpoints = []
+
+  train_start_time = time.perf_counter()
+  t0 = t6 = time.perf_counter()
+  for i, batch in enumerate(dl, start=1):
+    loop_time = time.perf_counter() - t0
+    t0 = time.perf_counter()
+    dl_time = t0 - t6
+    GlobalCounters.reset()
+
+    mean, logvar = np.split(np.concatenate(batch["npy"], axis=0), 2, axis=1)
+    mean, logvar = Tensor(mean, dtype=dtypes.float32, device="CPU"), Tensor(logvar, dtype=dtypes.float32, device="CPU")
+    tokens = []
+    for text in batch['txt']: tokens += model.cond_stage_model.tokenizer.encode(text, pad_with_zeros=True)
+    tokens = Tensor(tokens, dtype=dtypes.int32, device="CPU").reshape(-1, 77)
+
+    t1 = time.perf_counter()
+    loss, lr = train_step(mean, logvar, tokens, unet, optimizer, lr_scheduler)
+    loss_item, lr_item = loss.item(), lr.item()
+    t2 = time.perf_counter()
+
+    if i == 3:
+      for _ in range(3): ckpt_to_cpu() # do this at the beginning of run to prevent OOM surprises when checkpointing
+      print("BEAM COMPLETE", flush=True) # allows wrapper script to detect BEAM search completion and retry if it failed
+
+    total_train_time = time.perf_counter() - train_start_time
+    if WANDB:
+      wandb.log({"train/loss": loss_item, "train/lr": lr_item, "train/loop_time_prev": loop_time, "train/dl_time": dl_time, "train/step": i,
+                    "train/GFLOPS": GlobalCounters.global_ops * 1e-9 / (t2-t1), "train/input_prep_time": t1-t0,
+                    "train/train_step_time": t2-t1, "train/total_time": total_train_time})
+
+      if i == 1 and wandb.run is not None:
+        with open(f"{UNET_CKPTDIR}/wandb_run_id_{wandb.run.id}", "w") as f:
+          f.write(f"wandb.run.id = {wandb.run.id}")
+
+    if i % CKPT_STEP_INTERVAL == 0:
+      # https://github.com/mlcommons/training_policies/blob/cfa99da479b8d5931f7a3c67612d021dfb47510a/training_rules.adoc#benchmark_specific_rules
+      # "evaluation is done offline, the time is not counted towards the submission time."
+      fn = f"{UNET_CKPTDIR}/{i}.safetensors"
+      print(f"saving unet checkpoint at {fn}")
+      saved_checkpoints.append(fn)
+      safe_save({k.replace("model.", ""):v for k,v in ckpt_to_cpu().items() if k.startswith("model.")}, fn)
+      if TOTAL_CKPTS and i == TOTAL_CKPTS * CKPT_STEP_INTERVAL:
+        print(f"ending run after {i} steps ({TOTAL_CKPTS} checkpoints collected)")
+        return saved_checkpoints
+
+    t3 = time.perf_counter()
+    print(f"""step {i}: {GlobalCounters.global_ops * 1e-9 / (t2-t1):9.2f} GFLOPS, mem_used: {GlobalCounters.mem_used / 1e9:.2f} GB,
+  loop_time_prev: {loop_time:.2f}, dl_time: {dl_time:.2f}, input_prep_time: {t1-t0:.2f}, train_step_time: {t2-t1:.2f},
+  t3-t2: {t3-t2:.4f}, loss:{loss_item:.5f}, lr:{lr_item:.3e}, total_train_time:{total_train_time:.2f}
+  """)
+    t6 = time.perf_counter()
+
 if __name__ == "__main__":
   multiprocessing.set_start_method('spawn')
 
@@ -1292,7 +1724,7 @@ if __name__ == "__main__":
   else: bench_log_manager = contextlib.nullcontext()
 
   with Tensor.train():
-    for m in getenv("MODEL", "resnet,retinanet,unet3d,rnnt,bert,maskrcnn").split(","):
+    for m in getenv("MODEL", "resnet,retinanet,unet3d,rnnt,bert,maskrcnn,stable_diffusion").split(","):
       nm = f"train_{m}"
       if nm in globals():
         print(f"training {m}")

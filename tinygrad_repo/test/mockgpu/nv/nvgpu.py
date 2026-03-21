@@ -1,8 +1,10 @@
-import ctypes, ctypes.util, time
-import tinygrad.runtime.autogen.nv_gpu as nv_gpu
+import ctypes, time
+from tinygrad.runtime.autogen import nv_570 as nv_gpu
 from enum import Enum, auto
 from test.mockgpu.gpu import VirtGPU
-from tinygrad.helpers import to_mv, init_c_struct_t
+from test.mockgpu.helpers import _try_dlopen_gpuocelot
+from tinygrad.helpers import to_mv
+from tinygrad.runtime.support.c import init_c_struct_t
 
 def make_qmd_struct_type():
   fields = []
@@ -10,16 +12,11 @@ def make_qmd_struct_type():
   bits += [(name+f"_{i}",dt(i)) for name,dt in nv_gpu.__dict__.items() for i in range(8) if name.startswith("NVC6C0_QMDV03_00") and callable(dt)]
   bits = sorted(bits, key=lambda x: x[1][1])
   for i,(name, data) in enumerate(bits):
-    if i > 0 and (gap:=(data[1] - bits[i-1][1][0] - 1)) != 0:  fields.append((f"_reserved{i}", ctypes.c_uint32, gap))
-    fields.append((name.replace("NVC6C0_QMDV03_00_", "").lower(), ctypes.c_uint32, data[0]-data[1]+1))
-  return init_c_struct_t(tuple(fields))
+    fields.append((name.replace("NVC6C0_QMDV03_00_", "").lower(), ctypes.c_uint32, data[1]//8, data[0]-data[1]+1, data[1]%8))
+  return init_c_struct_t(0x40 * 4, tuple(fields))
 qmd_struct_t = make_qmd_struct_type()
-assert ctypes.sizeof(qmd_struct_t) == 0x40 * 4
 
-try:
-  gpuocelot_lib = ctypes.CDLL(ctypes.util.find_library("gpuocelot"))
-  gpuocelot_lib.ptx_run.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_void_p), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]  # noqa: E501
-except Exception: pass
+gpuocelot_lib = _try_dlopen_gpuocelot()
 
 class SchedResult(Enum): CONT = auto(); YIELD = auto() # noqa: E702
 
@@ -29,6 +26,7 @@ class GPFIFO:
     self.gpfifo = to_mv(self.base, self.entries_cnt * 8).cast("Q")
     self.ctrl = nv_gpu.AmpereAControlGPFifo.from_address(self.base + self.entries_cnt * 8)
     self.state = {}
+    self.bound_engines: set[int] = set()
 
     # Buf exec state
     self.buf = None
@@ -99,7 +97,10 @@ class GPFIFO:
     cargs = [ctypes.cast(args[i], ctypes.c_void_p) for i in range(args_cnt)] + [ctypes.cast(vals[i], ctypes.c_void_p) for i in range(vals_cnt)]
     gx, gy, gz = qmd.cta_raster_width, qmd.cta_raster_height, qmd.cta_raster_depth
     lx, ly, lz = qmd.cta_thread_dimension0, qmd.cta_thread_dimension1, qmd.cta_thread_dimension2
-    gpuocelot_lib.ptx_run(ctypes.cast(prg_addr, ctypes.c_char_p), args_cnt+vals_cnt, (ctypes.c_void_p*len(cargs))(*cargs), lx, ly, lz, gx, gy, gz, 0)
+    try:
+      gpuocelot_lib.ptx_run(ctypes.cast(prg_addr, ctypes.c_char_p), args_cnt+vals_cnt,
+        (ctypes.c_void_p*len(cargs))(*cargs), lx, ly, lz, gx, gy, gz, 0)
+    except Exception as e: print("failed to execute:", e)
     if qmd.release0_enable:
       rel0 = to_mv(qmd.release0_address_lower + (qmd.release0_address_upper << 32), 0x10).cast('Q')
       rel0[0] = qmd.release0_payload_lower + (qmd.release0_payload_upper << 32)
@@ -115,9 +116,11 @@ class GPFIFO:
   def execute_cmd(self, cmd) -> SchedResult:
     if cmd == nv_gpu.NVC56F_SEM_EXECUTE: return self._exec_signal()
     elif cmd == nv_gpu.NVC6C0_LAUNCH_DMA: return self._exec_nvc6c0_dma()
-    elif cmd == nv_gpu.NVC6B5_LAUNCH_DMA: return self._exec_nvc6b5_dma()
+    elif cmd == nv_gpu.NVC6B5_LAUNCH_DMA: # NOTE: NVC6B5_LAUNCH_DMA == NVC9B0_EXECUTE == 0x300
+      return self._exec_vid_decode() if self.bound_engines & {nv_gpu.NVC9B0_VIDEO_DECODER, nv_gpu.NVCFB0_VIDEO_DECODER} else self._exec_nvc6b5_dma()
     elif cmd == nv_gpu.NVC6C0_SEND_SIGNALING_PCAS2_B: return self._exec_pcas2()
     elif cmd == 0x0320: return self._exec_load_inline_qmd() # NVC6C0_LOAD_INLINE_QMD_DATA
+    elif cmd == nv_gpu.NVC9B0_SEMAPHORE_D: return self._exec_vid_semaphore()
     else: self.state[cmd] = self._next_dword() # just state update
     return SchedResult.CONT
 
@@ -134,6 +137,27 @@ class GPFIFO:
       mval = to_mv(signal, 8).cast('Q')[0]
       return SchedResult.CONT if mval >= val else SchedResult.YIELD
     else: raise RuntimeError(f"Unsupported type={typ} in exec wait/signal")
+    return SchedResult.CONT
+
+  def _exec_vid_decode(self) -> SchedResult:
+    self._next_dword() # consume execute flags
+    # validate that all required decode state was set up correctly
+    assert self._state(nv_gpu.NVC9B0_SET_APPLICATION_ID) == nv_gpu.NVC9B0_SET_APPLICATION_ID_ID_HEVC
+    pic_desc_addr = self._state(nv_gpu.NVC9B0_SET_DRV_PIC_SETUP_OFFSET) << 8
+    pic = nv_gpu.nvdec_hevc_pic_s.from_address(pic_desc_addr)
+    assert pic.stream_len > 0 and pic.pic_width_in_luma_samples > 0 and pic.pic_height_in_luma_samples > 0
+    assert self._state(nv_gpu.NVC9B0_SET_IN_BUF_BASE_OFFSET) != 0
+    assert self._state(nv_gpu.NVC9B0_SET_COLOC_DATA_OFFSET) != 0
+    assert self._state(nv_gpu.NVC9B0_SET_NVDEC_STATUS_OFFSET) != 0
+    assert self._state(nv_gpu.NVC9B0_HEVC_SET_FILTER_BUFFER_OFFSET) != 0
+    return SchedResult.CONT
+
+  def _exec_vid_semaphore(self) -> SchedResult:
+    signal = self._state64(nv_gpu.NVC9B0_SEMAPHORE_A)
+    val = self._state(nv_gpu.NVC9B0_SEMAPHORE_C)
+    self._next_dword() # flags
+    to_mv(signal, 8).cast('Q')[0] = val
+    to_mv(signal + 8, 8).cast('Q')[0] = int(time.perf_counter() * 1e9)
     return SchedResult.CONT
 
   def _exec_load_inline_qmd(self):

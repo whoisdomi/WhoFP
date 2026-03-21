@@ -43,7 +43,7 @@ def matmul_kernel(c_ptr, a_ptr, b_ptr, BLOCK_SIZE_M: tl.constexpr, BLOCK_SIZE_N:
   c_ptrs = c_ptr + stride_cm * offs_cm[:, None] + stride_cn * offs_cn[None, :]
   tl.store(c_ptrs, c)
 
-# CUDA=1 PTX=1 python3 extra/gemm/triton_nv_matmul.py
+# CUDA=1 CUDA_PTX=1 python3 extra/gemm/triton_nv_matmul.py
 if __name__ == "__main__":
   BLOCK_SIZE_M, BLOCK_SIZE_N, BLOCK_SIZE_K = 64, 128, 64
   M, N, K = 4096, 4096, 4096
@@ -88,7 +88,7 @@ if __name__ == "__main__":
   prg = ProgramSpec("matmul_kernel", src, device=Device.DEFAULT,
                 global_size=[M//BLOCK_SIZE_M, N//BLOCK_SIZE_N, 1], local_size=[32*compiled.metadata.num_warps, 1, 1],
                 mem_estimate=A.nbytes() + B.nbytes() + C.nbytes())
-  ei = ExecItem(CompiledRunner(prg), [x.ensure_allocated() for x in si.bufs], si.metadata)
+  ei = ExecItem(si.ast, [x.ensure_allocated() for x in si.bufs], si.metadata, prg=CompiledRunner(prg))
   tflops = []
   for i in range(5):
     tm = ei.run(wait=True)
@@ -98,10 +98,10 @@ if __name__ == "__main__":
   # check correctness
   if getenv("VERIFY"):
     from tinygrad.engine.realize import run_schedule
-    triton_buf = np.frombuffer(si.bufs[0].as_buffer(), np.float16).reshape(M,N)
+    triton_buf = np.frombuffer(si.bufs[0].as_memoryview(), np.float16).reshape(M,N)
     print(triton_buf)
     run_schedule(sched)
-    tinygrad_buf = np.frombuffer(si.bufs[0].as_buffer(), np.float16).reshape(M,N)
+    tinygrad_buf = np.frombuffer(si.bufs[0].as_memoryview(), np.float16).reshape(M,N)
     print(tinygrad_buf)
     np.testing.assert_allclose(triton_buf, tinygrad_buf)
     print("correct!")

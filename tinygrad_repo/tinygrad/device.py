@@ -1,16 +1,18 @@
 from __future__ import annotations
 from dataclasses import dataclass, replace
 from collections import defaultdict
-from typing import Optional, Any, Generic, TypeVar, Iterator, Generator
-import importlib, inspect, functools, pathlib, os, ctypes, ctypes.util, platform, contextlib, sys, re, atexit, pickle, decimal, time
-from tinygrad.helpers import CI, OSX, LRU, getenv, diskcache_get, diskcache_put, DEBUG, GlobalCounters, flat_mv, from_mv, PROFILE, temp, mv_address, \
-                             cpu_time_execution, colored, Context, round_up, DISABLE_COMPILER_CACHE, ALLOW_DEVICE_USAGE
+from typing import Any, Generic, TypeVar, Iterator, Generator, TYPE_CHECKING
+import importlib, inspect, functools, pathlib, os, platform, contextlib, sys, re, atexit, pickle, decimal
+from tinygrad.helpers import CI, OSX, LRU, getenv, diskcache_get, diskcache_put, DEBUG, GlobalCounters, flat_mv, PROFILE, temp, colored
+from tinygrad.helpers import Context, CCACHE, ALLOW_DEVICE_USAGE, MAX_BUFFER_SIZE, cpu_events, ProfileEvent, ProfilePointEvent, dedup, ContextVar
+from tinygrad.helpers import unwrap_class_type, suppress_finalizing, select_first_inited, VIZ, CPU_LLVM, CPU_LVP, NV_PTX, CUDA_PTX, NV_NAK
+from tinygrad.helpers import EMULATED_DTYPES
 from tinygrad.dtype import DType, ImageDType, PtrDType, dtypes, _to_np_dtype
-from tinygrad.renderer import Renderer
+if TYPE_CHECKING: from tinygrad.renderer import Renderer
 
 # **************** Device ****************
 
-ALL_DEVICES = ["METAL", "AMD", "NV", "CUDA", "QCOM", "GPU", "CPU", "LLVM", "DSP", "WEBGPU"]
+ALL_DEVICES = ["METAL", "AMD", "NV", "CUDA", "QCOM", "CL", "CPU", "DSP", "WEBGPU"]
 class _Device:
   def __init__(self) -> None:
     self._devices = [x.stem[len("ops_"):].upper() for x in (pathlib.Path(__file__).parent/"runtime").iterdir() if x.stem.startswith("ops_")]
@@ -18,11 +20,13 @@ class _Device:
   @functools.cache  # this class is a singleton, pylint: disable=method-cache-max-size-none
   def _canonicalize(self, device:str) -> str: return re.sub(r":0$", "", (d:=device.split(":", 1)[0].upper()) + device[len(d):])
   # NOTE: you can't cache canonicalize in case Device.DEFAULT changes
-  def canonicalize(self, device:Optional[str]) -> str: return self._canonicalize(device if device is not None else Device.DEFAULT)
-  def __getitem__(self, ix:str) -> Compiled: return self.__get_canonicalized_item(self.canonicalize(ix))
+  def canonicalize(self, device:str|None) -> str: return self._canonicalize(device if device is not None else Device.DEFAULT)
+  def __getitem__(self, ix:str) -> Compiled:
+    ix = self.canonicalize(ix)
+    assert ALLOW_DEVICE_USAGE or ix.split(":")[0] in ["DISK", "TINYFS", "NPY", "PYTHON"], f"usage of device {ix} disallowed"
+    return self.__get_canonicalized_item(ix)
   @functools.cache  # this class is a singleton, pylint: disable=method-cache-max-size-none
   def __get_canonicalized_item(self, ix:str) -> Compiled:
-    assert ALLOW_DEVICE_USAGE or ix.split(":")[0] in ["DISK", "NPY", "PYTHON"], f"usage of device {ix} disallowed"
     base = (__package__ or __name__).split('.')[0]  # tinygrad
     x = ix.split(":")[0].lower()
     ret = [cls for cname, cls in inspect.getmembers(importlib.import_module(f'{base}.runtime.ops_{x}')) \
@@ -37,7 +41,8 @@ class _Device:
       with contextlib.suppress(Exception): yield self[device].device
   @functools.cached_property
   def DEFAULT(self) -> str:
-    from_env = [d for d in self._devices if d not in ["DISK", "NPY"] and getenv(d) == 1]
+    dev = [dev] if (dev:=getenv("DEV", "").upper()) else []
+    from_env = dedup(dev + [d for d in self._devices if d not in ["DISK", "TINYFS", "NPY"] and getenv(d) == 1])
     assert len(from_env) < 2, f"multiple devices set in env: {from_env}"
     if len(from_env) == 1: return from_env[0]
     try:
@@ -45,51 +50,34 @@ class _Device:
       os.environ[device] = "1"   # we set this in environment for spawned children
       return device
     except StopIteration as exc: raise RuntimeError("no usable devices") from exc
-Device = _Device()
+Device: _Device = _Device()
 atexit.register(lambda: [Device[dn].finalize() for dn in Device._opened_devices])
 
 # **************** Profile ****************
 
-class ProfileEvent: pass
+@dataclass(frozen=True)
+class ProfileDeviceEvent(ProfileEvent): device:str; tdiff:decimal.Decimal=decimal.Decimal(0); props:dict[str,Any]|None=None # noqa: E702
 
 @dataclass(frozen=True)
-class ProfileDeviceEvent(ProfileEvent):
-  device:str; comp_tdiff:decimal.Decimal=decimal.Decimal(0); copy_tdiff:decimal.Decimal=decimal.Decimal(0) # noqa: E702
+class ProfileProgramEvent(ProfileEvent): device:str; name:str; lib:bytes|None; base:int|None; tag:int|None=None # noqa: E702
 
 @dataclass(frozen=True)
-class ProfileRangeEvent(ProfileEvent): device:str; name:str; st:decimal.Decimal; en:decimal.Decimal; is_copy:bool # noqa: E702
-
-@dataclass(frozen=True)
-class ProfileProgramEvent(ProfileEvent): device:str; name:str; lib:bytes|None; base:int|None # noqa: E702
-
-@dataclass(frozen=True)
-class ProfileGraphEntry: device:str; name:str; st_id:int; en_id:int; is_copy:bool # noqa: E702
+class ProfileGraphEntry: device:str; name:str; st_id:int; en_id:int # noqa: E702
 
 @dataclass(frozen=True)
 class ProfileGraphEvent(ProfileEvent): ents:list[ProfileGraphEntry]; deps:list[list[int]]; sigs:list[decimal.Decimal] # noqa: E702
 
-@dataclass
-class ProfileResult: st:Optional[int]=None; en:Optional[int]=None # noqa: E702
-
-@contextlib.contextmanager
-def cpu_profile(name, device="CPU", is_copy=False, display=True) -> Generator[ProfileResult, None, None]:
-  yield (res:=ProfileResult(st:=time.perf_counter_ns()))
-  res.en = en = time.perf_counter_ns()
-  if PROFILE and display:
-    Compiled.profile_events += [ProfileRangeEvent(device, name, decimal.Decimal(st) / 1000, decimal.Decimal(en) / 1000, is_copy=is_copy)]
-
 # **************** Buffer + Allocators ****************
-
 
 @dataclass(frozen=True, eq=True)
 class BufferSpec:
   # TODO: move device, size, dtype here?
-  image: Optional[ImageDType] = None
+  image: ImageDType|None = None
   uncached: bool = False
   cpu_access: bool = False
   host: bool = False
   nolru: bool = False
-  external_ptr: Optional[int] = None
+  external_ptr: int|None = None
 
 class MultiBuffer:
   def __init__(self, device:tuple[str, ...], size:int, dtype:DType):
@@ -105,8 +93,9 @@ class MultiBuffer:
   def __repr__(self): return f"<multibuf real:{self.is_allocated()} device:{tuple(x.device for x in self.bufs)} size:{self.size} dtype:{self.dtype}>"
 
 class Buffer:
-  def __init__(self, device:str, size:int, dtype:DType, opaque:Any=None, options:Optional[BufferSpec]=None, initial_value:Optional[bytes]=None,
-               uop_refcount=0, base:Optional[Buffer]=None, offset:int=0, preallocate=False):
+  profile_events:list[ProfileEvent] = []
+  def __init__(self, device:str, size:int, dtype:DType, opaque:Any=None, options:BufferSpec|None=None, initial_value:bytes|None=None,
+               uop_refcount=0, base:Buffer|None=None, offset:int=0, preallocate=False):
     if isinstance(dtype, ImageDType): options = BufferSpec(image=dtype) # TODO: image hack shouldn't be here. where should it be?
     else: assert isinstance(dtype, DType) and not isinstance(dtype, PtrDType)
     self.device, self.size, self.dtype, self.options, self.offset, self.allocated_views = device, size, dtype, options, offset, 0
@@ -138,7 +127,8 @@ class Buffer:
   def allocate(self, opaque=None, external_ptr=None) -> Buffer:
     assert not self.is_initialized(), "can't allocate already allocated buffer"
     if DEBUG >= 7: print(f"buffer: allocate {self.nbytes} bytes on {self.device}")
-    if (mbs:=getenv("MAX_BUFFER_SIZE", 0)) > 0 and self.size > mbs: raise RuntimeError(f"buffer of size {self.size/1e6:.2f}M is too large")
+    if not self.device.startswith("NULL") and self.size > MAX_BUFFER_SIZE > 0 and (self.options is None or self.options.external_ptr is None):
+      raise RuntimeError(f"buffer of size {self.size/1e6:.2f}M is too large")
     self.allocator:Allocator = Device[self.device].allocator
     if external_ptr is not None:
       self.options = replace(self.options, external_ptr=external_ptr) if self.options else BufferSpec(external_ptr=external_ptr)
@@ -149,13 +139,17 @@ class Buffer:
       self._buf: Any = self.allocator._offset(self.base._buf, self.nbytes, self.offset)
     else:
       self._buf = opaque if opaque is not None else self.allocator.alloc(self.nbytes, self.options)
-      if not self.device.startswith("DISK"): GlobalCounters.mem_used += self.nbytes
+      if not self.device.startswith("DISK") and (self.options is None or self.options.external_ptr is None):
+        GlobalCounters.mem_used += self.nbytes
+      if PROFILE: Buffer.profile_events.append(ProfilePointEvent(self.device, "alloc", self.trace_num, {"dtype":self.dtype, "sz":self.size}))
     return self
   def deallocate(self):
     assert hasattr(self, '_buf'), "buffer must be allocated to deallocate"
     if DEBUG is not None and DEBUG >= 7: print(f"buffer: deallocate {self.nbytes} bytes on {self.device}")
-    if self._base is None and (self.options is None or self.options.external_ptr is None):
-      if GlobalCounters is not None and not self.device.startswith("DISK"): GlobalCounters.mem_used -= self.nbytes
+    if self._base is None:
+      if GlobalCounters is not None and not self.device.startswith("DISK") and (self.options is None or self.options.external_ptr is None):
+        GlobalCounters.mem_used -= self.nbytes
+      if PROFILE: Buffer.profile_events.append(ProfilePointEvent(self.device, "free", self.trace_num))
       self.allocator.free(self._buf, self.nbytes, self.options)
     elif self._base is not None: self._base.allocated_views -= 1
     del self._buf
@@ -169,25 +163,29 @@ class Buffer:
       self.copyout(memoryview(buf))
     return self.__class__, (self.device, self.size, self.dtype, None, self.options, buf, self.uop_refcount)
   @property
+  def trace_num(self) -> int:
+    if not hasattr(self, '_trace_num'): self._trace_num = len(Buffer.profile_events)
+    return self._trace_num
+  @property
   def nbytes(self): return self.size*self.dtype.itemsize
+  @suppress_finalizing
   def __del__(self): (not hasattr(self, '_buf')) or self.deallocate()
   def __repr__(self):
     return f"<buf real:{self.is_allocated()} device:{self.device} size:{self.size} dtype:{self.dtype}" + \
            (f" offset:{self.offset}" if self._base is not None else "") + (f" {self.options=}" if self.options is not None else "") + ">"
-  def as_buffer(self, allow_zero_copy=False, force_zero_copy=False) -> memoryview:
-    # zero copy with as_buffer (disabled by default due to use after free)
+  def as_dmaref(self) -> DMARef:
+    assert hasattr(self.allocator, "_as_dmaref"), f"Device {self.device} doesn't support DMA"
+    return self.allocator._as_dmaref(self._buf)
+  def as_memoryview(self, allow_zero_copy=False, force_zero_copy=False) -> memoryview:
+    # zero copy with as_memoryview (disabled by default due to use after free)
     if (force_zero_copy or allow_zero_copy) and hasattr(self.allocator, '_as_buffer') and (self.options is None or self.options.image is None):
       return self.allocator._as_buffer(self._buf)
     assert not force_zero_copy, "force zero copy was passed, but copy is required"
     return self.copyout(memoryview(bytearray(self.nbytes)))
-  def as_typed_buffer(self, shape=None, allow_zero_copy=False, force_zero_copy=False) -> memoryview:
-    assert self.dtype.base.fmt is not None, f"no fmt dtype for {self.dtype.base}"
-    assert self.dtype.base.fmt != "e" or sys.version_info >= (3, 12)
-    return self.as_buffer(allow_zero_copy, force_zero_copy).cast(self.dtype.base.fmt, shape if shape is not None else (self.size,))
   def numpy(self) -> 'np.ndarray': # type: ignore [name-defined] # noqa: F821
     import numpy as np
     assert _to_np_dtype(self.dtype.base) is not None, f"no np dtype for {self.dtype.base}"
-    return np.frombuffer(self.as_buffer(), dtype=_to_np_dtype(self.dtype.base))
+    return np.frombuffer(self.as_memoryview(), dtype=_to_np_dtype(self.dtype.base))
   def copyin(self, mv:memoryview):
     mv = flat_mv(mv)
     assert len(mv) == self.nbytes, f"size mismatch, {len(mv)=} != {self.dtype=} {self.size=}"
@@ -202,21 +200,34 @@ class Buffer:
     return mv
   def view(self, size:int, dtype:DType, offset:int) -> Buffer:
     assert offset < self.nbytes, "offset must be less than nbytes"
-    if self._base is not None: return Buffer(self.device, size, dtype, base=self._base, offset=self.offset+offset)
-    return Buffer(self.device, size, dtype, base=self, offset=offset)
+    return Buffer(self.device, size, dtype, base=self.base, offset=self.offset+offset)
+
+@dataclass(frozen=True)
+class DMACPURef:
+  addr: int
+  size: int
+
+@dataclass(frozen=True)
+class DMAFdRef:
+  fd: int
+  offset: int
+  size: int
+
+DMARef = DMACPURef|DMAFdRef
 
 DeviceType = TypeVar('DeviceType', bound='Compiled')
 
 # TODO: size, dest, src are the same type. can we enforce this?
 class Allocator(Generic[DeviceType]):
-  def __init__(self, dev:DeviceType):
+  def __init__(self, dev:DeviceType, supports_copy_from_disk:bool=True, supports_transfer:bool=True):
     self.dev: DeviceType = dev
     self.default_buffer_spec: BufferSpec = BufferSpec()
+    self.supports_copy_from_disk, self.supports_transfer = supports_copy_from_disk, supports_transfer
   # overridden in LRUAllocator
-  def alloc(self, size:int, options:Optional[BufferSpec]=None):
+  def alloc(self, size:int, options:BufferSpec|None=None):
     assert size > 0, f"alloc size must be positive, getting {size}"
     return self._alloc(size, options if options is not None else self.default_buffer_spec)
-  def free(self, opaque, size:int, options:Optional[BufferSpec]=None):
+  def free(self, opaque, size:int, options:BufferSpec|None=None):
     self._free(opaque, options if options is not None else self.default_buffer_spec)
 
   # implemented by the runtime
@@ -227,16 +238,17 @@ class Allocator(Generic[DeviceType]):
   # def _as_buffer(self, src) -> memoryview:
   # def _offset(self, buf, size:int, offset:int):
   # def _transfer(self, dest, src, sz:int, src_dev, dest_dev):
+  def _encode_decode(self, bufout, bufin, desc, hist:list, shape:tuple[int,...], frame_pos:int): raise NotImplementedError("need encdec") # optional
 
 class LRUAllocator(Allocator, Generic[DeviceType]):
   """
   The LRU Allocator is responsible for caching buffers.
   It ensures that buffers are not freed until it is absolutely necessary, optimizing performance.
   """
-  def __init__(self, dev:DeviceType):
-    self.cache: dict[tuple[int, Optional[BufferSpec]], Any] = defaultdict(list)
-    super().__init__(dev)
-  def alloc(self, size:int, options:Optional[BufferSpec]=None):
+  def __init__(self, dev:DeviceType, **kwargs):
+    self.cache: dict[tuple[int, BufferSpec|None], Any] = defaultdict(list)
+    super().__init__(dev, **kwargs)
+  def alloc(self, size:int, options:BufferSpec|None=None):
     if len(c := self.cache[(size, options)]): return c.pop()
     try: return super().alloc(size, options)
     except (RuntimeError, MemoryError):
@@ -246,83 +258,16 @@ class LRUAllocator(Allocator, Generic[DeviceType]):
     for (sz,options),opaques in self.cache.items():
       for opaque in opaques: super().free(opaque, sz, options)
       opaques.clear()
-  def free(self, opaque:Any, size:int, options:Optional[BufferSpec]=None):
-    if LRU and (options is None or not options.nolru): self.cache[(size, options)].append(opaque)
+  def free(self, opaque:Any, size:int, options:BufferSpec|None=None):
+    if LRU and (options is None or (not options.nolru and options.external_ptr is None)): self.cache[(size, options)].append(opaque)
     else: super().free(opaque, size, options)
-
-class _MallocAllocator(LRUAllocator['Compiled']):
-  def _alloc(self, size:int, options:BufferSpec):
-    # must be aligned to 0x20 for 256-bit ymm registers
-    # TODO: investigate if this is the cause of nondeterminism in speed
-    alignment = 0x1000 if size >= 0x1000 else 0x20
-    return (ctypes.c_uint8 * size).from_address(options.external_ptr) if options.external_ptr else self._alloc_aligned(size, alignment)
-  def _alloc_aligned(self, size:int, alignment:int):
-    buffer = (ctypes.c_uint8 * (size + alignment))()
-    offset = round_up(ctypes.addressof(buffer), alignment) - ctypes.addressof(buffer)
-    return (ctypes.c_uint8 * size).from_buffer(buffer, offset)
-  def _as_buffer(self, src) -> memoryview: return flat_mv(memoryview(src))
-  def _copyin(self, dest, src:memoryview): ctypes.memmove(dest, from_mv(src), len(src))
-  def _copyout(self, dest:memoryview, src): ctypes.memmove(from_mv(dest), src, len(dest))
-  def _offset(self, buf, size:int, offset:int): return from_mv(self._as_buffer(buf)[offset:offset+size])
-
-MallocAllocator = _MallocAllocator(None) # type: ignore
-
-# NOTE: MAP_JIT is added to mmap module in python 3.13
-MAP_JIT = 0x0800
-
-# CPUProgram is a jit/shellcode program that can be just mmapped and jumped to
-class CPUProgram:
-  rt_lib = ctypes.CDLL(ctypes.util.find_library('System' if OSX else 'kernel32') if OSX or sys.platform == "win32" else 'libgcc_s.so.1')
-
-  def __init__(self, name:str, lib:bytes):
-    if sys.platform == "win32":
-      PAGE_EXECUTE_READWRITE = 0x40
-      MEM_COMMIT =  0x1000
-      MEM_RESERVE = 0x2000
-      ctypes.windll.kernel32.VirtualAlloc.restype = ctypes.c_void_p
-      self.mem = ctypes.windll.kernel32.VirtualAlloc(ctypes.c_void_p(0), ctypes.c_size_t(len(lib)), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE)
-      ctypes.memmove(self.mem, lib, len(lib))
-      ctypes.windll.kernel32.GetCurrentProcess.restype = ctypes.c_void_p
-      proc = ctypes.windll.kernel32.GetCurrentProcess()
-      ctypes.windll.kernel32.FlushInstructionCache(ctypes.c_void_p(proc), ctypes.c_void_p(self.mem), ctypes.c_size_t(len(lib)))
-      self.fxn = ctypes.CFUNCTYPE(None)(self.mem)
-    else:
-      from mmap import mmap, PROT_READ, PROT_WRITE, PROT_EXEC, MAP_ANON, MAP_PRIVATE
-      # On apple silicon with SPRR enabled (it always is in macos) RWX pages are unrepresentable: https://blog.svenpeter.dev/posts/m1_sprr_gxf/
-      # MAP_JIT allows us to easily flip pages from RW- to R-X and vice versa. It is a noop on intel cpus. (man pthread_jit_write_protect_np)
-      self.mem = mmap(-1, len(lib), MAP_ANON | MAP_PRIVATE | (MAP_JIT if OSX else 0), PROT_READ | PROT_WRITE | PROT_EXEC)
-
-      if OSX: CPUProgram.rt_lib.pthread_jit_write_protect_np(False)
-      self.mem.write(lib)
-      if OSX: CPUProgram.rt_lib.pthread_jit_write_protect_np(True)
-
-      # __clear_cache isn't a normal libc function, but a compiler support routine found in libgcc_s for gcc and compiler-rt for clang.
-      # libgcc_s comes as shared library but compiler-rt is only a bunch of static library archives which we can't directly load, but fortunately
-      # it somehow found its way into libSystem on macos (likely because it used __builtin_clear_cache) and libgcc_s is ~always present on linux
-      # Using ["name"] instead of .name because otherwise name is getting mangled: https://docs.python.org/3.12/reference/expressions.html#index-5
-      CPUProgram.rt_lib["__clear_cache"](ctypes.c_void_p(mv_address(self.mem)), ctypes.c_void_p(mv_address(self.mem) + len(lib)))
-
-      self.fxn = ctypes.CFUNCTYPE(None)(mv_address(self.mem))
-
-  def __call__(self, *bufs, vals=(), wait=False):
-    args = list(bufs) + list(vals)
-    # NOTE: replace this by --target={host's triple}-elf in clang args once we only support macos sequoia and later.
-    # Apple relaxes abi requirement for stack arguments to always be at least 8 byte aligned on arm64
-    # https://developer.apple.com/documentation/xcode/writing-arm64-code-for-apple-platforms
-    # This hack is required because clang/llvm bug doesn't allow us to just use {host's triple}+'-elf' (relocation failures)
-    # The bug was fixed in https://github.com/llvm/llvm-project/commit/454cc36630296262cdb6360b60f90a64a97f7f1a but was only backported to xcode 16+
-    if platform.machine() == "arm64" and OSX: args = args[:8] + [ctypes.c_int64(a) if isinstance(a, int) else a for a in args[8:]]
-    return cpu_time_execution(lambda: self.fxn(*args), enable=wait)
-
-  def __del__(self):
-    if sys.platform == 'win32': ctypes.windll.kernel32.VirtualFree(ctypes.c_void_p(self.mem), ctypes.c_size_t(0), 0x8000) #0x8000 - MEM_RELEASE
 
 # **************** for Compiled Devices ****************
 
 class CompileError(Exception): pass
 
 class Compiler:
-  def __init__(self, cachekey:Optional[str]=None): self.cachekey = None if DISABLE_COMPILER_CACHE else cachekey
+  def __init__(self, cachekey:str|None=None): self.cachekey = cachekey if CCACHE else None
   def compile(self, src:str) -> bytes: return src.encode()   # NOTE: empty compiler is the default
   def compile_cached(self, src:str) -> bytes:
     if self.cachekey is None or (lib := diskcache_get(self.cachekey, src)) is None:
@@ -332,12 +277,51 @@ class Compiler:
     return lib
   def disassemble(self, lib:bytes): pass
 
+@dataclass(frozen=True)
+class CompilerSet: cset:list[tuple[type[Renderer]|functools.partial, ContextVar|None]]; ctrl_var:ContextVar|None = None # noqa: E702
+
 class Compiled:
   profile_events:list[ProfileEvent] = [ProfileDeviceEvent("CPU")] # NOTE: CPU is the default device.
 
-  def __init__(self, device:str, allocator:Allocator, renderer:Optional[Renderer], compiler:Optional[Compiler], runtime, graph=None):
-    self.device, self.allocator, self.compiler, self.runtime, self.graph = device, allocator, compiler or Compiler(), runtime, graph
-    self.renderer = renderer or Renderer()
+  def __init__(self, device:str, allocator:Allocator, compilers:CompilerSet|None, runtime, graph=None, group_id=None):
+    from tinygrad.renderer import Renderer
+
+    self.device, self.allocator, self.runtime, self.graph, self.group_id = device, allocator, runtime, graph, group_id
+
+    self.comps_ctrl_var = compilers.ctrl_var if compilers is not None else None
+    self.comp_sets:dict[str, tuple[ContextVar|None, type[Renderer]|functools.partial]] = {}
+    self.cached_pair:dict[Any, Renderer] = {}
+    for ren, var in (compilers.cset if compilers is not None else [(Renderer, None)]):
+      self.comp_sets[var.key.split('_', 1)[-1] if var is not None else self._compiler_name(ren)] = (var, ren)
+
+  @property
+  def renderer(self) -> Renderer: return self._select_compiler_pair()
+
+  @property
+  def compiler(self) -> Compiler:
+    if (ret:=self.renderer.compiler) is None: raise RuntimeError(f"no compiler for {self.device}")
+    return ret
+
+  def _compiler_name(self, r:type[Renderer]|functools.partial) -> str:
+    return unwrap_class_type(r).__name__.upper().removesuffix("RENDERER").removeprefix(devname:=self.device.split(':')[0].upper()) or devname
+
+  def _select_compiler_pair(self) -> Renderer:
+    # select forced compiler from global env var.
+    forced_comps = set([self.comp_sets[val][1]] if self.comps_ctrl_var is not None and (val:=self.comps_ctrl_var.value) else [])
+
+    # add forced compilers from individual env vars (only if global env var is not set, as it takes precedence).
+    if not forced_comps: forced_comps |= set(rc for en, rc in self.comp_sets.values() if en is not None and en.value == 1)
+    if len(forced_comps) > 1: raise RuntimeError(f"{self.device}: multiple compilers set in env {forced_comps}")
+
+    # select remaining compilers (all or forced only)
+    comps = list(rc for en, rc in self.comp_sets.values())
+
+    # remove disabled compilers
+    for en, rc in self.comp_sets.values():
+      if en is not None and en.value == 0 and rc in comps: comps.remove(rc)
+
+    return select_first_inited(list(forced_comps) if len(forced_comps)>0 else comps, f"No compiler for {self.device} is available", self.cached_pair)
+
   def synchronize(self):
     """
     Synchronize all pending operations on the device.
@@ -357,28 +341,36 @@ class Compiled:
     # override this in your device implementation
 
 # TODO: move this to each Device
-def is_dtype_supported(dtype:DType, device:Optional[str]=None) -> bool:
+# this only tracks if the dtype is natively supported, it may be supported in the frontend using decomps
+def is_dtype_supported(dtype:DType, device:str|None=None) -> bool:
+  if dtype == dtypes.index: return False
   if device is None: device = Device.DEFAULT
   if dtype == dtypes.bfloat16:
     if device == "METAL": return not CI
-    if device in {"CUDA", "NV"}: return not CI and not getenv("PTX")
-    if device in {"CPU", "LLVM"}: return not CI and platform.machine() in {"arm", "arm64", "aarch64", "x86_64", "amd64"}
-    return device == "AMD"
+    if device == "CUDA": return not CI and not CUDA_PTX
+    if device == "NV": return not CI and not NV_PTX and not NV_NAK
+    if device in {"CPU"}: return not CI and platform.machine() in {"arm", "arm64", "aarch64", "x86_64", "amd64"} and not CPU_LVP
+    return device in {"AMD", "CL", "PYTHON", "NULL"}
   if dtype in dtypes.fp8s:
-    # not supported yet - in progress
-    return False
+    if device == "CUDA": return not CI and not CUDA_PTX
+    if device == "NV": return not CI and not NV_PTX and not NV_NAK
+    if device == "AMD": return not CI and getattr(Device["AMD"], "target") in {(9,4,2), (9,5,0)}
+    return device in {"PYTHON", "NULL"}
   if device == "WEBGPU": return dtype in [dtypes.bool, dtypes.char, dtypes.uchar, dtypes.short,
                                           dtypes.ushort, dtypes.float, dtypes.int32, dtypes.uint32, dtypes.half]
   # for CI GPU and OSX, cl_khr_fp16 isn't supported
   # for CI LLVM, it segfaults because it can't link to the casting function
   # CI CUDA architecture is sm_35 but we need at least sm_70 to run fp16 ALUs
   # PYTHON supports half memoryview in 3.12+ https://github.com/python/cpython/issues/90751
+  # double can't be bitcast to anything without long support
   if dtype == dtypes.half:
-    if device == "GPU": return not CI and not OSX
+    if device == "CL": return not CI and not OSX
+    if device == "QCOM": return False # QCOM compiler is flaky with half
     if device in ["CUDA", "NV"]: return not CI
-    if device == "LLVM": return OSX
+    if device == "CPU" and CPU_LLVM: return OSX
     if device == "PYTHON": return sys.version_info >= (3, 12)
-  if dtype == dtypes.float64: return device != "METAL" and not (OSX and device == "GPU")
+  if dtype == dtypes.float64: return (device not in {"METAL", "QCOM"} and not (OSX and device == "CL") and not getenv("NULL_IR3")
+                                      and dtypes.long not in EMULATED_DTYPES.tolist(dtypes))
   return True
 
 if PROFILE:
@@ -388,23 +380,40 @@ if PROFILE:
     for dev in devs: dev.synchronize()
     for dev in devs: dev._at_profile_finalize()
 
-    with open(fn:=temp("profile.pkl", append_user=True), "wb") as f: pickle.dump(Compiled.profile_events, f)
+    with open(fn:=temp("profile.pkl", append_user=True), "wb") as f: pickle.dump(cpu_events+Compiled.profile_events+Buffer.profile_events, f)
 
-    if not getenv("SQTT", 0):
+    if VIZ:
       from tinygrad.uop.ops import launch_viz
       launch_viz("PROFILE", fn)
 
-if __name__ == "__main__":
+def enumerate_devices_str() -> Generator[str, None, None]:
+  from tinygrad import Tensor, Device
+
   for device in ALL_DEVICES:
+    compilers_results, any_works = [], False
     try:
-      _ = Device[device].device
+      d = Device[device]
+      default_comp_pairs, default_compiler, cc_ctrl_var = d.comp_sets, d.compiler, d.comps_ctrl_var
       try:
-        from tinygrad import Tensor
-        with Context(CACHELEVEL=0): test = (Tensor([1,2,3], device=device) * 2).tolist()
-        if test != [2,4,6]: raise ValueError(f"got {test} instead of [2, 4, 6]")
-        result = colored("PASS", "green")
-      except Exception as e:
-        result = f"{colored('FAIL', 'yellow')} {e}"
+        for k,(en,r) in default_comp_pairs.items():
+          d.comp_sets = {k:(None,r)} # env var set to None, so it doesn't interfere
+          d.comps_ctrl_var = None
+          try:
+            # d.renderer, d.compiler = r(), c()
+            with Context(CACHELEVEL=0): test = (Tensor([1,2,3], device=device) * 2).tolist()
+            if test != [2,4,6]: raise ValueError(f"got {test} instead of [2, 4, 6]")
+            set_text = f'({cc_ctrl_var.key}={d._compiler_name(r)} to make default)' if cc_ctrl_var is not None else ''
+            default_text = '(default)' if type(default_compiler) is type(d.compiler) else set_text
+            compilers_results.append(f"{colored('+', 'green')} {d._compiler_name(r)} {default_text}")
+            any_works = True
+          except Exception as e: compilers_results.append(f"{colored('-', 'yellow')} {d._compiler_name(r)}: {e}")
+      finally:
+        # put the defaults back!
+        d.comp_sets, d.comps_ctrl_var = default_comp_pairs, cc_ctrl_var
+      result = (colored('PASS', 'green') if any_works else f"{colored('FAIL', 'yellow')}") + ''.join([f'\n{" "*16} {x}' for x in compilers_results])
     except Exception as e:
       result = f"{colored('FAIL', 'red')} {e}"
-    print(f"{'*' if device == Device.DEFAULT else ' '} {device:10s}: {result}")
+    yield f"{'*' if device == Device.DEFAULT else ' '} {device:10s}: {result}"
+
+if __name__ == "__main__":
+  for s in enumerate_devices_str(): print(s)

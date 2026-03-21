@@ -1,5 +1,5 @@
-import os, sys, mmap, io, ctypes, ctypes.util, contextlib
-from typing import Optional, Generator, Callable
+import os, sys, mmap, io, ctypes, contextlib, pathlib
+from typing import Generator, Callable
 from tinygrad.helpers import OSX, round_up
 from tinygrad.device import Compiled, Allocator
 with contextlib.suppress(ImportError):
@@ -12,32 +12,38 @@ class DiskDevice(Compiled):
   def __init__(self, device:str):
     if not DiskDevice._tried_io_uring_init: self._iouring_setup()
 
-    self.size: Optional[int] = None
-    self.fd: Optional[int] = None
+    self.size: int|None = None
+    self.fd: int|None = None
     self.count = 0
-    super().__init__(device, DiskAllocator(self), None, None, None)
-  def _might_open(self, size):
-    self.count += 1
+    super().__init__(device, DiskAllocator(self), None, None)
+  def _might_open(self, size:int):
     assert self.size is None or size <= self.size, f"can't reopen Disk tensor with larger size, opened with {self.size}, tried to open with {size}"
-    if self.size is not None: return
+    if self.size is not None and hasattr(self, "mem"):
+      self.count += 1
+      return
     filename = self.device[len("disk:"):]
-    self.size = size
 
     if sys.platform != "win32" and filename.startswith("shm:"):
       fd = _posixshmem.shm_open("/"+filename[4:].lstrip("/"), os.O_RDWR, 0o600)
-      self.mem = mmap.mmap(fd, self.size, mmap.MAP_SHARED | MAP_POPULATE | MAP_LOCKED)
+      self.mem = mmap.mmap(fd, size, mmap.MAP_SHARED | MAP_POPULATE | MAP_LOCKED)
       os.close(fd)
     else:
       try: self.fd = os.open(filename, os.O_RDWR|os.O_CREAT|getattr(os, "O_DIRECT", 0))
       except OSError: self.fd = os.open(filename, os.O_RDWR|os.O_CREAT)
-      if os.fstat(self.fd).st_size < self.size: os.ftruncate(self.fd, self.size)
-      self.mem = mmap.mmap(self.fd, self.size)
+      if not pathlib.Path(filename).is_block_device() and os.fstat(self.fd).st_size < size: os.ftruncate(self.fd, size)
+      self.mem = mmap.mmap(self.fd, size)
+    self.size = size
     if hasattr(self.mem, 'madvise') and (hp := getattr(mmap, "MADV_HUGEPAGE", None)) is not None:
       with contextlib.suppress(OSError): self.mem.madvise(hp) # some systems have transparent_hugepage disabled
+    self.count += 1
   def _might_close(self):
     self.count -= 1
     if self.count == 0:
-      if self.fd is not None: os.close(self.fd)
+      if self.fd is not None:
+        os.close(self.fd)
+      if hasattr(self, "mem"):
+        try: self.mem.close()
+        except BufferError: pass
       self.size = None
   def _iouring_setup(self):
     DiskDevice._tried_io_uring_init = True
