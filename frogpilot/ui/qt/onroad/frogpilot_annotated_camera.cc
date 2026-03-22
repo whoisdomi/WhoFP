@@ -215,12 +215,32 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   lastFrameIndex = animationFrameIndex;
 
   fpUpdateStage = 32;  // cache/params
+  // Cache toggle bools to avoid JSON string lookups in paint methods (20Hz)
+  toggleCemStatus = frogpilot_toggles.value("cem_status").toBool();
+  toggleCompass = frogpilot_toggles.value("compass").toBool();
+  toggleCscStatus = frogpilot_toggles.value("csc_status").toBool();
+  togglePedalsOnUi = frogpilot_toggles.value("pedals_on_ui").toBool();
+  toggleRadarTracks = frogpilot_toggles.value("radar_tracks").toBool();
+  toggleRoadNameUi = frogpilot_toggles.value("road_name_ui").toBool();
+  toggleHideSpeedLimit = frogpilot_toggles.value("hide_speed_limit").toBool();
+  toggleShowSpeedLimits = frogpilot_toggles.value("show_speed_limits").toBool();
+  toggleSpeedLimitController = frogpilot_toggles.value("speed_limit_controller").toBool();
+  toggleSpeedLimitSources = frogpilot_toggles.value("speed_limit_sources").toBool();
+  toggleShowStoppingPoint = frogpilot_toggles.value("show_stopping_point").toBool();
+  toggleBlindSpotPath = frogpilot_toggles.value("blind_spot_path").toBool();
+  toggleAdjacentPathMetrics = frogpilot_toggles.value("adjacent_path_metrics").toBool();
+  toggleShowStoppingPointMetrics = frogpilot_toggles.value("show_stopping_point_metrics").toBool();
+  toggleShowSpeedLimitOffset = frogpilot_toggles.value("show_speed_limit_offset").toBool();
+  toggleSpeedLimitVienna = frogpilot_toggles.value("speed_limit_vienna").toBool();
+  toggleSlcPriorityMode = frogpilot_scene.frogpilot_toggles.value("slc_priority_mode").toBool();
+  toggleLaneDetectionWidth = frogpilot_toggles.value("lane_detection_width").toDouble();
+
   // Cache values to avoid parsing in paint methods (saves CPU at 20Hz)
-  if (frogpilot_toggles.value("compass").toBool()) {
+  if (toggleCompass) {
     double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
     cachedBearing = qRound(fmod(rawBearing + 360.0, 360.0));
   }
-  if (frogpilot_toggles.value("road_name_ui").toBool()) {
+  if (toggleRoadNameUi) {
     cachedRoadName = QString::fromStdString(params_memory.get("RoadName"));
   }
 
@@ -251,7 +271,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
   fpWidgetPaintStage = 1;
-  if (!hideBottomIcons && frogpilot_toggles.value("cem_status").toBool()) {
+  if (!hideBottomIcons && toggleCemStatus) {
     paintCEMStatus(p, sm);
   } else {
     cemStatusPosition.setX(0);
@@ -259,7 +279,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   }
 
   fpWidgetPaintStage = 2;
-  if (!hideBottomIcons && frogpilot_toggles.value("compass").toBool()) {
+  if (!hideBottomIcons && toggleCompass) {
     paintCompass(p);
   } else {
     compassPosition.setX(0);
@@ -271,7 +291,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     paintForceStop(p, fpsm);
   } else if (frogpilotCarState.getManualStopAhead()) {
     paintManualStop(p, fpsm);
-  } else if (!frogpilotPlan.getSpeedLimitChanged() && !(signalStyle == "static" && carState.getLeftBlinker()) && frogpilot_toggles.value("csc_status").toBool()) {
+  } else if (!frogpilotPlan.getSpeedLimitChanged() && !(signalStyle == "static" && carState.getLeftBlinker()) && toggleCscStatus) {
     if (frogpilotPlan.getCscTraining()) {
       paintCurveSpeedControlTraining(p, fpsm);
     } else {
@@ -299,7 +319,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   }
 
   fpWidgetPaintStage = 6;
-  if (frogpilot_toggles.value("pedals_on_ui").toBool()) {
+  if (togglePedalsOnUi) {
     paintPedalIcons(p, sm, fpsm);
   }
 
@@ -311,25 +331,25 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   }
 
   fpWidgetPaintStage = 8;
-  if (frogpilot_toggles.value("radar_tracks").toBool()) {
+  if (toggleRadarTracks) {
     paintRadarTracks(p);
   }
 
   fpWidgetPaintStage = 9;
-  if (frogpilot_toggles.value("road_name_ui").toBool()) {
+  if (toggleRoadNameUi) {
     paintRoadName(p);
   }
 
   fpWidgetPaintStage = 10;
-  bool hideSpeedLimit = !frogpilotPlan.getSpeedLimitChanged() && frogpilot_toggles.value("hide_speed_limit").toBool();
-  if (!hideSpeedLimit && (frogpilot_toggles.value("show_speed_limits").toBool() || frogpilot_toggles.value("speed_limit_controller").toBool())) {
+  bool hideSpeedLimit = !frogpilotPlan.getSpeedLimitChanged() && toggleHideSpeedLimit;
+  if (!hideSpeedLimit && (toggleShowSpeedLimits || toggleSpeedLimitController)) {
     paintSpeedLimit(p);
   } else {
     speedLimitHeight = 0;
   }
 
   fpWidgetPaintStage = 11;
-  if (frogpilot_toggles.value("speed_limit_sources").toBool()) {
+  if (toggleSpeedLimitSources) {
     paintSpeedLimitSources(p, fpsm);
   }
 
@@ -339,7 +359,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   }
 
   fpWidgetPaintStage = 13;
-  if (track_vertices.length() >= 1 && frogpilotPlan.getRedLight() && frogpilot_toggles.value("show_stopping_point").toBool()) {
+  if (track_vertices.length() >= 1 && frogpilotPlan.getRedLight() && toggleShowStoppingPoint) {
     paintStoppingPoint(p, sm);
   }
 
@@ -377,13 +397,23 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
 
     p.save();
 
+    // Use static gradients to avoid reconstructing QLinearGradient every frame
+    static QLinearGradient blindSpotGradient(0, 0, 0, 0);
+    static bool blindSpotGradientInit = false;
+    if (!blindSpotGradientInit) {
+      blindSpotGradient.setColorAt(0.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.6f));
+      blindSpotGradient.setColorAt(0.5f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.4f));
+      blindSpotGradient.setColorAt(1.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.2f));
+      blindSpotGradientInit = true;
+    }
+
     QLinearGradient gradient(0, height(), 0, 0);
-    if (isBlindSpot && frogpilot_toggles.value("blind_spot_path").toBool()) {
-      gradient.setColorAt(0.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.6f));
-      gradient.setColorAt(0.5f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.4f));
-      gradient.setColorAt(1.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.2f));
+    if (isBlindSpot && toggleBlindSpotPath) {
+      gradient = blindSpotGradient;
+      gradient.setStart(0, height());
+      gradient.setFinalStop(0, 0);
     } else {
-      float ratio = std::clamp(laneWidth / frogpilot_toggles.value("lane_detection_width").toDouble(), 0.0, 1.0);
+      float ratio = std::clamp(laneWidth / toggleLaneDetectionWidth, 0.0, 1.0);
       float hue = (ratio * ratio) * (120.0f / 360.0f);
 
       gradient.setColorAt(0.0f, QColor::fromHslF(hue, 0.75f, 0.5f, 0.6f));
@@ -394,7 +424,7 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
     p.setBrush(gradient);
     p.drawPolygon(track_adjacent_vertices[i]);
 
-    if (frogpilot_toggles.value("adjacent_path_metrics").toBool()) {
+    if (toggleAdjacentPathMetrics) {
       const QPolygonF &path = track_adjacent_vertices[i];
       if (path.isEmpty()) {
         p.restore();
@@ -402,7 +432,7 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
       }
 
       QString text;
-      if (isBlindSpot && frogpilot_toggles.value("blind_spot_path").toBool()) {
+      if (isBlindSpot && toggleBlindSpotPath) {
         text = tr("Vehicle in blind spot");
       } else {
         text = QString::number(laneWidth * distanceConversion, 'f', 2) + leadDistanceUnit;
@@ -417,10 +447,9 @@ void FrogPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p, SubMaster &
       int textXPosition = isLeft ? anchorPoint.x() - metrics.horizontalAdvance(text) - 10 : anchorPoint.x() + 10;
       int textYPosition = anchorPoint.y() - metrics.height() / 2 + metrics.ascent();
 
-      QPainterPath textPath;
-      textPath.addText(textXPosition, textYPosition, p.font(), text);
-      p.strokePath(textPath, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
+      // Drop shadow instead of expensive strokePath
+      p.setPen(QColor(0, 0, 0, 200));
+      p.drawText(textXPosition + 2, textYPosition + 2, text);
       p.setPen(whiteColor());
       p.drawText(textXPosition, textYPosition, text);
     }
@@ -434,10 +463,13 @@ void FrogPilotAnnotatedCameraWidget::paintBlindSpotPath(QPainter &p, SubMaster &
 
   p.save();
 
+  static const QColor bsColor06 = QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.6f);
+  static const QColor bsColor04 = QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.4f);
+  static const QColor bsColor02 = QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.2f);
   QLinearGradient bs(0, height(), 0, 0);
-  bs.setColorAt(0.0f, QColor::fromHslF(0 / 360.0f, 0.75f, 0.5f, 0.6f));
-  bs.setColorAt(0.5f, QColor::fromHslF(0 / 360.0f, 0.75f, 0.5f, 0.4f));
-  bs.setColorAt(1.0f, QColor::fromHslF(0 / 360.0f, 0.75f, 0.5f, 0.2f));
+  bs.setColorAt(0.0f, bsColor06);
+  bs.setColorAt(0.5f, bsColor04);
+  bs.setColorAt(1.0f, bsColor02);
   p.setBrush(bs);
 
   if (track_adjacent_vertices[0].boundingRect().width() > 0 && carState.getLeftBlindspot()) {
@@ -781,10 +813,9 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
     int lineX = centerX - metrics.horizontalAdvance(textLines[i]) / 2;
     int lineY = startY + (i * lineHeight);
 
-    QPainterPath path;
-    path.addText(lineX, lineY, p.font(), textLines[i]);
-    p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
+    // Drop shadow instead of expensive strokePath
+    p.setPen(QColor(0, 0, 0, 200));
+    p.drawText(lineX + 2, lineY + 2, textLines[i]);
     p.setPen(whiteColor());
     p.drawText(lineX, lineY, textLines[i]);
   }
@@ -866,10 +897,10 @@ void FrogPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p, SubMaster &sm,
   float brakeOpacity = 1.0f;
   float gasOpacity = 1.0f;
 
-  if (frogpilot_toggles.value("dynamic_pedals_on_ui").toBool()) {
+  if (frogpilot_toggles.value("dynamic_pedals_on_ui").toBool()) {  // rare sub-toggle, keep as-is
     brakeOpacity = frogpilot_scene.standstill ? 1.0f : carState.getAEgo() < -0.25f ? std::max(0.25f, std::abs(carState.getAEgo())) : 0.25f;
     gasOpacity = std::max(0.25f, carState.getAEgo());
-  } else if (frogpilot_toggles.value("static_pedals_on_ui").toBool()) {
+  } else if (frogpilot_toggles.value("static_pedals_on_ui").toBool()) {  // rare sub-toggle, keep as-is
     brakeOpacity = frogpilot_scene.standstill || frogpilotCarState.getBrakeLights() || carState.getAEgo() < -0.25f ? 1.0f : 0.25f;
     gasOpacity = carState.getAEgo() > 0.25 ? 1.0f : 0.25f;
   }
@@ -898,7 +929,7 @@ void FrogPilotAnnotatedCameraWidget::paintPendingSpeedLimit(QPainter &p, SubMast
   QString newSpeedLimitStr = (frogpilotPlan.getUnconfirmedSlcSpeedLimit() > 1) ? QString::number(std::nearbyint(frogpilotPlan.getUnconfirmedSlcSpeedLimit() * speedConversion)) : "–";
   newSpeedLimitRect = speedLimitRect.translated(speedLimitRect.width() + UI_BORDER_SIZE, 0);
 
-  if (!frogpilot_toggles.value("speed_limit_vienna").toBool()) {
+  if (!toggleSpeedLimitVienna) {
     newSpeedLimitRect.setWidth(newSpeedLimitStr.size() >= 3 ? 200 : 175);
 
     p.setBrush(whiteColor());
@@ -1008,7 +1039,7 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
   QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
 
-  bool hasUsSpeedLimit = !frogpilot_toggles.value("speed_limit_vienna").toBool();
+  bool hasUsSpeedLimit = !toggleSpeedLimitVienna;
   bool hasEuSpeedLimit = !hasUsSpeedLimit;
 
   int euSignSize = 176;
@@ -1037,7 +1068,7 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
     p.drawRoundedRect(signRect.adjusted(9, 9, -9, -9), 16, 16);
 
     p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
-    if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
+    if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && toggleShowSpeedLimitOffset) {
       p.setFont(InterFont(28, QFont::DemiBold));
       p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
@@ -1062,7 +1093,7 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
     p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
     p.setPen(blackColor());
-    if (frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
+    if (toggleShowSpeedLimitOffset) {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect.adjusted(0, -25, 0, 0), Qt::AlignCenter, speedLimitStr);
       p.setFont(InterFont(40, QFont::DemiBold));
@@ -1117,9 +1148,10 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
       QFontMetrics fm(p.font());
       int textYPosition = textRect.y() + (textRect.height() - fm.height()) / 2 + fm.ascent();
 
-      QPainterPath path;
-      path.addText(textRect.x(), textYPosition, p.font(), fullText);
-      p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      // Drop shadow instead of expensive strokePath
+      p.setPen(QColor(0, 0, 0, 200));
+      p.drawText(textRect.x() + 2, textYPosition + 2, fullText);
+      p.setPen(QPen(whiteColor(), 6));
       p.drawText(textRect.x(), textYPosition, fullText);
     } else {
       p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, fullText);
@@ -1128,7 +1160,7 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
 
   int signMargin = 12;
 
-  if (frogpilot_scene.frogpilot_toggles.value("slc_priority_mode").toBool()) {
+  if (toggleSlcPriorityMode) {
     QString activeSource = QString::fromUtf8(frogpilotPlan.getSlcSpeedLimitSource().cStr());
     bool isOverridden = frogpilotPlan.getSlcOverriddenSpeed() > 0;
 
@@ -1301,7 +1333,7 @@ void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &
   QPointF stopSignPosition = centerPoint - QPointF(stopSignImg.width() / 2.0f, stopSignImg.height());
   p.drawPixmap(stopSignPosition, stopSignImg);
 
-  if (frogpilot_toggles.value("show_stopping_point_metrics").toBool()) {
+  if (toggleShowStoppingPointMetrics) {
     float stoppingDistance = modelV2.getPosition().getX()[33 - 1] * distanceConversion;
     QString distanceText = QString::number(std::nearbyint(stoppingDistance)) + leadDistanceUnit;
 
@@ -1310,11 +1342,10 @@ void FrogPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p, SubMaster &
 
     QPointF textPosition(centerPoint.x() - fm.horizontalAdvance(distanceText) / 2.0f, centerPoint.y() - stopSignImg.height() - 35);
 
-    QPainterPath path;
-    path.addText(textPosition, font, distanceText);
-    p.strokePath(path, QPen(Qt::black, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
+    // Drop shadow instead of expensive strokePath
     p.setFont(font);
+    p.setPen(QColor(0, 0, 0, 200));
+    p.drawText(textPosition + QPointF(2, 2), distanceText);
     p.setPen(whiteColor());
     p.drawText(textPosition, distanceText);
   }

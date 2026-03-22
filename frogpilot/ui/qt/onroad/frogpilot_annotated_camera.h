@@ -89,6 +89,26 @@ private:
   int cachedBearing = 0;
   QString cachedRoadName;
 
+  // Cached toggle bools — updated in updateState(), used in paint at 20Hz
+  bool toggleCemStatus = false;
+  bool toggleCompass = false;
+  bool toggleCscStatus = false;
+  bool togglePedalsOnUi = false;
+  bool toggleRadarTracks = false;
+  bool toggleRoadNameUi = false;
+  bool toggleHideSpeedLimit = false;
+  bool toggleShowSpeedLimits = false;
+  bool toggleSpeedLimitController = false;
+  bool toggleSpeedLimitSources = false;
+  bool toggleShowStoppingPoint = false;
+  bool toggleBlindSpotPath = false;
+  bool toggleAdjacentPathMetrics = false;
+  bool toggleShowStoppingPointMetrics = false;
+  bool toggleShowSpeedLimitOffset = false;
+  bool toggleSpeedLimitVienna = false;
+  bool toggleSlcPriorityMode = false;
+  double toggleLaneDetectionWidth = 3.5;
+
   int animationFrameIndex = 0;
   int desiredFollowDistance = 0;
   int frogHopCount = 0;
