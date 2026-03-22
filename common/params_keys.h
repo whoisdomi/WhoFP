@@ -436,6 +436,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SLCAcceptedCruiseSpeed", {CLEAR_ON_MANAGER_START, FLOAT, "0", "0"}},
     {"SLCAdoptSpeedLimit", {CLEAR_ON_MANAGER_START, BOOL, "0", "0"}},
     {"SLCForceCruiseSpeed", {CLEAR_ON_MANAGER_START, FLOAT, "0", "0"}},
+    {"SLCSetOverrideSpeed", {CLEAR_ON_MANAGER_START, FLOAT, "0", "0"}},
     {"SpeedLimitAccepted", {CLEAR_ON_MANAGER_START, BOOL, "0", "0"}},
     {"SpeedLimitChangedAlert", {PERSISTENT, BOOL, "0", "0", 0}},
     {"SpeedLimitController", {PERSISTENT, BOOL, "1", "0", 0}},

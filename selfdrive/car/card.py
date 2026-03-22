@@ -223,6 +223,33 @@ class Car:
       slc_speed_limit = self.sm['frogpilotPlan'].slcSpeedLimit + self.sm['frogpilotPlan'].slcSpeedLimitOffset
       self.v_cruise_helper.initialize_v_cruise(self.CS_prev, self.experimental_mode, self.resume_prev_button, self.frogpilot_toggles, slc_speed_limit)
 
+    # Handle SET+/- interaction with Speed Limit Controller:
+    # - SET- while above speed limit: snap max to current speed and set user override
+    #   (first press only; subsequent presses decrement normally from the overridden speed)
+    # - SET+ above speed limit: auto-raise user override to match new cruise speed
+    if self.frogpilot_toggles.speed_limit_controller and self.sm['carControl'].enabled:
+      slc_limit = self.sm['frogpilotPlan'].slcSpeedLimit
+      slc_offset = self.sm['frogpilotPlan'].slcSpeedLimitOffset
+      slc_total = slc_limit + slc_offset
+      slc_overridden = self.sm['frogpilotPlan'].slcOverriddenSpeed
+      if slc_limit > 0:
+        decel_event = any(be.type == ButtonType.decelCruise for be in CS.buttonEvents)
+        accel_event = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in CS.buttonEvents)
+
+        if decel_event and CS.vEgo > slc_total and slc_overridden <= 0:
+          # SET- while above speed limit with no existing override: lock current speed
+          if self.is_metric:
+            new_cruise_kph = round(CS.vEgoCluster * CV.MS_TO_KPH)
+          else:
+            new_cruise_kph = round(CS.vEgoCluster * CV.MS_TO_MPH) * IMPERIAL_INCREMENT
+          self.v_cruise_helper.v_cruise_kph = max(min(new_cruise_kph, V_CRUISE_MAX), V_CRUISE_MIN)
+          self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
+          self.params_memory.put("SLCSetOverrideSpeed", CS.vEgo)
+
+        elif accel_event and self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS > slc_total:
+          # SET+ raised cruise above speed limit: auto-set/update user override to match
+          self.params_memory.put("SLCSetOverrideSpeed", self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS)
+
     # Check if SLC accepted a higher speed limit and update v_cruise to match
     slc_accepted_speed = self.params_memory.get("SLCAcceptedCruiseSpeed") or 0
     if slc_accepted_speed > 0:

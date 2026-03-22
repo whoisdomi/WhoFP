@@ -365,6 +365,12 @@ class SpeedLimitController:
         self.map_speed_limit = self.next_speed_limit
 
   def update_override(self, v_cruise, v_cruise_diff, v_ego, v_ego_diff, sm):
+    # Pick up override speed set by SET+/- button handling in card.py
+    set_override = self.frogpilot_planner.params_memory.get("SLCSetOverrideSpeed") or 0
+    if set_override > 0:
+      self.overridden_speed = set_override
+      self.frogpilot_planner.params_memory.remove("SLCSetOverrideSpeed")
+
     self.override_slc = self.overridden_speed > self.target + self.offset > 0
     self.override_slc |= sm["carState"].gasPressed and v_ego > self.target + self.offset > 0
     self.override_slc &= sm["selfdriveState"].enabled
