@@ -39,7 +39,7 @@ class CanBus(CanBusBase):
 # Speed-interpolated damp factor [3, 200]
 # Speeds in m/s:        0 mph    30 mph   50 mph   60 mph   70 mph
 DAMP_FACTOR_SPEED = [0,       13.41,   22.35,   26.82,   31.29]
-DAMP_FACTOR =       [20,      60,      100,     120,     200]
+DAMP_FACTOR =       [50,      70,      100,     120,     200]
 DAMP_UNWIND_BOOST = 80
 
 

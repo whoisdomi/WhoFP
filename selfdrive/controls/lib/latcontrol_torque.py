@@ -290,7 +290,10 @@ class LatControlTorque(LatControl):
       # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
       # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
       if unwind_detected:
-        self.pid.i *= 0.95
+        # Faster decay at low speed (turns complete faster, integrator needs to drain quicker)
+        # 0.88 at 0 m/s → 0.95 at 15 m/s (33 mph)
+        unwind_decay = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95]))
+        self.pid.i *= unwind_decay
 
       # Convert to torque at the end
       output_torque = self.torque_from_lateral_accel(
