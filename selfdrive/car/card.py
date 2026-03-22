@@ -244,11 +244,11 @@ class Car:
             new_cruise_kph = round(CS.vEgoCluster * CV.MS_TO_MPH) * IMPERIAL_INCREMENT
           self.v_cruise_helper.v_cruise_kph = max(min(new_cruise_kph, V_CRUISE_MAX), V_CRUISE_MIN)
           self.v_cruise_helper.v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_kph
-          self.params_memory.put("SLCSetOverrideSpeed", CS.vEgo)
+          self.params_memory.put("SLCSetOverrideSpeed", float(CS.vEgo))
 
         elif accel_event and self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS > slc_total:
           # SET+ raised cruise above speed limit: auto-set/update user override to match
-          self.params_memory.put("SLCSetOverrideSpeed", self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS)
+          self.params_memory.put("SLCSetOverrideSpeed", float(self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS))
 
     # Check if SLC accepted a higher speed limit and update v_cruise to match
     slc_accepted_speed = self.params_memory.get("SLCAcceptedCruiseSpeed") or 0
