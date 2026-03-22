@@ -69,10 +69,20 @@ class LongControl:
       output_accel = 0.
 
     elif self.long_control_state == LongCtrlState.stopping:
+      # Speed-proportional stopping: decel tapers as speed approaches zero
+      # so the car's ECU stays in regen range and avoids friction brakes
+      speed_ratio = np.clip(CS.vEgo / max(frogpilot_toggles.vEgoStopping, 0.01), 0.0, 1.0)
+      target_accel = frogpilot_toggles.stopAccel * speed_ratio
+
+      # Rate-limit the transition toward the speed-proportional target
       output_accel = self.last_output_accel
-      if output_accel > frogpilot_toggles.stopAccel:
-        output_accel = min(output_accel, 0.0)
+      output_accel = min(output_accel, 0.0)
+      if output_accel > target_accel:
         output_accel -= frogpilot_toggles.stoppingDecelRate * DT_CTRL
+        output_accel = max(output_accel, target_accel)
+      else:
+        # Speed is dropping, ease off the brakes to follow the taper
+        output_accel = target_accel
       self.reset()
 
     elif self.long_control_state == LongCtrlState.starting:
