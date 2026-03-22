@@ -56,6 +56,8 @@ class CarController(CarControllerBase):
     self.accel_last = 0
     self.apply_torque_last = 0
     self.unwind_hold_timer = 0
+    self.last_steering_angle = 0.0
+    self.peak_steering_angle = 0.0
     self.car_fingerprint = CP.carFingerprint
     self.last_button_frame = 0
     self.ecu_disable_failed = False
@@ -81,20 +83,30 @@ class CarController(CarControllerBase):
     if not CC.latActive:
       apply_torque = 0
 
-    # Detect unwind: torque magnitude decreasing, same direction, not zero
-    # Detect unwind: torque magnitude decreasing, same direction, not zero
-    unwind_detected = (abs(apply_torque) < abs(self.apply_torque_last) and
-                       np.sign(apply_torque) == np.sign(self.apply_torque_last) and
-                       apply_torque != 0)
-    # Detect winding up (turn entry): torque magnitude increasing
-    winding_up = abs(apply_torque) > abs(self.apply_torque_last)
+    # Detect unwind using steering angle (smoother than torque)
+    steering_angle = abs(CS.out.steeringAngleDeg)
+    # Track peak steering angle during a turn
+    if steering_angle > self.peak_steering_angle:
+      self.peak_steering_angle = steering_angle
+    # Unwind = angle returning toward center from a meaningful turn (>5 deg peak)
+    # and angle has dropped significantly from peak (>30%), same sign (not S-curve)
+    unwind_detected = (self.peak_steering_angle > 5.0 and
+                       steering_angle < self.peak_steering_angle * 0.7 and
+                       steering_angle < abs(self.last_steering_angle) and
+                       np.sign(CS.out.steeringAngleDeg) == np.sign(self.last_steering_angle) if self.last_steering_angle != 0 else False)
+    # Winding up (turn entry): angle increasing past a meaningful threshold
+    winding_up = steering_angle > abs(self.last_steering_angle) + 0.5 and steering_angle > 5.0
     if winding_up:
       self.unwind_hold_timer = 0  # Cancel boost immediately on turn entry
     elif unwind_detected:
       self.unwind_hold_timer = 3.0 / DT_CTRL  # 3 seconds at 100 Hz = 300 frames
     elif self.unwind_hold_timer > 0:
       self.unwind_hold_timer -= 1
+    # Reset peak when angle is near center
+    if steering_angle < 2.0:
+      self.peak_steering_angle = 0.0
     self.unwinding = self.unwind_hold_timer > 0
+    self.last_steering_angle = CS.out.steeringAngleDeg
 
     # Hold torque with induced temporary fault when cutting the actuation bit
     # FIXME: we don't use this with CAN FD?
