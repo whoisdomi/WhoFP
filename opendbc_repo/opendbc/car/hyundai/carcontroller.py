@@ -58,6 +58,7 @@ class CarController(CarControllerBase):
     self.unwind_hold_timer = 0
     self.last_steering_angle = 0.0
     self.peak_steering_angle = 0.0
+    self.unwind_frames = 0
     self.car_fingerprint = CP.carFingerprint
     self.last_button_frame = 0
     self.ecu_disable_failed = False
@@ -84,22 +85,28 @@ class CarController(CarControllerBase):
       apply_torque = 0
 
     # Detect unwind using steering angle (smoother than torque)
+    # Mirrors latcontrol_torque.py hysteresis: activates at 5 frames, drains at 1/frame
     steering_angle = abs(CS.out.steeringAngleDeg)
     # Track peak steering angle during a turn
     if steering_angle > self.peak_steering_angle:
       self.peak_steering_angle = steering_angle
-    # Unwind = angle returning toward center from a meaningful turn (>5 deg peak)
-    # and angle has dropped significantly from peak (>30%), same sign (not S-curve)
-    unwind_detected = (self.peak_steering_angle > 5.0 and
-                       steering_angle < self.peak_steering_angle * 0.7 and
-                       steering_angle < abs(self.last_steering_angle) and
-                       np.sign(CS.out.steeringAngleDeg) == np.sign(self.last_steering_angle) if self.last_steering_angle != 0 else False)
-    # Winding up (turn entry): angle increasing past a meaningful threshold
+    # Unwind condition: angle decreasing from a real turn, same sign (not S-curve)
+    unwind_condition = (self.peak_steering_angle > 5.0 and
+                        steering_angle < abs(self.last_steering_angle) and
+                        (np.sign(CS.out.steeringAngleDeg) == np.sign(self.last_steering_angle) if self.last_steering_angle != 0 else False))
+    # Hysteresis counter (matches latcontrol_torque style)
+    if unwind_condition:
+      self.unwind_frames = min(self.unwind_frames + 1, 15)
+    else:
+      self.unwind_frames = max(self.unwind_frames - 1, 0)
+    unwind_active = self.unwind_frames >= 5
+    # Winding up (turn entry >5 deg): cancel hold timer immediately
     winding_up = steering_angle > abs(self.last_steering_angle) + 0.5 and steering_angle > 5.0
     if winding_up:
-      self.unwind_hold_timer = 0  # Cancel boost immediately on turn entry
-    elif unwind_detected:
-      self.unwind_hold_timer = 3.0 / DT_CTRL  # 3 seconds at 100 Hz = 300 frames
+      self.unwind_hold_timer = 0
+      self.unwind_frames = 0
+    elif unwind_active:
+      self.unwind_hold_timer = 3.0 / DT_CTRL  # 3 second hold
     elif self.unwind_hold_timer > 0:
       self.unwind_hold_timer -= 1
     # Reset peak when angle is near center
