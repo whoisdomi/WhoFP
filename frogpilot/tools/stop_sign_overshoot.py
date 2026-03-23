@@ -31,7 +31,6 @@ def print_stop_summary(stop):
       print(f"  ** OVERSHOOT (force stop at standstill): {stop['standstill_force_len_ft']:.1f} ft **")
     else:
       print(f"  Force stop was not active at standstill")
-    print(f"  Model length at standstill: {stop['standstill_model_len_ft']:.1f} ft")
     print(f"  Time to stop: {stop['standstill_time']:.1f}s")
   else:
     print(f"  Did not reach standstill (rolling stop or no force stop)")
@@ -91,7 +90,10 @@ if __name__ == "__main__":
   all_stops = []
 
   def _main_wrapper():
-    sm = messaging.SubMaster(["frogpilotCarState", "frogpilotPlan", "carState", "modelV2"])
+    # Only subscribe to frogpilot messages and carState — do NOT subscribe to
+    # modelV2 or other core messages, as that steals them from the longitudinal
+    # planner and causes "Communication Issue Between Processes" errors.
+    sm = messaging.SubMaster(["frogpilotCarState", "frogpilotPlan", "carState"])
 
     current = None
     stop_count = 0
@@ -109,7 +111,6 @@ if __name__ == "__main__":
       dash_on = sm["frogpilotCarState"].dashboardStopSign > 0
       forcing = sm["frogpilotPlan"].forcingStop
       force_len_m = sm["frogpilotPlan"].forcingStopLength
-      model_len_m = sm["modelV2"].position.x[-1] if len(sm["modelV2"].position.x) > 0 else 0
       v_ego = sm["carState"].vEgo
       speed_mph = v_ego * 2.237
       standstill = sm["carState"].standstill
@@ -121,13 +122,11 @@ if __name__ == "__main__":
           "id": stop_count,
           "start_time": now,
           "dash_on_force_len_ft": force_len_m * M_TO_FT if forcing else None,
-          "dash_on_model_len_ft": model_len_m * M_TO_FT,
           "dash_on_speed_mph": speed_mph,
           "dash_on_forcing": forcing,
           "dash_on_red_light": red_light,
           "frames": [],
           "standstill_force_len_ft": None,
-          "standstill_model_len_ft": None,
           "standstill_time": None,
           "reached_standstill": False,
           "force_stop_activated": forcing,
@@ -137,15 +136,14 @@ if __name__ == "__main__":
         if forcing:
           print(f"  Force stop already active: {force_len_m * M_TO_FT:.1f} ft remaining")
         else:
-          print(f"  Force stop NOT yet active (model_len: {model_len_m * M_TO_FT:.1f} ft)")
-        print(f"  {'Time':>6s}  {'Speed':>6s}  {'ForceLen':>9s}  {'ModelLen':>9s}  {'Status'}")
-        print(f"  {'(s)':>6s}  {'(mph)':>6s}  {'(ft)':>9s}  {'(ft)':>9s}")
-        print(f"  {'-'*6}  {'-'*6}  {'-'*9}  {'-'*9}  {'-'*15}")
+          print(f"  Force stop NOT yet active")
+        print(f"  {'Time':>6s}  {'Speed':>6s}  {'ForceLen':>9s}  {'Status'}")
+        print(f"  {'(s)':>6s}  {'(mph)':>6s}  {'(ft)':>9s}")
+        print(f"  {'-'*6}  {'-'*6}  {'-'*9}  {'-'*15}")
 
       if current is not None:
         elapsed = now - current["start_time"]
         force_ft = force_len_m * M_TO_FT
-        model_ft = model_len_m * M_TO_FT
 
         if forcing:
           current["force_stop_activated"] = True
@@ -163,7 +161,6 @@ if __name__ == "__main__":
           "elapsed": elapsed,
           "speed_mph": speed_mph,
           "force_len_ft": force_ft if forcing else None,
-          "model_len_ft": model_ft,
           "forcing": forcing,
           "dash_on": dash_on,
         }
@@ -171,15 +168,14 @@ if __name__ == "__main__":
 
         if len(current["frames"]) % 10 == 1:
           force_str = f"{force_ft:9.1f}" if forcing else f"{'---':>9s}"
-          print(f"  {elapsed:6.1f}  {speed_mph:6.1f}  {force_str}  {model_ft:9.1f}  {status}")
+          print(f"  {elapsed:6.1f}  {speed_mph:6.1f}  {force_str}  {status}")
 
         if standstill and not current["reached_standstill"]:
           current["reached_standstill"] = True
           current["standstill_time"] = elapsed
           current["standstill_force_len_ft"] = force_ft if forcing else None
-          current["standstill_model_len_ft"] = model_ft
           force_str = f"{force_ft:.1f}" if forcing else "N/A"
-          print(f"  >>> STANDSTILL at {elapsed:.1f}s — Force: {force_str} ft, Model: {model_ft:.1f} ft <<<")
+          print(f"  >>> STANDSTILL at {elapsed:.1f}s — Force stop remaining: {force_str} ft <<<")
 
         end_event = False
         if current["reached_standstill"] and not standstill and elapsed - current["standstill_time"] > 4:
