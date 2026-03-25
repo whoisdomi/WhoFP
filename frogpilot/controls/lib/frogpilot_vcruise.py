@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import os
+import time
+
 from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_MDL
 
@@ -7,6 +10,8 @@ from openpilot.frogpilot.controls.lib.curve_speed_controller import CurveSpeedCo
 from openpilot.frogpilot.controls.lib.speed_limit_controller import SpeedLimitController
 
 OVERRIDE_FORCE_STOP_TIMER = 10
+STOP_SIGN_LOG = "/data/stop_sign_overshoot.csv"
+M_TO_FT = 3.28084
 
 class FrogPilotVCruise:
   def __init__(self, FrogPilotPlanner):
@@ -22,6 +27,29 @@ class FrogPilotVCruise:
     self.green_light_timer = 0
     self.override_force_stop_timer = 0
     self.tracked_model_length = 0
+
+    # Stop sign overshoot logging
+    self._ss_log_active = False
+    self._ss_stop_id = 0
+    self._ss_dash_on_force_ft = None
+    self._ss_dash_on_speed = None
+    self._ss_logged_standstill = False
+    self._ss_init_log()
+
+  def _ss_init_log(self):
+    if not os.path.exists(STOP_SIGN_LOG):
+      with open(STOP_SIGN_LOG, "w") as f:
+        f.write("stop_id,timestamp,event,speed_mph,force_len_ft,model_len_ft,tracked_len_ft,dash_on,forcing\n")
+
+  def _ss_log(self, event, v_ego, sm):
+    force_ft = self.tracked_model_length * M_TO_FT
+    model_ft = self.frogpilot_planner.model_length * M_TO_FT
+    tracked_ft = self.tracked_model_length * M_TO_FT
+    speed_mph = v_ego * 2.237
+    dash = 1 if sm["frogpilotCarState"].dashboardStopSign > 0 else 0
+    forcing = 1 if self.forcing_stop else 0
+    with open(STOP_SIGN_LOG, "a") as f:
+      f.write(f"{self._ss_stop_id},{time.monotonic():.2f},{event},{speed_mph:.1f},{force_ft:.1f},{model_ft:.1f},{tracked_ft:.1f},{dash},{forcing}\n")
 
   def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
     # Normal force stop condition (requires toggle + model_stopped)
@@ -174,6 +202,26 @@ class FrogPilotVCruise:
         if frogpilot_toggles.speed_limit_controller:
           targets.append(max(self.slc.overridden_speed, self.slc_target + self.slc_offset) - v_ego_diff)
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
+
+    # --- Stop sign overshoot logging ---
+    dash_active = sm["frogpilotCarState"].dashboardStopSign > 0
+    if dash_active and self.forcing_stop and not self._ss_log_active:
+      # New stop sign event
+      self._ss_stop_id += 1
+      self._ss_log_active = True
+      self._ss_logged_standstill = False
+      self._ss_dash_on_force_ft = self.tracked_model_length * M_TO_FT
+      self._ss_dash_on_speed = v_ego * 2.237
+      self._ss_log("DASH_ON", v_ego, sm)
+    elif self._ss_log_active:
+      if self.forcing_stop:
+        self._ss_log("APPROACH", v_ego, sm)
+      if sm["carState"].standstill and not self._ss_logged_standstill:
+        self._ss_logged_standstill = True
+        self._ss_log("STANDSTILL", v_ego, sm)
+      if not self.forcing_stop and not dash_active:
+        self._ss_log("END", v_ego, sm)
+        self._ss_log_active = False
 
     # Manual Stop Ahead: gradually reduce v_cruise continuously
     # Runs through force stop handoff - min() picks the tighter constraint
