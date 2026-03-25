@@ -61,8 +61,8 @@ def main():
     if dash_on:
       e = dash_on[0]
       print(f"  Dash-on speed:       {float(e['speed_mph']):>5.0f} mph")
-      print(f"  Force len at dash-on:{float(e['force_len_ft']):>6.1f} ft")
-      print(f"  Model len at dash-on:{float(e['model_len_ft']):>6.1f} ft")
+      print(f"  Tracked len at dash: {float(e['tracked_len_ft']):>6.1f} ft")
+      print(f"  Model len at dash:   {float(e['model_len_ft']):>6.1f} ft")
 
     if approaches:
       # Show a few approach frames to see the countdown
@@ -74,20 +74,24 @@ def main():
       if len(approaches) > 1:
         samples.append(approaches[-1])
       for e in samples:
-        print(f"    {float(e['speed_mph']):>5.1f} mph  force:{float(e['force_len_ft']):>6.1f} ft  model:{float(e['model_len_ft']):>6.1f} ft")
+        brake = " BRAKE" if e.get("brake", "0") == "1" else ""
+        print(f"    {float(e['speed_mph']):>5.1f} mph  tracked:{float(e['tracked_len_ft']):>6.1f} ft  model:{float(e['model_len_ft']):>6.1f} ft{brake}")
 
     if standstills:
       e = standstills[0]
-      overshoot = float(e["force_len_ft"])
+      overshoot = float(e["tracked_len_ft"])
       model_at_stop = float(e["model_len_ft"])
+      stopped_by = "DRIVER (brake)" if e.get("brake", "0") == "1" else "FORCE STOP (auto)"
+      print(f"  Stopped by:          {stopped_by}")
       print(f"  ** OVERSHOOT:        {overshoot:>6.1f} ft **")
       print(f"  Model len at stop:   {model_at_stop:>6.1f} ft")
       valid_overshoots.append({
         "id": sid,
         "speed": float(dash_on[0]["speed_mph"]) if dash_on else 0,
-        "dash_on_ft": float(dash_on[0]["force_len_ft"]) if dash_on else 0,
+        "dash_on_ft": float(dash_on[0]["tracked_len_ft"]) if dash_on else 0,
         "overshoot_ft": overshoot,
         "model_at_stop_ft": model_at_stop,
+        "driver_stopped": e.get("brake", "0") == "1",
       })
     else:
       print(f"  (no standstill recorded)")
@@ -106,11 +110,12 @@ def main():
   os_vals = [s["overshoot_ft"] for s in valid_overshoots]
   model_vals = [s["model_at_stop_ft"] for s in valid_overshoots]
 
-  print(f"\n{'Stop':>5s}  {'Speed':>6s}  {'Dash-On':>8s}  {'Overshoot':>10s}  {'Model@Stop':>11s}")
+  print(f"\n{'Stop':>5s}  {'Speed':>6s}  {'Dash-On':>8s}  {'Overshoot':>10s}  {'Model@Stop':>11s}  {'Stopped By'}")
   print(f"{'#':>5s}  {'(mph)':>6s}  {'(ft)':>8s}  {'(ft)':>10s}  {'(ft)':>11s}")
-  print(f"{'-'*5}  {'-'*6}  {'-'*8}  {'-'*10}  {'-'*11}")
+  print(f"{'-'*5}  {'-'*6}  {'-'*8}  {'-'*10}  {'-'*11}  {'-'*12}")
   for s in valid_overshoots:
-    print(f"{s['id']:>5d}  {s['speed']:>6.0f}  {s['dash_on_ft']:>8.1f}  {s['overshoot_ft']:>10.1f}  {s['model_at_stop_ft']:>11.1f}")
+    who = "DRIVER" if s["driver_stopped"] else "AUTO"
+    print(f"{s['id']:>5d}  {s['speed']:>6.0f}  {s['dash_on_ft']:>8.1f}  {s['overshoot_ft']:>10.1f}  {s['model_at_stop_ft']:>11.1f}  {who}")
 
   print(f"\n  Overshoot (force stop ft remaining at standstill):")
   print(f"    Min:     {min(os_vals):>6.1f} ft")

@@ -31,25 +31,26 @@ class FrogPilotVCruise:
     # Stop sign overshoot logging
     self._ss_log_active = False
     self._ss_stop_id = 0
-    self._ss_dash_on_force_ft = None
-    self._ss_dash_on_speed = None
     self._ss_logged_standstill = False
+    self._ss_last_tracked_ft = 0
+    self._ss_last_model_ft = 0
+    self._ss_last_speed = 0
     self._ss_init_log()
 
   def _ss_init_log(self):
     if not os.path.exists(STOP_SIGN_LOG):
       with open(STOP_SIGN_LOG, "w") as f:
-        f.write("stop_id,timestamp,event,speed_mph,force_len_ft,model_len_ft,tracked_len_ft,dash_on,forcing\n")
+        f.write("stop_id,timestamp,event,speed_mph,tracked_len_ft,model_len_ft,dash_on,forcing,brake\n")
 
-  def _ss_log(self, event, v_ego, sm):
-    force_ft = self.tracked_model_length * M_TO_FT
-    model_ft = self.frogpilot_planner.model_length * M_TO_FT
-    tracked_ft = self.tracked_model_length * M_TO_FT
-    speed_mph = v_ego * 2.237
+  def _ss_log(self, event, v_ego, sm, tracked_ft_override=None, model_ft_override=None, speed_override=None):
+    tracked_ft = tracked_ft_override if tracked_ft_override is not None else self.tracked_model_length * M_TO_FT
+    model_ft = model_ft_override if model_ft_override is not None else self.frogpilot_planner.model_length * M_TO_FT
+    speed_mph = speed_override if speed_override is not None else v_ego * 2.237
     dash = 1 if sm["frogpilotCarState"].dashboardStopSign > 0 else 0
     forcing = 1 if self.forcing_stop else 0
+    brake = 1 if sm["carState"].brakePressed else 0
     with open(STOP_SIGN_LOG, "a") as f:
-      f.write(f"{self._ss_stop_id},{time.monotonic():.2f},{event},{speed_mph:.1f},{force_ft:.1f},{model_ft:.1f},{tracked_ft:.1f},{dash},{forcing}\n")
+      f.write(f"{self._ss_stop_id},{time.monotonic():.2f},{event},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{brake}\n")
 
   def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
     # Normal force stop condition (requires toggle + model_stopped)
@@ -212,21 +213,34 @@ class FrogPilotVCruise:
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     # --- Stop sign overshoot logging ---
+    # Save last non-zero values every frame while active, so we can report
+    # the overshoot at standstill (tracked_model_length gets zeroed at standstill
+    # before this code runs, so we need the previous frame's values).
     dash_active = sm["frogpilotCarState"].dashboardStopSign > 0
+    if self._ss_log_active and not sm["carState"].standstill and self.forcing_stop:
+      self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
+      self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
+      self._ss_last_speed = v_ego * 2.237
+
     if dash_active and self.forcing_stop and not self._ss_log_active:
       # New stop sign event
       self._ss_stop_id += 1
       self._ss_log_active = True
       self._ss_logged_standstill = False
-      self._ss_dash_on_force_ft = self.tracked_model_length * M_TO_FT
-      self._ss_dash_on_speed = v_ego * 2.237
+      self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
+      self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
+      self._ss_last_speed = v_ego * 2.237
       self._ss_log("DASH_ON", v_ego, sm)
     elif self._ss_log_active:
-      if self.forcing_stop:
+      if self.forcing_stop and not sm["carState"].standstill:
         self._ss_log("APPROACH", v_ego, sm)
       if sm["carState"].standstill and not self._ss_logged_standstill:
         self._ss_logged_standstill = True
-        self._ss_log("STANDSTILL", v_ego, sm)
+        # Use last non-zero values captured above — tracked_model_length is already 0 here
+        self._ss_log("STANDSTILL", v_ego, sm,
+                     tracked_ft_override=self._ss_last_tracked_ft,
+                     model_ft_override=self._ss_last_model_ft,
+                     speed_override=self._ss_last_speed)
       if not self.forcing_stop and not dash_active:
         self._ss_log("END", v_ego, sm)
         self._ss_log_active = False
