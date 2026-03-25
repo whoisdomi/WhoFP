@@ -218,9 +218,16 @@ class LongitudinalPlanner:
     # Manual Stop Ahead: apply active deceleration immediately when button is pressed.
     # Works regardless of lead presence — the v_cruise ramp-down handles the MPC side,
     # this handles the direct output side for immediate driver-felt response.
+    # Scale by proximity: when Force Stop hasn't engaged yet (far away), use gentler decel
+    # to coast rather than brake hard. Once Force Stop is active, apply full direct decel.
     if manual_stop and v_ego > 0.5:
-      # Speed-scaled decel: harder at highway speeds, gentle at low speeds
-      manual_decel = float(np.interp(v_ego, [0.5, 5.0, 15.0, 30.0], [0.2, 0.5, 1.0, 1.5]))
+      forcing_stop = sm['frogpilotPlan'].forcingStop
+      if forcing_stop:
+        # Close enough for Force Stop — apply full speed-scaled decel
+        manual_decel = float(np.interp(v_ego, [0.5, 5.0, 15.0, 30.0], [0.2, 0.5, 1.0, 1.5]))
+      else:
+        # Far away, coasting phase — gentle decel (v_cruise ramp handles the main slowdown)
+        manual_decel = float(np.interp(v_ego, [0.5, 5.0, 15.0, 30.0], [0.1, 0.15, 0.25, 0.4]))
       # Only apply the additional decel beyond what pre_brake already provides
       if manual_decel > self.pre_brake:
         additional = manual_decel - self.pre_brake

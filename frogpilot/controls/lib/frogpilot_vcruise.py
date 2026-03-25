@@ -59,12 +59,20 @@ class FrogPilotVCruise:
     # Don't activate force stop mid-turn — model trajectory shortens in curves, causing false triggers
     force_stop &= not self.frogpilot_planner.driving_in_curve
 
-    # Manual Stop Ahead can trigger force stop immediately when light is detected
+    # Manual Stop Ahead can trigger force stop when light is detected
     # (bypass model_stopped and force_stops toggle since user indicated stop ahead)
+    # BUT only when close enough that Force Stop's decel profile won't be too aggressive.
+    # When far away, Manual Stop's own v_cruise ramp handles the gentle coast/decel.
+    # Gate: either model already predicts a stop (normal timing) OR kinematic check passes:
+    #   comfortable decel threshold = v_ego² / (2 * model_length) ≤ 2.0 m/s²
+    #   → model_length ≥ v_ego² / 4.0
+    model_len = max(self.frogpilot_planner.model_length, 1.0)
+    close_enough_for_force_stop = self.frogpilot_planner.model_stopped or (v_ego ** 2 / (2.0 * model_len)) <= 2.0
     manual_stop_force_stop = sm["frogpilotCarState"].manualStopAhead and self.frogpilot_planner.frogpilot_cem.stop_light_detected
     manual_stop_force_stop &= long_control_active
     manual_stop_force_stop &= self.override_force_stop_timer <= 0
     manual_stop_force_stop &= not self.frogpilot_planner.tracking_lead
+    manual_stop_force_stop &= close_enough_for_force_stop
 
     # Dashboard stop sign confirmation from camera ECU (CAM_0x361 SIGN_TYPE == 15)
     dashboard_stop_sign = sm["frogpilotCarState"].dashboardStopSign > 0
@@ -229,8 +237,13 @@ class FrogPilotVCruise:
     # use the lower v_cruise to decelerate more aggressively.
     if sm["frogpilotCarState"].manualStopAhead:
       self.manual_stop_ahead_v_cruise = getattr(self, 'manual_stop_ahead_v_cruise', v_ego)
-      # Decel rate: 2.0 m/s per second (~4.5 mph/s) — firm but comfortable
-      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (2.0 * DT_MDL), 0)
+      # Distance-aware decel: gentle coast when far away, firmer as we approach.
+      # Ideal constant decel to stop at model_length: a = v² / (2d)
+      # Clamp between 0.3 (gentle coast) and 2.5 (firm but comfortable)
+      dist = max(self.frogpilot_planner.model_length, 5.0)
+      ideal_decel = (self.manual_stop_ahead_v_cruise ** 2) / (2.0 * dist)
+      decel_rate = max(0.3, min(ideal_decel, 2.5))
+      self.manual_stop_ahead_v_cruise = max(self.manual_stop_ahead_v_cruise - (decel_rate * DT_MDL), 0)
       v_cruise = min(v_cruise, self.manual_stop_ahead_v_cruise)
     else:
       self.manual_stop_ahead_v_cruise = v_ego
