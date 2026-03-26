@@ -222,15 +222,20 @@ class FrogPilotVCruise:
       self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
       self._ss_last_speed = v_ego * 2.237
 
-    if dash_active and self.forcing_stop and not self._ss_log_active:
-      # New stop sign event
+    # Start logging when dash stop sign is on OR force stop is active with dash having been
+    # seen recently. Trigger requires dash at some point to filter out red lights.
+    # Key fix: also start if force stop activates while dash is already on (not just dash appearing while forcing).
+    should_start = not self._ss_log_active and not sm["carState"].standstill and dash_active and \
+                   (self.forcing_stop or self.frogpilot_planner.frogpilot_cem.stop_light_detected)
+    if should_start:
       self._ss_stop_id += 1
       self._ss_log_active = True
       self._ss_logged_standstill = False
       self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
       self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
       self._ss_last_speed = v_ego * 2.237
-      self._ss_log("DASH_ON", v_ego, sm)
+      trigger = "DASH+FORCE" if self.forcing_stop else "DASH_ON"
+      self._ss_log(trigger, v_ego, sm)
     elif self._ss_log_active:
       if self.forcing_stop and not sm["carState"].standstill:
         self._ss_log("APPROACH", v_ego, sm)
