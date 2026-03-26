@@ -1,4 +1,7 @@
+import csv
 import math
+import os
+import time
 import numpy as np
 from collections import deque
 
@@ -119,6 +122,13 @@ class LatControlTorque(LatControl):
     # from spiking torque, while allowing full FF amplitude for sustained turns
     self.filtered_ff = 0.0
     self.ff_filter_alpha = 0.15  # ~67ms time constant at 100Hz
+
+    # Unwind diagnostic logging state
+    self._unwind_log_peak_angle = 0.0
+    self._unwind_log_active = False
+    self._unwind_log_file = None
+    self._unwind_log_writer = None
+    self._unwind_log_centered_frames = 0
 
 
   def update_live_delay(self, lateral_delay):
@@ -311,6 +321,66 @@ class LatControlTorque(LatControl):
       pid_log.actualLateralAccel = float(measurement)
       pid_log.desiredLateralAccel = float(setpoint)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_controls, curvature_limited))
+
+    # --- Unwind diagnostic logging (turns > 120° steering) ---
+    try:
+      abs_angle = abs(CS.steeringAngleDeg)
+
+      # Track peak steering angle
+      if abs_angle > self._unwind_log_peak_angle:
+        self._unwind_log_peak_angle = abs_angle
+
+      # Start logging: peak exceeded 120° and wheel is now unwinding (dropped 10° from peak)
+      if not self._unwind_log_active and self._unwind_log_peak_angle > 120.0 and abs_angle < self._unwind_log_peak_angle - 10.0:
+        self._unwind_log_active = True
+        self._unwind_log_centered_frames = 0
+        log_dir = "/tmp"
+        log_path = os.path.join(log_dir, f"unwind_{int(time.monotonic())}.csv")
+        self._unwind_log_file = open(log_path, 'w', newline='')
+        self._unwind_log_writer = csv.writer(self._unwind_log_file)
+        self._unwind_log_writer.writerow([
+          'time_s', 'steering_angle_deg', 'speed_mph', 'torque_request',
+          'pid_p', 'pid_i', 'pid_f', 'error', 'setpoint', 'measurement',
+          'desired_curvature', 'unwind_detected', 'unwind_decay',
+        ])
+
+      # Write a row each frame while logging
+      if self._unwind_log_active and self._unwind_log_writer is not None:
+        decay_val = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95])) if unwind_detected else 1.0
+        self._unwind_log_writer.writerow([
+          f"{time.monotonic():.3f}",
+          f"{CS.steeringAngleDeg:.2f}",
+          f"{CS.vEgo * 2.237:.1f}",
+          f"{output_torque:.4f}",
+          f"{self.pid.p:.4f}",
+          f"{self.pid.i:.4f}",
+          f"{self.pid.f:.4f}",
+          f"{error:.4f}",
+          f"{setpoint:.4f}",
+          f"{measurement:.4f}",
+          f"{desired_curvature:.6f}",
+          int(unwind_detected),
+          f"{decay_val:.3f}",
+        ])
+        self._unwind_log_file.flush()
+
+        # Stop logging once centered (within 3° for 1 second)
+        if abs_angle < 3.0:
+          self._unwind_log_centered_frames += 1
+          if self._unwind_log_centered_frames >= 100:  # 1 sec at 100 Hz
+            self._unwind_log_active = False
+            self._unwind_log_file.close()
+            self._unwind_log_file = None
+            self._unwind_log_writer = None
+            self._unwind_log_peak_angle = 0.0
+        else:
+          self._unwind_log_centered_frames = 0
+
+      # Reset peak when not logging and wheel is near center
+      if not self._unwind_log_active and abs_angle < 5.0:
+        self._unwind_log_peak_angle = 0.0
+    except Exception:
+      pass  # Never let logging crash the control loop
 
     # TODO left is positive in this convention
     return -output_torque, 0.0, pid_log
