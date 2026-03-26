@@ -131,6 +131,7 @@ class LatControlTorque(LatControl):
     self._unwind_log_path = None
     self._unwind_log_centered_frames = 0
     self._unwind_log_driver_touched = False
+    self._unwind_log_start_time = 0.0
 
 
   def update_live_delay(self, lateral_delay):
@@ -337,6 +338,7 @@ class LatControlTorque(LatControl):
         self._unwind_log_active = True
         self._unwind_log_centered_frames = 0
         self._unwind_log_driver_touched = False
+        self._unwind_log_start_time = time.monotonic()
         self._unwind_log_path = os.path.join("/data/media", f"unwind_{int(time.monotonic())}.csv")
         self._unwind_log_file = open(self._unwind_log_path, 'w', newline='')
         self._unwind_log_writer = csv.writer(self._unwind_log_file)
@@ -370,21 +372,25 @@ class LatControlTorque(LatControl):
         ])
         self._unwind_log_file.flush()
 
-        # Stop logging once centered (within 3° for 1 second)
-        if abs_angle < 3.0:
+        # Stop conditions: centered (within 5° for 1 sec), stopped (< 1.5 m/s), or timeout (30s)
+        timed_out = (time.monotonic() - self._unwind_log_start_time) > 30.0
+        stopped = CS.vEgo < 1.5
+        if abs_angle < 5.0:
           self._unwind_log_centered_frames += 1
-          if self._unwind_log_centered_frames >= 100:  # 1 sec at 100 Hz
-            self._unwind_log_active = False
-            self._unwind_log_file.close()
-            self._unwind_log_file = None
-            self._unwind_log_writer = None
-            # Delete log if driver touched the wheel during unwind
-            if self._unwind_log_driver_touched and self._unwind_log_path:
-              os.remove(self._unwind_log_path)
-            self._unwind_log_path = None
-            self._unwind_log_peak_angle = 0.0
         else:
           self._unwind_log_centered_frames = 0
+        centered = self._unwind_log_centered_frames >= 100  # 1 sec at 100 Hz
+
+        if centered or stopped or timed_out:
+          self._unwind_log_active = False
+          self._unwind_log_file.close()
+          self._unwind_log_file = None
+          self._unwind_log_writer = None
+          # Delete log if driver touched the wheel or car stopped (useless data)
+          if (self._unwind_log_driver_touched or stopped) and self._unwind_log_path:
+            os.remove(self._unwind_log_path)
+          self._unwind_log_path = None
+          self._unwind_log_peak_angle = 0.0
 
       # Reset peak when not logging and wheel is near center
       if not self._unwind_log_active and abs_angle < 5.0:
