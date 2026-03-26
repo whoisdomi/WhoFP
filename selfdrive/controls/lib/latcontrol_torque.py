@@ -128,7 +128,9 @@ class LatControlTorque(LatControl):
     self._unwind_log_active = False
     self._unwind_log_file = None
     self._unwind_log_writer = None
+    self._unwind_log_path = None
     self._unwind_log_centered_frames = 0
+    self._unwind_log_driver_touched = False
 
 
   def update_live_delay(self, lateral_delay):
@@ -334,9 +336,9 @@ class LatControlTorque(LatControl):
       if not self._unwind_log_active and self._unwind_log_peak_angle > 120.0 and abs_angle < self._unwind_log_peak_angle - 10.0:
         self._unwind_log_active = True
         self._unwind_log_centered_frames = 0
-        log_dir = "/tmp"
-        log_path = os.path.join(log_dir, f"unwind_{int(time.monotonic())}.csv")
-        self._unwind_log_file = open(log_path, 'w', newline='')
+        self._unwind_log_driver_touched = False
+        self._unwind_log_path = os.path.join("/data/media", f"unwind_{int(time.monotonic())}.csv")
+        self._unwind_log_file = open(self._unwind_log_path, 'w', newline='')
         self._unwind_log_writer = csv.writer(self._unwind_log_file)
         self._unwind_log_writer.writerow([
           'time_s', 'steering_angle_deg', 'speed_mph', 'torque_request',
@@ -346,6 +348,10 @@ class LatControlTorque(LatControl):
 
       # Write a row each frame while logging
       if self._unwind_log_active and self._unwind_log_writer is not None:
+        # Track if driver intervened during this unwind
+        if CS.steeringPressed:
+          self._unwind_log_driver_touched = True
+
         decay_val = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95])) if unwind_detected else 1.0
         self._unwind_log_writer.writerow([
           f"{time.monotonic():.3f}",
@@ -372,6 +378,10 @@ class LatControlTorque(LatControl):
             self._unwind_log_file.close()
             self._unwind_log_file = None
             self._unwind_log_writer = None
+            # Delete log if driver touched the wheel during unwind
+            if self._unwind_log_driver_touched and self._unwind_log_path:
+              os.remove(self._unwind_log_path)
+            self._unwind_log_path = None
             self._unwind_log_peak_angle = 0.0
         else:
           self._unwind_log_centered_frames = 0
