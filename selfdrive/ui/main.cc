@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <execinfo.h>
 #include <dlfcn.h>
+#include <time.h>
 
 #include <QApplication>
 #include <QTranslator>
@@ -16,6 +17,65 @@
 extern volatile int modelDrawStage;
 extern volatile int fpWidgetPaintStage;
 extern volatile int fpUpdateStage;
+
+// Track when the UI started (monotonic) for uptime calculation
+static struct timespec ui_start_time;
+
+// Signal-safe: get uptime in seconds since UI started
+static int ui_uptime_sec() {
+  struct timespec now;
+  clock_gettime(CLOCK_MONOTONIC, &now);
+  return (int)(now.tv_sec - ui_start_time.tv_sec);
+}
+
+// Signal-safe: write a timestamp prefix like "[2026-03-26 14:30:05 uptime=123s] "
+static int write_timestamp(char *buf, int bufsize) {
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  struct tm tm;
+  localtime_r(&ts.tv_sec, &tm);
+  return snprintf(buf, bufsize, "[%04d-%02d-%02d %02d:%02d:%02d up=%ds] ",
+    tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+    tm.tm_hour, tm.tm_min, tm.tm_sec, ui_uptime_sec());
+}
+
+// Signal-safe: read VmRSS from /proc/self/status
+static int get_rss_mb() {
+  char buf[1024];
+  int fd = open("/proc/self/status", O_RDONLY);
+  if (fd < 0) return -1;
+  int n = read(fd, buf, sizeof(buf) - 1);
+  close(fd);
+  if (n <= 0) return -1;
+  buf[n] = '\0';
+  // Find "VmRSS:" line
+  const char *p = buf;
+  while (*p) {
+    if (p[0] == 'V' && p[1] == 'm' && p[2] == 'R' && p[3] == 'S' && p[4] == 'S') {
+      p += 6; // skip "VmRSS:"
+      while (*p == ' ' || *p == '\t') p++;
+      int kb = 0;
+      while (*p >= '0' && *p <= '9') { kb = kb * 10 + (*p - '0'); p++; }
+      return kb / 1024;
+    }
+    while (*p && *p != '\n') p++;
+    if (*p == '\n') p++;
+  }
+  return -1;
+}
+
+// Helper: write a log line with timestamp to crash log and stderr
+static void log_crash_event(const char *msg) {
+  char buf[512];
+  int tlen = write_timestamp(buf, sizeof(buf));
+  int mlen = snprintf(buf + tlen, sizeof(buf) - tlen, "%s (rss=%dMB)\n", msg, get_rss_mb());
+  int total = tlen + mlen;
+  if (total > 0) {
+    write(STDERR_FILENO, buf, total);
+    int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd >= 0) { write(fd, buf, total); close(fd); }
+  }
+}
 
 // Intercept Qt fatal messages from Wayland disconnect and exit cleanly
 // instead of letting Qt call abort(). The manager will restart the UI.
@@ -35,11 +95,7 @@ static void waylandAwareMessageHandler(QtMsgType type, const QMessageLogContext 
   bool isWaylandFatal = msgBytes.contains("ayland") || msgBytes.contains("wl_display");
 
   if (isWaylandFatal) {
-    // Log to crash file and exit cleanly — manager will restart us
-    const char logmsg[] = "UI WAYLAND DISCONNECT: exiting cleanly for restart\n";
-    int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
-    if (fd >= 0) { write(fd, logmsg, sizeof(logmsg) - 1); close(fd); }
-    write(STDERR_FILENO, logmsg, sizeof(logmsg) - 1);
+    log_crash_event("UI WAYLAND DISCONNECT: exiting cleanly for restart");
     _exit(0);  // Clean exit before Qt calls abort()
   }
 
@@ -74,10 +130,7 @@ static void crash_handler(int sig) {
   if (sig == SIGSEGV) {
     for (int i = 0; i < bt_size; ++i) {
       if (is_wayland_frame(bt[i])) {
-        const char logmsg[] = "UI WAYLAND EGL CRASH: exiting cleanly for restart\n";
-        int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
-        if (fd >= 0) { write(fd, logmsg, sizeof(logmsg) - 1); close(fd); }
-        write(STDERR_FILENO, logmsg, sizeof(logmsg) - 1);
+        log_crash_event("UI WAYLAND EGL CRASH: exiting cleanly for restart");
         _exit(0);
       }
     }
@@ -85,14 +138,16 @@ static void crash_handler(int sig) {
 
   // Non-Wayland crash: log full details
   char buf[512];
-  int len = snprintf(buf, sizeof(buf),
-    "UI CRASH: %s | modelDraw=%d | fpPaint=%d | fpUpdate=%d\n",
-    sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage, (int)fpUpdateStage);
+  int tlen = write_timestamp(buf, sizeof(buf));
+  int mlen = snprintf(buf + tlen, sizeof(buf) - tlen,
+    "UI CRASH: %s | modelDraw=%d | fpPaint=%d | fpUpdate=%d | rss=%dMB\n",
+    sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage, (int)fpUpdateStage, get_rss_mb());
+  int total = tlen + mlen;
 
   int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
-  if (len > 0) {
-    write(STDERR_FILENO, buf, len);
-    if (fd >= 0) write(fd, buf, len);
+  if (total > 0) {
+    write(STDERR_FILENO, buf, total);
+    if (fd >= 0) write(fd, buf, total);
   }
 
   // Capture backtrace
@@ -112,6 +167,8 @@ static void crash_handler(int sig) {
 int main(int argc, char *argv[]) {
   setpriority(PRIO_PROCESS, 0, -20);
 
+  clock_gettime(CLOCK_MONOTONIC, &ui_start_time);
+
   signal(SIGSEGV, crash_handler);
   signal(SIGABRT, crash_handler);
   signal(SIGFPE, crash_handler);
@@ -128,13 +185,15 @@ int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
   a.installTranslator(&translator);
 
-  // Log Qt version and Wayland platform info to crash log for debugging
+  // Log startup info with timestamp
   {
+    char ts[128];
+    write_timestamp(ts, sizeof(ts));
     char info[512];
     int len = snprintf(info, sizeof(info),
-      "UI STARTED: Qt %s | platform=%s | pid=%d\n",
-      qVersion(), qApp->platformName().toUtf8().constData(),
-      getpid());
+      "%sUI STARTED: Qt %s | platform=%s | pid=%d | rss=%dMB\n",
+      ts, qVersion(), qApp->platformName().toUtf8().constData(),
+      getpid(), get_rss_mb());
     if (len > 0) {
       fprintf(stderr, "%s", info);
       int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
