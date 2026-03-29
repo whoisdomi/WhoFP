@@ -386,8 +386,8 @@ class LatControlTorque(LatControl):
           self._unwind_log_file.close()
           self._unwind_log_file = None
           self._unwind_log_writer = None
-          # Delete log if driver touched the wheel or car stopped (useless data)
-          if (self._unwind_log_driver_touched or stopped) and self._unwind_log_path:
+          # Delete log if driver touched the wheel during unwind
+          if self._unwind_log_driver_touched and self._unwind_log_path:
             os.remove(self._unwind_log_path)
           self._unwind_log_path = None
           self._unwind_log_peak_angle = 0.0
