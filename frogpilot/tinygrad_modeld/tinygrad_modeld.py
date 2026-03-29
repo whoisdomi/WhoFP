@@ -346,13 +346,16 @@ class ModelState:
         else:
           self.off_policy_numpy_inputs[self.off_policy_prev_desired_curv_key][:] = self.full_prev_desired_curv[0, self.temporal_idxs]
 
-    combined_outputs_dict = {**vision_outputs_dict, **policy_outputs_dict}
+    combined_outputs_dict = {**vision_outputs_dict}
     if self.off_policy_enabled:
       self.off_policy_output = self.off_policy_run(**self.off_policy_inputs).contiguous().realize().uop.base.buffer.numpy()
       off_policy_outputs_dict = self.off_policy_parser.parse_policy_outputs(
         self.slice_outputs(self.off_policy_output, self.off_policy_output_slices)
       )
-      combined_outputs_dict.update(off_policy_outputs_dict)
+      off_policy_outputs_dict.pop('plan', None)
+      combined_outputs_dict = {**combined_outputs_dict, **off_policy_outputs_dict, **policy_outputs_dict}
+    else:
+      combined_outputs_dict = {**combined_outputs_dict, **policy_outputs_dict}
     if SEND_RAW_PRED:
       raw_pred = [self.vision_output.copy(), self.policy_output.copy()]
       if self.off_policy_enabled and self.off_policy_output is not None:

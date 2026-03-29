@@ -9,6 +9,7 @@ venv/
 .idea
 .overlay_init
 .overlay_consistent
+.host_runtime/
 .sconsign.dblite
 model2.png
 a.out
