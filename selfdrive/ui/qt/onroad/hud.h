@@ -16,7 +16,7 @@ public:
   // FrogPilot variables
   FrogPilotAnnotatedCameraWidget *frogpilot_nvg;
 
-  const QJsonObject *frogpilot_toggles = nullptr;
+  const QJsonObject *frogpilot_toggles = &defaultFrogPilotToggles();
 
 private:
   void drawSetSpeed(QPainter &p, const QRect &surface_rect);

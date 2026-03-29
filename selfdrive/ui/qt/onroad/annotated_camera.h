@@ -23,9 +23,9 @@ public:
 
   FrogPilotAnnotatedCameraWidget *frogpilot_nvg;
 
-  const FrogPilotUIScene *frogpilot_scene = nullptr;
+  const FrogPilotUIScene *frogpilot_scene = &defaultFrogPilotScene();
 
-  const QJsonObject *frogpilot_toggles = nullptr;
+  const QJsonObject *frogpilot_toggles = &defaultFrogPilotToggles();
 
 private:
   QVBoxLayout *main_layout;

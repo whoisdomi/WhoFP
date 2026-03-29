@@ -46,3 +46,13 @@ signals:
 };
 
 FrogPilotUIState *frogpilotUIState();
+
+// Static defaults for safe pointer initialization before updateState runs
+inline const FrogPilotUIScene &defaultFrogPilotScene() {
+  static const FrogPilotUIScene s{};
+  return s;
+}
+inline const QJsonObject &defaultFrogPilotToggles() {
+  static const QJsonObject t;
+  return t;
+}
