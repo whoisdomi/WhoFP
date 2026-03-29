@@ -235,13 +235,17 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   toggleSlcPriorityMode = frogpilot_toggles->value("slc_priority_mode").toBool();
   toggleLaneDetectionWidth = frogpilot_toggles->value("lane_detection_width").toDouble();
 
-  // Cache values to avoid parsing in paint methods (saves CPU at 20Hz)
-  if (toggleCompass) {
-    double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
-    cachedBearing = qRound(fmod(rawBearing + 360.0, 360.0));
-  }
-  if (toggleRoadNameUi) {
-    cachedRoadName = QString::fromStdString(params_memory.get("RoadName"));
+  // Cache values — only re-read once per second (not 20Hz) to avoid heap churn
+  static int paramReadCounter = 0;
+  if (++paramReadCounter >= UI_FREQ) {
+    paramReadCounter = 0;
+    if (toggleCompass) {
+      double rawBearing = QJsonDocument::fromJson(QByteArray::fromStdString(params_memory.get("LastGPSPosition"))).object().value("bearing").toDouble(0.0);
+      cachedBearing = qRound(fmod(rawBearing + 360.0, 360.0));
+    }
+    if (toggleRoadNameUi) {
+      cachedRoadName = QString::fromStdString(params_memory.get("RoadName"));
+    }
   }
 
   fpUpdateStage = 0;  // updateState done

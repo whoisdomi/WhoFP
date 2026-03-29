@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fcntl.h>
+#include <malloc.h>
+#include <unistd.h>
 
 #include <QtConcurrent>
 
@@ -61,8 +64,12 @@ static void update_state(UIState *s, FrogPilotUIState *fs) {
   }
   scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
 
-  auto params = Params();
-  scene.recording_audio = params.getBool("RecordAudio") && scene.started;
+  // Only check param once per second to reduce allocation churn
+  static int recordAudioCounter = 0;
+  if (++recordAudioCounter >= UI_FREQ) {
+    recordAudioCounter = 0;
+    scene.recording_audio = Params().getBool("RecordAudio") && scene.started;
+  }
 
   // FrogPilot variables
   FrogPilotUIScene &frogpilot_scene = fs->frogpilot_scene;
@@ -156,6 +163,47 @@ void UIState::update() {
   if (sm->frame % UI_FREQ == 0) {
     watchdog_kick(nanos_since_boot());
   }
+
+  // Reclaim fragmented heap memory every 10 seconds
+  if (sm->frame % (UI_FREQ * 10) == 0) {
+    malloc_trim(0);
+  }
+
+  // Log RSS every 60 seconds for leak tracking
+  if (sm->frame % (UI_FREQ * 60) == 0 && sm->frame > 0) {
+    static auto get_rss = []() -> int {
+      char buf[1024];
+      int fd = open("/proc/self/status", O_RDONLY);
+      if (fd < 0) return -1;
+      int n = read(fd, buf, sizeof(buf) - 1);
+      close(fd);
+      if (n <= 0) return -1;
+      buf[n] = '\0';
+      const char *p = buf;
+      while (*p) {
+        if (p[0]=='V' && p[1]=='m' && p[2]=='R' && p[3]=='S' && p[4]=='S') {
+          p += 6;
+          while (*p == ' ' || *p == '\t') p++;
+          int kb = 0;
+          while (*p >= '0' && *p <= '9') { kb = kb*10+(*p-'0'); p++; }
+          return kb / 1024;
+        }
+        while (*p && *p != '\n') p++;
+        if (*p == '\n') p++;
+      }
+      return -1;
+    };
+    int rss = get_rss();
+    LOGW("UI RSS: %dMB (frame %llu)", rss, (unsigned long long)sm->frame);
+    // Also write to crash log for easy device-side monitoring
+    char line[256];
+    int len = snprintf(line, sizeof(line), "UI RSS: %dMB (frame %llu)\n", rss, (unsigned long long)sm->frame);
+    if (len > 0) {
+      int logfd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+      if (logfd >= 0) { write(logfd, line, len); close(logfd); }
+    }
+  }
+
   emit uiUpdate(*this, *frogpilotUIState());
 
   // FrogPilot variables

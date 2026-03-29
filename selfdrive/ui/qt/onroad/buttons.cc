@@ -65,9 +65,14 @@ void ExperimentalButton::updateState(const UIState &s, const FrogPilotUIState &f
     steering_angle_deg = 0;
   }
 
-  if (params_memory.getBool("UpdateWheelImage")) {
-    updateTheme();
-    params_memory.remove("UpdateWheelImage");
+  // Check once per second instead of 20Hz
+  static int wheelImageCounter = 0;
+  if (++wheelImageCounter >= 20) {
+    wheelImageCounter = 0;
+    if (params_memory.getBool("UpdateWheelImage")) {
+      updateTheme();
+      params_memory.remove("UpdateWheelImage");
+    }
   }
 }
 
