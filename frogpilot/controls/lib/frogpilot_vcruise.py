@@ -160,7 +160,11 @@ class FrogPilotVCruise:
     if force_stop_enabled and not self.override_force_stop:
       self.forcing_stop |= not sm["carState"].standstill
 
-      self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL), 0)
+      # Dashboard stop sign: accelerate decay to correct overshoot.
+      # Good stops (model revises down): the model clamp below is the binding constraint, so this doesn't matter.
+      # Bad stops (model sees through intersection): kinematic decay is all we have, so the boost pulls the stop closer.
+      decay_multiplier = 1.5 if dashboard_stop_sign else 1.0
+      self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL * decay_multiplier), 0)
       # If the model refines its stop prediction to a closer point, follow it downward.
       # This fixes stop sign overshoot: the model initially predicts stopping at ~50m when
       # model_stopped triggers, but revises closer as the car approaches the intersection.
