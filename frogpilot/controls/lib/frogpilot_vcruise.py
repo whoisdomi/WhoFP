@@ -213,40 +213,40 @@ class FrogPilotVCruise:
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     # --- Stop sign overshoot logging ---
-    # Save last non-zero values every frame while active, so we can report
-    # the overshoot at standstill (tracked_model_length gets zeroed at standstill
-    # before this code runs, so we need the previous frame's values).
     dash_active = sm["frogpilotCarState"].dashboardStopSign > 0
-    if self._ss_log_active and not sm["carState"].standstill and self.forcing_stop:
+    standstill = sm["carState"].standstill
+
+    # Save last non-zero values every frame while moving (regardless of forcing_stop state),
+    # so we capture the overshoot even if force stop drops before standstill.
+    if self._ss_log_active and not standstill and v_ego > 0.1:
       self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
       self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
       self._ss_last_speed = v_ego * 2.237
 
-    # Start logging when dash stop sign is on OR force stop is active with dash having been
-    # seen recently. Trigger requires dash at some point to filter out red lights.
-    # Key fix: also start if force stop activates while dash is already on (not just dash appearing while forcing).
-    should_start = not self._ss_log_active and not sm["carState"].standstill and dash_active and \
+    should_start = not self._ss_log_active and not standstill and dash_active and \
                    (self.forcing_stop or self.frogpilot_planner.frogpilot_cem.stop_light_detected)
     if should_start:
       self._ss_stop_id += 1
       self._ss_log_active = True
       self._ss_logged_standstill = False
+      self._ss_end_timer = 0
       self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
       self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
       self._ss_last_speed = v_ego * 2.237
       trigger = "DASH+FORCE" if self.forcing_stop else "DASH_ON"
       self._ss_log(trigger, v_ego, sm)
     elif self._ss_log_active:
-      if self.forcing_stop and not sm["carState"].standstill:
+      if not standstill:
         self._ss_log("APPROACH", v_ego, sm)
-      if sm["carState"].standstill and not self._ss_logged_standstill:
+      if standstill and not self._ss_logged_standstill:
         self._ss_logged_standstill = True
-        # Use last non-zero values captured above — tracked_model_length is already 0 here
         self._ss_log("STANDSTILL", v_ego, sm,
                      tracked_ft_override=self._ss_last_tracked_ft,
                      model_ft_override=self._ss_last_model_ft,
                      speed_override=self._ss_last_speed)
-      if not self.forcing_stop and not dash_active:
+      # Only end after standstill is recorded, OR after 15s timeout (in case of rolling stop)
+      self._ss_end_timer = self._ss_end_timer + DT_MDL if not dash_active and not self.forcing_stop else 0
+      if (self._ss_logged_standstill and not standstill) or self._ss_end_timer > 15:
         self._ss_log("END", v_ego, sm)
         self._ss_log_active = False
 
