@@ -41,12 +41,12 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   drawPath(painter, model, surface_rect.height());
 
   modelDrawStage = 104;
-  if ((longitudinal_control || frogpilot_toggles.value("lead_info").toBool()) && sm.alive("radarState") && !frogpilot_toggles.value("hide_lead_marker").toBool()) {
+  if ((longitudinal_control || frogpilot_toggles->value("lead_info").toBool()) && sm.alive("radarState") && !frogpilot_toggles->value("hide_lead_marker").toBool()) {
     update_leads(radar_state, model.getPosition());
     const auto &lead_two = radar_state.getLeadTwo();
     if (lead_one.getStatus()) {
-      if (lead_one.getModelProb() >= frogpilot_toggles.value("lead_detection_probability").toDouble()) {
-        drawLead(painter, lead_one, lead_vertices[0], surface_rect, QColor(frogpilot_toggles.value("lead_marker_color").toString()));
+      if (lead_one.getModelProb() >= frogpilot_toggles->value("lead_detection_probability").toDouble()) {
+        drawLead(painter, lead_one, lead_vertices[0], surface_rect, QColor(frogpilot_toggles->value("lead_marker_color").toString()));
       } else {
         drawLead(painter, lead_one, lead_vertices[0], surface_rect, frogpilot_nvg->whiteColor());
       }
@@ -55,7 +55,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
       frogpilot_nvg->leadTextRect = QRect();
     }
     if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
-      drawLead(painter, lead_two, lead_vertices[1], surface_rect, QColor(frogpilot_toggles.value("lead_marker_color").toString()));
+      drawLead(painter, lead_two, lead_vertices[1], surface_rect, QColor(frogpilot_toggles->value("lead_marker_color").toString()));
     }
 
     // FrogPilot variables
@@ -86,7 +86,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
   // FrogPilot variables
   modelDrawStage = 107;
-  if (frogpilot_toggles.value("radar_tracks").toBool()) {
+  if (frogpilot_toggles->value("radar_tracks").toBool()) {
     updateRadarTracks(model.getPosition());
   }
 
@@ -114,7 +114,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
   int max_idx = get_path_length_idx(lane_lines[0], max_distance);
   for (int i = 0; i < std::size(lane_line_vertices); i++) {
     lane_line_probs[i] = line_probs[i];
-    mapLineToPolygon(lane_lines[i], (frogpilot_toggles.value("model_ui").toBool() ? frogpilot_toggles.value("lane_line_width").toDouble() : 0.025) * lane_line_probs[i], 0, &lane_line_vertices[i], max_idx);
+    mapLineToPolygon(lane_lines[i], (frogpilot_toggles->value("model_ui").toBool() ? frogpilot_toggles->value("lane_line_width").toDouble() : 0.025) * lane_line_probs[i], 0, &lane_line_vertices[i], max_idx);
   }
 
   // update road edges
@@ -122,7 +122,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
   const auto &edge_stds = model.getRoadEdgeStds();
   for (int i = 0; i < std::size(road_edge_vertices); i++) {
     road_edge_stds[i] = edge_stds[i];
-    mapLineToPolygon(road_edges[i], frogpilot_toggles.value("model_ui").toBool() ? frogpilot_toggles.value("road_edge_width").toDouble() : 0.025, 0, &road_edge_vertices[i], max_idx);
+    mapLineToPolygon(road_edges[i], frogpilot_toggles->value("model_ui").toBool() ? frogpilot_toggles->value("road_edge_width").toDouble() : 0.025, 0, &road_edge_vertices[i], max_idx);
   }
 
   // update path
@@ -132,12 +132,12 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
   }
   max_idx = get_path_length_idx(model_position, max_distance);
   // FrogPilot variables
-  float path_width = frogpilot_toggles.value("path_width").toDouble();
-  if (frogpilot_toggles.value("dynamic_path_width").toBool()) {
+  float path_width = frogpilot_toggles->value("path_width").toDouble();
+  if (frogpilot_toggles->value("dynamic_path_width").toBool()) {
     UIState *s = uiState();
     path_width *= s->status == STATUS_ENGAGED ? 1.0f : s->status == STATUS_ALWAYS_ON_LATERAL_ACTIVE ? 0.75f : 0.50f;
   }
-  mapLineToPolygon(model_position, frogpilot_toggles.value("model_ui").toBool() ? path_width * (1 - (frogpilot_toggles.value("path_edge_width").toDouble() / 100.0f)) : 0.9, path_offset_z, &track_vertices, max_idx, false);
+  mapLineToPolygon(model_position, frogpilot_toggles->value("model_ui").toBool() ? path_width * (1 - (frogpilot_toggles->value("path_edge_width").toDouble() / 100.0f)) : 0.9, path_offset_z, &track_vertices, max_idx, false);
 
   // FrogPilot variables
   FrogPilotUIState *fs = frogpilotUIState();
@@ -147,7 +147,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
 
   frogpilot_nvg->track_vertices = track_vertices;
 
-  mapLineToPolygon(model_position, frogpilot_toggles.value("model_ui").toBool() ? path_width : 0, path_offset_z, &frogpilot_nvg->track_edge_vertices, max_idx, false);
+  mapLineToPolygon(model_position, frogpilot_toggles->value("model_ui").toBool() ? path_width : 0, path_offset_z, &frogpilot_nvg->track_edge_vertices, max_idx, false);
 
   mapAveragedLineToPolygon(lane_lines[0], lane_lines[1], frogpilotPlan.getLaneWidthLeft() / 2.0f, 0, &frogpilot_nvg->track_adjacent_vertices[0], max_idx, height, false);
   mapAveragedLineToPolygon(lane_lines[2], lane_lines[3], frogpilotPlan.getLaneWidthRight() / 2.0f, 0, &frogpilot_nvg->track_adjacent_vertices[1], max_idx, height, false);
@@ -156,10 +156,10 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
 void ModelRenderer::drawLaneLines(QPainter &painter) {
   // lanelines
   for (int i = 0; i < std::size(lane_line_vertices); ++i) {
-    if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
+    if (frogpilot_toggles->value("color_scheme").toString() != "stock") {
       painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(lane_line_probs[i], 0.0, 0.7)));
     } else {
-      QColor lane_color = QColor(frogpilot_toggles.value("lane_lines_color").toString());
+      QColor lane_color = QColor(frogpilot_toggles->value("lane_lines_color").toString());
       lane_color.setAlphaF(lane_color.alphaF() * std::clamp<float>(lane_line_probs[i], 0.0, 0.7));
       painter.setBrush(lane_color);
     }
@@ -175,7 +175,7 @@ void ModelRenderer::drawLaneLines(QPainter &painter) {
 
 void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height) {
   QLinearGradient bg(0, height, 0, 0);
-  if (experimental_mode || frogpilot_toggles.value("acceleration_path").toBool() || frogpilot_toggles.value("rainbow_path").toBool()) {
+  if (experimental_mode || frogpilot_toggles->value("acceleration_path").toBool() || frogpilot_toggles->value("rainbow_path").toBool()) {
     // The first half of track_vertices are the points for the right side of the path
     const auto &acceleration = model.getAcceleration().getX();
     const int max_len = std::min<int>(track_vertices.length() / 2, acceleration.size());
@@ -188,10 +188,10 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
       // Flip so 0 is bottom of frame
       float lin_grad_point = (height - track_vertices[track_idx].y()) / height;
 
-      if ((fabs(acceleration[i]) < 0.25 || !frogpilot_toggles.value("acceleration_path").toBool()) && frogpilot_toggles.value("rainbow_path").toBool()) {
+      if ((fabs(acceleration[i]) < 0.25 || !frogpilot_toggles->value("acceleration_path").toBool()) && frogpilot_toggles->value("rainbow_path").toBool()) {
         frogpilot_nvg->paintRainbowPath(painter, bg, lin_grad_point);
-      } else if (fabs(acceleration[i]) < 0.25 && frogpilot_toggles.value("color_scheme").toString() != "stock") {
-        QColor color = QColor(frogpilot_toggles.value("path_color").toString());
+      } else if (fabs(acceleration[i]) < 0.25 && frogpilot_toggles->value("color_scheme").toString() != "stock") {
+        QColor color = QColor(frogpilot_toggles->value("path_color").toString());
         color.setAlphaF(util::map_val(lin_grad_point, 0.0f, 1.0f, 1.0f, 0.1f));
         bg.setColorAt(lin_grad_point, color);
       } else {
@@ -221,9 +221,9 @@ void ModelRenderer::drawPath(QPainter &painter, const cereal::ModelDataV2::Reade
   SubMaster &sm = *(uiState()->sm);
   SubMaster &fpsm = *(frogpilotUIState()->sm);
 
-  if (frogpilot_toggles.value("adjacent_path_metrics").toBool() || frogpilot_toggles.value("adjacent_paths").toBool()) {
+  if (frogpilot_toggles->value("adjacent_path_metrics").toBool() || frogpilot_toggles->value("adjacent_paths").toBool()) {
     frogpilot_nvg->paintAdjacentPaths(painter, sm, fpsm);
-  } else if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles.value("blind_spot_path").toBool()) {
+  } else if ((sm["carState"].getCarState().getLeftBlindspot() || sm["carState"].getCarState().getRightBlindspot()) && frogpilot_toggles->value("blind_spot_path").toBool()) {
     frogpilot_nvg->paintBlindSpotPath(painter, sm);
   }
 
@@ -308,7 +308,7 @@ void ModelRenderer::drawLead(QPainter &painter, const cereal::RadarState::LeadDa
   painter.drawPolygon(chevron, std::size(chevron));
 
   // FrogPilot variables
-  if (frogpilot_toggles.value("lead_info").toBool()) {
+  if (frogpilot_toggles->value("lead_info").toBool()) {
     frogpilot_nvg->paintLeadMetrics(painter, adjacent, chevron, lead_data);
   }
 }

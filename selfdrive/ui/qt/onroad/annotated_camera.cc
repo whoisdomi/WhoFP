@@ -40,7 +40,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState
 
   frogpilot_nvg->experimentalButtonPosition = QPoint(experimental_btn->x(), experimental_btn->y());
 
-  bool onroad_distance_btn_enabled = frogpilot_nvg->dmIconPosition != QPoint(0, 0) && !frogpilot_nvg->hideBottomIcons && frogpilot_toggles.value("onroad_distance_button").toBool();
+  bool onroad_distance_btn_enabled = frogpilot_nvg->dmIconPosition != QPoint(0, 0) && !frogpilot_nvg->hideBottomIcons && frogpilot_toggles->value("onroad_distance_button").toBool();
   personality_btn->setVisible(onroad_distance_btn_enabled);
   if (onroad_distance_btn_enabled) {
     personality_btn->move(frogpilot_nvg->rightHandDM ? width() - UI_BORDER_SIZE - personality_btn->width() - (UI_BORDER_SIZE / 2) : UI_BORDER_SIZE, frogpilot_nvg->dmIconPosition.y() - personality_btn->height() / 2);
@@ -50,7 +50,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s, const FrogPilotUIState
   dmon.onroad_distance_btn_enabled = onroad_distance_btn_enabled;
 
   screen_recorder->move(experimental_btn->x() - UI_BORDER_SIZE - btn_size, experimental_btn->y());
-  screen_recorder->setVisible(frogpilot_nvg->standstillDuration == 0 && !(frogpilot_nvg->signalStyle == "static" && carState.getRightBlinker()) && frogpilot_toggles.value("screen_recorder").toBool());
+  screen_recorder->setVisible(frogpilot_nvg->standstillDuration == 0 && !(frogpilot_nvg->signalStyle == "static" && carState.getRightBlinker()) && frogpilot_toggles->value("screen_recorder").toBool());
 }
 
 void AnnotatedCameraWidget::initializeGL() {
@@ -149,10 +149,10 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
       } else if (v_ego > 15) {
         wide_cam_requested = false;
       }
-      wide_cam_requested = wide_cam_requested && sm["selfdriveState"].getSelfdriveState().getExperimentalMode() && frogpilot_toggles.value("camera_view").toInt() == 0;
+      wide_cam_requested = wide_cam_requested && sm["selfdriveState"].getSelfdriveState().getExperimentalMode() && frogpilot_toggles->value("camera_view").toInt() == 0;
     }
-    CameraWidget::setStreamType(frogpilot_toggles.value("camera_view").toInt() == 1 ? VISION_STREAM_DRIVER :
-                                frogpilot_toggles.value("camera_view").toInt() == 3 || wide_cam_requested ? VISION_STREAM_WIDE_ROAD :
+    CameraWidget::setStreamType(frogpilot_toggles->value("camera_view").toInt() == 1 ? VISION_STREAM_DRIVER :
+                                frogpilot_toggles->value("camera_view").toInt() == 3 || wide_cam_requested ? VISION_STREAM_WIDE_ROAD :
                                 VISION_STREAM_ROAD);
     CameraWidget::setFrameId(sm["modelV2"].getModelV2().getFrameId());
 

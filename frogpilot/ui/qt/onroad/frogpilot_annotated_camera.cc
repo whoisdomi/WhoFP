@@ -163,14 +163,14 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   const cereal::FrogPilotSelfdriveState::Reader &frogpilotSelfdriveState = fpsm["frogpilotSelfdriveState"].getFrogpilotSelfdriveState();
   const cereal::SelfdriveState::Reader &selfdriveState = sm["selfdriveState"].getSelfdriveState();
 
-  if (scene.is_metric || frogpilot_toggles.value("use_si_metrics").toBool()) {
+  if (scene.is_metric || frogpilot_toggles->value("use_si_metrics").toBool()) {
     leadDistanceUnit = tr(" meters");
-    leadSpeedUnit = frogpilot_toggles.value("use_si_metrics").toBool() ? tr(" m/s") : tr(" km/h");
+    leadSpeedUnit = frogpilot_toggles->value("use_si_metrics").toBool() ? tr(" m/s") : tr(" km/h");
     speedUnit = scene.is_metric ? tr("km/h") : tr("mph");
 
     distanceConversion = 1.0f;
     speedConversion = scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
-    speedConversionMetrics = frogpilot_toggles.value("use_si_metrics").toBool() ? 1.0f : MS_TO_KPH;
+    speedConversionMetrics = frogpilot_toggles->value("use_si_metrics").toBool() ? 1.0f : MS_TO_KPH;
   } else {
     leadDistanceUnit = tr(" feet");
     leadSpeedUnit = tr(" mph");
@@ -190,18 +190,18 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
 
   speedLimit = frogpilotPlan.getSlcOverriddenSpeed() != 0 ? frogpilotPlan.getSlcOverriddenSpeed() : frogpilotPlan.getSlcSpeedLimit();
   speedLimitChanged = frogpilotPlan.getSpeedLimitChanged();
-  if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && !frogpilot_toggles.value("show_speed_limit_offset").toBool()) {
+  if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && !frogpilot_toggles->value("show_speed_limit_offset").toBool()) {
     speedLimit += frogpilotPlan.getSlcSpeedLimitOffset();
   }
   speedLimit *= (scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
   float speedLimitOffset = frogpilotPlan.getSlcSpeedLimitOffset() * speedConversion;
   speedLimitOffsetStr = (speedLimitOffset != 0) ? QString::number(speedLimitOffset, 'f', 0).prepend((speedLimitOffset > 0) ? "+" : "-") : "–";
 
-  if (frogpilot_scene.standstill && frogpilot_toggles.value("stopped_timer").toBool()) {
+  if (frogpilot_scene->standstill && frogpilot_toggles->value("stopped_timer").toBool()) {
     if (!standstillTimer.isValid()) {
       standstillTimer.start();
     } else {
-      standstillDuration = frogpilot_scene.started_timer / UI_FREQ < 60 ? 0 : standstillTimer.elapsed() / 1000;
+      standstillDuration = frogpilot_scene->started_timer / UI_FREQ < 60 ? 0 : standstillTimer.elapsed() / 1000;
     }
   } else {
     standstillDuration = 0;
@@ -209,31 +209,31 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   }
 
   static int lastFrameIndex;
-  if (lastFrameIndex > animationFrameIndex && frogpilot_toggles.value("signal_icons").toString() == "frog") {
+  if (lastFrameIndex > animationFrameIndex && frogpilot_toggles->value("signal_icons").toString() == "frog") {
     frogHopCount++;
   }
   lastFrameIndex = animationFrameIndex;
 
   fpUpdateStage = 32;  // cache/params
   // Cache toggle bools to avoid JSON string lookups in paint methods (20Hz)
-  toggleCemStatus = frogpilot_toggles.value("cem_status").toBool();
-  toggleCompass = frogpilot_toggles.value("compass").toBool();
-  toggleCscStatus = frogpilot_toggles.value("csc_status").toBool();
-  togglePedalsOnUi = frogpilot_toggles.value("pedals_on_ui").toBool();
-  toggleRadarTracks = frogpilot_toggles.value("radar_tracks").toBool();
-  toggleRoadNameUi = frogpilot_toggles.value("road_name_ui").toBool();
-  toggleHideSpeedLimit = frogpilot_toggles.value("hide_speed_limit").toBool();
-  toggleShowSpeedLimits = frogpilot_toggles.value("show_speed_limits").toBool();
-  toggleSpeedLimitController = frogpilot_toggles.value("speed_limit_controller").toBool();
-  toggleSpeedLimitSources = frogpilot_toggles.value("speed_limit_sources").toBool();
-  toggleShowStoppingPoint = frogpilot_toggles.value("show_stopping_point").toBool();
-  toggleBlindSpotPath = frogpilot_toggles.value("blind_spot_path").toBool();
-  toggleAdjacentPathMetrics = frogpilot_toggles.value("adjacent_path_metrics").toBool();
-  toggleShowStoppingPointMetrics = frogpilot_toggles.value("show_stopping_point_metrics").toBool();
-  toggleShowSpeedLimitOffset = frogpilot_toggles.value("show_speed_limit_offset").toBool();
-  toggleSpeedLimitVienna = frogpilot_toggles.value("speed_limit_vienna").toBool();
-  toggleSlcPriorityMode = frogpilot_scene.frogpilot_toggles.value("slc_priority_mode").toBool();
-  toggleLaneDetectionWidth = frogpilot_toggles.value("lane_detection_width").toDouble();
+  toggleCemStatus = frogpilot_toggles->value("cem_status").toBool();
+  toggleCompass = frogpilot_toggles->value("compass").toBool();
+  toggleCscStatus = frogpilot_toggles->value("csc_status").toBool();
+  togglePedalsOnUi = frogpilot_toggles->value("pedals_on_ui").toBool();
+  toggleRadarTracks = frogpilot_toggles->value("radar_tracks").toBool();
+  toggleRoadNameUi = frogpilot_toggles->value("road_name_ui").toBool();
+  toggleHideSpeedLimit = frogpilot_toggles->value("hide_speed_limit").toBool();
+  toggleShowSpeedLimits = frogpilot_toggles->value("show_speed_limits").toBool();
+  toggleSpeedLimitController = frogpilot_toggles->value("speed_limit_controller").toBool();
+  toggleSpeedLimitSources = frogpilot_toggles->value("speed_limit_sources").toBool();
+  toggleShowStoppingPoint = frogpilot_toggles->value("show_stopping_point").toBool();
+  toggleBlindSpotPath = frogpilot_toggles->value("blind_spot_path").toBool();
+  toggleAdjacentPathMetrics = frogpilot_toggles->value("adjacent_path_metrics").toBool();
+  toggleShowStoppingPointMetrics = frogpilot_toggles->value("show_stopping_point_metrics").toBool();
+  toggleShowSpeedLimitOffset = frogpilot_toggles->value("show_speed_limit_offset").toBool();
+  toggleSpeedLimitVienna = frogpilot_toggles->value("speed_limit_vienna").toBool();
+  toggleSlcPriorityMode = frogpilot_toggles->value("slc_priority_mode").toBool();
+  toggleLaneDetectionWidth = frogpilot_toggles->value("lane_detection_width").toDouble();
 
   // Cache values to avoid parsing in paint methods (saves CPU at 20Hz)
   if (toggleCompass) {
@@ -354,7 +354,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   }
 
   fpWidgetPaintStage = 12;
-  if (standstillDuration != 0 && frogpilot_scene.started_timer / UI_FREQ >= 60) {
+  if (standstillDuration != 0 && frogpilot_scene->started_timer / UI_FREQ >= 60) {
     paintStandstillTimer(p);
   }
 
@@ -495,9 +495,9 @@ void FrogPilotAnnotatedCameraWidget::paintCEMStatus(QPainter &p, SubMaster &sm) 
   QRect cemWidget(cemStatusPosition, QSize(widget_size, widget_size));
 
   p.setBrush(blackColor(166));
-  if (frogpilot_scene.conditional_status == 1) {
+  if (frogpilot_scene->conditional_status == 1) {
     p.setPen(QPen(QColor(bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]), 10));
-  } else if (frogpilot_scene.enabled && sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
+  } else if (frogpilot_scene->enabled && sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
     p.setPen(QPen(QColor(bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]), 10));
   } else {
     p.setPen(QPen(blackColor(), 10));
@@ -505,20 +505,20 @@ void FrogPilotAnnotatedCameraWidget::paintCEMStatus(QPainter &p, SubMaster &sm) 
   p.drawRoundedRect(cemWidget, 24, 24);
 
   QSharedPointer<QMovie> icon = chillModeIcon;
-  if (frogpilot_scene.enabled && sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
-    if (frogpilot_scene.conditional_status == 1) {
+  if (frogpilot_scene->enabled && sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
+    if (frogpilot_scene->conditional_status == 1) {
       icon = chillModeIcon;
-    } else if (frogpilot_scene.conditional_status == 2) {
+    } else if (frogpilot_scene->conditional_status == 2) {
       icon = experimentalModeIcon;
-    } else if (frogpilot_scene.conditional_status == 3) {
+    } else if (frogpilot_scene->conditional_status == 3) {
       icon = cemCurveIcon;
-    } else if (frogpilot_scene.conditional_status == 4) {
+    } else if (frogpilot_scene->conditional_status == 4) {
       icon = cemLeadIcon;
-    } else if (frogpilot_scene.conditional_status == 5) {
+    } else if (frogpilot_scene->conditional_status == 5) {
       icon = cemTurnIcon;
-    } else if (frogpilot_scene.conditional_status == 6 || frogpilot_scene.conditional_status == 7) {
+    } else if (frogpilot_scene->conditional_status == 6 || frogpilot_scene->conditional_status == 7) {
       icon = cemSpeedIcon;
-    } else if (frogpilot_scene.conditional_status == 8) {
+    } else if (frogpilot_scene->conditional_status == 8) {
       icon = cemStopIcon;
     } else {
       icon = experimentalModeIcon;
@@ -768,7 +768,7 @@ void FrogPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
     textLines.append(QString("%1 %2").arg(distanceString, leadDistanceUnit));
     textLines.append(QString("%1 %2").arg(speedString, leadSpeedUnit));
   } else {
-    if (frogpilot_toggles.value("openpilot_longitudinal").toBool()) {
+    if (frogpilot_toggles->value("openpilot_longitudinal").toBool()) {
       int desiredDistance = std::max(0, qRound(desiredFollowDistance * distanceConversion));
       textLines.append(QString("%1 %2 (%3)").arg(distanceString, leadDistanceUnit, tr("Desired: %1").arg(desiredDistance)));
     } else {
@@ -863,16 +863,16 @@ void FrogPilotAnnotatedCameraWidget::paintPathEdges(QPainter &p, SubMaster &sm) 
   };
 
   QLinearGradient pe(0, height(), 0, 0);
-  if (frogpilot_scene.always_on_lateral_active) {
+  if (frogpilot_scene->always_on_lateral_active) {
     setPathEdgeColors(pe, bg_colors[STATUS_ALWAYS_ON_LATERAL_ACTIVE]);
-  } else if (frogpilot_scene.conditional_status == 1) {
+  } else if (frogpilot_scene->conditional_status == 1) {
     setPathEdgeColors(pe, bg_colors[STATUS_CONDITIONAL_OVERRIDDEN]);
   } else if (sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
     setPathEdgeColors(pe, bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]);
-  } else if (frogpilot_scene.traffic_mode_enabled) {
+  } else if (frogpilot_scene->traffic_mode_enabled) {
     setPathEdgeColors(pe, bg_colors[STATUS_TRAFFIC_MODE_ENABLED]);
-  } else if (frogpilot_toggles.value("color_scheme").toString() != "stock") {
-    setPathEdgeColors(pe, QColor(frogpilot_toggles.value("path_edges_color").toString()));
+  } else if (frogpilot_toggles->value("color_scheme").toString() != "stock") {
+    setPathEdgeColors(pe, QColor(frogpilot_toggles->value("path_edges_color").toString()));
   } else {
     pe.setColorAt(0.0f, QColor::fromHslF(148 / 360.0f, 0.94f, 0.41f, 1.0f));
     pe.setColorAt(0.5f, QColor::fromHslF(112 / 360.0f, 1.00f, 0.54f, 0.5f));
@@ -897,11 +897,11 @@ void FrogPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p, SubMaster &sm,
   float brakeOpacity = 1.0f;
   float gasOpacity = 1.0f;
 
-  if (frogpilot_toggles.value("dynamic_pedals_on_ui").toBool()) {  // rare sub-toggle, keep as-is
-    brakeOpacity = frogpilot_scene.standstill ? 1.0f : carState.getAEgo() < -0.25f ? std::max(0.25f, std::abs(carState.getAEgo())) : 0.25f;
+  if (frogpilot_toggles->value("dynamic_pedals_on_ui").toBool()) {  // rare sub-toggle, keep as-is
+    brakeOpacity = frogpilot_scene->standstill ? 1.0f : carState.getAEgo() < -0.25f ? std::max(0.25f, std::abs(carState.getAEgo())) : 0.25f;
     gasOpacity = std::max(0.25f, carState.getAEgo());
-  } else if (frogpilot_toggles.value("static_pedals_on_ui").toBool()) {  // rare sub-toggle, keep as-is
-    brakeOpacity = frogpilot_scene.standstill || frogpilotCarState.getBrakeLights() || carState.getAEgo() < -0.25f ? 1.0f : 0.25f;
+  } else if (frogpilot_toggles->value("static_pedals_on_ui").toBool()) {  // rare sub-toggle, keep as-is
+    brakeOpacity = frogpilot_scene->standstill || frogpilotCarState.getBrakeLights() || carState.getAEgo() < -0.25f ? 1.0f : 0.25f;
     gasOpacity = carState.getAEgo() > 0.25 ? 1.0f : 0.25f;
   }
 
@@ -1247,7 +1247,7 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p, SubMast
       drawBox(rect2, systemIcon, systemName, false);
     } else if (systemIcon != nullptr) {
       drawBox(rect1, systemIcon, systemName, true);
-    } else if (frogpilot_scene.enabled) {
+    } else if (frogpilot_scene->enabled) {
       // OP engaged, no accepted SLC speed - show "User" + available source or red X
       drawBox(rect1, &gasPedalImgScaled, "User", true);
       QRect rect2(rect1.x(), rect1.bottom() + UI_BORDER_SIZE / 2, rect1.width(), 60);

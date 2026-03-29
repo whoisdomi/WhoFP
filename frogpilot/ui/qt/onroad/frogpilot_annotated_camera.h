@@ -36,13 +36,13 @@ public:
 
   std::vector<RadarTrackData> radar_tracks;
 
-  FrogPilotUIScene frogpilot_scene;
+  const FrogPilotUIScene *frogpilot_scene = nullptr;
 
   QColor blueColor(int alpha = 255) { return QColor(0, 0, 255, alpha); }
   QColor purpleColor(int alpha = 255) { return QColor(128, 0, 128, alpha); }
   QColor whiteColor(int alpha = 255) { return QColor(255, 255, 255, alpha); }
 
-  QJsonObject frogpilot_toggles;
+  const QJsonObject *frogpilot_toggles = nullptr;
 
   QPoint dmIconPosition;
   QPoint experimentalButtonPosition;

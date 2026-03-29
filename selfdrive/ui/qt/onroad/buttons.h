@@ -15,9 +15,9 @@ public:
   void updateState(const UIState &s, const FrogPilotUIState &fs);
 
   // FrogPilot variables
-  FrogPilotUIScene frogpilot_scene;
+  const FrogPilotUIScene *frogpilot_scene = nullptr;
 
-  QJsonObject frogpilot_toggles;
+  const QJsonObject *frogpilot_toggles = nullptr;
 
 private:
   void paintEvent(QPaintEvent *event) override;

@@ -80,7 +80,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     }
   }
 
-  if (frogpilot_toggles.value("road_name_ui").toBool()) {
+  if (frogpilot_toggles->value("road_name_ui").toBool()) {
     y -= UI_BORDER_SIZE;
   }
 
@@ -90,7 +90,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     frogpilot_nvg->rightHandDM = is_rhd;
   }
 
-  if (frogpilot_toggles.value("hide_dm_icon").toBool()) return;
+  if (frogpilot_toggles->value("hide_dm_icon").toBool()) return;
 
   painter.save();
 

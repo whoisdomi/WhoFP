@@ -15,7 +15,7 @@ public:
   // FrogPilot variables
   int alertHeight;
 
-  QJsonObject frogpilot_toggles;
+  const QJsonObject *frogpilot_toggles = nullptr;
 
 protected:
   struct Alert {

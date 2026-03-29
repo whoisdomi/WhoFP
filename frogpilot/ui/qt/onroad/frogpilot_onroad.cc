@@ -31,10 +31,10 @@ void FrogPilotOnroadWindow::updateState(const UIState &s, const FrogPilotUIState
   turnSignalLeft = carState.getLeftBlinker();
   turnSignalRight = carState.getRightBlinker();
 
-  showBlindspot = (blindSpotLeft || blindSpotRight) && frogpilot_toggles.value("blind_spot_metrics").toBool();
-  showFPS = frogpilot_toggles.value("show_fps").toBool();
-  showSignal = (turnSignalLeft || turnSignalRight) && frogpilot_toggles.value("signal_metrics").toBool();
-  showSteering = frogpilot_toggles.value("steering_metrics").toBool();
+  showBlindspot = (blindSpotLeft || blindSpotRight) && frogpilot_toggles->value("blind_spot_metrics").toBool();
+  showFPS = frogpilot_toggles->value("show_fps").toBool();
+  showSignal = (turnSignalLeft || turnSignalRight) && frogpilot_toggles->value("signal_metrics").toBool();
+  showSteering = frogpilot_toggles->value("steering_metrics").toBool();
 
   // Only repaint when something visible needs drawing
   if (showBlindspot || showSignal || showSteering || showFPS) {

@@ -17,7 +17,7 @@ public:
 
   bool onroad_distance_btn_enabled;
 
-  QJsonObject frogpilot_toggles;
+  const QJsonObject *frogpilot_toggles = nullptr;
 
 private:
   float driver_pose_vals[3] = {};

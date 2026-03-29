@@ -77,14 +77,14 @@ void OnroadWindow::updateState(const UIState &s, const FrogPilotUIState &fs) {
 
   nvg->frogpilot_nvg = frogpilot_nvg;
 
-  nvg->frogpilot_scene = frogpilot_scene;
-  frogpilot_nvg->frogpilot_scene = frogpilot_scene;
-  frogpilot_onroad->frogpilot_scene = frogpilot_scene;
+  nvg->frogpilot_scene = &frogpilot_scene;
+  frogpilot_nvg->frogpilot_scene = &frogpilot_scene;
+  frogpilot_onroad->frogpilot_scene = &frogpilot_scene;
 
-  alerts->frogpilot_toggles = frogpilot_toggles;
-  frogpilot_nvg->frogpilot_toggles = frogpilot_toggles;
-  frogpilot_onroad->frogpilot_toggles = frogpilot_toggles;
-  nvg->frogpilot_toggles = frogpilot_toggles;
+  alerts->frogpilot_toggles = &frogpilot_toggles;
+  frogpilot_nvg->frogpilot_toggles = &frogpilot_toggles;
+  frogpilot_onroad->frogpilot_toggles = &frogpilot_toggles;
+  nvg->frogpilot_toggles = &frogpilot_toggles;
 
   frogpilot_onroad->setGeometry(rect());
 

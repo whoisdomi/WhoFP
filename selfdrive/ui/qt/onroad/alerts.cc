@@ -8,7 +8,7 @@
 void OnroadAlerts::updateState(const UIState &s, const FrogPilotUIState &fs) {
   Alert a = getAlert(*(s.sm), *(fs.sm), s.scene.started_frame);
   if (!alert.equal(a)) {
-    if (alert.status == cereal::SelfdriveState::AlertStatus::NORMAL && frogpilot_toggles.value("hide_alerts").toBool()) {
+    if (alert.status == cereal::SelfdriveState::AlertStatus::NORMAL && frogpilot_toggles->value("hide_alerts").toBool()) {
       clear();
     } else {
       alert = a;
@@ -38,7 +38,7 @@ OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster 
   Alert a = {};
   static QString crash_log_path = "/data/error_logs/error.txt";
   if (QFile::exists(crash_log_path)) {
-    if (frogpilot_toggles.value("random_events").toBool()) {
+    if (frogpilot_toggles->value("random_events").toBool()) {
       a = {tr("openpilot crashed 💩"),
            tr("Please post the \"Error Log\" in the FrogPilot Discord!"),
            "openpilotCrashedRandomEvent",
@@ -63,7 +63,7 @@ OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, const SubMaster 
     }
   }
 
-  if (!sm.updated("selfdriveState") && (sm.frame - started_frame) > 5 * UI_FREQ && !frogpilot_toggles.value("force_onroad").toBool()) {
+  if (!sm.updated("selfdriveState") && (sm.frame - started_frame) > 5 * UI_FREQ && !frogpilot_toggles->value("force_onroad").toBool()) {
     const int SELFDRIVE_STATE_TIMEOUT = 5;
     const int ss_missing = (nanos_since_boot() - sm.rcv_time("selfdriveState")) / 1e9;
 
