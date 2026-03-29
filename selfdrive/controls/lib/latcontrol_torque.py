@@ -372,16 +372,15 @@ class LatControlTorque(LatControl):
         ])
         self._unwind_log_file.flush()
 
-        # Stop conditions: centered (within 5° for 1 sec), stopped (< 1.5 m/s), or timeout (30s)
+        # Stop conditions: centered (within 5° for 1 sec while moving) or timeout (30s)
         timed_out = (time.monotonic() - self._unwind_log_start_time) > 30.0
-        stopped = CS.vEgo < 1.5
-        if abs_angle < 5.0:
+        if abs_angle < 5.0 and CS.vEgo > 1.5:
           self._unwind_log_centered_frames += 1
-        else:
+        elif CS.vEgo > 1.5:
           self._unwind_log_centered_frames = 0
         centered = self._unwind_log_centered_frames >= 100  # 1 sec at 100 Hz
 
-        if centered or stopped or timed_out:
+        if centered or timed_out:
           self._unwind_log_active = False
           self._unwind_log_file.close()
           self._unwind_log_file = None
