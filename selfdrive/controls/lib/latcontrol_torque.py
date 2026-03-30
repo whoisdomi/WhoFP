@@ -124,14 +124,13 @@ class LatControlTorque(LatControl):
     self.ff_filter_alpha = 0.15  # ~67ms time constant at 100Hz
 
     # Unwind diagnostic logging state
-    self._unwind_log_peak_angle = 0.0
     self._unwind_log_active = False
     self._unwind_log_file = None
     self._unwind_log_writer = None
     self._unwind_log_path = None
-    self._unwind_log_centered_frames = 0
     self._unwind_log_driver_touched = False
     self._unwind_log_start_time = 0.0
+    self._unwind_log_last_above = 0.0
 
 
   def update_live_delay(self, lateral_delay):
@@ -328,18 +327,15 @@ class LatControlTorque(LatControl):
     # --- Unwind diagnostic logging (turns > 120° steering) ---
     try:
       abs_angle = abs(CS.steeringAngleDeg)
+      now = time.monotonic()
 
-      # Track peak steering angle
-      if abs_angle > self._unwind_log_peak_angle:
-        self._unwind_log_peak_angle = abs_angle
-
-      # Start logging: peak exceeded 120° and wheel is now unwinding (dropped 10° from peak)
-      if not self._unwind_log_active and self._unwind_log_peak_angle > 120.0 and abs_angle < self._unwind_log_peak_angle - 10.0:
+      # Start logging when steering exceeds 120°
+      if not self._unwind_log_active and abs_angle > 120.0:
         self._unwind_log_active = True
-        self._unwind_log_centered_frames = 0
         self._unwind_log_driver_touched = False
-        self._unwind_log_start_time = time.monotonic()
-        self._unwind_log_path = os.path.join("/data/media", f"unwind_{int(time.monotonic())}.csv")
+        self._unwind_log_start_time = now
+        self._unwind_log_last_above = now
+        self._unwind_log_path = os.path.join("/data/media", f"unwind_{int(now)}.csv")
         self._unwind_log_file = open(self._unwind_log_path, 'w', newline='')
         self._unwind_log_writer = csv.writer(self._unwind_log_file)
         self._unwind_log_writer.writerow([
@@ -350,13 +346,16 @@ class LatControlTorque(LatControl):
 
       # Write a row each frame while logging
       if self._unwind_log_active and self._unwind_log_writer is not None:
-        # Track if driver intervened during this unwind
         if CS.steeringPressed:
           self._unwind_log_driver_touched = True
 
+        # Reset hold timer while angle is still large
+        if abs_angle > 120.0:
+          self._unwind_log_last_above = now
+
         decay_val = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95])) if unwind_detected else 1.0
         self._unwind_log_writer.writerow([
-          f"{time.monotonic():.3f}",
+          f"{now:.3f}",
           f"{CS.steeringAngleDeg:.2f}",
           f"{CS.vEgo * 2.237:.1f}",
           f"{output_torque:.4f}",
@@ -372,28 +371,18 @@ class LatControlTorque(LatControl):
         ])
         self._unwind_log_file.flush()
 
-        # Stop conditions: centered (within 5° for 1 sec while moving) or timeout (30s)
-        timed_out = (time.monotonic() - self._unwind_log_start_time) > 30.0
-        if abs_angle < 5.0 and CS.vEgo > 1.5:
-          self._unwind_log_centered_frames += 1
-        elif CS.vEgo > 1.5:
-          self._unwind_log_centered_frames = 0
-        centered = self._unwind_log_centered_frames >= 100  # 1 sec at 100 Hz
+        # Close: 5 seconds after angle drops below 120°, or 60s max safety timeout
+        hold_expired = (now - self._unwind_log_last_above) > 5.0
+        timed_out = (now - self._unwind_log_start_time) > 60.0
 
-        if centered or timed_out:
+        if hold_expired or timed_out:
           self._unwind_log_active = False
           self._unwind_log_file.close()
           self._unwind_log_file = None
           self._unwind_log_writer = None
-          # Delete log if driver touched the wheel during unwind
           if self._unwind_log_driver_touched and self._unwind_log_path:
             os.remove(self._unwind_log_path)
           self._unwind_log_path = None
-          self._unwind_log_peak_angle = 0.0
-
-      # Reset peak when not logging and wheel is near center
-      if not self._unwind_log_active and abs_angle < 5.0:
-        self._unwind_log_peak_angle = 0.0
     except Exception:
       pass  # Never let logging crash the control loop
 
