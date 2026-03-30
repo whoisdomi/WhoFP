@@ -380,8 +380,9 @@ class LatControlTorque(LatControl):
           self._unwind_log_file.close()
           self._unwind_log_file = None
           self._unwind_log_writer = None
-          if self._unwind_log_driver_touched and self._unwind_log_path:
-            os.remove(self._unwind_log_path)
+          # TODO: re-enable deletion after debugging
+          # if self._unwind_log_driver_touched and self._unwind_log_path:
+          #   os.remove(self._unwind_log_path)
           self._unwind_log_path = None
     except Exception:
       pass  # Never let logging crash the control loop
