@@ -28,29 +28,33 @@ class FrogPilotVCruise:
     self.override_force_stop_timer = 0
     self.tracked_model_length = 0
 
-    # Stop sign overshoot logging
-    self._ss_log_active = False
-    self._ss_stop_id = 0
-    self._ss_logged_standstill = False
-    self._ss_last_tracked_ft = 0
-    self._ss_last_model_ft = 0
-    self._ss_last_speed = 0
+    # Stop sign overshoot logging — simple continuous logger.
+    # Logs every frame where dash stop sign OR force stop is active,
+    # plus a 5-second tail after both go false to capture standstill.
+    self._ss_log_file = None
+    self._ss_log_tail = 0
     self._ss_init_log()
 
   def _ss_init_log(self):
     if not os.path.exists(STOP_SIGN_LOG):
       with open(STOP_SIGN_LOG, "w") as f:
-        f.write("stop_id,timestamp,event,speed_mph,tracked_len_ft,model_len_ft,dash_on,forcing,brake\n")
+        f.write("time,speed_mph,tracked_ft,model_ft,dash,forcing,standstill,brake\n")
 
-  def _ss_log(self, event, v_ego, sm, tracked_ft_override=None, model_ft_override=None, speed_override=None):
-    tracked_ft = tracked_ft_override if tracked_ft_override is not None else self.tracked_model_length * M_TO_FT
-    model_ft = model_ft_override if model_ft_override is not None else self.frogpilot_planner.model_length * M_TO_FT
-    speed_mph = speed_override if speed_override is not None else v_ego * 2.237
+  def _ss_log_frame(self, v_ego, sm):
+    tracked_ft = self.tracked_model_length * M_TO_FT
+    model_ft = self.frogpilot_planner.model_length * M_TO_FT
+    speed_mph = v_ego * 2.237
     dash = 1 if sm["frogpilotCarState"].dashboardStopSign > 0 else 0
     forcing = 1 if self.forcing_stop else 0
+    standstill = 1 if sm["carState"].standstill else 0
     brake = 1 if sm["carState"].brakePressed else 0
-    with open(STOP_SIGN_LOG, "a") as f:
-      f.write(f"{self._ss_stop_id},{time.monotonic():.2f},{event},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{brake}\n")
+    try:
+      if self._ss_log_file is None:
+        self._ss_log_file = open(STOP_SIGN_LOG, "a")
+      self._ss_log_file.write(f"{time.monotonic():.2f},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{standstill},{brake}\n")
+      self._ss_log_file.flush()
+    except Exception:
+      pass
 
   def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
     # Normal force stop condition (requires toggle + model_stopped)
@@ -217,42 +221,15 @@ class FrogPilotVCruise:
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     # --- Stop sign overshoot logging ---
-    dash_active = sm["frogpilotCarState"].dashboardStopSign > 0
-    standstill = sm["carState"].standstill
-
-    # Save last non-zero values every frame while moving (regardless of forcing_stop state),
-    # so we capture the overshoot even if force stop drops before standstill.
-    if self._ss_log_active and not standstill and v_ego > 0.1:
-      self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
-      self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
-      self._ss_last_speed = v_ego * 2.237
-
-    should_start = not self._ss_log_active and not standstill and dash_active and \
-                   (self.forcing_stop or self.frogpilot_planner.frogpilot_cem.stop_light_detected)
-    if should_start:
-      self._ss_stop_id += 1
-      self._ss_log_active = True
-      self._ss_logged_standstill = False
-      self._ss_end_timer = 0
-      self._ss_last_tracked_ft = self.tracked_model_length * M_TO_FT
-      self._ss_last_model_ft = self.frogpilot_planner.model_length * M_TO_FT
-      self._ss_last_speed = v_ego * 2.237
-      trigger = "DASH+FORCE" if self.forcing_stop else "DASH_ON"
-      self._ss_log(trigger, v_ego, sm)
-    elif self._ss_log_active:
-      if not standstill:
-        self._ss_log("APPROACH", v_ego, sm)
-      if standstill and not self._ss_logged_standstill:
-        self._ss_logged_standstill = True
-        self._ss_log("STANDSTILL", v_ego, sm,
-                     tracked_ft_override=self._ss_last_tracked_ft,
-                     model_ft_override=self._ss_last_model_ft,
-                     speed_override=self._ss_last_speed)
-      # Only end after standstill is recorded, OR after 15s timeout (in case of rolling stop)
-      self._ss_end_timer = self._ss_end_timer + DT_MDL if not dash_active and not self.forcing_stop else 0
-      if (self._ss_logged_standstill and not standstill) or self._ss_end_timer > 15:
-        self._ss_log("END", v_ego, sm)
-        self._ss_log_active = False
+    # Log every frame where dashboard stop sign or force stop is active,
+    # plus a 5-second tail after both go false to capture the standstill.
+    active = sm["frogpilotCarState"].dashboardStopSign > 0 or self.forcing_stop
+    if active:
+      self._ss_log_tail = 5.0
+    if self._ss_log_tail > 0:
+      self._ss_log_frame(v_ego, sm)
+      if not active:
+        self._ss_log_tail -= DT_MDL
 
     # Manual Stop Ahead: gradually reduce v_cruise continuously
     # Runs through force stop handoff - min() picks the tighter constraint
