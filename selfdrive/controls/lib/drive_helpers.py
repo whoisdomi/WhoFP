@@ -9,9 +9,9 @@ CAR_ROTATION_RADIUS = 0.0
 MAX_CURVATURE = 0.4
 MAX_VEL_ERR = 5.0  # m/s
 
-# Modified for sportier driving - 33% above ISO comfort standard
+# Modified for sportier driving - allows full torque in tight low-speed turns
 MAX_LATERAL_JERK = 5.0  # m/s^3
-MAX_LATERAL_ACCEL_NO_ROLL = 4.0  # m/s^2
+MAX_LATERAL_ACCEL_NO_ROLL = 6.0  # m/s^2 (up from 4.0 to avoid clamping curvature in tight turns)
 
 
 def clamp(val, min_val, max_val):
