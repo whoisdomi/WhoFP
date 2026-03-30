@@ -32,7 +32,8 @@ class FrogPilotVCruise:
     # Logs every frame where dash stop sign OR force stop is active,
     # plus a 5-second tail after both go false to capture standstill.
     self._ss_log_file = None
-    self._ss_log_tail = 0
+    self._ss_log_tail = False
+    self._ss_log_driving_timer = 0
     self._ss_init_log()
 
   def _ss_init_log(self):
@@ -221,15 +222,24 @@ class FrogPilotVCruise:
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     # --- Stop sign overshoot logging ---
-    # Log every frame where dashboard stop sign or force stop is active,
-    # plus a 5-second tail after both go false to capture the standstill.
+    # Log every frame where dashboard stop sign or force stop is active.
+    # After both go false, keep logging until standstill or car is clearly
+    # driving away (above 30mph for 2+ seconds = not stopping).
     active = sm["frogpilotCarState"].dashboardStopSign > 0 or self.forcing_stop
     if active:
-      self._ss_log_tail = 5.0
-    if self._ss_log_tail > 0:
+      self._ss_log_tail = True
+      self._ss_log_driving_timer = 0
+    if self._ss_log_tail:
       self._ss_log_frame(v_ego, sm)
       if not active:
-        self._ss_log_tail -= DT_MDL
+        if sm["carState"].standstill:
+          self._ss_log_tail = False  # got the standstill, done
+        elif v_ego > 13.4:  # above 30mph
+          self._ss_log_driving_timer += DT_MDL
+          if self._ss_log_driving_timer > 2.0:
+            self._ss_log_tail = False  # clearly drove through
+        else:
+          self._ss_log_driving_timer = 0
 
     # Manual Stop Ahead: gradually reduce v_cruise continuously
     # Runs through force stop handoff - min() picks the tighter constraint

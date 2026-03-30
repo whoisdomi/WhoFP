@@ -12,7 +12,7 @@ import csv
 import sys
 
 LOG_PATH = "/data/stop_sign_overshoot.csv"
-GAP_THRESHOLD = 8.0  # seconds of silence = new stop event (tail logs for 5s after active)
+GAP_THRESHOLD = 5.0  # seconds of silence = new stop event (logging stops at standstill or drive-away)
 
 
 def main():
