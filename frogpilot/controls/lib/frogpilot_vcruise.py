@@ -187,10 +187,17 @@ class FrogPilotVCruise:
         self.tracked_model_length = min(self.tracked_model_length, self.frogpilot_planner.model_length)
       if sm["carState"].standstill:
         self.tracked_model_length = 0
-      # Floor division: when tracked_model_length < PLANNER_TIME (~10m), v_cruise becomes 0.0
-      # exactly — giving the MPC a hard "stop now" command. Float division would approach 0
-      # asymptotically and let the car roll slowly (v_ego ≈ v_cruise, MPC never brakes further).
-      v_cruise = min(self.tracked_model_length // PLANNER_TIME, v_cruise)
+      # Kinematic velocity profile: v = sqrt(2 * a_comfort * d)
+      # Unlike the old linear profile (d/10), this keeps speed high when far away and
+      # progressively increases braking as the stop approaches — matching how a human
+      # driver would brake. a_comfort = 1.2 m/s² gives a natural, non-alarming decel.
+      # Hard stop command below 5m to ensure the car fully stops (sqrt would asymptote).
+      FORCE_STOP_COMFORT_DECEL = 1.2
+      if self.tracked_model_length < 5.0:
+        force_stop_v = 0.0
+      else:
+        force_stop_v = (2.0 * FORCE_STOP_COMFORT_DECEL * self.tracked_model_length) ** 0.5
+      v_cruise = min(force_stop_v, v_cruise)
 
     else:
       self.forcing_stop = False
