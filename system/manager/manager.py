@@ -79,7 +79,7 @@ def manager_init() -> None:
   # Use cached DongleId if available to avoid blocking on network at boot
   cached_dongle_id = params.get("DongleId")
   if cached_dongle_id is not None:
-    dongle_id = cached_dongle_id
+    dongle_id = cached_dongle_id.decode("utf-8")
     # Re-register in background to keep registration fresh
     threading.Thread(target=register, kwargs={"show_spinner": False}, daemon=True).start()
   else:
