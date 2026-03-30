@@ -1,5 +1,7 @@
 #include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
 
+#include "common/swaglog.h"
+
 volatile int fpWidgetPaintStage = 0;
 volatile int fpUpdateStage = 0;
 
@@ -228,6 +230,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   // Lazy-load GIF animations only when their feature is enabled
   if (toggleCemStatus) {
     if (!cemCurveIcon) {
+      LOGW("Lazy-loading CEM GIFs (7 animations)");
       loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/speed_icon.gif", cemSpeedIcon, QSize(widget_size, widget_size), this);
@@ -237,6 +240,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
       loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(widget_size, widget_size), this);
     }
   } else if (cemCurveIcon) {
+    LOGW("Freeing CEM GIFs (toggle disabled)");
     cemCurveIcon.reset();
     cemLeadIcon.reset();
     cemSpeedIcon.reset();
@@ -249,6 +253,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   int weatherId = frogpilotPlan.getWeatherId();
   if (weatherId != 0) {
     if (!weatherClearDay) {
+      LOGW("Lazy-loading weather GIFs (5 animations, weatherId=%d)", weatherId);
       loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(widget_size, widget_size), this);
@@ -256,6 +261,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
       loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(widget_size, widget_size), this);
     }
   } else if (weatherClearDay) {
+    LOGW("Freeing weather GIFs (weatherId=0)");
     weatherClearDay.reset();
     weatherClearNight.reset();
     weatherLowVisibility.reset();
