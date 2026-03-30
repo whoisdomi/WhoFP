@@ -30,18 +30,8 @@ FrogPilotAnnotatedCameraWidget::FrogPilotAnnotatedCameraWidget(QWidget *parent) 
   stopSignImg = loadPixmap("../../frogpilot/assets/stuff/stop_sign2.png", {96, 96});
   turnIcon = loadPixmap("../../frogpilot/assets/other_images/turn_icon.png", {widget_size, widget_size});
 
-  loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/speed_icon.gif", cemSpeedIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/light_icon.gif", cemStopIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(widget_size, widget_size), this);
-  loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(widget_size, widget_size), this);
+  // GIF animations are lazy-loaded in updateState() when their toggle is enabled
+  // to avoid ~40MB+ baseline memory from unused QMovie frame buffers
 
   QObject::connect(animationTimer, &QTimer::timeout, [this] {
     if (totalFrames > 0) {
@@ -234,6 +224,44 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   toggleSpeedLimitVienna = frogpilot_toggles->value("speed_limit_vienna").toBool();
   toggleSlcPriorityMode = frogpilot_toggles->value("slc_priority_mode").toBool();
   toggleLaneDetectionWidth = frogpilot_toggles->value("lane_detection_width").toDouble();
+
+  // Lazy-load GIF animations only when their feature is enabled
+  if (toggleCemStatus) {
+    if (!cemCurveIcon) {
+      loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/speed_icon.gif", cemSpeedIcon, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/light_icon.gif", cemStopIcon, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(widget_size, widget_size), this);
+    }
+  } else if (cemCurveIcon) {
+    cemCurveIcon.reset();
+    cemLeadIcon.reset();
+    cemSpeedIcon.reset();
+    cemStopIcon.reset();
+    cemTurnIcon.reset();
+    chillModeIcon.reset();
+    experimentalModeIcon.reset();
+  }
+
+  int weatherId = frogpilotPlan.getWeatherId();
+  if (weatherId != 0) {
+    if (!weatherClearDay) {
+      loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(widget_size, widget_size), this);
+      loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(widget_size, widget_size), this);
+    }
+  } else if (weatherClearDay) {
+    weatherClearDay.reset();
+    weatherClearNight.reset();
+    weatherLowVisibility.reset();
+    weatherRain.reset();
+    weatherSnow.reset();
+  }
 
   // Cache values — only re-read once per second (not 20Hz) to avoid heap churn
   static int paramReadCounter = 0;
@@ -528,7 +556,9 @@ void FrogPilotAnnotatedCameraWidget::paintCEMStatus(QPainter &p, SubMaster &sm) 
       icon = experimentalModeIcon;
     }
   }
-  p.drawPixmap(cemWidget, icon->currentPixmap());
+  if (icon) {
+    p.drawPixmap(cemWidget, icon->currentPixmap());
+  }
 
   p.restore();
 }
@@ -1435,7 +1465,9 @@ void FrogPilotAnnotatedCameraWidget::paintWeather(QPainter &p, SubMaster &fpsm) 
     icon = frogpilotPlan.getWeatherDaytime() ? weatherClearDay : weatherClearNight;
   }
 
-  p.drawPixmap(weatherRect, icon->currentPixmap());
+  if (icon) {
+    p.drawPixmap(weatherRect, icon->currentPixmap());
+  }
 
   p.restore();
 }
