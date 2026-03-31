@@ -244,8 +244,12 @@ class LatControlTorque(LatControl):
     # Prevents friction from snapping left/right at sub-6mph stops without affecting turns —
     # curve_scale rises from 0 → 1 as desired_curvature crosses STRAIGHT_STOP_CURVATURE,
     # so full low_speed_factor is restored by the time a real turn begins.
+    # Use max of rate-limited and raw model curvature so that departing a stop into a turn
+    # isn't suppressed while desired_curvature is still ramping up from zero.
     if CS.vEgo < STRAIGHT_STOP_SPEED and low_speed_factor > 1.0:
-      curve_scale = float(np.clip(abs(desired_curvature) / STRAIGHT_STOP_CURVATURE, 0.0, 1.0))
+      model_curvature = abs(model_data.action.desiredCurvature) if model_data is not None else 0.0
+      effective_curvature = max(abs(desired_curvature), model_curvature)
+      curve_scale = float(np.clip(effective_curvature / STRAIGHT_STOP_CURVATURE, 0.0, 1.0))
       low_speed_factor = 1.0 + (low_speed_factor - 1.0) * curve_scale
 
     setpoint *= low_speed_factor
