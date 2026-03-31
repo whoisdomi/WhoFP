@@ -27,6 +27,7 @@ class FrogPilotVCruise:
     self.green_light_timer = 0
     self.override_force_stop_timer = 0
     self.tracked_model_length = 0
+    self.stop_sign_confirmed = False
 
     # Stop sign overshoot logging — simple continuous logger.
     # Logs every frame where dash stop sign OR force stop is active,
@@ -165,24 +166,30 @@ class FrogPilotVCruise:
     if force_stop_enabled and not self.override_force_stop:
       self.forcing_stop |= not sm["carState"].standstill
 
+      # Latch: once dashboard confirms a stop sign during this force stop event,
+      # keep the correction active even after the sign leaves the dashboard.
+      # The sign passes out of camera view as you approach, but you still need to stop.
+      # Resets when force stop ends (else branch below).
+      if dashboard_stop_sign:
+        self.stop_sign_confirmed = True
+
       # Dashboard stop sign: accelerate decay to correct overshoot.
       # Good stops (model revises down): the model clamp below is the binding constraint, so this doesn't matter.
       # Bad stops (model sees through intersection): kinematic decay is all we have, so the boost pulls the stop closer.
-      decay_multiplier = 1.5 if dashboard_stop_sign else 1.0
+      decay_multiplier = 1.5 if self.stop_sign_confirmed else 1.0
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL * decay_multiplier), 0)
 
-      # Dashboard stop sign cap: when the car's camera ECU confirms a stop sign, cap
-      # tracked_model_length to a comfortable stopping distance for the current speed.
-      # Data shows the model is bimodal at stop signs — either nails the stop point (~2-5 ft)
-      # or completely sees through the intersection (40-103 ft overshoot). The model clamp
-      # handles the good case. This cap handles the bad case by limiting how far ahead the
-      # stop point can be, based on what physics allows for a comfortable stop.
+      # Dashboard stop sign cap: cap tracked_model_length to a comfortable stopping
+      # distance for the current speed. Data shows the model is bimodal at stop signs —
+      # either nails the stop point (~2-5 ft) or completely sees through the intersection
+      # (40-103 ft overshoot). The model clamp handles the good case. This cap handles
+      # the bad case by limiting how far ahead the stop point can be.
       #   d = v² / (2 * a_comfortable)  — stopping distance at comfortable decel
       #   + 6m buffer so we don't clip the good stops that are already working
       # At 15 mph (6.7 m/s): cap = 6.7²/3.0 + 6 = 21m = 69 ft
       # At 25 mph (11.2 m/s): cap = 11.2²/3.0 + 6 = 48m = 157 ft
       # At 30 mph (13.4 m/s): cap = 13.4²/3.0 + 6 = 66m = 216 ft
-      if dashboard_stop_sign:
+      if self.stop_sign_confirmed:
         stop_sign_cap = (v_ego ** 2) / 3.0 + 6.0
         self.tracked_model_length = min(self.tracked_model_length, stop_sign_cap)
 
@@ -217,6 +224,7 @@ class FrogPilotVCruise:
 
     else:
       self.forcing_stop = False
+      self.stop_sign_confirmed = False
 
       self.tracked_model_length = self.frogpilot_planner.model_length
 
