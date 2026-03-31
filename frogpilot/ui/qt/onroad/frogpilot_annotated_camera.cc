@@ -1,6 +1,8 @@
 #include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
 
 #include "common/swaglog.h"
+#include "common/util.h"
+#include "common/watchdog.h"
 
 volatile int fpWidgetPaintStage = 0;
 volatile int fpUpdateStage = 0;
@@ -68,6 +70,7 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
   fpUpdateStage = 51;  // loading signal files
   bool isGif = false;
 
+  watchdog_kick(nanos_since_boot());
   QFileInfoList files = QDir("../../frogpilot/assets/active_theme/signals/").entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
   for (const QFileInfo &fileInfo : files) {
     QString fileName = fileInfo.fileName();
@@ -89,6 +92,11 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
         QImage image = movie.currentPixmap().toImage().convertToFormat(QImage::Format_Indexed8);
         QPixmap frame = QPixmap::fromImage(image);
         signalImages.append(frame);
+
+        // Kick watchdog every 10 frames to prevent SIGKILL during long GIF decode
+        if (i % 10 == 0) {
+          watchdog_kick(nanos_since_boot());
+        }
       }
 
       movie.stop();
@@ -128,12 +136,16 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
 
   fpUpdateStage = 52;  // pre-cache flipped
   // Pre-cache flipped versions to avoid transforms at 20Hz during paint
+  watchdog_kick(nanos_since_boot());
   QTransform flipTransform;
   flipTransform.scale(-1, 1);
 
   signalImagesFlipped.reserve(signalImages.size());
-  for (const QPixmap &img : signalImages) {
-    signalImagesFlipped.append(img.transformed(flipTransform));
+  for (int i = 0; i < signalImages.size(); ++i) {
+    signalImagesFlipped.append(signalImages[i].transformed(flipTransform));
+    if (i % 10 == 0) {
+      watchdog_kick(nanos_since_boot());
+    }
   }
 
   blindspotImagesFlipped.reserve(blindspotImages.size());
