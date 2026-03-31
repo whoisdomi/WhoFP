@@ -7,6 +7,7 @@ from collections import deque
 
 from cereal import log
 from opendbc.car.lateral import get_friction
+from opendbc.car.hyundai.hyundaicanfd import DAMP_FACTOR_SPEED, DAMP_FACTOR, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST
 from opendbc.car.interfaces import LatControlInputs
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.common.realtime import DT_CTRL
@@ -393,7 +394,7 @@ class LatControlTorque(LatControl):
         self._unwind_log_writer.writerow([
           'time_s', 'steering_angle_deg', 'speed_mph', 'torque_request',
           'pid_p', 'pid_i', 'pid_f', 'error', 'setpoint', 'measurement',
-          'desired_curvature', 'unwind_detected', 'unwind_decay', 'damp_boost_active',
+          'desired_curvature', 'unwind_detected', 'unwind_decay', 'damp_boost_active', 'damp_factor',
         ])
 
       # Write a row each frame while logging
@@ -406,6 +407,9 @@ class LatControlTorque(LatControl):
           self._unwind_log_last_above = now
 
         decay_val = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95])) if unwind_detected else 1.0
+        base_damp = int(np.interp(CS.vEgo, DAMP_FACTOR_SPEED, DAMP_FACTOR))
+        boost_damp = int(np.interp(CS.vEgo, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST)) if self._damp_boost_active else 0
+        computed_damp = min(base_damp + boost_damp, 200)
         self._unwind_log_writer.writerow([
           f"{now:.3f}",
           f"{CS.steeringAngleDeg:.2f}",
@@ -421,6 +425,7 @@ class LatControlTorque(LatControl):
           int(unwind_detected),
           f"{decay_val:.3f}",
           int(self._damp_boost_active),
+          computed_damp,
         ])
         self._unwind_log_file.flush()
 

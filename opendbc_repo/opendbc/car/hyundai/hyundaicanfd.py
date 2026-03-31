@@ -40,7 +40,10 @@ class CanBus(CanBusBase):
 # Speeds in m/s:        0 mph    30 mph   50 mph   60 mph   70 mph
 DAMP_FACTOR_SPEED = [0,       13.41,   22.35,   26.82,   31.29]
 DAMP_FACTOR =       [50,      70,      100,     120,     200]
-DAMP_UNWIND_BOOST = 80
+# Speed-interpolated unwind boost: stronger at low speed where overshoot is worst
+# Speeds in m/s:              0 mph    15 mph   30 mph   50 mph
+DAMP_UNWIND_BOOST_SPEED = [0,       6.71,    13.41,   22.35]
+DAMP_UNWIND_BOOST =       [120,     100,     80,      60]
 
 
 def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque, v_ego=0., unwinding=False):
@@ -53,7 +56,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque,
     "STEER_MODE": 0,
     "HAS_LANE_SAFETY": 0,  # hide LKAS settings
     "NEW_SIGNAL_2": 0,
-    "DAMP_FACTOR": min(int(np.interp(v_ego, DAMP_FACTOR_SPEED, DAMP_FACTOR)) + (DAMP_UNWIND_BOOST if unwinding else 0), 200),
+    "DAMP_FACTOR": min(int(np.interp(v_ego, DAMP_FACTOR_SPEED, DAMP_FACTOR)) + (int(np.interp(v_ego, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST)) if unwinding else 0), 200),
   }
 
   lkas_values = copy.copy(common_values)
