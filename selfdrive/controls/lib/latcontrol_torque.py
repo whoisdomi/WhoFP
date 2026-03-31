@@ -45,9 +45,7 @@ LOW_SPEED_X =    [1,     1.5,   2.0,   3.0,   5,     7.5,   10,    15,    30   ]
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 # Note: Initial lat_delay is calculated in __init__ as CP.steerActuatorDelay + 0.2 (matching lagd)
 
-# === Unwind Detection (from StarPilot) ===
-UNWIND_D_DES_THRESHOLD = -1.0      # Desired accel decreasing fast (m/s³)
-UNWIND_LAT_ACCEL_NEAR_ZERO = 0.8   # Near straight (m/s²), compared against raw (unscaled) lat accel
+# === Unwind Detection (steering-angle-based, mirrors carcontroller.py) ===
 UNWIND_FRAMES_ACTIVATE = 5         # Counter threshold to activate decay
 UNWIND_COUNTER_MAX = 15            # Max counter value; once reached, needs 10 false frames to deactivate
 
@@ -110,9 +108,18 @@ class LatControlTorque(LatControl):
     # Will be replaced by lagd's learned value once available
     self.lat_delay = CP.steerActuatorDelay + 0.1
 
-    # Unwind detection state
-    self.prev_future_desired_lateral_accel = 0.0
+    # Unwind detection state (steering-angle-based, mirrors carcontroller.py)
+    self.unwind_peak_angle = 0.0
+    self.unwind_last_angle = 0.0
     self.unwind_frames = 0
+    self.unwind_hold_timer = 0
+
+    # Mirror of carcontroller.py's DAMP_UNWIND_BOOST detection (for logging only)
+    self._damp_peak_angle = 0.0
+    self._damp_last_angle = 0.0
+    self._damp_unwind_frames = 0
+    self._damp_hold_timer = 0
+    self._damp_boost_active = False
 
     # Low-pass filter state for measured lateral accel
     self.filtered_measurement = 0.0
@@ -264,27 +271,46 @@ class LatControlTorque(LatControl):
     friction_threshold = get_friction_threshold(CS.vEgo)
     ff += get_friction(error, lateral_accel_deadzone, friction_threshold, self.torque_params)
 
-    # Unwind detection: use raw future_desired_lateral_accel (before jerk prediction and low_speed_factor
-    # scaling) so the rate and near-zero checks are stable and in physical units (m/s²).
-    desired_lateral_accel_rate = (future_desired_lateral_accel - self.prev_future_desired_lateral_accel) / DT_CTRL
-    unwind_condition = (desired_lateral_accel_rate < UNWIND_D_DES_THRESHOLD and
-                        abs(future_desired_lateral_accel) < UNWIND_LAT_ACCEL_NEAR_ZERO)
-    self.prev_future_desired_lateral_accel = future_desired_lateral_accel
-    # Hysteresis counter: builds at +1/frame when condition is met, drains at -1/frame when not.
-    # Activates at UNWIND_FRAMES_ACTIVATE (5 frames), saturates at UNWIND_COUNTER_MAX (15 frames).
-    # Once saturated, transient noise (< 10 false frames) can't break the detection.
+    # Unwind detection: steering-angle-based (mirrors carcontroller.py)
+    # Detects when the wheel is returning toward center from a turn
+    steering_angle = CS.steeringAngleDeg
+    abs_steer = abs(steering_angle)
+    # Track peak angle during a turn
+    if abs_steer > self.unwind_peak_angle:
+      self.unwind_peak_angle = abs_steer
+    # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
+    unwind_condition = (self.unwind_peak_angle > 5.0 and
+                        abs_steer < abs(self.unwind_last_angle) and
+                        (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
+    # Hysteresis counter
     if unwind_condition:
       self.unwind_frames = min(self.unwind_frames + 1, UNWIND_COUNTER_MAX)
     else:
       self.unwind_frames = max(self.unwind_frames - 1, 0)
-    unwind_detected = self.unwind_frames >= UNWIND_FRAMES_ACTIVATE
+    unwind_active = self.unwind_frames >= UNWIND_FRAMES_ACTIVATE
+    # Winding up (turn entry): cancel immediately
+    winding_up = abs_steer > abs(self.unwind_last_angle) + 0.5 and abs_steer > 5.0
+    if winding_up:
+      self.unwind_hold_timer = 0
+      self.unwind_frames = 0
+    elif unwind_active:
+      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3 second hold
+    elif self.unwind_hold_timer > 0:
+      self.unwind_hold_timer -= 1
+    # Reset peak near center
+    if abs_steer < 2.0:
+      self.unwind_peak_angle = 0.0
+    unwind_detected = self.unwind_hold_timer > 0
+    self.unwind_last_angle = steering_angle
 
     if not active:
       output_torque = 0.0
       pid_log.active = False
       self.pid.reset()
-      self.prev_future_desired_lateral_accel = 0.0
       self.unwind_frames = 0
+      self.unwind_hold_timer = 0
+      self.unwind_peak_angle = 0.0
+      self.unwind_last_angle = 0.0
       self.filtered_measurement = 0.0
       self.filtered_ff = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
@@ -329,6 +355,32 @@ class LatControlTorque(LatControl):
       abs_angle = abs(CS.steeringAngleDeg)
       now = time.monotonic()
 
+      # Mirror carcontroller.py's DAMP_UNWIND_BOOST detection for logging
+      steer_ang = CS.steeringAngleDeg
+      abs_sa = abs(steer_ang)
+      if abs_sa > self._damp_peak_angle:
+        self._damp_peak_angle = abs_sa
+      damp_unwind_cond = (self._damp_peak_angle > 5.0 and
+                          abs_sa < abs(self._damp_last_angle) and
+                          (np.sign(steer_ang) == np.sign(self._damp_last_angle) if self._damp_last_angle != 0 else False))
+      if damp_unwind_cond:
+        self._damp_unwind_frames = min(self._damp_unwind_frames + 1, 15)
+      else:
+        self._damp_unwind_frames = max(self._damp_unwind_frames - 1, 0)
+      damp_unwind_active = self._damp_unwind_frames >= 5
+      damp_winding_up = abs_sa > abs(self._damp_last_angle) + 0.5 and abs_sa > 5.0
+      if damp_winding_up:
+        self._damp_hold_timer = 0
+        self._damp_unwind_frames = 0
+      elif damp_unwind_active:
+        self._damp_hold_timer = int(3.0 / DT_CTRL)
+      elif self._damp_hold_timer > 0:
+        self._damp_hold_timer -= 1
+      if abs_sa < 2.0:
+        self._damp_peak_angle = 0.0
+      self._damp_boost_active = self._damp_hold_timer > 0
+      self._damp_last_angle = steer_ang
+
       # Start logging when steering exceeds 120°
       if not self._unwind_log_active and abs_angle > 120.0:
         self._unwind_log_active = True
@@ -341,7 +393,7 @@ class LatControlTorque(LatControl):
         self._unwind_log_writer.writerow([
           'time_s', 'steering_angle_deg', 'speed_mph', 'torque_request',
           'pid_p', 'pid_i', 'pid_f', 'error', 'setpoint', 'measurement',
-          'desired_curvature', 'unwind_detected', 'unwind_decay',
+          'desired_curvature', 'unwind_detected', 'unwind_decay', 'damp_boost_active',
         ])
 
       # Write a row each frame while logging
@@ -368,6 +420,7 @@ class LatControlTorque(LatControl):
           f"{desired_curvature:.6f}",
           int(unwind_detected),
           f"{decay_val:.3f}",
+          int(self._damp_boost_active),
         ])
         self._unwind_log_file.flush()
 
