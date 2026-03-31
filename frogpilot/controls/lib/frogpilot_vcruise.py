@@ -170,6 +170,22 @@ class FrogPilotVCruise:
       # Bad stops (model sees through intersection): kinematic decay is all we have, so the boost pulls the stop closer.
       decay_multiplier = 1.5 if dashboard_stop_sign else 1.0
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL * decay_multiplier), 0)
+
+      # Dashboard stop sign cap: when the car's camera ECU confirms a stop sign, cap
+      # tracked_model_length to a comfortable stopping distance for the current speed.
+      # Data shows the model is bimodal at stop signs — either nails the stop point (~2-5 ft)
+      # or completely sees through the intersection (40-103 ft overshoot). The model clamp
+      # handles the good case. This cap handles the bad case by limiting how far ahead the
+      # stop point can be, based on what physics allows for a comfortable stop.
+      #   d = v² / (2 * a_comfortable)  — stopping distance at comfortable decel
+      #   + 6m buffer so we don't clip the good stops that are already working
+      # At 15 mph (6.7 m/s): cap = 6.7²/3.0 + 6 = 21m = 69 ft
+      # At 25 mph (11.2 m/s): cap = 11.2²/3.0 + 6 = 48m = 157 ft
+      # At 30 mph (13.4 m/s): cap = 13.4²/3.0 + 6 = 66m = 216 ft
+      if dashboard_stop_sign:
+        stop_sign_cap = (v_ego ** 2) / 3.0 + 6.0
+        self.tracked_model_length = min(self.tracked_model_length, stop_sign_cap)
+
       # If the model refines its stop prediction to a closer point, follow it downward.
       # This fixes stop sign overshoot: the model initially predicts stopping at ~50m when
       # model_stopped triggers, but revises closer as the car approaches the intersection.
