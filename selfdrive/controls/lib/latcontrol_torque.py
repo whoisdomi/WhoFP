@@ -276,37 +276,7 @@ class LatControlTorque(LatControl):
     friction_threshold = get_friction_threshold(CS.vEgo)
     ff += get_friction(error, lateral_accel_deadzone, friction_threshold, self.torque_params)
 
-    # Unwind detection: steering-angle-based (mirrors carcontroller.py)
-    # Detects when the wheel is returning toward center from a turn
-    steering_angle = CS.steeringAngleDeg
-    abs_steer = abs(steering_angle)
-    # Track peak angle during a turn
-    if abs_steer > self.unwind_peak_angle:
-      self.unwind_peak_angle = abs_steer
-    # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
-    unwind_condition = (self.unwind_peak_angle > 5.0 and
-                        abs_steer < abs(self.unwind_last_angle) and
-                        (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
-    # Hysteresis counter
-    if unwind_condition:
-      self.unwind_frames = min(self.unwind_frames + 1, UNWIND_COUNTER_MAX)
-    else:
-      self.unwind_frames = max(self.unwind_frames - 1, 0)
-    unwind_active = self.unwind_frames >= UNWIND_FRAMES_ACTIVATE
-    # Winding up (turn entry): cancel immediately
-    winding_up = abs_steer > abs(self.unwind_last_angle) + 0.5 and abs_steer > 5.0
-    if winding_up:
-      self.unwind_hold_timer = 0
-      self.unwind_frames = 0
-    elif unwind_active:
-      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3 second hold
-    elif self.unwind_hold_timer > 0:
-      self.unwind_hold_timer -= 1
-    # Reset peak near center
-    if abs_steer < 2.0:
-      self.unwind_peak_angle = 0.0
-    unwind_detected = self.unwind_hold_timer > 0
-    self.unwind_last_angle = steering_angle
+    # Unwind detection moved up
 
     if not active:
       output_torque = 0.0
