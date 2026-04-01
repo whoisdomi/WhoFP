@@ -98,10 +98,12 @@ class FrogPilotVCruise:
     force_stop_enabled = self.force_stop_timer >= 0.5 or manual_stop_force_stop
 
     # Latch: stay committed to stopping until standstill, but release if stop condition
-    # has been sustainedly cleared (light genuinely turned green, not a brief model flicker)
+    # has been sustainedly cleared (light genuinely turned green, not a brief model flicker).
+    # Stop signs don't turn green — when dashboard confirms a stop sign, skip the green
+    # light release entirely and stay committed until standstill or driver override.
     stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
     self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
-    green_confirmed = self.green_light_timer >= 1.5
+    green_confirmed = self.green_light_timer >= 1.5 and not self.stop_sign_confirmed
     force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill and not green_confirmed and not self.frogpilot_planner.driving_in_curve
 
     # At standstill: CEM pauses so stop_light_detected is stale — use model_stopped directly.
