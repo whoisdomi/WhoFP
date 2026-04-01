@@ -5,16 +5,16 @@
       "LS",
       "Grep",
       "Glob",
-      "Bash(find *)",
-      "Bash(grep *)",
-      "Bash(xargs *)",
-      "Bash(head *)",
-      "Bash(cat *)",
-      "Bash(ls *)",
-      "Bash(tree *)",
-      "Bash(git *)",
-      "Bash(wsl *)",
-      "Bash(gh api:*)"
+      "Bash(head*)",
+      "Bash(cat*)",
+      "Bash(ls*)",
+      "Bash(python3*)",
+      "Bash(grep*)",
+      "Bash(find*)",
+      "Bash(git*)",
+      "Bash(tree*)",
+      "Bash(echo*)",
+      "Bash(gh api*)"
     ]
   }
 }
