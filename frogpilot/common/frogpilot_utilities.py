@@ -115,16 +115,16 @@ def calculate_road_curvature(modelData, v_ego):
   velocity = modelData.velocity.x
   timebase = modelData.orientationRate.t
 
-  max_abs_lat_acc = 0
+  max_curvature = 0
   index = 0
   for i in range(len(orientation_rate)):
-    lat_acc = abs(orientation_rate[i] * velocity[i])
-    if lat_acc > max_abs_lat_acc:
-      max_abs_lat_acc = lat_acc
+    curvature = abs(orientation_rate[i] / max(velocity[i], 1))
+    if curvature > max_curvature:
+      max_curvature = curvature
       index = i
 
-  predicted_lateral_acc = orientation_rate[index] * velocity[index]
-  return predicted_lateral_acc / max(v_ego, 1)**2, max(timebase[index], 1)
+  predicted_curvature = orientation_rate[index] / max(velocity[index], 1)
+  return predicted_curvature, max(timebase[index], 1)
 
 
 def capture_report(discord_user, report, frogpilot_toggles):
