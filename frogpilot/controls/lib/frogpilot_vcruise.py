@@ -90,10 +90,18 @@ class FrogPilotVCruise:
     # Dashboard stop sign confirmation from camera ECU (CAM_0x361 SIGN_TYPE == 15)
     dashboard_stop_sign = sm["frogpilotCarState"].dashboardStopSign > 0
 
+    # Dashboard stop sign can trigger force stop directly — the ADAS camera has confirmed
+    # a stop sign ahead on our road. No need to wait for model_stopped since the model
+    # often sees through intersections at stop signs. The cap + decay handle the distance.
+    dash_stop_sign_force_stop = dashboard_stop_sign and long_control_active and frogpilot_toggles.force_stops
+    dash_stop_sign_force_stop &= self.override_force_stop_timer <= 0
+    dash_stop_sign_force_stop &= not self.frogpilot_planner.driving_in_curve
+    dash_stop_sign_force_stop &= not self.frogpilot_planner.tracking_lead
+
     # Gradual decay instead of instant reset — brief model flickers won't derail the timer.
     # Don't accumulate at standstill: CEM pauses there, keeping stop_light_detected stale,
     # which would peg the timer at max and prevent auto-release when the light turns green.
-    if force_stop and not sm["carState"].standstill:
+    if (force_stop or dash_stop_sign_force_stop) and not sm["carState"].standstill:
       # Dashboard confirmation doubles accumulation rate for faster commitment
       rate = DT_MDL * 2 if dashboard_stop_sign else DT_MDL
       self.force_stop_timer = min(self.force_stop_timer + rate, 2.0)
