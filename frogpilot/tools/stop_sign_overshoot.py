@@ -86,15 +86,36 @@ def main():
       print(f"  Tracked at dash-on:  {float(first_dash['tracked_ft']):>6.1f} ft")
 
     # Show approach profile (a few samples)
+    has_diag = "confirmed" in frames[0]  # new diagnostic fields present
     moving = [f for f in frames if f["standstill"] == "0"]
     if len(moving) > 2:
-      samples = [moving[0], moving[len(moving)//2], moving[-1]]
-      print(f"  Approach samples:")
+      samples = [moving[0], moving[len(moving)//4], moving[len(moving)//2], moving[3*len(moving)//4], moving[-1]]
+      # deduplicate in case of very short events
+      seen = set()
+      unique_samples = []
+      for s in samples:
+        key = id(s)
+        if key not in seen:
+          seen.add(key)
+          unique_samples.append(s)
+      samples = unique_samples
+      print(f"  Approach profile:")
       for f in samples:
-        brake = " BRAKE" if f["brake"] == "1" else ""
-        force = " FORCING" if f["forcing"] == "1" else ""
-        dash = " DASH" if f["dash"] == "1" else ""
-        print(f"    {float(f['speed_mph']):>5.1f} mph  model:{float(f['model_ft']):>6.1f} ft{force}{dash}{brake}")
+        flags = ""
+        if f["forcing"] == "1": flags += " FORCING"
+        if f["dash"] == "1": flags += " DASH"
+        if f["brake"] == "1": flags += " BRAKE"
+        if has_diag:
+          if f.get("confirmed") == "1": flags += " CONFIRMED"
+          if f.get("curve") == "1": flags += " CURVE"
+          if f.get("cem") == "1": flags += " CEM"
+          if f.get("exp") == "1": flags += " EXP"
+          else: flags += " CHILL"
+          green_t = float(f.get("green_t", 0))
+          force_t = float(f.get("force_t", 0))
+          print(f"    {float(f['speed_mph']):>5.1f} mph  trk:{float(f['tracked_ft']):>6.1f} ft  mdl:{float(f['model_ft']):>6.1f} ft  grn:{green_t:.1f}s  frc:{force_t:.1f}s{flags}")
+        else:
+          print(f"    {float(f['speed_mph']):>5.1f} mph  model:{float(f['model_ft']):>6.1f} ft{flags}")
 
     # Find overshoot: last moving frame before standstill
     if standstill_frames:
@@ -138,6 +159,27 @@ def main():
       print(f"  Stopped by:          {stopped_by}")
       if had_force_stop:
         print(f"  Force stop active:   {'Yes' if forcing_at_stop else 'No (dropped before stop)'}")
+        # Diagnose WHY force stop dropped (if it did)
+        if not forcing_at_stop and has_diag:
+          # Find last frame where forcing was active
+          forcing_frames = [f for f in frames if f["forcing"] == "1"]
+          if forcing_frames:
+            last_forcing = forcing_frames[-1]
+            drop_speed = float(last_forcing["speed_mph"])
+            drop_tracked = float(last_forcing["tracked_ft"])
+            drop_green = float(last_forcing.get("green_t", 0))
+            drop_curve = last_forcing.get("curve") == "1"
+            drop_confirmed = last_forcing.get("confirmed") == "1"
+            drop_cem = last_forcing.get("cem") == "1"
+            print(f"  Force drop at:       {drop_speed:>5.1f} mph, tracked:{drop_tracked:.1f} ft")
+            drop_exp = last_forcing.get("exp") == "1"
+            print(f"    confirmed={drop_confirmed} green_t={drop_green:.2f}s curve={drop_curve} cem={drop_cem} exp={drop_exp}")
+            # Show frame right after forcing dropped
+            last_forcing_time = float(last_forcing["time"])
+            after_drop = [f for f in frames if f["forcing"] == "0" and float(f["time"]) > last_forcing_time]
+            if after_drop:
+              af = after_drop[0]
+              print(f"    After drop: confirmed={af.get('confirmed','?')} green_t={float(af.get('green_t',0)):.2f}s curve={af.get('curve','?')} cem={af.get('cem','?')} exp={af.get('exp','?')}")
         print(f"  ** TRACKED OVERSHOOT:{tracked_at_stop:>6.1f} ft **")
       print(f"  ** MODEL OVERSHOOT:  {model_at_stop:>6.1f} ft **")
       print(f"  Dist dash→stop:      {dist_traveled_ft:>6.1f} ft")
