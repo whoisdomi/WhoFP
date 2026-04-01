@@ -1,8 +1,19 @@
-# AGENTS.md
+# GEMINI.md
 
-This file provides guidance to AGENTS when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
+
+## Response Guidelines (CRITICAL)
+
+To maintain safety and code quality for vehicle control logic, Gemini must follow these rules for every technical interaction:
+
+1. **Root Cause Analysis (RCA) First:** You must provide a clear "Root Cause Analysis" or a logical explanation of the issue *before* showing any code blocks, diffs, or terminal commands.
+
+2. **Physics & Control Logic:** If a fix involves lateral/longitudinal control (e.g., PID gains, curvature, acceleration), you must explain the math/logic behind the change first (e.g., how the change affects $v^2$ or $a_{lat}$).
+
+3. **No Blind Edits:** Never ask to apply or view edits until the investigation is clearly explained and the "why" is justified.
+
 
 This is **FrogPilot**, a community fork of openpilot. openpilot is an open-source operating system for robotics that provides driver assistance (ACC, LKAS, FCW, LDW) for 300+ supported cars. FrogPilot adds features like Always On Lateral, Conditional Experimental Mode, custom themes, speed limit controller, and enhanced tuning options.
 
@@ -200,6 +211,13 @@ QObject::connect(paramToggle, &FrogPilotParamValueButtonControl::buttonClicked, 
 
 ### 4. Header Declaration
 **File:** `frogpilot/ui/qt/offroad/<section>_settings.h`
+
+Add the param key to the appropriate panel key set (CRITICAL — without this, the toggle won't appear in the UI):
+```cpp
+QSet<QString> advancedLateralTuneKeys = {"...", "ParamName", "..."};
+```
+
+Add the toggle pointer declaration:
 ```cpp
 FrogPilotParamValueButtonControl *paramToggle;
 ```
