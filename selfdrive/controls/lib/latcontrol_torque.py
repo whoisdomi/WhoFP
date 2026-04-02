@@ -330,18 +330,18 @@ class LatControlTorque(LatControl):
       # PID update in lat accel space
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
 
-    if unwind_detected:
-      # Fade out desired curvature during unwind at low speeds
-      # 0 mph -> 0.0 (full fade), 15 mph -> 0.4, 33 mph -> 1.0 (no fade)
-      unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 14.7], [0.0, 0.4, 1.0]))
-      output_lataccel *= unwind_fade
+      if unwind_detected:
+        # Fade out desired curvature during unwind at low speeds
+        # 0 mph -> 0.0 (full fade), 15 mph -> 0.4, 33 mph -> 1.0 (no fade)
+        unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 14.7], [0.0, 0.4, 1.0]))
+        output_lataccel *= unwind_fade
 
-      # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
-      # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
-      # Faster decay at low speed (turns complete faster, integrator needs to drain quicker)
-      # 0.88 at 0 m/s → 0.95 at 15 m/s (33 mph)
-      unwind_decay = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95]))
-      self.pid.i *= unwind_decay
+        # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
+        # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
+        # Faster decay at low speed (turns complete faster, integrator needs to drain quicker)
+        # 0.88 at 0 m/s → 0.95 at 15 m/s (33 mph)
+        unwind_decay = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95]))
+        self.pid.i *= unwind_decay
 
       # Convert to torque at the end
       output_torque = self.torque_from_lateral_accel(
