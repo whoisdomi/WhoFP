@@ -8,6 +8,8 @@
 #include "common/swaglog.h"
 #include "selfdrive/ui/qt/util.h"
 
+extern volatile int modelDrawStage;
+
 // Window that shows camera view and variety of info drawn on top
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *parent)
     : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, parent) {
