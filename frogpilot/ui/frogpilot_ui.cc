@@ -1,5 +1,7 @@
 #include "frogpilot/ui/frogpilot_ui.h"
 
+extern volatile int fpUpdateStage;
+
 static void update_state(FrogPilotUIState *fs) {
   FrogPilotUIScene &frogpilot_scene = fs->frogpilot_scene;
 
