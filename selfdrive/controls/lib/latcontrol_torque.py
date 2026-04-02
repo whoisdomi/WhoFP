@@ -332,10 +332,10 @@ class LatControlTorque(LatControl):
 
       if unwind_detected:
         # Fade out desired curvature during unwind at low speeds
-        # 0 mph -> 0.0 (full fade), 15 mph -> 0.4, 33 mph -> 1.0 (no fade)
-        unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 14.7], [0.0, 0.4, 1.0]))
+        # Yield more aggressively at mid-speeds (15mph) to let the wheel return.
+        # 0 mph -> 0.0 (full fade), 15 mph -> 0.1, 30 mph -> 1.0 (no fade)
+        unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.0, 0.1, 1.0]))
         output_lataccel *= unwind_fade
-
         # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
         # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
         # Faster decay at low speed (turns complete faster, integrator needs to drain quicker)
