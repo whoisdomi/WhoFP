@@ -15,6 +15,7 @@
 #include "system/hardware/hw.h"
 
 std::atomic<uint64_t> last_ui_frame_t = 0;
+extern volatile int fpUpdateStage;
 
 #define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
