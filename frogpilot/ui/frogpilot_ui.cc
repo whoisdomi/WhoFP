@@ -53,8 +53,12 @@ FrogPilotUIState *frogpilotUIState() {
 }
 
 void FrogPilotUIState::update() {
+  fpUpdateStage = 20; // update_state
   update_state(this);
 
+  fpUpdateStage = 21; // get CEStatus
   frogpilot_scene.conditional_status = frogpilot_scene.enabled ? params_memory.getInt("CEStatus") : 0;
+  fpUpdateStage = 22; // driver camera timer
   frogpilot_scene.driver_camera_timer = frogpilot_scene.reverse && frogpilot_scene.frogpilot_toggles.value("driver_camera_in_reverse").toBool() ? frogpilot_scene.driver_camera_timer + 1 : 0;
+  fpUpdateStage = 0;
 }

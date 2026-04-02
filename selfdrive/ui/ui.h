@@ -1,6 +1,7 @@
 #pragma once
 
 #include <eigen3/Eigen/Dense>
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -144,3 +145,5 @@ public slots:
 
 Device *device();
 void ui_update_params(UIState *s);
+
+extern std::atomic<uint64_t> last_ui_frame_t;

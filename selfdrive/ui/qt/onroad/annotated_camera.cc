@@ -161,6 +161,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
     painter.endNativePainting();
   }
 
+  modelDrawStage = 1; // start paintEvent
   painter.setRenderHint(QPainter::Antialiasing);
   painter.setPen(Qt::NoPen);
 
@@ -177,12 +178,16 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   hud.frogpilot_toggles = frogpilot_toggles;
   model.frogpilot_toggles = frogpilot_toggles;
 
+  modelDrawStage = 2; // draw model
   model.draw(painter, rect());
+  modelDrawStage = 3; // draw dmon
   dmon.draw(painter, rect());
+  modelDrawStage = 4; // draw hud
   hud.updateState(*s);
   hud.draw(painter, rect());
 
   // FrogPilot variables
+  modelDrawStage = 5; // draw fp widgets
   frogpilot_nvg->paintFrogPilotWidgets(painter, *s, sm);
 
   double cur_draw_t = millis_since_boot();
@@ -194,10 +199,12 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   prev_draw_t = cur_draw_t;
 
   // publish debug msg
+  modelDrawStage = 6; // send debug
   MessageBuilder msg;
   auto m = msg.initEvent().initUiDebug();
   m.setDrawTimeMillis(cur_draw_t - start_draw_t);
   pm->send("uiDebug", msg);
+  modelDrawStage = 0;
 }
 
 void AnnotatedCameraWidget::showEvent(QShowEvent *event) {

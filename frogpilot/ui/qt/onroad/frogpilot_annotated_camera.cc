@@ -71,7 +71,9 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
   bool isGif = false;
 
   watchdog_kick(nanos_since_boot());
+  fpUpdateStage = 5101; // QDir entryInfoList
   QFileInfoList files = QDir("../../frogpilot/assets/active_theme/signals/").entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+  fpUpdateStage = 5102; // signal files loop
   for (const QFileInfo &fileInfo : files) {
     QString fileName = fileInfo.fileName();
     QString filePath = fileInfo.absoluteFilePath();
@@ -243,13 +245,22 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   if (toggleCemStatus) {
     if (!cemCurveIcon) {
       LOGW("Lazy-loading CEM GIFs (7 animations)");
+      fpUpdateStage = 33; // load CEM GIFs
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/curve_icon.gif", cemCurveIcon, QSize(widget_size, widget_size), this);
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/lead_icon.gif", cemLeadIcon, QSize(widget_size, widget_size), this);
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/speed_icon.gif", cemSpeedIcon, QSize(widget_size, widget_size), this);
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/light_icon.gif", cemStopIcon, QSize(widget_size, widget_size), this);
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/turn_icon.gif", cemTurnIcon, QSize(widget_size, widget_size), this);
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/chill_mode_icon.gif", chillModeIcon, QSize(widget_size, widget_size), this);
+      watchdog_kick(nanos_since_boot());
       loadGif("../../frogpilot/assets/other_images/experimental_mode_icon.gif", experimentalModeIcon, QSize(widget_size, widget_size), this);
+      fpUpdateStage = 32; // back to cache/params
     }
   } else if (cemCurveIcon) {
     LOGW("Freeing CEM GIFs (toggle disabled)");
@@ -266,11 +277,13 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
   if (weatherId != 0) {
     if (!weatherClearDay) {
       LOGW("Lazy-loading weather GIFs (5 animations, weatherId=%d)", weatherId);
+      fpUpdateStage = 34; // load Weather GIFs
       loadGif("../../frogpilot/assets/other_images/weather_clear_day.gif", weatherClearDay, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/weather_clear_night.gif", weatherClearNight, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/weather_low_visibility.gif", weatherLowVisibility, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/weather_rain.gif", weatherRain, QSize(widget_size, widget_size), this);
       loadGif("../../frogpilot/assets/other_images/weather_snow.gif", weatherSnow, QSize(widget_size, widget_size), this);
+      fpUpdateStage = 32; // back to cache/params
     }
   } else if (weatherClearDay) {
     LOGW("Freeing weather GIFs (weatherId=0)");
@@ -320,7 +333,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   const cereal::FrogPilotCarState::Reader &frogpilotCarState = fpsm["frogpilotCarState"].getFrogpilotCarState();
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
-  fpWidgetPaintStage = 1;
+  fpWidgetPaintStage = 1; // CEM
   if (!hideBottomIcons && toggleCemStatus) {
     paintCEMStatus(p, sm);
   } else {
@@ -328,7 +341,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     cemStatusPosition.setY(0);
   }
 
-  fpWidgetPaintStage = 2;
+  fpWidgetPaintStage = 2; // Compass
   if (!hideBottomIcons && toggleCompass) {
     paintCompass(p);
   } else {
@@ -336,7 +349,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     compassPosition.setY(0);
   }
 
-  fpWidgetPaintStage = 3;
+  fpWidgetPaintStage = 3; // CSC
   if (frogpilotPlan.getForcingStop()) {
     paintForceStop(p, fpsm);
   } else if (frogpilotCarState.getManualStopAhead()) {
@@ -355,7 +368,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     glowTimer.invalidate();
   }
 
-  fpWidgetPaintStage = 4;
+  fpWidgetPaintStage = 4; // LatPaused
   if (!hideBottomIcons && frogpilotCarState.getPauseLateral()) {
     paintLateralPaused(p);
   } else {
@@ -363,34 +376,34 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     lateralPausedPosition.setY(0);
   }
 
-  fpWidgetPaintStage = 5;
+  fpWidgetPaintStage = 5; // LongPaused
   if (!hideBottomIcons && (frogpilotCarState.getForceCoast() || frogpilotCarState.getPauseLongitudinal())) {
     paintLongitudinalPaused(p);
   }
 
-  fpWidgetPaintStage = 6;
+  fpWidgetPaintStage = 6; // Pedals
   if (togglePedalsOnUi) {
     paintPedalIcons(p, sm, fpsm);
   }
 
-  fpWidgetPaintStage = 7;
+  fpWidgetPaintStage = 7; // PendingLimit
   if (frogpilotPlan.getSpeedLimitChanged()) {
     paintPendingSpeedLimit(p, fpsm);
   } else {
     pendingLimitTimer.invalidate();
   }
 
-  fpWidgetPaintStage = 8;
+  fpWidgetPaintStage = 8; // RadarTracks
   if (toggleRadarTracks) {
     paintRadarTracks(p);
   }
 
-  fpWidgetPaintStage = 9;
+  fpWidgetPaintStage = 9; // RoadName
   if (toggleRoadNameUi) {
     paintRoadName(p);
   }
 
-  fpWidgetPaintStage = 10;
+  fpWidgetPaintStage = 10; // SpeedLimit
   bool hideSpeedLimit = !frogpilotPlan.getSpeedLimitChanged() && toggleHideSpeedLimit;
   if (!hideSpeedLimit && (toggleShowSpeedLimits || toggleSpeedLimitController)) {
     paintSpeedLimit(p);
@@ -398,22 +411,22 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     speedLimitHeight = 0;
   }
 
-  fpWidgetPaintStage = 11;
+  fpWidgetPaintStage = 11; // SpeedLimitSources
   if (toggleSpeedLimitSources) {
     paintSpeedLimitSources(p, fpsm);
   }
 
-  fpWidgetPaintStage = 12;
+  fpWidgetPaintStage = 12; // StandstillTimer
   if (standstillDuration != 0 && frogpilot_scene->started_timer / UI_FREQ >= 60) {
     paintStandstillTimer(p);
   }
 
-  fpWidgetPaintStage = 13;
+  fpWidgetPaintStage = 13; // StoppingPoint
   if (track_vertices.length() >= 1 && frogpilotPlan.getRedLight() && toggleShowStoppingPoint) {
     paintStoppingPoint(p, sm);
   }
 
-  fpWidgetPaintStage = 14;
+  fpWidgetPaintStage = 14; // TurnSignals
   if ((carState.getLeftBlinker() || carState.getRightBlinker()) && signalStyle != "None") {
     if (!animationTimer->isActive()) {
       animationTimer->start(signalAnimationLength);
@@ -423,7 +436,7 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
     animationTimer->stop();
   }
 
-  fpWidgetPaintStage = 15;
+  fpWidgetPaintStage = 15; // Weather
   if (!hideBottomIcons) {
     paintWeather(p, fpsm);
   }
@@ -575,7 +588,9 @@ void FrogPilotAnnotatedCameraWidget::paintCEMStatus(QPainter &p, SubMaster &sm) 
     }
   }
   if (icon) {
+    fpWidgetPaintStage = 101; // CEM currentPixmap
     p.drawPixmap(cemWidget, icon->currentPixmap());
+    fpWidgetPaintStage = 1; // back to CEM top level
   }
 
   p.restore();
@@ -1484,7 +1499,9 @@ void FrogPilotAnnotatedCameraWidget::paintWeather(QPainter &p, SubMaster &fpsm) 
   }
 
   if (icon) {
+    fpWidgetPaintStage = 1501; // Weather currentPixmap
     p.drawPixmap(weatherRect, icon->currentPixmap());
+    fpWidgetPaintStage = 15; // back to Weather top level
   }
 
   p.restore();

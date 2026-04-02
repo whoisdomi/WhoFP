@@ -42,10 +42,13 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
   p.save();
 
   // Draw header gradient
-  QLinearGradient bg(0, UI_HEADER_HEIGHT - (UI_HEADER_HEIGHT / 2.5), 0, UI_HEADER_HEIGHT);
-  bg.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0.45));
-  bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
-  p.fillRect(0, 0, surface_rect.width(), UI_HEADER_HEIGHT, bg);
+  static QLinearGradient header_bg = []() {
+    QLinearGradient bg(0, UI_HEADER_HEIGHT - (UI_HEADER_HEIGHT / 2.5), 0, UI_HEADER_HEIGHT);
+    bg.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0.45));
+    bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
+    return bg;
+  }();
+  p.fillRect(0, 0, surface_rect.width(), UI_HEADER_HEIGHT, header_bg);
 
 
   if (is_cruise_available) {

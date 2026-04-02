@@ -5,14 +5,18 @@
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <time.h>
+#include <thread>
+#include <chrono>
 
 #include <QApplication>
 #include <QTranslator>
 
 #include "system/hardware/hw.h"
+#include "common/util.h"
 #include "selfdrive/ui/qt/qt_window.h"
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/window.h"
+#include "selfdrive/ui/ui.h"
 
 extern volatile int modelDrawStage;
 extern volatile int fpWidgetPaintStage;
@@ -200,6 +204,29 @@ int main(int argc, char *argv[]) {
       if (fd >= 0) { write(fd, info, len); close(fd); }
     }
   }
+
+  // Monitor for stalls (>2s) to capture stage info before manager watchdog SIGKILL
+  std::thread monitor([] {
+    while (true) {
+      uint64_t last_t = last_ui_frame_t.load();
+      uint64_t now = nanos_since_boot();
+      if (last_t > 0 && (now - last_t) > 2000000000ULL) {
+        char ts[128];
+        write_timestamp(ts, sizeof(ts));
+        char buf[512];
+        int len = snprintf(buf, sizeof(buf), "%sUI STALL DETECTED (>2s): modelDraw=%d | fpPaint=%d | fpUpdate=%d | rss=%dMB\n",
+          ts, (int)modelDrawStage, (int)fpWidgetPaintStage, (int)fpUpdateStage, get_rss_mb());
+        if (len > 0) {
+          write(STDERR_FILENO, buf, len);
+          int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+          if (fd >= 0) { write(fd, buf, len); close(fd); }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(5)); // Avoid spamming during stall
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+  });
+  monitor.detach();
 
   MainWindow w;
   setMainWindow(&w);

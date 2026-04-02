@@ -14,6 +14,8 @@
 #include "common/watchdog.h"
 #include "system/hardware/hw.h"
 
+std::atomic<uint64_t> last_ui_frame_t = 0;
+
 #define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
 
@@ -156,8 +158,13 @@ UIState::UIState(QObject *parent) : QObject(parent) {
 }
 
 void UIState::update() {
+  last_ui_frame_t = nanos_since_boot();
+  fpUpdateStage = 1; // update sockets
+
   update_sockets(this);
+  fpUpdateStage = 2; // update state
   update_state(this, frogpilotUIState());
+  fpUpdateStage = 3; // update status
   updateStatus(frogpilotUIState());
 
   if (sm->frame % UI_FREQ == 0) {
@@ -166,44 +173,49 @@ void UIState::update() {
 
   // Reclaim fragmented heap memory every 10 seconds
   if (sm->frame % (UI_FREQ * 10) == 0) {
+    fpUpdateStage = 4; // malloc_trim
     malloc_trim(0);
   }
 
   // Log RSS every 60 seconds for leak tracking
   if (sm->frame % (UI_FREQ * 60) == 0 && sm->frame > 0) {
-    static auto get_rss = []() -> int {
-      char buf[1024];
-      int fd = open("/proc/self/status", O_RDONLY);
-      if (fd < 0) return -1;
-      int n = read(fd, buf, sizeof(buf) - 1);
-      close(fd);
-      if (n <= 0) return -1;
-      buf[n] = '\0';
-      const char *p = buf;
-      while (*p) {
-        if (p[0]=='V' && p[1]=='m' && p[2]=='R' && p[3]=='S' && p[4]=='S') {
-          p += 6;
-          while (*p == ' ' || *p == '\t') p++;
-          int kb = 0;
-          while (*p >= '0' && *p <= '9') { kb = kb*10+(*p-'0'); p++; }
-          return kb / 1024;
+    fpUpdateStage = 5; // rss logging
+    QtConcurrent::run([](uint64_t frame) {
+      auto get_rss = []() -> int {
+        char buf[1024];
+        int fd = open("/proc/self/status", O_RDONLY);
+        if (fd < 0) return -1;
+        int n = read(fd, buf, sizeof(buf) - 1);
+        close(fd);
+        if (n <= 0) return -1;
+        buf[n] = '\0';
+        const char *p = buf;
+        while (*p) {
+          if (p[0]=='V' && p[1]=='m' && p[2]=='R' && p[3]=='S' && p[4]=='S') {
+            p += 6;
+            while (*p == ' ' || *p == '\t') p++;
+            int kb = 0;
+            while (*p >= '0' && *p <= '9') { kb = kb*10+(*p-'0'); p++; }
+            return kb / 1024;
+          }
+          while (*p && *p != '\n') p++;
+          if (*p == '\n') p++;
         }
-        while (*p && *p != '\n') p++;
-        if (*p == '\n') p++;
+        return -1;
+      };
+      int rss = get_rss();
+      LOGW("UI RSS: %dMB (frame %llu)", rss, (unsigned long long)frame);
+      // Also write to crash log for easy device-side monitoring
+      char line[256];
+      int len = snprintf(line, sizeof(line), "UI RSS: %dMB (frame %llu)\n", rss, (unsigned long long)frame);
+      if (len > 0) {
+        int logfd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if (logfd >= 0) { write(logfd, line, len); close(logfd); }
       }
-      return -1;
-    };
-    int rss = get_rss();
-    LOGW("UI RSS: %dMB (frame %llu)", rss, (unsigned long long)sm->frame);
-    // Also write to crash log for easy device-side monitoring
-    char line[256];
-    int len = snprintf(line, sizeof(line), "UI RSS: %dMB (frame %llu)\n", rss, (unsigned long long)sm->frame);
-    if (len > 0) {
-      int logfd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
-      if (logfd >= 0) { write(logfd, line, len); close(logfd); }
-    }
+    }, sm->frame);
   }
 
+  fpUpdateStage = 6; // emit uiUpdate
   emit uiUpdate(*this, *frogpilotUIState());
 
   // FrogPilot variables
@@ -215,7 +227,9 @@ void UIState::update() {
     device()->resetInteractiveTimeout(frogpilot_toggles.value("screen_timeout").toInt(), frogpilot_toggles.value("screen_timeout_onroad").toInt());
   }
 
+  fpUpdateStage = 7; // fs->update
   fs->update();
+  fpUpdateStage = 0;
 }
 
 Device::Device(QObject *parent) : brightness_filter(BACKLIGHT_OFFROAD, BACKLIGHT_TS, BACKLIGHT_DT), QObject(parent) {
