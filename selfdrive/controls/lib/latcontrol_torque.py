@@ -201,21 +201,37 @@ class LatControlTorque(LatControl):
     # Detects when the wheel is returning toward center from a turn
     steering_angle = CS.steeringAngleDeg
     abs_steer = abs(steering_angle)
+    
+    # Initialize peak sign if not set
+    if not hasattr(self, 'unwind_peak_sign'):
+      self.unwind_peak_sign = 0.0
+
     # Track peak angle during a turn
     if abs_steer > self.unwind_peak_angle:
       self.unwind_peak_angle = abs_steer
+      self.unwind_peak_sign = np.sign(steering_angle)
+
     # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
     unwind_condition = (self.unwind_peak_angle > 5.0 and
                         abs_steer < abs(self.unwind_last_angle) and
                         (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
+    
     # Hysteresis counter
     if unwind_condition:
       self.unwind_frames = min(self.unwind_frames + 1, UNWIND_COUNTER_MAX)
     else:
       self.unwind_frames = max(self.unwind_frames - 1, 0)
     unwind_active = self.unwind_frames >= UNWIND_FRAMES_ACTIVATE
-    # Winding up (turn entry): cancel immediately
-    winding_up = abs_steer > abs(self.unwind_last_angle) + 0.5 and abs_steer > 5.0
+    
+    # Winding up detection: distinguish new turn from overshoot
+    is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
+    if is_opposite_sign:
+      # If crossed center, it's an overshoot. Require 20 deg to consider it a new turn.
+      winding_up = (abs_steer > abs(self.unwind_last_angle) + 0.5) and (abs_steer > 20.0)
+    else:
+      # Same side: re-engaging the turn.
+      winding_up = (abs_steer > abs(self.unwind_last_angle) + 0.5) and (abs_steer > 5.0)
+
     if winding_up:
       self.unwind_hold_timer = 0
       self.unwind_frames = 0
@@ -223,9 +239,12 @@ class LatControlTorque(LatControl):
       self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3 second hold
     elif self.unwind_hold_timer > 0:
       self.unwind_hold_timer -= 1
-    # Reset peak near center
-    if abs_steer < 2.0:
+      
+    # Reset peak ONLY when fully settled and hold timer expired
+    if abs_steer < 2.0 and self.unwind_hold_timer == 0:
       self.unwind_peak_angle = 0.0
+      self.unwind_peak_sign = 0.0
+      
     unwind_detected = self.unwind_hold_timer > 0
     self.unwind_last_angle = steering_angle
 
@@ -331,11 +350,27 @@ class LatControlTorque(LatControl):
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
 
       if unwind_detected:
-        # Fade out desired curvature during unwind at low speeds
-        # Yield more aggressively at mid-speeds (15mph) to let the wheel return.
-        # 0 mph -> 0.0 (full fade), 15 mph -> 0.1, 30 mph -> 1.0 (no fade)
-        unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.0, 0.1, 1.0]))
-        output_lataccel *= unwind_fade
+        # Determine if OP is trying to hold the turn or center the wheel
+        if steering_angle > 0:
+          # Left turn. Positive lataccel = holding. Negative lataccel = centering.
+          holding = output_lataccel > 0
+        else:
+          # Right turn. Negative lataccel = holding. Positive lataccel = centering.
+          holding = output_lataccel < 0
+
+        if holding:
+          # Yield strictly to EPS: fade holding torque to 0 at 0mph, 0.1 at 15mph.
+          hold_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.0, 0.1, 1.0]))
+          output_lataccel *= hold_fade
+        else:
+          # Centering torque: allow up to 0.3 m/s^2 to assist weak EPS at low speeds,
+          # but cap it to prevent massive overshoot snaps if the PID error spikes.
+          center_limit = 0.3
+          if output_lataccel > 0:
+            output_lataccel = min(output_lataccel, center_limit)
+          else:
+            output_lataccel = max(output_lataccel, -center_limit)
+
         # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
         # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
         # Faster decay at low speed (turns complete faster, integrator needs to drain quicker)
@@ -403,7 +438,7 @@ class LatControlTorque(LatControl):
         self._unwind_log_writer.writerow([
           'time_s', 'steering_angle_deg', 'speed_mph', 'torque_request',
           'pid_p', 'pid_i', 'pid_f', 'error', 'setpoint', 'measurement',
-          'desired_curvature', 'unwind_detected', 'unwind_decay', 'damp_boost_active', 'damp_factor',
+          'desired_curvature', 'unwind_detected', 'unwind_decay', 'damp_boost_active', 'damp_factor', 'steering_torque',
         ])
 
       # Write a row each frame while logging
@@ -435,6 +470,7 @@ class LatControlTorque(LatControl):
           f"{decay_val:.3f}",
           int(self._damp_boost_active),
           computed_damp,
+          f"{CS.steeringTorque:.2f}",
         ])
         self._unwind_log_file.flush()
 

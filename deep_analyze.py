@@ -5,17 +5,12 @@ from pathlib import Path
 from datetime import datetime
 
 csv_dir = Path('C:/Users/user/Desktop/Turns')
-csv_files = sorted([f for f in csv_dir.glob('*.csv')], key=lambda p: p.stat().st_mtime)
+csv_files = sorted([f for f in csv_dir.glob('*.csv')], key=lambda p: p.stat().st_mtime, reverse=True)[:25]
 
 print(f"{'Filename':15} | {'Spd':4} | {'PeakA':5} | {'OvrSht':6} | {'Time':5} | {'Rate':5} | {'Resist':6} | {'Status'}")
 print("-" * 90)
 
-for f in csv_files:
-    mtime = datetime.fromtimestamp(f.stat().st_mtime)
-    # Only 4/2
-    if mtime.year != 2026 or mtime.month != 4 or mtime.day != 2:
-        continue
-
+for f in reversed(csv_files):
     try:
         with open(f, 'r') as csvfile:
             reader = csv.DictReader(csvfile)
