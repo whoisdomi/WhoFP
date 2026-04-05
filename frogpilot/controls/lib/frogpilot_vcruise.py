@@ -276,18 +276,19 @@ class FrogPilotVCruise:
 
     # --- Stop sign overshoot logging ---
     # Log every frame where dashboard stop sign or force stop is active.
-    # After both go false, keep logging until standstill or car is clearly
-    # driving away (above 30mph for 2+ seconds = not stopping).
+    # Always end at standstill — that's when the car is physically at the sign,
+    # regardless of when the dashboard sign goes off (it's inconsistent).
+    # If no standstill, end when clearly driving away (30mph for 2+ seconds).
     active = sm["frogpilotCarState"].dashboardStopSign > 0 or self.forcing_stop
     if active:
       self._ss_log_tail = True
       self._ss_log_driving_timer = 0
     if self._ss_log_tail:
       self._ss_log_frame(v_ego, sm)
-      if not active:
-        if sm["carState"].standstill:
-          self._ss_log_tail = False  # got the standstill, done
-        elif v_ego > 13.4:  # above 30mph
+      if sm["carState"].standstill:
+        self._ss_log_tail = False  # standstill = at the sign, always end here
+      elif not active:
+        if v_ego > 13.4:  # above 30mph
           self._ss_log_driving_timer += DT_MDL
           if self._ss_log_driving_timer > 2.0:
             self._ss_log_tail = False  # clearly drove through
