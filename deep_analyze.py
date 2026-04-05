@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 
 csv_dir = Path('C:/Users/user/Desktop/Turns')
-csv_files = sorted(list(csv_dir.glob('*.csv')), key=lambda p: p.stat().st_mtime, reverse=True)[:15]
+csv_files = sorted(list(csv_dir.glob('*.csv')), key=lambda p: p.stat().st_mtime, reverse=True)[:10]
 
 print(f"{'Filename':15} | {'Spd':4} | {'PeakA':5} | {'OvrSht':6} | {'Time':5} | {'Rate':5} | {'Resist':6} | {'Status'} | {'MaxManTrq':7}")
 print("-" * 100)
@@ -16,16 +16,13 @@ for f in reversed(csv_files):
             rows = list(reader)
             if not rows: continue
             
-            # Check if this has the new steering_torque column
             has_steer_trq = 'steering_torque' in rows[0]
             
             start_idx = next((i for i, r in enumerate(rows) if int(r['unwind_detected']) == 1), -1)
             
-            # Determine if active or manual
             active_count = sum(1 for r in rows if float(r['torque_request']) != 0.0)
             is_manual = active_count == 0
             
-            # If manual, we don't have unwind_detected from the controller. We have to detect it manually.
             if start_idx == -1 and is_manual:
                 angles = [abs(float(r['steering_angle_deg'])) for r in rows]
                 peak_angle = max(angles)
@@ -72,9 +69,6 @@ for f in reversed(csv_files):
                 resistances.append(res)
                 if has_steer_trq:
                     man_trq = float(r['steering_torque'])
-                    # positive driver torque is left, negative right.
-                    # if init_sign is positive (left turn), negative manual torque helps center.
-                    # let's just record the absolute max manual torque applied.
                     if abs(man_trq) > max_manual_trq:
                         max_manual_trq = abs(man_trq)
                         

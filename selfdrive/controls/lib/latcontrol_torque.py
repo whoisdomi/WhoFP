@@ -226,14 +226,14 @@ class LatControlTorque(LatControl):
     # Winding up detection: distinguish new turn from overshoot
     is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
     if is_opposite_sign:
-      # If crossed center, it's an overshoot. Require 10 deg to consider it a new turn.
-      winding_up = (abs_steer > abs(self.unwind_last_angle) + 0.5) and (abs_steer > 10.0)
+      # If crossed center, it's an overshoot. Require 15 deg to consider it a new turn.
+      winding_up = (abs_steer > abs(self.unwind_last_angle) + 1.5) and (abs_steer > 15.0)
     else:
       # Same side: re-engaging the turn.
-      winding_up = (abs_steer > abs(self.unwind_last_angle) + 0.5) and (abs_steer > 5.0)
+      winding_up = (abs_steer > abs(self.unwind_last_angle) + 1.5) and (abs_steer > 5.0)
 
-    # Cancel unwind immediately if driver actively turns the wheel
-    if winding_up or CS.steeringPressed:
+    # Cancel unwind immediately if driver actively turns the wheel away from center
+    if winding_up:
       self.unwind_hold_timer = 0
       self.unwind_frames = 0
     elif unwind_active:
