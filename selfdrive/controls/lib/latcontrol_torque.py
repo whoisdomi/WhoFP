@@ -364,9 +364,9 @@ class LatControlTorque(LatControl):
           hold_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.0, 0.1, 1.0]))
           output_lataccel *= hold_fade
         else:
-          # Centering torque: allow up to 0.3 m/s^2 to assist weak EPS at low speeds,
+          # Centering torque: allow up to 1.0 m/s^2 to assist weak EPS at low speeds,
           # but cap it to prevent massive overshoot snaps if the PID error spikes.
-          center_limit = 0.3
+          center_limit = 1.0
           if output_lataccel > 0:
             output_lataccel = min(output_lataccel, center_limit)
           else:
