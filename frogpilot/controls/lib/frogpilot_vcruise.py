@@ -98,6 +98,12 @@ class FrogPilotVCruise:
     dash_stop_sign_force_stop &= not self.frogpilot_planner.driving_in_curve
     dash_stop_sign_force_stop &= not self.frogpilot_planner.tracking_lead
 
+    # Latch stop_sign_confirmed as soon as dashboard sees the sign and force stop conditions
+    # are met — don't wait for the 0.5s timer. The sign often leaves the camera FOV before
+    # the timer completes, so waiting means CONFIRMED never gets set and the cap never applies.
+    if dash_stop_sign_force_stop:
+      self.stop_sign_confirmed = True
+
     # Gradual decay instead of instant reset — brief model flickers won't derail the timer.
     # Don't accumulate at standstill: CEM pauses there, keeping stop_light_detected stale,
     # which would peg the timer at max and prevent auto-release when the light turns green.
