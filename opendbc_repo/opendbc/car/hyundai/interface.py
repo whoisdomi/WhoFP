@@ -119,6 +119,7 @@ class CarInterface(CarInterfaceBase):
     ret.centerToFront = ret.wheelbase * 0.4
     ret.steerActuatorDelay = 0.18  # ACTS-HORIZON value for Ioniq 6
     ret.steerLimitTimer = 0.4
+    ret.steerAtStandstill = True
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     if ret.flags & HyundaiFlags.ALT_LIMITS:
