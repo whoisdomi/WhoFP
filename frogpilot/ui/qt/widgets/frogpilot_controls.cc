@@ -38,7 +38,7 @@ void loadGif(const QString &gifPath, QSharedPointer<QMovie> &movie, const QSize 
   clearMovie(movie, parent);
 
   movie = QSharedPointer<QMovie>::create(gifPath);
-  movie->setCacheMode(QMovie::CacheAll);
+  movie->setCacheMode(QMovie::CacheNone);
   movie->setScaledSize(size);
 
   QPointer<QWidget> safeParent(parent);

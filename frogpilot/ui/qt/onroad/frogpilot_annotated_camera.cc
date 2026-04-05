@@ -1,5 +1,7 @@
 #include "frogpilot/ui/qt/onroad/frogpilot_annotated_camera.h"
 
+#include <QCoreApplication>
+
 #include "common/swaglog.h"
 #include "common/util.h"
 #include "common/watchdog.h"
@@ -98,6 +100,7 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
         // Kick watchdog every 10 frames to prevent SIGKILL during long GIF decode
         if (i % 10 == 0) {
           watchdog_kick(nanos_since_boot());
+          QCoreApplication::processEvents(QEventLoop::AllEvents, 50); // Keep Wayland connection alive
         }
       }
 
@@ -147,6 +150,7 @@ void FrogPilotAnnotatedCameraWidget::updateSignals() {
     signalImagesFlipped.append(signalImages[i].transformed(flipTransform));
     if (i % 10 == 0) {
       watchdog_kick(nanos_since_boot());
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50); // Keep Wayland connection alive
     }
   }
 
