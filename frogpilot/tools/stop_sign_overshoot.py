@@ -111,6 +111,7 @@ def main():
           if f.get("cem") == "1": flags += " CEM"
           if f.get("exp") == "1": flags += " EXP"
           else: flags += " CHILL"
+          if f.get("lead") == "1": flags += " LEAD"
           green_t = float(f.get("green_t", 0))
           force_t = float(f.get("force_t", 0))
           print(f"    {float(f['speed_mph']):>5.1f} mph  trk:{float(f['tracked_ft']):>6.1f} ft  mdl:{float(f['model_ft']):>6.1f} ft  grn:{green_t:.1f}s  frc:{force_t:.1f}s{flags}")
@@ -173,7 +174,8 @@ def main():
             drop_cem = last_forcing.get("cem") == "1"
             print(f"  Force drop at:       {drop_speed:>5.1f} mph, tracked:{drop_tracked:.1f} ft")
             drop_exp = last_forcing.get("exp") == "1"
-            print(f"    confirmed={drop_confirmed} green_t={drop_green:.2f}s curve={drop_curve} cem={drop_cem} exp={drop_exp}")
+            drop_lead = last_forcing.get("lead") == "1"
+            print(f"    confirmed={drop_confirmed} green_t={drop_green:.2f}s curve={drop_curve} cem={drop_cem} exp={drop_exp} lead={drop_lead}")
             # Show frame right after forcing dropped
             last_forcing_time = float(last_forcing["time"])
             after_drop = [f for f in frames if f["forcing"] == "0" and float(f["time"]) > last_forcing_time]

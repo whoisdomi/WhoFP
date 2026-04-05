@@ -40,7 +40,7 @@ class FrogPilotVCruise:
   def _ss_init_log(self):
     if not os.path.exists(STOP_SIGN_LOG):
       with open(STOP_SIGN_LOG, "w") as f:
-        f.write("time,speed_mph,tracked_ft,model_ft,dash,forcing,standstill,brake,confirmed,green_t,curve,force_t,cem,exp\n")
+        f.write("time,speed_mph,tracked_ft,model_ft,dash,forcing,standstill,brake,confirmed,green_t,curve,force_t,cem,exp,lead\n")
 
   def _ss_log_frame(self, v_ego, sm):
     tracked_ft = self.tracked_model_length * M_TO_FT
@@ -56,10 +56,11 @@ class FrogPilotVCruise:
     force_t = self.force_stop_timer
     cem = 1 if self.frogpilot_planner.frogpilot_cem.stop_light_detected else 0
     exp = 1 if self.frogpilot_planner.frogpilot_cem.experimental_mode else 0
+    lead = 1 if self.frogpilot_planner.tracking_lead else 0
     try:
       if self._ss_log_file is None:
         self._ss_log_file = open(STOP_SIGN_LOG, "a")
-      self._ss_log_file.write(f"{time.monotonic():.2f},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{standstill},{brake},{confirmed},{green_t:.2f},{curve},{force_t:.2f},{cem},{exp}\n")
+      self._ss_log_file.write(f"{time.monotonic():.2f},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{standstill},{brake},{confirmed},{green_t:.2f},{curve},{force_t:.2f},{cem},{exp},{lead}\n")
       self._ss_log_file.flush()
     except Exception:
       pass
