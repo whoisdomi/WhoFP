@@ -329,6 +329,7 @@ class CarState(CarStateBase):
     # Note: CAM_0x362 BYTE22 tracks distance to signs but NOT stop signs specifically
     sign_type = int(cp_cam.vl["CAM_0x361"]["SIGN_TYPE"])
     fp_ret.dashboardStopSign = 1 if sign_type == 15 else 0
+    fp_ret.dashboardSignType = sign_type
 
     # Drive mode detection for Map Accel/Decel to Gears feature (Ioniq 6 and other Hyundai EVs)
     if self.CP.flags & HyundaiFlags.EV:
