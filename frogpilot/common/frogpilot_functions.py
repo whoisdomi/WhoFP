@@ -150,7 +150,7 @@ def install_frogpilot(build_metadata, params):
     path.mkdir(parents=True, exist_ok=True)
 
   if params.get("FrogPilotDongleId") is None:
-    params.put("FrogPilotDongleId", "".join(random.choices(string.ascii_lowercase + string.digits, k=16)))
+    params.put_nonblocking("FrogPilotDongleId", "".join(random.choices(string.ascii_lowercase + string.digits, k=16)))
 
   update_boot_logo(frogpilot=True)
 

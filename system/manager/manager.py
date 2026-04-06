@@ -50,9 +50,9 @@ def manager_init() -> None:
     if current_value is None:
       cached_value = params_cache.get(k)
       if cached_value is not None:
-        params.put(k, cached_value)
+        params.put_nonblocking(k, cached_value)
     else:
-      params_cache.put(k, current_value)
+      params_cache.put_nonblocking(k, current_value)
 
   # Create folders needed for msgq
   try:
