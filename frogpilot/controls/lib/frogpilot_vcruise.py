@@ -11,6 +11,7 @@ from openpilot.frogpilot.controls.lib.speed_limit_controller import SpeedLimitCo
 
 OVERRIDE_FORCE_STOP_TIMER = 10
 STOP_SIGN_LOG = "/data/stop_sign_overshoot.csv"
+DASH_SIGNAL_LOG = "/data/dash_stop_sign_raw.csv"
 M_TO_FT = 3.28084
 
 class FrogPilotVCruise:
@@ -36,6 +37,34 @@ class FrogPilotVCruise:
     self._ss_log_tail = False
     self._ss_log_driving_timer = 0
     self._ss_init_log()
+
+    # Raw dashboard stop sign signal logger — always-on, records every ON/OFF transition.
+    # Used to verify the signal is firing vs what the event log captures.
+    self._dash_raw_log_file = None
+    self._dash_raw_prev = False
+    self._dash_raw_init_log()
+
+  def _dash_raw_init_log(self):
+    try:
+      with open(DASH_SIGNAL_LOG, "w") as f:
+        f.write("time,event,speed_mph,model_ft\n")
+    except Exception:
+      pass
+
+  def _dash_raw_log(self, v_ego, model_ft, dash_on):
+    prev = self._dash_raw_prev
+    if dash_on == prev:
+      return
+    self._dash_raw_prev = dash_on
+    event = "ON" if dash_on else "OFF"
+    speed_mph = v_ego * 2.237
+    try:
+      if self._dash_raw_log_file is None:
+        self._dash_raw_log_file = open(DASH_SIGNAL_LOG, "a")
+      self._dash_raw_log_file.write(f"{time.monotonic():.2f},{event},{speed_mph:.1f},{model_ft:.1f}\n")
+      self._dash_raw_log_file.flush()
+    except Exception:
+      pass
 
   def _ss_init_log(self):
     if not os.path.exists(STOP_SIGN_LOG):
@@ -276,6 +305,9 @@ class FrogPilotVCruise:
         v_cruise = min([target if target >= CRUISING_SPEED else v_cruise for target in targets])
 
     # --- Stop sign overshoot logging ---
+    # Raw signal log — always-on, records every ON/OFF transition of dashboardStopSign.
+    self._dash_raw_log(v_ego, self.frogpilot_planner.model_length * M_TO_FT, sm["frogpilotCarState"].dashboardStopSign > 0)
+
     # Log every frame where dashboard stop sign or force stop is active.
     # Always end at standstill — that's when the car is physically at the sign,
     # regardless of when the dashboard sign goes off (it's inconsistent).
