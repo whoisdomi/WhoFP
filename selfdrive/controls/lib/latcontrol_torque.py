@@ -109,11 +109,9 @@ class LatControlTorque(LatControl):
     # Will be replaced by lagd's learned value once available
     self.lat_delay = CP.steerActuatorDelay + 0.1
 
-    # Unwind detection state (steering-angle-based, mirrors carcontroller.py)
-    self.unwind_peak_angle = 0.0
+    # Unwind detection state (rate-based)
     self.unwind_last_angle = 0.0
-    self.unwind_frames = 0
-    self.unwind_hold_timer = 0
+    self.smoothed_steering_rate = 0.0
 
     # Mirror of carcontroller.py's DAMP_UNWIND_BOOST detection (for logging only)
     self._damp_peak_angle = 0.0
@@ -197,56 +195,17 @@ class LatControlTorque(LatControl):
     # Check for KP/KI changes from UI (allows live tuning)
     self.update_pid_gains(frogpilot_toggles)
 
-    # Unwind detection: steering-angle-based (mirrors carcontroller.py)
-    # Detects when the wheel is returning toward center from a turn
+    # Unwind detection: steering-rate-based
+    # Detects when the wheel is actively returning toward center from a turn
     steering_angle = CS.steeringAngleDeg
     abs_steer = abs(steering_angle)
     
-    # Initialize peak sign if not set
-    if not hasattr(self, 'unwind_peak_sign'):
-      self.unwind_peak_sign = 0.0
-
-    # Track peak angle during a turn
-    if abs_steer > self.unwind_peak_angle:
-      self.unwind_peak_angle = abs_steer
-      self.unwind_peak_sign = np.sign(steering_angle)
-
-    # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
-    unwind_condition = (self.unwind_peak_angle > 5.0 and
-                        abs_steer < abs(self.unwind_last_angle) and
-                        (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
+    # Calculate steering rate (positive = returning to center)
+    steering_rate = (abs(self.unwind_last_angle) - abs_steer) / DT_CTRL
+    self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
     
-    # Hysteresis counter
-    if unwind_condition:
-      self.unwind_frames = min(self.unwind_frames + 1, UNWIND_COUNTER_MAX)
-    else:
-      self.unwind_frames = max(self.unwind_frames - 1, 0)
-    unwind_active = self.unwind_frames >= UNWIND_FRAMES_ACTIVATE
-    
-    # Winding up detection: distinguish new turn from overshoot
-    is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
-    if is_opposite_sign:
-      # If crossed center, it's an overshoot. Require 15 deg to consider it a new turn.
-      winding_up = (abs_steer > abs(self.unwind_last_angle) + 1.5) and (abs_steer > 15.0)
-    else:
-      # Same side: re-engaging the turn.
-      winding_up = (abs_steer > abs(self.unwind_last_angle) + 1.5) and (abs_steer > 5.0)
-
-    # Cancel unwind immediately if driver actively turns the wheel away from center
-    if winding_up:
-      self.unwind_hold_timer = 0
-      self.unwind_frames = 0
-    elif unwind_active:
-      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3 second hold
-    elif self.unwind_hold_timer > 0:
-      self.unwind_hold_timer -= 1
-      
-    # Reset peak ONLY when fully settled and hold timer expired
-    if abs_steer < 2.0 and self.unwind_hold_timer == 0:
-      self.unwind_peak_angle = 0.0
-      self.unwind_peak_sign = 0.0
-      
-    unwind_detected = self.unwind_hold_timer > 0
+    # Actively unwinding if returning to center at > 10 deg/sec and angle is > 2.0
+    unwind_detected = self.smoothed_steering_rate > 10.0 and abs_steer > 2.0
     self.unwind_last_angle = steering_angle
 
     if unwind_detected:
@@ -338,10 +297,8 @@ class LatControlTorque(LatControl):
       output_torque = 0.0
       pid_log.active = False
       self.pid.reset()
-      self.unwind_frames = 0
-      self.unwind_hold_timer = 0
-      self.unwind_peak_angle = 0.0
       self.unwind_last_angle = 0.0
+      self.smoothed_steering_rate = 0.0
       self.filtered_measurement = 0.0
       self.filtered_ff = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
