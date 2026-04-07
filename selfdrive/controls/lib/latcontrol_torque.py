@@ -204,8 +204,54 @@ class LatControlTorque(LatControl):
     steering_rate = (abs(self.unwind_last_angle) - abs_steer) / DT_CTRL
     self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
     
-    # Actively unwinding if returning to center at > 10 deg/sec and angle is > 2.0
-    unwind_detected = self.smoothed_steering_rate > 10.0 and abs_steer > 2.0
+    # Initialize peak tracking if not set
+    if not hasattr(self, 'unwind_peak_sign'):
+      self.unwind_peak_sign = 0.0
+      self.unwind_frames = 0
+      self.unwind_hold_timer = 0
+      self.peak_steering_angle = 0.0
+
+    # Track peak angle during a turn
+    if abs_steer > self.peak_steering_angle:
+      self.peak_steering_angle = abs_steer
+      self.unwind_peak_sign = np.sign(steering_angle)
+
+    # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
+    unwind_condition = (self.peak_steering_angle > 5.0 and
+                        abs_steer < abs(self.unwind_last_angle) and
+                        (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
+    
+    # Hysteresis counter
+    if unwind_condition:
+      self.unwind_frames = min(self.unwind_frames + 1, 15)
+    else:
+      self.unwind_frames = max(self.unwind_frames - 1, 0)
+    unwind_active = self.unwind_frames >= 5
+    
+    # Winding up detection: distinguish new turn from overshoot
+    is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
+    if is_opposite_sign:
+      # If crossed center, it's an overshoot. Require 15 deg to consider it a new turn.
+      winding_up = (abs_steer > abs(self.unwind_last_angle) + 1.5) and (abs_steer > 15.0)
+    else:
+      # Same side: re-engaging the turn.
+      winding_up = (abs_steer > abs(self.unwind_last_angle) + 1.5) and (abs_steer > 5.0)
+
+    # Cancel unwind immediately if driver actively turns the wheel away from center
+    if winding_up:
+      self.unwind_hold_timer = 0
+      self.unwind_frames = 0
+    elif unwind_active:
+      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3 second hold
+    elif self.unwind_hold_timer > 0:
+      self.unwind_hold_timer -= 1
+      
+    # Reset peak ONLY when fully settled and hold timer expired
+    if abs_steer < 2.0 and self.unwind_hold_timer == 0:
+      self.peak_steering_angle = 0.0
+      self.unwind_peak_sign = 0.0
+      
+    unwind_detected = self.unwind_hold_timer > 0
     self.unwind_last_angle = steering_angle
 
     if unwind_detected:
