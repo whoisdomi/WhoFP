@@ -119,20 +119,26 @@ void AnnotatedCameraWidget::paintGL() {
 }
 
 void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
+  modelDrawStage = 1000;
   UIState *s = uiState();
   SubMaster &sm = *(s->sm);
   const double start_draw_t = millis_since_boot();
 
+  modelDrawStage = 1001;
   QPainter painter(this);
+  modelDrawStage = 1002;
 
   // draw camera frame
   {
+    modelDrawStage = 1003;
     std::lock_guard lk(frame_lock);
+    modelDrawStage = 1004;
 
     if (frames.empty()) {
       if (skip_frame_count > 0) {
         skip_frame_count--;
         qDebug() << "skipping frame, not ready";
+        modelDrawStage = 999;
         return;
       }
     } else {
@@ -158,8 +164,11 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
                                 VISION_STREAM_ROAD);
     CameraWidget::setFrameId(sm["modelV2"].getModelV2().getFrameId());
 
+    modelDrawStage = 1005;
     painter.beginNativePainting();
+    modelDrawStage = 1006;
     CameraWidget::paintGL();
+    modelDrawStage = 1007;
     painter.endNativePainting();
   }
 
@@ -206,7 +215,7 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   auto m = msg.initEvent().initUiDebug();
   m.setDrawTimeMillis(cur_draw_t - start_draw_t);
   pm->send("uiDebug", msg);
-  modelDrawStage = 0;
+  modelDrawStage = 999; // 999 = waiting for Qt to swap buffers / event loop
 }
 
 void AnnotatedCameraWidget::showEvent(QShowEvent *event) {

@@ -159,6 +159,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
 }
 
 void UIState::update() {
+  fpUpdateStage = 1000; // start of update
   last_ui_frame_t = nanos_since_boot();
   fpUpdateStage = 1; // update sockets
 

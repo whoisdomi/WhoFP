@@ -195,11 +195,16 @@ mat4 CameraWidget::calcFrameMatrix() {
   }};
 }
 
+extern volatile int modelDrawStage;
+
 void CameraWidget::paintGL() {
+  modelDrawStage = 1101;
   glClearColor(bg.redF(), bg.greenF(), bg.blueF(), bg.alphaF());
   glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+  modelDrawStage = 1102;
   std::lock_guard lk(frame_lock);
+  modelDrawStage = 1103;
   if (frames.empty()) return;
 
   int frame_idx = frames.size() - 1;
@@ -221,11 +226,14 @@ void CameraWidget::paintGL() {
 
   auto frame_mat = calcFrameMatrix();
 
+  modelDrawStage = 1104;
   glViewport(0, 0, glWidth(), glHeight());
   glBindVertexArray(frame_vao);
+
   glUseProgram(program->programId());
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+  modelDrawStage = 1105;
 #ifdef QCOM2
   // no frame copy
   glActiveTexture(GL_TEXTURE0);
@@ -246,8 +254,11 @@ void CameraWidget::paintGL() {
   assert(glGetError() == GL_NO_ERROR);
 #endif
 
+  modelDrawStage = 1106;
   glUniformMatrix4fv(program->uniformLocation("uTransform"), 1, GL_TRUE, frame_mat.v);
   glEnableVertexAttribArray(0);
+
+  modelDrawStage = 1107;
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (const void *)0);
   glDisableVertexAttribArray(0);
   glBindVertexArray(0);
@@ -255,6 +266,7 @@ void CameraWidget::paintGL() {
   glActiveTexture(GL_TEXTURE0);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  modelDrawStage = 1108;
 }
 
 void CameraWidget::vipcConnected(VisionIpcClient *vipc_client) {
