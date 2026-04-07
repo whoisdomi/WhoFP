@@ -270,9 +270,10 @@ class FrogPilotVCruise:
       # Unlike the old linear profile (d/10), this keeps speed high when far away and
       # progressively increases braking as the stop approaches — matching how a human
       # driver would brake. a_comfort = 1.2 m/s² gives a natural, non-alarming decel.
-      # Hard stop command below 5m to ensure the car fully stops (sqrt would asymptote).
+      # Hard stop command below 10m (33ft) to give the MPC enough runway to arrest the
+      # car before the stop line. The old 5m threshold left too little margin at low speed.
       FORCE_STOP_COMFORT_DECEL = 1.2
-      if self.tracked_model_length < 5.0:
+      if self.tracked_model_length < 10.0:
         force_stop_v = 0.0
       else:
         force_stop_v = (2.0 * FORCE_STOP_COMFORT_DECEL * self.tracked_model_length) ** 0.5
