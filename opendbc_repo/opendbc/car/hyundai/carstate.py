@@ -332,7 +332,7 @@ class CarState(CarStateBase):
     sign_type = int(cp_cam.vl["CAM_0x361"]["SIGN_TYPE"])
     sign_type_2 = int(cp_cam.vl["CAM_0x361"]["SIGN_TYPE_2"])
     cam_stop = sign_type == 15
-    fp_ret.dashboardStopSign = 1 if (adas_stop or cam_stop) else 0
+    fp_ret.dashboardStopSign = 1 if adas_stop else 0  # CAM excluded — cross-street false positives
     fp_ret.dashboardSignType = sign_type if sign_type not in (0, 32) else sign_type_2
     fp_ret.adasStopSign = adas_stop
     fp_ret.camStopSign = cam_stop
