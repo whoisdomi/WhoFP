@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import cereal.messaging as messaging
 from opendbc.safety import ALTERNATIVE_EXPERIENCE
 from openpilot.common.params import Params
 from openpilot.selfdrive.car.cruise import CRUISE_LONG_PRESS, ButtonType
@@ -40,6 +41,8 @@ class FrogPilotCard:
     self.always_on_lateral_set = bool(FPCP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL)
     self.frogs_go_moo = is_FrogsGoMoo()
 
+    self.bookmark_pm = messaging.PubMaster(['bookmarkButton'])
+
     # Distance button press thresholds (at 100Hz)
     # Short press: < 30 cycles (< 0.3s)
     # Long press: 30-89 cycles (0.3-0.9s)
@@ -67,6 +70,9 @@ class FrogPilotCard:
       self.manual_stop_ahead = not self.manual_stop_ahead
       if self.manual_stop_ahead:
         self.manual_stop_ahead_timer = 0
+    elif getattr(frogpilot_toggles, f"bookmark_via_{key}"):
+      msg = messaging.new_message('bookmarkButton')
+      self.bookmark_pm.send('bookmarkButton', msg)
 
   def handle_experimental_mode(self, sm, frogpilot_toggles):
     if frogpilot_toggles.conditional_experimental_mode:
