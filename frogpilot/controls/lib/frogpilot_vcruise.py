@@ -154,12 +154,16 @@ class FrogPilotVCruise:
     stop_cleared = not self.frogpilot_planner.frogpilot_cem.stop_light_detected and not self.frogpilot_planner.model_stopped
     self.green_light_timer = self.green_light_timer + DT_MDL if stop_cleared and self.forcing_stop else 0
     green_confirmed = self.green_light_timer >= 1.5 and not self.stop_sign_confirmed
-    force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill and not green_confirmed and not self.frogpilot_planner.driving_in_curve
+    # Latch: once committed to stopping, don't let a transient curve detection break it.
+    # driving_in_curve guards the *activation* conditions above — not the latch.
+    force_stop_enabled |= self.forcing_stop and not sm["carState"].standstill and not green_confirmed
 
     # At standstill: CEM pauses so stop_light_detected is stale — use model_stopped directly.
     # When the model sees the path clear ahead (light turned green), model_stopped goes False
     # and force stop releases, allowing the car to resume on its own.
-    if sm["carState"].standstill and self.forcing_stop:
+    # Exception: stop signs don't turn green — keep force stop held until driver presses gas.
+    # (The model typically sees through stop sign intersections, so model_stopped is unreliable here.)
+    if sm["carState"].standstill and self.forcing_stop and not self.stop_sign_confirmed:
       force_stop_enabled = self.frogpilot_planner.model_stopped
 
     self.override_force_stop |= sm["carState"].gasPressed
