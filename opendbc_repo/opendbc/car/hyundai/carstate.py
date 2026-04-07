@@ -325,12 +325,13 @@ class CarState(CarStateBase):
     lka_steering = self.CP.flags & HyundaiFlags.CANFD_LKA_STEERING
     fp_ret.dashboardSpeedLimit = calculate_speed_limit_canfd(cp, cp_cam, self.is_metric, lka_steering)
     bus = cp if lka_steering else cp_cam
-    # Primary: ADAS_0x380 byte 10 bit 3 — fires reliably at all stop signs (bus 0)
-    # Backup: CAM_0x361 SIGN_TYPE B[26] or B[30] == 15 — fires occasionally (camera bus)
-    adas_stop = bool(cp.vl["ADAS_0x380"]["STOP_SIGN"])
+    # Primary: ADAS_0x380 byte 10 bit 3 — fires reliably at all stop signs (cam bus)
+    # Backup: CAM_0x361 SIGN_TYPE B[26] == 15 — fires occasionally
+    # Note: SIGN_TYPE_2 B[30] == 15 was found to be unreliable (false positives)
+    adas_stop = bool(cp_cam.vl["ADAS_0x380"]["STOP_SIGN"])
     sign_type = int(cp_cam.vl["CAM_0x361"]["SIGN_TYPE"])
     sign_type_2 = int(cp_cam.vl["CAM_0x361"]["SIGN_TYPE_2"])
-    cam_stop = sign_type == 15 or sign_type_2 == 15
+    cam_stop = sign_type == 15
     fp_ret.dashboardStopSign = 1 if (adas_stop or cam_stop) else 0
     fp_ret.dashboardSignType = sign_type if sign_type not in (0, 32) else sign_type_2
     fp_ret.adasStopSign = adas_stop
@@ -366,8 +367,8 @@ class CarState(CarStateBase):
       msgs.append(("FR_CMR_02_100ms", 10))  # On ECAN for LKA_STEERING cars
     else:
       cam_msgs.append(("FR_CMR_02_100ms", 10))  # On CAM for other cars
-    # Stop sign detection: ADAS_0x380 (primary, bus 0) + CAM_0x361 (backup, camera bus)
-    msgs.append(("ADAS_0x380", 10))
+    # Stop sign detection: both on cam bus (bus 2)
+    cam_msgs.append(("ADAS_0x380", 10))
     cam_msgs.append(("CAM_0x361", 10))
     # Drive mode for Map Accel/Decel to Gears feature (Hyundai EVs)
     if CP.flags & HyundaiFlags.EV:

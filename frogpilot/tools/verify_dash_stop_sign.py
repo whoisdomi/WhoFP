@@ -20,7 +20,7 @@ def main():
   prev_adas = False
   prev_cam = False
 
-  print("Dashboard stop sign monitor — sources: ADAS=0x380  CAM_A=0x361[B26]  CAM_B=0x361[B30]")
+  print("Dashboard stop sign monitor — sources: ADAS=0x380[B10b3]  CAM=0x361[B26==15]  (B30 diagnostic only)")
   print("-" * 70)
 
   while True:
