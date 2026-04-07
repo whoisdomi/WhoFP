@@ -1,0 +1,5 @@
+.git/
+third_party/
+phonelibs/
+**/__pycache__/
+**/*.pyc
