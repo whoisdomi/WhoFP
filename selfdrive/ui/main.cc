@@ -218,6 +218,14 @@ int main(int argc, char *argv[]) {
           ts, (int)modelDrawStage, (int)fpWidgetPaintStage, (int)fpUpdateStage, get_rss_mb());
         if (len > 0) {
           write(STDERR_FILENO, buf, len);
+          
+          // Write to kernel log to bypass eMMC filesystem locks
+          int kmsg_fd = open("/dev/kmsg", O_WRONLY);
+          if (kmsg_fd >= 0) { 
+            write(kmsg_fd, buf, len); 
+            close(kmsg_fd); 
+          }
+          
           int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
           if (fd >= 0) { write(fd, buf, len); close(fd); }
         }
