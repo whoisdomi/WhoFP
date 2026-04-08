@@ -25,9 +25,17 @@ def main():
       print("No log to clear.")
     return
 
+  HEADER = ["time", "speed_mph", "tracked_ft", "model_ft", "dash", "forcing", "standstill", "brake", "confirmed", "green_t", "curve", "force_t", "cem", "exp", "lead"]
   try:
     with open(LOG_PATH) as f:
-      reader = csv.DictReader(f)
+      first = f.readline().strip()
+      f.seek(0)
+      # If first line looks like a header (starts with "time"), use DictReader normally.
+      # Otherwise the file has no header — inject one.
+      if first.startswith("time"):
+        reader = csv.DictReader(f)
+      else:
+        reader = csv.DictReader(f, fieldnames=HEADER)
       rows = list(reader)
   except FileNotFoundError:
     print(f"No log file found at {LOG_PATH}")
