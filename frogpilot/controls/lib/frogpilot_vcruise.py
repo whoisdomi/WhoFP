@@ -127,6 +127,7 @@ class FrogPilotVCruise:
     dash_stop_sign_force_stop &= self.override_force_stop_timer <= 0
     dash_stop_sign_force_stop &= not self.frogpilot_planner.driving_in_curve
     dash_stop_sign_force_stop &= not self.frogpilot_planner.tracking_lead
+    dash_stop_sign_force_stop &= v_ego < 17.88  # 40 mph — ADAS sees cross-street signs at highway speed
 
     # Latch stop_sign_confirmed as soon as dashboard sees the sign and force stop conditions
     # are met — don't wait for the 0.5s timer. The sign often leaves the camera FOV before

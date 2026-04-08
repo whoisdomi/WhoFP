@@ -418,13 +418,23 @@ class LatControlTorque(LatControl):
       self._damp_boost_active = self._damp_hold_timer > 0
       self._damp_last_angle = steer_ang
 
-      # Start logging when steering exceeds 120°
+      # Start logging when steering exceeds 15°
       if not self._unwind_log_active and abs_angle > 15.0:
         self._unwind_log_active = True
         self._unwind_log_driver_touched = False
         self._unwind_log_start_time = now
         self._unwind_log_last_above = now
-        self._unwind_log_path = os.path.join("/data/media", f"unwind_{int(now)}.csv")
+        
+        now_dt = datetime.datetime.now()
+        log_dir = "/data/media"
+        today_prefix = f"Turn*-{now_dt.month}-{now_dt.day}.csv"
+        try:
+          existing = glob.glob(os.path.join(log_dir, today_prefix))
+          turn_num = len(existing) + 1
+        except Exception:
+          turn_num = int(now)
+          
+        self._unwind_log_path = os.path.join(log_dir, f"Turn{turn_num}-{now_dt.month}-{now_dt.day}.csv")
         self._unwind_log_file = open(self._unwind_log_path, 'w', newline='')
         self._unwind_log_writer = csv.writer(self._unwind_log_file)
         self._unwind_log_writer.writerow([
