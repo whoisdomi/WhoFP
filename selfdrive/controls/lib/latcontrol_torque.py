@@ -126,6 +126,9 @@ class LatControlTorque(LatControl):
     self.filtered_measurement = 0.0
     self.low_pass_alpha = 1.0  # 1.0 = no filtering (off)
 
+    # Low-pass filter for setpoint to smooth 20Hz model steps
+    self.filtered_setpoint = 0.0
+
     # Feedforward low-pass filter: smooths the FF path to prevent model noise
     # from spiking torque, while allowing full FF amplitude for sustained turns
     self.filtered_ff = 0.0
@@ -229,8 +232,8 @@ class LatControlTorque(LatControl):
       self.peak_steering_angle = 0.0
       self.unwind_peak_sign = 0.0
 
-    # We are unwinding if actively returning to center, OR if we are currently in an overshoot bounce
-    actively_unwinding = self.smoothed_steering_rate > 10.0 and abs_steer > 2.0
+    # We are unwinding if actively returning to center at high speed (>50 deg/s), OR if we are currently in an overshoot bounce
+    actively_unwinding = self.smoothed_steering_rate > 50.0 and abs_steer > 2.0
     overshooting = is_opposite_sign and abs_steer < 15.0
     
     unwind_detected = actively_unwinding or overshooting
