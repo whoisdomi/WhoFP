@@ -2,6 +2,8 @@ import csv
 import math
 import os
 import time
+import datetime
+import glob
 import numpy as np
 from collections import deque
 
@@ -204,11 +206,8 @@ class LatControlTorque(LatControl):
     steering_rate = (abs(self.unwind_last_angle) - abs_steer) / DT_CTRL
     self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
     
-    # Initialize peak tracking if not set
     if not hasattr(self, 'unwind_peak_sign'):
       self.unwind_peak_sign = 0.0
-      self.unwind_frames = 0
-      self.unwind_hold_timer = 0
       self.peak_steering_angle = 0.0
 
     # Track peak angle during a turn
@@ -216,42 +215,25 @@ class LatControlTorque(LatControl):
       self.peak_steering_angle = abs_steer
       self.unwind_peak_sign = np.sign(steering_angle)
 
-    # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
-    unwind_condition = (self.peak_steering_angle > 5.0 and
-                        self.smoothed_steering_rate > 15.0 and
-                        (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
-    
-    # Hysteresis counter
-    if unwind_condition:
-      self.unwind_frames = min(self.unwind_frames + 1, 15)
-    else:
-      self.unwind_frames = max(self.unwind_frames - 1, 0)
-    unwind_active = self.unwind_frames >= 5
-    
-    # Winding up detection: distinguish new turn from overshoot
+    # Did we cross center into an overshoot?
     is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
-    if is_opposite_sign:
-      # If crossed center, it's an overshoot. Require 15 deg to consider it a new turn.
-      winding_up = (self.smoothed_steering_rate < -15.0) and (abs_steer > 15.0)
-    else:
-      # Same side: re-engaging the turn.
-      winding_up = (self.smoothed_steering_rate < -15.0) and (abs_steer > 5.0)
+    
+    # If we crossed center and went beyond 15 degrees, it's a real new turn, not an overshoot
+    if is_opposite_sign and abs_steer > 15.0:
+      self.peak_steering_angle = abs_steer
+      self.unwind_peak_sign = np.sign(steering_angle)
+      is_opposite_sign = False
 
-    # Cancel unwind immediately if driver actively turns the wheel away from center
-    if winding_up:
-      self.unwind_hold_timer = 0
-      self.unwind_frames = 0
-    elif unwind_active:
-      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3 second hold
-    elif self.unwind_hold_timer > 0:
-      self.unwind_hold_timer -= 1
-      
-    # Reset peak ONLY when fully settled and hold timer expired
-    if abs_steer < 2.0 and self.unwind_hold_timer == 0:
+    # Reset peak when fully settled at center
+    if abs_steer < 2.0 and abs(self.smoothed_steering_rate) < 5.0:
       self.peak_steering_angle = 0.0
       self.unwind_peak_sign = 0.0
-      
-    unwind_detected = self.unwind_hold_timer > 0
+
+    # We are unwinding if actively returning to center, OR if we are currently in an overshoot bounce
+    actively_unwinding = self.smoothed_steering_rate > 10.0 and abs_steer > 2.0
+    overshooting = is_opposite_sign and abs_steer < 15.0
+    
+    unwind_detected = actively_unwinding or overshooting
     self.unwind_last_angle = steering_angle
 
     if unwind_detected:
@@ -405,7 +387,7 @@ class LatControlTorque(LatControl):
       pid_log.desiredLateralAccel = float(setpoint)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_controls, curvature_limited))
 
-    # --- Unwind diagnostic logging (turns > 120° steering) ---
+    # --- Unwind diagnostic logging (turns > 15° steering) ---
     try:
       abs_angle = abs(CS.steeringAngleDeg)
       now = time.monotonic()
@@ -437,7 +419,7 @@ class LatControlTorque(LatControl):
       self._damp_last_angle = steer_ang
 
       # Start logging when steering exceeds 120°
-      if not self._unwind_log_active and abs_angle > 120.0:
+      if not self._unwind_log_active and abs_angle > 15.0:
         self._unwind_log_active = True
         self._unwind_log_driver_touched = False
         self._unwind_log_start_time = now
@@ -457,7 +439,7 @@ class LatControlTorque(LatControl):
           self._unwind_log_driver_touched = True
 
         # Reset hold timer while angle is still large
-        if abs_angle > 120.0:
+        if abs_angle > 15.0:
           self._unwind_log_last_above = now
 
         decay_val = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95])) if unwind_detected else 1.0
@@ -484,7 +466,7 @@ class LatControlTorque(LatControl):
         ])
         self._unwind_log_file.flush()
 
-        # Close: 5 seconds after angle drops below 120°, or 60s max safety timeout
+        # Close: 5 seconds after angle drops below 15°, or 60s max safety timeout
         hold_expired = (now - self._unwind_log_last_above) > 5.0
         timed_out = (now - self._unwind_log_start_time) > 60.0
 
