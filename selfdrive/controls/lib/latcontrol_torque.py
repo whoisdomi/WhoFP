@@ -344,11 +344,11 @@ class LatControlTorque(LatControl):
       if unwind_detected:
         # Determine if OP is trying to hold the turn or center the wheel
         if steering_angle > 0:
-          # Left turn. Positive lataccel = holding. Negative lataccel = centering.
-          holding = output_lataccel > 0
-        else:
-          # Right turn. Negative lataccel = holding. Positive lataccel = centering.
+          # Left turn. Positive lataccel = centering. Negative lataccel = holding.
           holding = output_lataccel < 0
+        else:
+          # Right turn. Negative lataccel = centering. Positive lataccel = holding.
+          holding = output_lataccel > 0
 
         if holding:
           # Yield strictly to EPS: fade holding torque to 0 at 0mph, 0.1 at 15mph.
