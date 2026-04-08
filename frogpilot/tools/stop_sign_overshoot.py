@@ -114,7 +114,9 @@ def main():
           if f.get("lead") == "1": flags += " LEAD"
           green_t = float(f.get("green_t", 0))
           force_t = float(f.get("force_t", 0))
-          print(f"    {float(f['speed_mph']):>5.1f} mph  trk:{float(f['tracked_ft']):>6.1f} ft  mdl:{float(f['model_ft']):>6.1f} ft  grn:{green_t:.1f}s  frc:{force_t:.1f}s{flags}")
+          v_ms = float(f["speed_mph"]) / 2.237
+          cap_ft = ((v_ms ** 2) / 3.0 + 6.0) * 3.28084
+          print(f"    {float(f['speed_mph']):>5.1f} mph  trk:{float(f['tracked_ft']):>6.1f} ft  cap:{cap_ft:>6.1f} ft  mdl:{float(f['model_ft']):>6.1f} ft  grn:{green_t:.1f}s  frc:{force_t:.1f}s{flags}")
         else:
           print(f"    {float(f['speed_mph']):>5.1f} mph  model:{float(f['model_ft']):>6.1f} ft{flags}")
 
