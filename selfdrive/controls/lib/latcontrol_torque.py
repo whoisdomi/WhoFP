@@ -70,7 +70,7 @@ STRAIGHT_STOP_CURVATURE = 0.04  # rad/m (~25m radius)
 # m/s:                          0.5    2.0    5.0    10.0   33.5
 # mph:                          1.1    4.5    11.2   22.4   75.0
 FRICTION_THRESHOLD_SPEEDS =    [0.5,   2.0,   5.0,   10.0,  33.5]
-FRICTION_THRESHOLD_VALUES =    [0.15,  0.20,  0.38,  0.42,  0.42]
+FRICTION_THRESHOLD_VALUES =    [0.05,  0.08,  0.15,  0.15,  0.15]
 
 
 def get_friction_threshold(v_ego: float) -> float:
@@ -218,7 +218,7 @@ class LatControlTorque(LatControl):
 
     # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
     unwind_condition = (self.peak_steering_angle > 5.0 and
-                        abs_steer < abs(self.unwind_last_angle) and
+                        self.smoothed_steering_rate > 15.0 and
                         (np.sign(steering_angle) == np.sign(self.unwind_last_angle) if self.unwind_last_angle != 0 else False))
     
     # Hysteresis counter
@@ -354,7 +354,7 @@ class LatControlTorque(LatControl):
 
       # Freeze integrator conditions (unwind_detected NOT included — decay alone handles turn exit,
       # freezing creates a hard on/off boundary that causes "section" oscillation)
-      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 1.5
+      freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 0.3
 
       # PID update in lat accel space
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
