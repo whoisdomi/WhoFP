@@ -231,7 +231,7 @@ void UIState::update() {
 
   fpUpdateStage = 7; // fs->update
   fs->update();
-  fpUpdateStage = 0;
+  fpUpdateStage = 9999; // end of update (back to Qt event loop)
 }
 
 Device::Device(QObject *parent) : brightness_filter(BACKLIGHT_OFFROAD, BACKLIGHT_TS, BACKLIGHT_DT), QObject(parent) {
