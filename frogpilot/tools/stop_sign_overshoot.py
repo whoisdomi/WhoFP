@@ -38,11 +38,16 @@ def main():
     print("Log file is empty. Drive through some stop signs.")
     return
 
-  # Split into stop events based on time gaps
+  # Split into stop events based on time gaps — skip malformed rows
   events = []
   current = []
   for row in rows:
-    t = float(row["time"])
+    if "time" not in row or row["time"] is None:
+      continue
+    try:
+      t = float(row["time"])
+    except (ValueError, TypeError):
+      continue
     if current and t - float(current[-1]["time"]) > GAP_THRESHOLD:
       events.append(current)
       current = []
