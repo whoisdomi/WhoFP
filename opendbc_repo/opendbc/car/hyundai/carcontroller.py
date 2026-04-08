@@ -89,9 +89,14 @@ class CarController(CarControllerBase):
     steering_angle = CS.out.steeringAngleDeg
     abs_steer = abs(steering_angle)
     
-    # Initialize peak sign if not set
+    # Initialize state if not set
     if not hasattr(self, 'unwind_peak_sign'):
       self.unwind_peak_sign = 0.0
+      self.smoothed_steering_rate = 0.0
+      self.last_steering_angle = steering_angle
+      
+    steering_rate = (abs(self.last_steering_angle) - abs_steer) / DT_CTRL
+    self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
 
     # Track peak angle during a turn
     if abs_steer > self.peak_steering_angle:
