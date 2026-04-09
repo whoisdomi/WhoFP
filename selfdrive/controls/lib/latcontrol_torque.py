@@ -231,11 +231,16 @@ class LatControlTorque(LatControl):
       self.peak_steering_angle = 0.0
       self.unwind_peak_sign = 0.0
 
-    # We are unwinding if actively returning to center (>15 deg/s), OR if we are currently in an overshoot bounce
+    # We are unwinding if actively returning to center (>15 deg/s), OR if we are currently in an overshoot bounce,
+    # OR if at very low speed (near-stopped intersection) where wheel rate never reaches 15 deg/s
     actively_unwinding = self.smoothed_steering_rate > 15.0 and abs_steer > 2.0
     overshooting = is_opposite_sign and abs_steer < 15.0
+    # Low-speed fallback: angle-based detection for near-stopped turns where rate threshold can't be met
+    # Fires when peak was a real turn (>30°) and angle is now decreasing, regardless of rate
+    low_speed_unwind = (CS.vEgo < 3.0 and self.peak_steering_angle > 30.0 and
+                        abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0)
 
-    if actively_unwinding or overshooting:
+    if actively_unwinding or overshooting or low_speed_unwind:
       self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3s hold matches carcontroller, covers slow turns
     elif self.unwind_hold_timer > 0:
       self.unwind_hold_timer -= 1
@@ -254,7 +259,8 @@ class LatControlTorque(LatControl):
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
 
-    # Setpoint path: apply unwind fade then smooth 20Hz model steps (alpha ~0.2, ~50ms TC)
+    # Setpoint path: apply unwind fade, then smooth 20Hz model steps only during steady-state.
+    # During turn-in (rapidly changing curvature), bypass the filter entirely to avoid lag.
     # Fade is applied here (not to desired_curvature) so FF path stays unaffected.
     # Keep 50% of model curvature below 15mph to avoid fighting road geometry on curving roads.
     if unwind_detected:
@@ -262,7 +268,13 @@ class LatControlTorque(LatControl):
       faded_future = future_desired_lateral_accel * unwind_fade
     else:
       faded_future = future_desired_lateral_accel
-    self.filtered_setpoint += 0.2 * (faded_future - self.filtered_setpoint)
+    # Rate of change of desired lateral accel — large during turn entry/exit, small during steady state
+    setpoint_delta = abs(faded_future - self.filtered_setpoint)
+    # If curvature is changing fast (>0.5 m/s² per frame), track immediately to avoid turn-in lag
+    if setpoint_delta > 0.5:
+      self.filtered_setpoint = faded_future
+    else:
+      self.filtered_setpoint += 0.2 * (faded_future - self.filtered_setpoint)
 
     roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
     curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
@@ -316,6 +328,14 @@ class LatControlTorque(LatControl):
     measurement *= low_speed_factor
 
     error = setpoint - measurement
+
+    # Mid-turn torque floor: prevent measurement overshoot from zeroing torque during an established turn.
+    # When in a real turn (|angle| > 20°, not unwinding), clamp error so it can't go more than 30% negative
+    # relative to the setpoint magnitude. This stops wide/gentle curves from cutting torque when the
+    # car executes slightly more curvature than the model requested.
+    if abs_steer > 20.0 and not unwind_detected and abs(setpoint) > 0.05:
+      error_floor = -abs(setpoint) * 0.3
+      error = max(error, error_floor) if setpoint > 0 else min(error, -error_floor)
 
     # Feedforward: gravity-adjusted desired lateral accel
     gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
