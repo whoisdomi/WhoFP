@@ -72,7 +72,6 @@ private:
   void paintLateralPaused(QPainter &p);
   void paintLongitudinalPaused(QPainter &p);
   void paintPedalIcons(QPainter &p, SubMaster &sm, SubMaster &fpsm);
-  void paintPendingSpeedLimit(QPainter &p, SubMaster &fpsm);
   void paintRadarTracks(QPainter &p);
   void paintRoadName(QPainter &p);
   void paintSpeedLimit(QPainter &p);
@@ -185,6 +184,4 @@ private:
   QVector<QPixmap> blindspotImagesFlipped;  // Pre-cached flipped versions
   QVector<QPixmap> signalImages;
   QVector<QPixmap> signalImagesFlipped;  // Pre-cached flipped versions
-};
-ctor<QPixmap> signalImagesFlipped;  // Pre-cached flipped versions
 };
