@@ -109,6 +109,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"RecordAudioFeedback", {PERSISTENT, BOOL, "0"}},
     {"RecordFront", {PERSISTENT, BOOL}},
     {"RecordFrontLock", {PERSISTENT, BOOL}},  // for the internal fleet
+    {"RecoveryPower", {PERSISTENT, FLOAT, "1.0", "1.0", 3}},
     {"SecOCKey", {PERSISTENT | DONT_LOG, STRING}},
     {"ShowDebugInfo", {PERSISTENT, BOOL}},
     {"RouteCount", {PERSISTENT, INT, "0"}},
@@ -470,6 +471,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SteerRatioStock", {PERSISTENT, FLOAT, "0.0", "0.0", 3}},
     {"StockDongleId", {PERSISTENT, STRING, "", ""}},
     {"StopAccel", {PERSISTENT, FLOAT, "0.0", "0.0", 3}},
+    {"StopDistance", {PERSISTENT, FLOAT, "6.0", "6.0", 3}},
     {"StopAccelStock", {PERSISTENT, FLOAT, "0.0", "0.0", 3}},
     {"StoppedTimer", {PERSISTENT, BOOL, "0", "0", 1}},
     {"StoppingDecelRate", {PERSISTENT, FLOAT, "0.0", "0.0", 3}},
