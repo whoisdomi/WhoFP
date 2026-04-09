@@ -200,6 +200,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
 
   speedLimit = frogpilotPlan.getSlcOverriddenSpeed() != 0 ? frogpilotPlan.getSlcOverriddenSpeed() : frogpilotPlan.getSlcSpeedLimit();
   speedLimitChanged = frogpilotPlan.getSpeedLimitChanged();
+  unconfirmedSpeedLimitValid = frogpilotPlan.getUnconfirmedSlcSpeedLimit() > 1;
   if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && !frogpilot_toggles->value("show_speed_limit_offset").toBool()) {
     speedLimit += frogpilotPlan.getSlcSpeedLimitOffset();
   }
@@ -319,7 +320,7 @@ void FrogPilotAnnotatedCameraWidget::updateState(const UIState &s, const FrogPil
 }
 
 void FrogPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *mouseEvent) {
-  if (speedLimitChanged && newSpeedLimitRect.contains(mouseEvent->pos())) {
+  if (speedLimitChanged && unconfirmedSpeedLimitValid && speedLimitRect.contains(mouseEvent->pos())) {
     params_memory.putBool("SpeedLimitAccepted", true);
     mouseEvent->accept();
     return;
@@ -391,8 +392,10 @@ void FrogPilotAnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p, UIState 
   }
 
   fpWidgetPaintStage = 7; // PendingLimit
-  if (frogpilotPlan.getSpeedLimitChanged()) {
-    paintPendingSpeedLimit(p, fpsm);
+  if (speedLimitChanged && unconfirmedSpeedLimitValid) {
+    if (!pendingLimitTimer.isValid()) {
+      pendingLimitTimer.start();
+    }
   } else {
     pendingLimitTimer.invalidate();
   }
@@ -988,116 +991,6 @@ void FrogPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p, SubMaster &sm,
   p.restore();
 }
 
-void FrogPilotAnnotatedCameraWidget::paintPendingSpeedLimit(QPainter &p, SubMaster &fpsm) {
-  p.save();
-
-  const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
-
-  if (!pendingLimitTimer.isValid()) {
-    pendingLimitTimer.start();
-  }
-
-  QString newSpeedLimitStr = (frogpilotPlan.getUnconfirmedSlcSpeedLimit() > 1) ? QString::number(std::nearbyint(frogpilotPlan.getUnconfirmedSlcSpeedLimit() * speedConversion)) : "–";
-  newSpeedLimitRect = speedLimitRect.translated(speedLimitRect.width() + UI_BORDER_SIZE, 0);
-
-  if (!toggleSpeedLimitVienna) {
-    newSpeedLimitRect.setWidth(newSpeedLimitStr.size() >= 3 ? 200 : 175);
-
-    p.setBrush(whiteColor());
-    p.setPen(Qt::NoPen);
-    p.drawRoundedRect(newSpeedLimitRect, 24, 24);
-    p.setPen(pendingLimitTimer.elapsed() % 1000 < 500 ? QPen(blackColor(), 6) : QPen(redColor(), 6));
-    p.drawRoundedRect(newSpeedLimitRect.adjusted(9, 9, -9, -9), 16, 16);
-
-    p.setFont(InterFont(28, QFont::DemiBold));
-    p.drawText(newSpeedLimitRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("PENDING"));
-    p.drawText(newSpeedLimitRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
-    p.setFont(InterFont(70, QFont::Bold));
-    p.drawText(newSpeedLimitRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, newSpeedLimitStr);
-  } else {
-    p.setBrush(whiteColor());
-    p.setPen(Qt::NoPen);
-    p.drawEllipse(newSpeedLimitRect);
-    p.setPen(QPen(Qt::red, 20));
-    p.drawEllipse(newSpeedLimitRect.adjusted(16, 16, -16, -16));
-
-    p.setPen(pendingLimitTimer.elapsed() % 1000 < 500 ? QPen(blackColor(), 6) : QPen(redColor(), 6));
-    p.setFont(InterFont((newSpeedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
-    p.drawText(newSpeedLimitRect, Qt::AlignCenter, newSpeedLimitStr);
-  }
-
-  p.restore();
-}
-
-void FrogPilotAnnotatedCameraWidget::paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point) {
-  p.save();
-
-  static float hueOffset = 0.0f;
-  if (speed > 0) {
-    hueOffset += speed / speedConversion * 0.02f;
-
-    if (hueOffset >= 360.0f) {
-      hueOffset = fmodf(hueOffset, 360.0f);
-    }
-  }
-
-  float alpha = util::map_val(lin_grad_point, 0.0f, 1.0f, 0.5f, 0.1f);
-  float pathHue = fmodf(lin_grad_point * 120.0f + hueOffset, 360.0f);
-
-  bg.setColorAt(lin_grad_point, QColor::fromHslF(pathHue / 360.0f, 1.0f, 0.5f, alpha));
-  bg.setSpread(QGradient::RepeatSpread);
-
-  p.restore();
-}
-
-void FrogPilotAnnotatedCameraWidget::paintRadarTracks(QPainter &p) {
-  p.save();
-
-  int diameter = 25;
-
-  QRect viewport = p.viewport();
-
-  for (std::size_t i = 0; i < radar_tracks.size(); ++i) {
-    const RadarTrackData &track = radar_tracks[i];
-
-    float x = std::clamp(static_cast<float>(track.calibrated_point.x()), 0.0f, float(viewport.width() - diameter));
-    float y = std::clamp(static_cast<float>(track.calibrated_point.y()), 0.0f, float(viewport.height() - diameter));
-
-    p.setBrush(redColor());
-    p.drawEllipse(QPointF(x + diameter / 2.0f, y + diameter / 2.0f), diameter / 2.0f, diameter / 2.0f);
-  }
-
-  p.restore();
-}
-
-void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
-  // Use cached road name from updateState() to avoid params read at 20Hz
-  if (cachedRoadName.isEmpty()) {
-    return;
-  }
-
-  alertHeight = std::max(50, alertHeight);
-
-  p.save();
-
-  QFont font = InterFont(40, QFont::DemiBold);
-
-  int textWidth = QFontMetrics(font).horizontalAdvance(cachedRoadName);
-
-  QRect roadNameRect((width() - (textWidth + 100)) / 2, rect().bottom() - 55 + 1, textWidth + 100, 50);
-
-  p.setBrush(blackColor(166));
-  p.setOpacity(1.0);
-  p.setPen(QPen(blackColor(), 10));
-  p.drawRoundedRect(roadNameRect, 24, 24);
-
-  p.setFont(font);
-  p.setPen(QPen(whiteColor(), 6));
-  p.drawText(roadNameRect, Qt::AlignCenter, cachedRoadName);
-
-  p.restore();
-}
-
 void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
   if (setSpeedRect.isEmpty()) {
     return;
@@ -1108,7 +1001,17 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
   SubMaster &fpsm = *frogpilotUIState()->sm;
   const cereal::FrogPilotPlan::Reader &frogpilotPlan = fpsm["frogpilotPlan"].getFrogpilotPlan();
 
-  QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
+  bool isFlashingPending = speedLimitChanged && unconfirmedSpeedLimitValid && (pendingLimitTimer.isValid() && pendingLimitTimer.elapsed() % 1000 >= 500);
+
+  QString speedLimitStr;
+  if (isFlashingPending) {
+    speedLimitStr = QString::number(std::nearbyint(frogpilotPlan.getUnconfirmedSlcSpeedLimit() * speedConversion));
+  } else {
+    speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
+  }
+
+  QColor borderColor = isFlashingPending ? redColor() : blackColor();
+  QColor textColor = isFlashingPending ? redColor() : blackColor();
 
   bool hasUsSpeedLimit = !toggleSpeedLimitVienna;
   bool hasEuSpeedLimit = !hasUsSpeedLimit;
@@ -1135,20 +1038,23 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
     p.setPen(Qt::NoPen);
     p.setBrush(whiteColor());
     p.drawRoundedRect(signRect, 24, 24);
-    p.setPen(QPen(blackColor(), 6));
+    p.setPen(QPen(borderColor, 6));
     p.drawRoundedRect(signRect.adjusted(9, 9, -9, -9), 16, 16);
 
     p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
+    p.setPen(textColor);
     if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && toggleShowSpeedLimitOffset) {
       p.setFont(InterFont(28, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, isFlashingPending ? tr("PENDING") : tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
       p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
       p.setFont(InterFont(50, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      if (!isFlashingPending) {
+        p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      }
     } else {
       p.setFont(InterFont(28, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, isFlashingPending ? tr("PENDING") : tr("SPEED"));
       p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
       p.drawText(signRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
@@ -1163,12 +1069,14 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
     p.drawEllipse(signRect.adjusted(16, 16, -16, -16));
 
     p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
-    p.setPen(blackColor());
+    p.setPen(textColor);
     if (toggleShowSpeedLimitOffset) {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect.adjusted(0, -25, 0, 0), Qt::AlignCenter, speedLimitStr);
       p.setFont(InterFont(40, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      if (!isFlashingPending) {
+        p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      }
     } else {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect, Qt::AlignCenter, speedLimitStr);

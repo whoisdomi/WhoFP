@@ -84,6 +84,7 @@ private:
   void updateSignals();
 
   bool speedLimitChanged = false;
+  bool unconfirmedSpeedLimitValid = false;
 
   // Cached values to avoid parsing in paint methods (20Hz)
   int cachedBearing = 0;
@@ -158,7 +159,6 @@ private:
   QPoint compassPosition;
   QPoint lateralPausedPosition;
 
-  QRect newSpeedLimitRect;
   QRect speedLimitRect;
 
   QSharedPointer<QMovie> cemCurveIcon;
@@ -185,4 +185,6 @@ private:
   QVector<QPixmap> blindspotImagesFlipped;  // Pre-cached flipped versions
   QVector<QPixmap> signalImages;
   QVector<QPixmap> signalImagesFlipped;  // Pre-cached flipped versions
+};
+ctor<QPixmap> signalImagesFlipped;  // Pre-cached flipped versions
 };
