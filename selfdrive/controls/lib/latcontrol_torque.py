@@ -129,9 +129,6 @@ class LatControlTorque(LatControl):
     self.filtered_measurement = 0.0
     self.low_pass_alpha = 1.0  # 1.0 = no filtering (off)
 
-    # Low-pass filter for setpoint to smooth 20Hz model steps
-    self.filtered_setpoint = 0.0
-
     # Feedforward low-pass filter: smooths the FF path to prevent model noise
     # from spiking torque, while allowing full FF amplitude for sustained turns
     self.filtered_ff = 0.0
@@ -259,8 +256,7 @@ class LatControlTorque(LatControl):
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
 
-    # Setpoint path: apply unwind fade, then smooth 20Hz model steps only during steady-state.
-    # During turn-in (rapidly changing curvature), bypass the filter entirely to avoid lag.
+    # Setpoint path: apply unwind fade to generate centering error during turn exit.
     # Fade is applied here (not to desired_curvature) so FF path stays unaffected.
     # Keep 50% of model curvature below 15mph to avoid fighting road geometry on curving roads.
     if unwind_detected:
@@ -268,13 +264,6 @@ class LatControlTorque(LatControl):
       faded_future = future_desired_lateral_accel * unwind_fade
     else:
       faded_future = future_desired_lateral_accel
-    # Rate of change of desired lateral accel — large during turn entry/exit, small during steady state
-    setpoint_delta = abs(faded_future - self.filtered_setpoint)
-    # If curvature is changing fast (>0.5 m/s² per frame), track immediately to avoid turn-in lag
-    if setpoint_delta > 0.5:
-      self.filtered_setpoint = faded_future
-    else:
-      self.filtered_setpoint += 0.2 * (faded_future - self.filtered_setpoint)
 
     roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
     curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
@@ -304,9 +293,7 @@ class LatControlTorque(LatControl):
     jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel) * 0.5, abs(future_desired_lateral_accel) * 0.5))
     jerk_fade = float(np.clip((CS.vEgo - 3.0) / 5.0, 0.0, 1.0))  # 0 below 3 m/s, 1 above 8 m/s
     jerk_offset *= jerk_fade
-    # Use filtered_setpoint (smoothed + unwind-faded) for PID error; future_desired_lateral_accel
-    # remains raw for FF path so feedforward isn't cut during turn exit
-    setpoint = self.filtered_setpoint + jerk_offset
+    setpoint = faded_future + jerk_offset
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
@@ -364,7 +351,6 @@ class LatControlTorque(LatControl):
       self.smoothed_steering_rate = 0.0
       self.filtered_measurement = 0.0
       self.filtered_ff = 0.0
-      self.filtered_setpoint = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space
