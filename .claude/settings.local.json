@@ -5,19 +5,7 @@
       "LS",
       "Grep",
       "Glob",
-      "Bash(head*)",
-      "Bash(cat*)",
-      "Bash(ls*)",
-      "Bash(python3*)",
-      "Bash(grep*)",
-      "Bash(find*)",
-      "Bash(git*)",
-      "Bash(tree*)",
-      "Bash(echo*)",
-      "Bash(cd *)",
-      "Bash(cd * && *)",
-      "Bash(* | grep *)",
-      "Bash(gh api*)"
+      "Bash(*)"
     ]
   }
 }
