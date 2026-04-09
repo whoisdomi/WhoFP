@@ -114,6 +114,9 @@ class LatControlTorque(LatControl):
     # Unwind detection state (rate-based)
     self.unwind_last_angle = 0.0
     self.smoothed_steering_rate = 0.0
+    self.unwind_peak_sign = 0.0
+    self.peak_steering_angle = 0.0
+    self.unwind_hold_timer = 0
 
     # Mirror of carcontroller.py's DAMP_UNWIND_BOOST detection (for logging only)
     self._damp_peak_angle = 0.0
@@ -209,10 +212,6 @@ class LatControlTorque(LatControl):
     steering_rate = (abs(self.unwind_last_angle) - abs_steer) / DT_CTRL
     self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
     
-    if not hasattr(self, 'unwind_peak_sign'):
-      self.unwind_peak_sign = 0.0
-      self.peak_steering_angle = 0.0
-
     # Track peak angle during a turn
     if abs_steer > self.peak_steering_angle:
       self.peak_steering_angle = abs_steer
@@ -232,18 +231,17 @@ class LatControlTorque(LatControl):
       self.peak_steering_angle = 0.0
       self.unwind_peak_sign = 0.0
 
-    # We are unwinding if actively returning to center at high speed (>50 deg/s), OR if we are currently in an overshoot bounce
-    actively_unwinding = self.smoothed_steering_rate > 50.0 and abs_steer > 2.0
+    # We are unwinding if actively returning to center (>15 deg/s), OR if we are currently in an overshoot bounce
+    actively_unwinding = self.smoothed_steering_rate > 15.0 and abs_steer > 2.0
     overshooting = is_opposite_sign and abs_steer < 15.0
-    
-    unwind_detected = actively_unwinding or overshooting
-    self.unwind_last_angle = steering_angle
 
-    if unwind_detected:
-      # Fade out desired curvature during unwind to force the controller to center the wheel
-      # Yield completely to 0.0 at low/mid speeds to generate centering error
-      unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.0, 0.0, 1.0]))
-      desired_curvature *= unwind_fade
+    if actively_unwinding or overshooting:
+      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3s hold matches carcontroller, covers slow turns
+    elif self.unwind_hold_timer > 0:
+      self.unwind_hold_timer -= 1
+
+    unwind_detected = self.unwind_hold_timer > 0
+    self.unwind_last_angle = steering_angle
 
     # Calculate current state
     measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
@@ -251,8 +249,20 @@ class LatControlTorque(LatControl):
     # Low-pass filter: alpha=1.0 is passthrough (off), lower alpha = stronger smoothing
     self.filtered_measurement += self.low_pass_alpha * (raw_measurement - self.filtered_measurement)
     measurement = self.filtered_measurement
+
+    # Raw future desired: unmodified, used for FF and delay-compensation buffer
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
+
+    # Setpoint path: apply unwind fade then smooth 20Hz model steps (alpha ~0.2, ~50ms TC)
+    # Fade is applied here (not to desired_curvature) so FF path stays unaffected.
+    # Keep 50% of model curvature below 15mph to avoid fighting road geometry on curving roads.
+    if unwind_detected:
+      unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.5, 0.5, 1.0]))
+      faded_future = future_desired_lateral_accel * unwind_fade
+    else:
+      faded_future = future_desired_lateral_accel
+    self.filtered_setpoint += 0.2 * (faded_future - self.filtered_setpoint)
 
     roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
     curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
@@ -282,7 +292,9 @@ class LatControlTorque(LatControl):
     jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel) * 0.5, abs(future_desired_lateral_accel) * 0.5))
     jerk_fade = float(np.clip((CS.vEgo - 3.0) / 5.0, 0.0, 1.0))  # 0 below 3 m/s, 1 above 8 m/s
     jerk_offset *= jerk_fade
-    setpoint = future_desired_lateral_accel + jerk_offset
+    # Use filtered_setpoint (smoothed + unwind-faded) for PID error; future_desired_lateral_accel
+    # remains raw for FF path so feedforward isn't cut during turn exit
+    setpoint = self.filtered_setpoint + jerk_offset
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
@@ -332,6 +344,7 @@ class LatControlTorque(LatControl):
       self.smoothed_steering_rate = 0.0
       self.filtered_measurement = 0.0
       self.filtered_ff = 0.0
+      self.filtered_setpoint = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space
