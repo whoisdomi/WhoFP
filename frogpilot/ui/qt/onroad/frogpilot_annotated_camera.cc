@@ -991,6 +991,75 @@ void FrogPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p, SubMaster &sm,
   p.restore();
 }
 
+void FrogPilotAnnotatedCameraWidget::paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point) {
+  p.save();
+
+  static float hueOffset = 0.0f;
+  if (speed > 0) {
+    hueOffset += speed / speedConversion * 0.02f;
+
+    if (hueOffset >= 360.0f) {
+      hueOffset = fmodf(hueOffset, 360.0f);
+    }
+  }
+
+  float alpha = util::map_val(lin_grad_point, 0.0f, 1.0f, 0.5f, 0.1f);
+  float pathHue = fmodf(lin_grad_point * 120.0f + hueOffset, 360.0f);
+
+  bg.setColorAt(lin_grad_point, QColor::fromHslF(pathHue / 360.0f, 1.0f, 0.5f, alpha));
+  bg.setSpread(QGradient::RepeatSpread);
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintRadarTracks(QPainter &p) {
+  p.save();
+
+  int diameter = 25;
+
+  QRect viewport = p.viewport();
+
+  for (std::size_t i = 0; i < radar_tracks.size(); ++i) {
+    const RadarTrackData &track = radar_tracks[i];
+
+    float x = std::clamp(static_cast<float>(track.calibrated_point.x()), 0.0f, float(viewport.width() - diameter));
+    float y = std::clamp(static_cast<float>(track.calibrated_point.y()), 0.0f, float(viewport.height() - diameter));
+
+    p.setBrush(redColor());
+    p.drawEllipse(QPointF(x + diameter / 2.0f, y + diameter / 2.0f), diameter / 2.0f, diameter / 2.0f);
+  }
+
+  p.restore();
+}
+
+void FrogPilotAnnotatedCameraWidget::paintRoadName(QPainter &p) {
+  // Use cached road name from updateState() to avoid params read at 20Hz
+  if (cachedRoadName.isEmpty()) {
+    return;
+  }
+
+  alertHeight = std::max(50, alertHeight);
+
+  p.save();
+
+  QFont font = InterFont(40, QFont::DemiBold);
+
+  int textWidth = QFontMetrics(font).horizontalAdvance(cachedRoadName);
+
+  QRect roadNameRect((width() - (textWidth + 100)) / 2, rect().bottom() - 55 + 1, textWidth + 100, 50);
+
+  p.setBrush(blackColor(166));
+  p.setOpacity(1.0);
+  p.setPen(QPen(blackColor(), 10));
+  p.drawRoundedRect(roadNameRect, 24, 24);
+
+  p.setFont(font);
+  p.setPen(QPen(whiteColor(), 6));
+  p.drawText(roadNameRect, Qt::AlignCenter, cachedRoadName);
+
+  p.restore();
+}
+
 void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
   if (setSpeedRect.isEmpty()) {
     return;
