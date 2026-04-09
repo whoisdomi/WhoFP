@@ -5,7 +5,8 @@
       "LS",
       "Grep",
       "Glob",
-      "Bash(*)"
+      "Bash(*)",
+      "WebFetch(*)"
     ]
   }
 }
