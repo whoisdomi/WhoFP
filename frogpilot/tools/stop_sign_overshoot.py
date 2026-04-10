@@ -46,7 +46,10 @@ def main():
     print("Log file is empty. Drive through some stop signs.")
     return
 
-  # Split into stop events based on time gaps — skip malformed rows
+  # Split into stop events.
+  # Primary split: standstill → non-standstill transition means the car drove away after a stop,
+  # so the next frame is definitively a new event regardless of elapsed time.
+  # Fallback split: time gap > GAP_THRESHOLD for events that never reached standstill (drive-throughs).
   events = []
   current = []
   for row in rows:
@@ -56,7 +59,17 @@ def main():
       t = float(row["time"])
     except (ValueError, TypeError):
       continue
-    if current and t - float(current[-1]["time"]) > GAP_THRESHOLD:
+    split = False
+    if current:
+      prev = current[-1]
+      time_gap = t - float(prev["time"])
+      # If the previous event ended at standstill, any gap = new stop
+      prev_was_standstill = prev.get("standstill") == "1"
+      if prev_was_standstill and time_gap > 0.5:  # 0.5s grace for log flush delay
+        split = True
+      elif time_gap > GAP_THRESHOLD:
+        split = True
+    if split:
       events.append(current)
       current = []
     current.append(row)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import datetime
 import os
 import time
 
@@ -10,6 +11,7 @@ from openpilot.frogpilot.controls.lib.curve_speed_controller import CurveSpeedCo
 from openpilot.frogpilot.controls.lib.speed_limit_controller import SpeedLimitController
 
 OVERRIDE_FORCE_STOP_TIMER = 10
+FORCE_STOP_ACTIVATION_M = 61.0  # 200ft — model path activates when predicted stop is within this distance
 STOP_SIGN_LOG = "/data/stop_sign_overshoot.csv"
 DASH_SIGNAL_LOG = "/data/dash_stop_sign_raw.csv"
 M_TO_FT = 3.28084
@@ -36,6 +38,7 @@ class FrogPilotVCruise:
     self._ss_log_file = None
     self._ss_log_tail = False
     self._ss_log_driving_timer = 0
+    self._session_model = "unknown"
     self._ss_init_log()
 
     # Raw dashboard stop sign signal logger — always-on, records every ON/OFF transition.
@@ -69,7 +72,7 @@ class FrogPilotVCruise:
   def _ss_init_log(self):
     if not os.path.exists(STOP_SIGN_LOG):
       with open(STOP_SIGN_LOG, "w") as f:
-        f.write("time,speed_mph,tracked_ft,model_ft,dash,forcing,standstill,brake,confirmed,green_t,curve,force_t,cem,exp,lead\n")
+        f.write("time,speed_mph,tracked_ft,model_ft,dash,forcing,standstill,brake,confirmed,green_t,curve,force_t,cem,exp,lead,wall_time,model\n")
 
   def _ss_log_frame(self, v_ego, sm):
     tracked_ft = self.tracked_model_length * M_TO_FT
@@ -89,15 +92,21 @@ class FrogPilotVCruise:
     try:
       if self._ss_log_file is None:
         self._ss_log_file = open(STOP_SIGN_LOG, "a")
-      self._ss_log_file.write(f"{time.monotonic():.2f},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{standstill},{brake},{confirmed},{green_t:.2f},{curve},{force_t:.2f},{cem},{exp},{lead}\n")
+      wall_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      self._ss_log_file.write(f"{time.monotonic():.2f},{speed_mph:.1f},{tracked_ft:.1f},{model_ft:.1f},{dash},{forcing},{standstill},{brake},{confirmed},{green_t:.2f},{curve},{force_t:.2f},{cem},{exp},{lead},{wall_time},{self._session_model}\n")
       self._ss_log_file.flush()
     except Exception:
       pass
 
   def update(self, long_control_active, now, time_validated, v_cruise, v_ego, sm, frogpilot_toggles):
-    # Normal force stop condition (requires toggle + model_stopped)
+    # Keep session model name current for CSV logging
+    self._session_model = getattr(frogpilot_toggles, 'model_name', None) or 'unknown'
+
+    # Normal force stop condition (CEM path): stop light detected + model predicts stop within 200ft.
+    # Using a direct distance check rather than model_stopped (which caps at 50m/164ft) so we can
+    # start the decel profile earlier and arrive at the sign less abruptly.
     force_stop = self.frogpilot_planner.frogpilot_cem.stop_light_detected and long_control_active and frogpilot_toggles.force_stops
-    force_stop &= self.frogpilot_planner.model_stopped
+    force_stop &= self.frogpilot_planner.model_length < FORCE_STOP_ACTIVATION_M
     force_stop &= self.override_force_stop_timer <= 0
     # Don't activate force stop mid-turn — model trajectory shortens in curves, causing false triggers
     force_stop &= not self.frogpilot_planner.driving_in_curve
