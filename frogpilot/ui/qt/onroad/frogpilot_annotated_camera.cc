@@ -1112,18 +1112,23 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
     p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
     p.setPen(textColor);
-    if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && toggleShowSpeedLimitOffset) {
+    if (isFlashingPending) {
       p.setFont(InterFont(28, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, isFlashingPending ? tr("PENDING") : tr("LIMIT"));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+      p.setFont(InterFont(70, QFont::Bold));
+      p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
+      p.setFont(InterFont(28, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("PENDING"));
+    } else if (frogpilotPlan.getSlcOverriddenSpeed() == 0 && toggleShowSpeedLimitOffset) {
+      p.setFont(InterFont(28, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
       p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
       p.setFont(InterFont(50, QFont::DemiBold));
-      if (!isFlashingPending) {
-        p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
-      }
+      p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
     } else {
       p.setFont(InterFont(28, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, isFlashingPending ? tr("PENDING") : tr("SPEED"));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
       p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
       p.drawText(signRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
@@ -1139,13 +1144,16 @@ void FrogPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
     p.setOpacity(frogpilotPlan.getSlcOverriddenSpeed() == 0 ? 1.0 : 0.25);
     p.setPen(textColor);
-    if (toggleShowSpeedLimitOffset) {
+    if (isFlashingPending) {
+      p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
+      p.drawText(signRect.adjusted(0, -20, 0, 0), Qt::AlignCenter, speedLimitStr);
+      p.setFont(InterFont(32, QFont::DemiBold));
+      p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("PENDING"));
+    } else if (toggleShowSpeedLimitOffset) {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect.adjusted(0, -25, 0, 0), Qt::AlignCenter, speedLimitStr);
       p.setFont(InterFont(40, QFont::DemiBold));
-      if (!isFlashingPending) {
-        p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
-      }
+      p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
     } else {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect, Qt::AlignCenter, speedLimitStr);
