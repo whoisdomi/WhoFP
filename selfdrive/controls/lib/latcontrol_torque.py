@@ -265,14 +265,9 @@ class LatControlTorque(LatControl):
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
 
-    # Setpoint path: apply unwind fade to generate centering error during turn exit.
-    # Fade is applied here (not to desired_curvature) so FF path stays unaffected.
-    # Keep 50% of model curvature below 15mph to avoid fighting road geometry on curving roads.
-    if unwind_detected:
-      unwind_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.5, 0.5, 1.0]))
-      faded_future = future_desired_lateral_accel * unwind_fade
-    else:
-      faded_future = future_desired_lateral_accel
+    # No setpoint fade during unwind — DAMP_UNWIND_BOOST in carcontroller.py handles overshoot
+    # at the hardware (EPS) level. PID-level setpoint manipulation caused: torque opposing the return,
+    # post-turn torque pauses with sudden jerks on resume, and mid-turn torque drops on gentle curves.
 
     roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
     curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
@@ -302,7 +297,7 @@ class LatControlTorque(LatControl):
     jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel) * 0.5, abs(future_desired_lateral_accel) * 0.5))
     jerk_fade = float(np.clip((CS.vEgo - 3.0) / 5.0, 0.0, 1.0))  # 0 below 3 m/s, 1 above 8 m/s
     jerk_offset *= jerk_fade
-    setpoint = faded_future + jerk_offset
+    setpoint = future_desired_lateral_accel + jerk_offset
 
     # Low speed factor: curvature-proportional boost for turns at low speeds
     # Works alongside KP_INTERP to help with tight turns at low speed
@@ -326,10 +321,10 @@ class LatControlTorque(LatControl):
     error = setpoint - measurement
 
     # Mid-turn torque floor: prevent measurement overshoot from zeroing torque during an established turn.
-    # When in a real turn (|angle| > 20°, not unwinding), clamp error so it can't go more than 30% negative
+    # When in a real turn (|angle| > 20°), clamp error so it can't go more than 30% negative
     # relative to the setpoint magnitude. This stops wide/gentle curves from cutting torque when the
     # car executes slightly more curvature than the model requested.
-    if abs_steer > 20.0 and not unwind_detected and abs(setpoint) > 0.05:
+    if abs_steer > 20.0 and abs(setpoint) > 0.05:
       error_floor = -abs(setpoint) * 0.3
       error = max(error, error_floor) if setpoint > 0 else min(error, -error_floor)
 
@@ -373,31 +368,9 @@ class LatControlTorque(LatControl):
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
 
       if unwind_detected:
-        # Determine if OP is trying to hold the turn or center the wheel
-        if steering_angle > 0:
-          # Left turn. Positive lataccel = centering. Negative lataccel = holding.
-          holding = output_lataccel < 0
-        else:
-          # Right turn. Negative lataccel = centering. Positive lataccel = holding.
-          holding = output_lataccel > 0
-
-        if holding:
-          # Yield strictly to EPS: fade holding torque to 0 at 0mph, 0.1 at 15mph.
-          hold_fade = float(np.interp(CS.vEgo, [0.0, 6.7, 13.4], [0.0, 0.1, 1.0]))
-          output_lataccel *= hold_fade
-        else:
-          # Centering torque: allow up to 2.5 m/s^2 to assist weak EPS at low speeds,
-          # but cap it to prevent massive overshoot snaps if the PID error spikes.
-          center_limit = 2.5
-          if output_lataccel > 0:
-            output_lataccel = min(output_lataccel, center_limit)
-          else:
-            output_lataccel = max(output_lataccel, -center_limit)
-
-        # Gently decay integrator during turn exit (not frozen — integrator still accumulates above,
-        # so this is a net drain that smoothly bleeds off turn-exit buildup without hard on/off steps)
-        # Faster decay at low speed (turns complete faster, integrator needs to drain quicker)
-        # 0.88 at 0 m/s → 0.95 at 15 m/s (33 mph)
+        # Gently decay integrator during turn exit to bleed off any turn-direction buildup.
+        # No torque manipulation — DAMP_UNWIND_BOOST handles overshoot at the EPS level,
+        # and the PID should remain free to track the model's road curvature at all times.
         unwind_decay = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95]))
         self.pid.i *= unwind_decay
 
