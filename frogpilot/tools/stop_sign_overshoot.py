@@ -25,7 +25,8 @@ def main():
       print("No log to clear.")
     return
 
-  HEADER = ["time", "speed_mph", "tracked_ft", "model_ft", "dash", "forcing", "standstill", "brake", "confirmed", "green_t", "curve", "force_t", "cem", "exp", "lead"]
+  HEADER = ["time", "speed_mph", "tracked_ft", "model_ft", "dash", "forcing", "standstill", "brake", "confirmed", "green_t", "curve", "force_t", "cem", "exp", "lead", "wall_time", "model"]
+  MIN_STOP_SPEED_MPH = 5.0  # skip events that never dropped below this — not real stops
   try:
     with open(LOG_PATH) as f:
       first = f.readline().strip()
@@ -81,15 +82,24 @@ def main():
   print("=" * 70)
 
   valid = []
+  skipped_high_speed = 0
 
   for i, frames in enumerate(events):
     sid = i + 1
-    print(f"\n--- Stop #{sid} ({len(frames)} frames) ---")
 
     # Find key moments
     has_dash = any(f["dash"] == "1" for f in frames)
     has_forcing = any(f["forcing"] == "1" for f in frames)
     standstill_frames = [f for f in frames if f["standstill"] == "1"]
+    min_speed = min(float(f["speed_mph"]) for f in frames)
+
+    # Skip events that never got close to stopping — these are ADAS false detections
+    # at highway speed (cross-street signs, etc.), not actual stop sign approaches.
+    if min_speed > MIN_STOP_SPEED_MPH:
+      skipped_high_speed += 1
+      continue
+
+    print(f"\n--- Stop #{sid} ({len(frames)} frames) ---")
 
     if not has_dash:
       print("  (no dashboard stop sign — likely a red light, skipping)")
@@ -98,10 +108,18 @@ def main():
     had_force_stop = has_forcing
     mode = "FORCE STOP" if had_force_stop else "MANUAL (lat only)"
 
+    # Extract wall_time and model from first frame (if available)
+    wall_time = frames[0].get("wall_time", "")
+    model_name = frames[0].get("model", "")
+
     # First frame with dash on
     dash_frames = [f for f in frames if f["dash"] == "1"]
     first_dash = dash_frames[0]
     print(f"  Mode:                {mode}")
+    if wall_time:
+      print(f"  Time:                {wall_time}")
+    if model_name and model_name != "unknown":
+      print(f"  Model:               {model_name}")
     print(f"  Dash-on speed:       {float(first_dash['speed_mph']):>5.0f} mph")
 
     # Max speed during event (approach speed)
@@ -224,6 +242,8 @@ def main():
         "driver_stopped": brake,
         "force_active": forcing_at_stop,
         "had_force_stop": had_force_stop,
+        "wall_time": wall_time,
+        "model": model_name,
       })
     else:
       print(f"  (no standstill — rolling stop or drove through)")
@@ -233,6 +253,8 @@ def main():
   print("SUMMARY")
   print(f"{'='*70}")
   print(f"Total events: {len(events)}")
+  if skipped_high_speed:
+    print(f"Skipped (never below {MIN_STOP_SPEED_MPH:.0f} mph): {skipped_high_speed}")
   print(f"Events with standstill: {len(valid)}")
 
   if not valid:
@@ -243,13 +265,33 @@ def main():
   force_stops = [s for s in valid if s["had_force_stop"]]
   manual_stops = [s for s in valid if not s["had_force_stop"]]
 
-  print(f"\n{'Stop':>5s}  {'Speed':>6s}  {'Tracked':>8s}  {'Model':>8s}  {'Dash→Stop':>10s}  {'Mode'}")
-  print(f"{'-'*5}  {'-'*6}  {'-'*8}  {'-'*8}  {'-'*10}  {'-'*18}")
+  # Show model name if any event has one
+  any_model = any(s["model"] and s["model"] != "unknown" for s in valid)
+  any_time = any(s["wall_time"] for s in valid)
+
+  print(f"\n{'Stop':>5s}  {'Speed':>6s}  {'Tracked':>8s}  {'Model':>8s}  {'Dash→Stop':>10s}  {'Mode':<18s}", end="")
+  if any_time:
+    print(f"  {'Time':<20s}", end="")
+  if any_model:
+    print(f"  {'Drive Model'}", end="")
+  print()
+  print(f"{'-'*5}  {'-'*6}  {'-'*8}  {'-'*8}  {'-'*10}  {'-'*18}", end="")
+  if any_time:
+    print(f"  {'-'*20}", end="")
+  if any_model:
+    print(f"  {'-'*15}", end="")
+  print()
   for s in valid:
     who = "DRIVER" if s["driver_stopped"] else "AUTO"
     mode = "FORCE" if s["had_force_stop"] else "MANUAL"
     tracked = f"{s['tracked_at_stop_ft']:>8.1f}" if s["had_force_stop"] else f"{'---':>8s}"
-    print(f"{s['id']:>5d}  {s['approach_speed']:>6.0f}  {tracked}  {s['model_at_stop_ft']:>8.1f}  {s['dist_dash_to_stop_ft']:>10.1f}  {mode} ({who})")
+    print(f"{s['id']:>5d}  {s['approach_speed']:>6.0f}  {tracked}  {s['model_at_stop_ft']:>8.1f}  {s['dist_dash_to_stop_ft']:>10.1f}  {mode:<7s} ({who})", end="")
+    if any_time:
+      wt = s["wall_time"][:19] if s["wall_time"] else ""
+      print(f"  {wt:<20s}", end="")
+    if any_model:
+      print(f"  {s['model']}", end="")
+    print()
 
   print(f"\n  Model overshoot (model_ft at standstill — lower is better):")
   print(f"    Count:   {len(model_vals)}")
