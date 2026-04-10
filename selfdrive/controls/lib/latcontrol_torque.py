@@ -217,10 +217,15 @@ class LatControlTorque(LatControl):
     # Did we cross center into an overshoot?
     is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
     
-    # If we crossed center and went beyond 15 degrees, it's a real new turn, not an overshoot
+    # Winding up: angle actively increasing into a turn — cancel any unwind immediately
+    winding_up = abs_steer > abs(self.unwind_last_angle) + 0.3 and abs_steer > 5.0
+
+    # If we crossed center and went beyond 15 degrees, it's a real new turn, not an overshoot.
+    # Reset both the peak AND the hold timer so the new turn gets full unattenuated torque.
     if is_opposite_sign and abs_steer > 15.0:
       self.peak_steering_angle = abs_steer
       self.unwind_peak_sign = np.sign(steering_angle)
+      self.unwind_hold_timer = 0
       is_opposite_sign = False
 
     # Reset peak when fully settled at center
@@ -232,12 +237,16 @@ class LatControlTorque(LatControl):
     # OR if at very low speed (near-stopped intersection) where wheel rate never reaches 15 deg/s
     actively_unwinding = self.smoothed_steering_rate > 15.0 and abs_steer > 2.0
     overshooting = is_opposite_sign and abs_steer < 15.0
-    # Low-speed fallback: angle-based detection for near-stopped turns where rate threshold can't be met
-    # Fires when peak was a real turn (>30°) and angle is now decreasing, regardless of rate
+    # Low-speed fallback: angle-based detection for near-stopped turns where rate threshold can't be met.
+    # Guarded by winding_up so it doesn't fire while actively steering deeper into a turn.
     low_speed_unwind = (CS.vEgo < 3.0 and self.peak_steering_angle > 30.0 and
-                        abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0)
+                        abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0 and
+                        not winding_up)
 
-    if actively_unwinding or overshooting or low_speed_unwind:
+    if winding_up:
+      # Actively steering into a turn: cancel hold timer immediately so unwind doesn't bleed into turn-in
+      self.unwind_hold_timer = 0
+    elif actively_unwinding or overshooting or low_speed_unwind:
       self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3s hold matches carcontroller, covers slow turns
     elif self.unwind_hold_timer > 0:
       self.unwind_hold_timer -= 1
