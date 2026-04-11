@@ -228,6 +228,10 @@ int main(int argc, char *argv[]) {
           
           int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
           if (fd >= 0) { write(fd, buf, len); close(fd); }
+
+          // Proactive restart: don't wait for manager's 5s watchdog SIGKILL.
+          // Exit now to trigger an immediate restart, which is safer for control logic.
+          _exit(0);
         }
         std::this_thread::sleep_for(std::chrono::seconds(5)); // Avoid spamming during stall
       }
