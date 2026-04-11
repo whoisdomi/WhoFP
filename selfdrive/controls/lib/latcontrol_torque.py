@@ -263,7 +263,10 @@ class LatControlTorque(LatControl):
     # turn exit setpoint can only drop to 0.5× future (never reaches zero prematurely,
     # so the integrator doesn't build opposite-sign energy that causes centering wobble)
     jerk_offset = float(np.clip(jerk_offset, -abs(future_desired_lateral_accel) * 0.5, abs(future_desired_lateral_accel) * 0.5))
-    jerk_fade = float(np.clip((CS.vEgo - 3.0) / 5.0, 0.0, 1.0))  # 0 below 3 m/s, 1 above 8 m/s
+    # Fade disabled below 8 m/s (18 mph): high KP_MULTIPLIERS already respond fast enough,
+    # and the 20Hz model step-rate amplifies jerk_offset into ±50% setpoint swings at low speed,
+    # causing jerky curves and post-center oscillations at 12-17 mph.
+    jerk_fade = float(np.clip((CS.vEgo - 8.0) / 5.0, 0.0, 1.0))  # 0 below 8 m/s (18 mph), 1 above 13 m/s (29 mph)
     jerk_offset *= jerk_fade
     setpoint = future_desired_lateral_accel + jerk_offset
 
@@ -310,6 +313,14 @@ class LatControlTorque(LatControl):
     else:
       ff = ff_raw
       self.filtered_ff = ff_raw  # Track raw value so filter doesn't lag when fading in
+    # FF lag fix: during unwind the model still commands curvature into the old turn,
+    # making FF oppose the return. Taper FF using the same angle scale as DAMP_UNWIND_BOOST
+    # (0 at 5°, 1 at 30°+) so near-center, the controller relies on P-term + friction only.
+    # Friction is added after this scale so centering friction is never reduced.
+    if unwind_detected:
+      ff_unwind_scale = float(np.clip((abs_steer - 5.0) / 25.0, 0.0, 1.0))
+      ff *= ff_unwind_scale
+
     # Friction term (ACTS-HORIZON style: no jerk in friction, jerk is in setpoint instead)
     # Use speed-interpolated threshold: lower at low speed (helps turns), higher at highway (prevents ticking)
     friction_threshold = get_friction_threshold(CS.vEgo)
