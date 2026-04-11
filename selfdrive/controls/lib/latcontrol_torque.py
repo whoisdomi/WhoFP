@@ -295,9 +295,17 @@ class LatControlTorque(LatControl):
     # When in a real turn (|angle| > 20°), clamp error so it can't go more than 30% negative
     # relative to the setpoint magnitude. This stops wide/gentle curves from cutting torque when the
     # car executes slightly more curvature than the model requested.
+    # The floor fades out as measurement >> setpoint (ratio 2→4×): when the model has moved on
+    # (road straightening) but the wheel is still far out, the floor is reduced proportionally
+    # so correction torque builds smoothly rather than appearing as a sudden jerk when the hard
+    # threshold would have been crossed.
     if abs_steer > 20.0 and abs(setpoint) > 0.05:
-      error_floor = -abs(setpoint) * 0.3
-      error = max(error, error_floor) if setpoint > 0 else min(error, -error_floor)
+      ratio = abs(measurement) / abs(setpoint) if abs(setpoint) > 1e-6 else 0.0
+      floor_strength = float(np.clip(1.0 - (ratio - 2.0) / 2.0, 0.0, 1.0))  # 1.0 at ratio≤2, 0.0 at ratio≥4
+      if floor_strength > 0.0:
+        error_floor = -abs(setpoint) * 0.3
+        clamped_error = max(error, error_floor) if setpoint > 0 else min(error, -error_floor)
+        error = error + (clamped_error - error) * floor_strength
 
     # Feedforward: gravity-adjusted desired lateral accel
     gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
