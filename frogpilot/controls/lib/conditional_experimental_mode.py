@@ -179,6 +179,16 @@ class ConditionalExperimentalMode:
       self.slow_lead_detected = False
 
   def stop_sign_and_light(self, v_ego, sm, model_time):
+    # If vcruise has confirmed a stop sign via ADAS, pin stop_light_detected True.
+    # This prevents EXP→CHILL dropout mid-approach: when the model sees through the
+    # intersection it loses model_stopped → filter decays → CEM drops to CHILL → force
+    # stop loses its activation condition. The ADAS latch in vcruise is the ground truth
+    # that we ARE at a stop sign — mirror it here so CEM stays in EXP the whole way.
+    if self.frogpilot_planner.frogpilot_vcruise.stop_sign_confirmed:
+      self.stop_light_filter.x = 1.0
+      self.stop_light_detected = True
+      return
+
     if not sm["frogpilotCarState"].trafficModeEnabled:
       speed_mph = v_ego * CV.MS_TO_MPH
 
