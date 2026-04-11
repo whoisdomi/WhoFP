@@ -265,14 +265,10 @@ class LatControlTorque(LatControl):
     future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
     self.lat_accel_request_buffer.append(future_desired_lateral_accel)
 
-    # Near-center curvature fade during unwind: the model's desired_curvature lags behind the
-    # physical wheel return, still pointing into the old turn at |angle| < 20°. This makes the PID
-    # and FF oppose centering. Fade toward zero proportional to angle — at 10° it's 50%, at 0° it's 0%.
-    # Only during unwind so normal driving at small angles (gentle highway curves) is unaffected.
-    # Unlike the old flat 50% fade, this is angle-gated (no timer dependency, no jerk on resume).
-    if unwind_detected and abs_steer < 20.0:
-      center_fade = abs_steer / 20.0  # 1.0 at 20°, 0.0 at 0°
-      future_desired_lateral_accel *= center_fade
+    # Note: no setpoint fade during unwind — DAMP_UNWIND_BOOST in carcontroller.py handles
+    # overshoot at the EPS level. A near-center curvature fade was tried but caused lane drift
+    # on curves/lane changes because the 3s hold timer keeps unwind_detected=1 during normal
+    # post-turn driving where small steering angles are legitimate (not stale model lag).
 
     roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
     curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
