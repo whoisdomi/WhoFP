@@ -55,10 +55,8 @@ class CarController(CarControllerBase):
 
     self.accel_last = 0
     self.apply_torque_last = 0
-    self.unwind_hold_timer = 0
     self.last_steering_angle = 0.0
     self.peak_steering_angle = 0.0
-    self.unwind_frames = 0
     self.car_fingerprint = CP.carFingerprint
     self.last_button_frame = 0
     self.ecu_disable_failed = False
@@ -84,62 +82,29 @@ class CarController(CarControllerBase):
     if not CC.latActive:
       apply_torque = 0
 
-    # Detect unwind using steering angle (smoother than torque)
-    # Mirrors latcontrol_torque.py hysteresis: activates at 5 frames, drains at 1/frame
-    steering_angle = CS.out.steeringAngleDeg
-    abs_steer = abs(steering_angle)
-    
-    # Initialize state if not set
-    if not hasattr(self, 'unwind_peak_sign'):
-      self.unwind_peak_sign = 0.0
-      self.smoothed_steering_rate = 0.0
-      self.last_steering_angle = steering_angle
-      
-    steering_rate = (abs(self.last_steering_angle) - abs_steer) / DT_CTRL
-    self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
+    # Detect unwind using angle state — no timer needed since the boost
+    # itself is angle-tapered (full at 30°+, zero at 5°). The flag just gates
+    # whether any boost is applied; the taper controls the actual value.
+    abs_steer = abs(CS.out.steeringAngleDeg)
 
     # Track peak angle during a turn
     if abs_steer > self.peak_steering_angle:
       self.peak_steering_angle = abs_steer
-      self.unwind_peak_sign = np.sign(steering_angle)
 
-    # Unwind condition: angle decreasing from a real turn (>5 deg peak), same sign
-    unwind_condition = (self.peak_steering_angle > 5.0 and
-                        abs_steer < abs(self.last_steering_angle) and
-                        (np.sign(steering_angle) == np.sign(self.last_steering_angle) if self.last_steering_angle != 0 else False))
-    
-    # Hysteresis counter
-    if unwind_condition:
-      self.unwind_frames = min(self.unwind_frames + 1, 15)
-    else:
-      self.unwind_frames = max(self.unwind_frames - 1, 0)
-    unwind_active = self.unwind_frames >= 5
-    
-    # Winding up detection: distinguish new turn from overshoot
-    is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
-    if is_opposite_sign:
-      # If crossed center, it's an overshoot. Require 15 deg to consider it a new turn.
-      winding_up = (abs_steer > abs(self.last_steering_angle) + 1.5) and (abs_steer > 15.0)
-    else:
-      # Same side: re-engaging the turn.
-      winding_up = (abs_steer > abs(self.last_steering_angle) + 1.5) and (abs_steer > 5.0)
-
-    # Cancel unwind immediately if driver actively turns the wheel away from center
+    # Winding up: actively steering deeper into a turn — reset peak to current
+    winding_up = abs_steer > abs(self.last_steering_angle) + 0.5 and abs_steer > 5.0
     if winding_up:
-      self.unwind_hold_timer = 0
-      self.unwind_frames = 0
-    elif unwind_active:
-      self.unwind_hold_timer = 3.0 / DT_CTRL  # 3 second hold
-    elif self.unwind_hold_timer > 0:
-      self.unwind_hold_timer -= 1
-      
-    # Reset peak ONLY when fully settled and hold timer expired
-    if abs_steer < 2.0 and self.unwind_hold_timer == 0:
+      self.peak_steering_angle = abs_steer
+
+    # Unwinding: peak was a real turn (>30°) and wheel is between 5° and peak
+    # No timer — clears instantly when wheel settles below 5° or enters a new turn
+    self.unwinding = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 5.0
+
+    # Reset peak when fully settled at center
+    if abs_steer < 2.0:
       self.peak_steering_angle = 0.0
-      self.unwind_peak_sign = 0.0
-      
-    self.unwinding = self.unwind_hold_timer > 0
-    self.last_steering_angle = steering_angle
+
+    self.last_steering_angle = CS.out.steeringAngleDeg
 
     # Hold torque with induced temporary fault when cutting the actuation bit
     # FIXME: we don't use this with CAN FD?

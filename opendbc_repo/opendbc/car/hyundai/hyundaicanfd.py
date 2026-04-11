@@ -47,6 +47,17 @@ DAMP_UNWIND_BOOST =       [120,     100,     80,      60]
 
 
 def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque, v_ego=0., unwinding=False, steering_angle=0.):
+  # Compute unwind boost with angle taper in the last 30°.
+  # Full boost at |angle| >= 30° prevents overshoot after the turn apex.
+  # Below 30°, self-aligning torque weakens rapidly — taper the boost so the EPS
+  # damping doesn't fight the last bit of centering. Reaches zero at 5° (settled).
+  if unwinding:
+    speed_boost = int(np.interp(v_ego, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST))
+    angle_scale = float(np.clip((abs(steering_angle) - 5.0) / 25.0, 0.0, 1.0))  # 0 at 5°, 1 at 30°
+    unwind_boost = int(speed_boost * angle_scale)
+  else:
+    unwind_boost = 0
+
   common_values = {
     "LKA_MODE": 2,
     "LKA_ICON": 2 if enabled else 1,
@@ -56,7 +67,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque,
     "STEER_MODE": 0,
     "HAS_LANE_SAFETY": 0,  # hide LKAS settings
     "NEW_SIGNAL_2": 0,
-    "DAMP_FACTOR": min(int(np.interp(v_ego, DAMP_FACTOR_SPEED, DAMP_FACTOR)) + (int(np.interp(v_ego, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST)) if unwinding else 0), 200),
+    "DAMP_FACTOR": min(int(np.interp(v_ego, DAMP_FACTOR_SPEED, DAMP_FACTOR)) + unwind_boost, 200),
   }
 
   lkas_values = copy.copy(common_values)

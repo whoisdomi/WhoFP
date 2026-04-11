@@ -111,12 +111,9 @@ class LatControlTorque(LatControl):
     # Will be replaced by lagd's learned value once available
     self.lat_delay = CP.steerActuatorDelay + 0.1
 
-    # Unwind detection state (rate-based)
+    # Unwind detection state (angle-based, mirrors carcontroller.py)
     self.unwind_last_angle = 0.0
-    self.smoothed_steering_rate = 0.0
-    self.unwind_peak_sign = 0.0
     self.peak_steering_angle = 0.0
-    self.unwind_hold_timer = 0
 
     # Mirror of carcontroller.py's DAMP_UNWIND_BOOST detection (for logging only)
     self._damp_peak_angle = 0.0
@@ -200,58 +197,28 @@ class LatControlTorque(LatControl):
     # Check for KP/KI changes from UI (allows live tuning)
     self.update_pid_gains(frogpilot_toggles)
 
-    # Unwind detection: steering-rate-based
-    # Detects when the wheel is actively returning toward center from a turn
+    # Unwind detection: angle-based, mirrors carcontroller.py
+    # No timer — clears instantly when wheel settles below 5° or enters a new turn.
+    # The DAMP_UNWIND_BOOST angle taper controls the actual damping value.
     steering_angle = CS.steeringAngleDeg
     abs_steer = abs(steering_angle)
-    
-    # Calculate steering rate (positive = returning to center)
-    steering_rate = (abs(self.unwind_last_angle) - abs_steer) / DT_CTRL
-    self.smoothed_steering_rate += 0.2 * (steering_rate - self.smoothed_steering_rate)
-    
+
     # Track peak angle during a turn
     if abs_steer > self.peak_steering_angle:
       self.peak_steering_angle = abs_steer
-      self.unwind_peak_sign = np.sign(steering_angle)
 
-    # Did we cross center into an overshoot?
-    is_opposite_sign = (np.sign(steering_angle) != self.unwind_peak_sign) if self.unwind_peak_sign != 0 else False
-    
-    # Winding up: angle actively increasing into a turn — cancel any unwind immediately
-    winding_up = abs_steer > abs(self.unwind_last_angle) + 0.3 and abs_steer > 5.0
-
-    # If we crossed center and went beyond 15 degrees, it's a real new turn, not an overshoot.
-    # Reset both the peak AND the hold timer so the new turn gets full unattenuated torque.
-    if is_opposite_sign and abs_steer > 15.0:
+    # Winding up: actively steering deeper — reset peak to current
+    winding_up = abs_steer > abs(self.unwind_last_angle) + 0.5 and abs_steer > 5.0
+    if winding_up:
       self.peak_steering_angle = abs_steer
-      self.unwind_peak_sign = np.sign(steering_angle)
-      self.unwind_hold_timer = 0
-      is_opposite_sign = False
+
+    # Unwinding: peak was a real turn (>30°) and wheel is between 5° and peak
+    unwind_detected = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 5.0
 
     # Reset peak when fully settled at center
-    if abs_steer < 2.0 and abs(self.smoothed_steering_rate) < 5.0:
+    if abs_steer < 2.0:
       self.peak_steering_angle = 0.0
-      self.unwind_peak_sign = 0.0
 
-    # We are unwinding if actively returning to center (>15 deg/s), OR if we are currently in an overshoot bounce,
-    # OR if at very low speed (near-stopped intersection) where wheel rate never reaches 15 deg/s
-    actively_unwinding = self.smoothed_steering_rate > 15.0 and abs_steer > 2.0
-    overshooting = is_opposite_sign and abs_steer < 15.0
-    # Low-speed fallback: angle-based detection for near-stopped turns where rate threshold can't be met.
-    # Guarded by winding_up so it doesn't fire while actively steering deeper into a turn.
-    low_speed_unwind = (CS.vEgo < 3.0 and self.peak_steering_angle > 30.0 and
-                        abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0 and
-                        not winding_up)
-
-    if winding_up:
-      # Actively steering into a turn: cancel hold timer immediately so unwind doesn't bleed into turn-in
-      self.unwind_hold_timer = 0
-    elif actively_unwinding or overshooting or low_speed_unwind:
-      self.unwind_hold_timer = int(3.0 / DT_CTRL)  # 3s hold matches carcontroller, covers slow turns
-    elif self.unwind_hold_timer > 0:
-      self.unwind_hold_timer -= 1
-
-    unwind_detected = self.unwind_hold_timer > 0
     self.unwind_last_angle = steering_angle
 
     # Calculate current state
@@ -353,7 +320,7 @@ class LatControlTorque(LatControl):
       pid_log.active = False
       self.pid.reset()
       self.unwind_last_angle = 0.0
-      self.smoothed_steering_rate = 0.0
+      self.peak_steering_angle = 0.0
       self.filtered_measurement = 0.0
       self.filtered_ff = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
@@ -459,7 +426,12 @@ class LatControlTorque(LatControl):
 
         decay_val = float(np.interp(CS.vEgo, [0, 15], [0.88, 0.95])) if unwind_detected else 1.0
         base_damp = int(np.interp(CS.vEgo, DAMP_FACTOR_SPEED, DAMP_FACTOR))
-        boost_damp = int(np.interp(CS.vEgo, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST)) if self._damp_boost_active else 0
+        if self._damp_boost_active:
+          speed_boost = int(np.interp(CS.vEgo, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST))
+          angle_scale = float(np.clip((abs(CS.steeringAngleDeg) - 5.0) / 25.0, 0.0, 1.0))
+          boost_damp = int(speed_boost * angle_scale)
+        else:
+          boost_damp = 0
         computed_damp = min(base_damp + boost_damp, 200)
         self._unwind_log_writer.writerow([
           f"{now:.3f}",
