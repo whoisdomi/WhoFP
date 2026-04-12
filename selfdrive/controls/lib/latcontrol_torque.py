@@ -307,6 +307,20 @@ class LatControlTorque(LatControl):
         clamped_error = max(error, error_floor) if setpoint > 0 else min(error, -error_floor)
         error = error + (clamped_error - error) * floor_strength
 
+    # Near-center unwind floor (5–20°): extends protection into the last 15° of unwind.
+    # At these small angles the blended floor above has already expired (abs_steer ≤ 20° or
+    # |setpoint| < 0.05), but KP_MULTIPLIER is still high (6–11× at 3–5 m/s). When the 20Hz
+    # model transitions "turn → straight" ahead of the physical wheel, the raw error spikes and
+    # P fires a large opposing torque — felt as a jerk that stops the wheel just before center.
+    # Using measurement as the floor basis means the limit disappears naturally as the wheel
+    # finishes returning (measurement → 0), without needing a setpoint threshold.
+    if unwind_detected and 5.0 < abs_steer <= 20.0 and abs(measurement) > 0.01:
+      near_center_floor = -abs(measurement) * 0.25
+      if measurement > 0:
+        error = max(error, near_center_floor)
+      else:
+        error = min(error, -near_center_floor)
+
     # Feedforward: gravity-adjusted desired lateral accel
     gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
     ff_raw = gravity_adjusted_future_lateral_accel
