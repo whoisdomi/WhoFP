@@ -286,8 +286,8 @@ class FrogPilotVCruise:
       # 16m → testing (Sessions E, F)
       # 18m → 7-13ft past line (too far, MPC creeps forward before stopping)
       # 14m → Sessions G, H, I — AUTO stops at 3.9–4.5ft, good
-      FORCE_STOP_COMFORT_DECEL = 1.2
-      if self.tracked_model_length < 14.0:
+      FORCE_STOP_COMFORT_DECEL = 1.4
+      if self.tracked_model_length < 12.0:
         force_stop_v = 0.0
       else:
         force_stop_v = (2.0 * FORCE_STOP_COMFORT_DECEL * self.tracked_model_length) ** 0.5
