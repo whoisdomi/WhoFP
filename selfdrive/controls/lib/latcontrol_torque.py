@@ -314,7 +314,10 @@ class LatControlTorque(LatControl):
     # P fires a large opposing torque — felt as a jerk that stops the wheel just before center.
     # Using measurement as the floor basis means the limit disappears naturally as the wheel
     # finishes returning (measurement → 0), without needing a setpoint threshold.
-    if unwind_detected and 5.0 < abs_steer <= 20.0 and abs(measurement) > 0.01:
+    # Only fires when model has moved on (setpoint < 30% of measurement, ratio > ~3.3×):
+    # avoids clamping return torque during active curve-following where setpoint is still valid.
+    model_moved_on = abs(setpoint) < abs(measurement) * 0.3 if abs(measurement) > 0.01 else False
+    if unwind_detected and 5.0 < abs_steer <= 20.0 and abs(measurement) > 0.01 and model_moved_on:
       near_center_floor = -abs(measurement) * 0.25
       if measurement > 0:
         error = max(error, near_center_floor)
@@ -339,7 +342,9 @@ class LatControlTorque(LatControl):
     # making FF oppose the return. Taper FF using the same angle scale as DAMP_UNWIND_BOOST
     # (0 at 5°, 1 at 30°+) so near-center, the controller relies on P-term + friction only.
     # Friction is added after this scale so centering friction is never reduced.
-    if unwind_detected:
+    # Only fires when model has moved on (same ratio guard as near_center_floor above):
+    # if setpoint is still meaningful, FF is correct and needed — don't remove it.
+    if unwind_detected and model_moved_on:
       ff_unwind_scale = float(np.clip((abs_steer - 5.0) / 25.0, 0.0, 1.0))
       ff *= ff_unwind_scale
 
