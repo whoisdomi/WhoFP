@@ -207,9 +207,22 @@ int main(int argc, char *argv[]) {
 
   // Monitor for stalls (>2s) to capture stage info before manager watchdog SIGKILL
   std::thread monitor([] {
+    uint64_t last_monitor_t = nanos_since_boot();
     while (true) {
       uint64_t last_t = last_ui_frame_t.load();
       uint64_t now = nanos_since_boot();
+      
+      // Clock jump protection: if system time jumps backwards or more than 5 minutes forward, 
+      // reset the monitor instead of triggering a false stall.
+      uint64_t monitor_dt = (now > last_monitor_t) ? (now - last_monitor_t) : 0;
+      if (now < last_monitor_t || monitor_dt > 300000000000ULL) {
+        last_ui_frame_t = now;
+        last_monitor_t = now;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        continue;
+      }
+      last_monitor_t = now;
+
       if (last_t > 0 && (now - last_t) > 2000000000ULL) {
         char ts[128];
         write_timestamp(ts, sizeof(ts));
