@@ -11,7 +11,7 @@ from openpilot.frogpilot.controls.lib.curve_speed_controller import CurveSpeedCo
 from openpilot.frogpilot.controls.lib.speed_limit_controller import SpeedLimitController
 
 OVERRIDE_FORCE_STOP_TIMER = 10
-FORCE_STOP_ACTIVATION_M = 61.0  # 200ft — model path activates when predicted stop is within this distance
+FORCE_STOP_ACTIVATION_M = 75.0  # 246ft — model path activates when predicted stop is within this distance
 STOP_SIGN_LOG = "/data/stop_sign_overshoot.csv"
 DASH_SIGNAL_LOG = "/data/dash_stop_sign_raw.csv"
 M_TO_FT = 3.28084
@@ -279,14 +279,15 @@ class FrogPilotVCruise:
       # Kinematic velocity profile: v = sqrt(2 * a_comfort * d)
       # Unlike the old linear profile (d/10), this keeps speed high when far away and
       # progressively increases braking as the stop approaches — matching how a human
-      # driver would brake. a_comfort = 1.2 m/s² gives a natural, non-alarming decel.
-      # Hard stop command below 14m (46ft). Tuned from data:
+      # driver would brake. Lower a_comfort = gentler, earlier braking feel.
+      # Hard stop command below 12m (39ft). Tuned from data:
       # 10m → car still moving at stop line
       # 15m → 0-5ft past line (good)
       # 16m → testing (Sessions E, F)
       # 18m → 7-13ft past line (too far, MPC creeps forward before stopping)
       # 14m → Sessions G, H, I — AUTO stops at 3.9–4.5ft, good
-      FORCE_STOP_COMFORT_DECEL = 1.4
+      # 12m → Session L — tighter buffer, 0.0ft tracked on all force stops
+      FORCE_STOP_COMFORT_DECEL = 1.0
       if self.tracked_model_length < 12.0:
         force_stop_v = 0.0
       else:
