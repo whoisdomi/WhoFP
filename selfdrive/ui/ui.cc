@@ -134,12 +134,19 @@ void UIState::updateStatus(FrogPilotUIState *fs) {
       scene.started_frame = sm->frame;
     }
     started_prev = scene.started;
+    
+    fpUpdateStage = 301; // emit offroadTransition
     emit offroadTransition(!scene.started);
 
     // FrogPilot variables
     if (frogpilot_toggles.value("tethering_config").toInt() == 2) {
-      fs->wifi->setTetheringEnabled(scene.started);
+      fpUpdateStage = 302; // setTetheringEnabled (async)
+      bool started = scene.started;
+      QtConcurrent::run([=]() {
+        frogpilotUIState()->wifi->setTetheringEnabled(started);
+      });
     }
+    fpUpdateStage = 3;
   }
 }
 
