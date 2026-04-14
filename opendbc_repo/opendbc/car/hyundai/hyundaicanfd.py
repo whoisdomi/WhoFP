@@ -53,7 +53,7 @@ def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque,
   # damping doesn't fight the last bit of centering. Reaches zero at 5° (settled).
   if unwinding:
     speed_boost = int(np.interp(v_ego, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST))
-    angle_scale = float(np.clip((abs(steering_angle) - 5.0) / 25.0, 0.0, 1.0))  # 0 at 5°, 1 at 30°
+    angle_scale = float(np.clip(abs(steering_angle) / 30.0, 0.0, 1.0))  # 0 at 0°, 1 at 30°
     unwind_boost = int(speed_boost * angle_scale)
   else:
     unwind_boost = 0

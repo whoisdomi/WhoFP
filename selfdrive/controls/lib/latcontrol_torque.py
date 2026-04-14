@@ -213,7 +213,7 @@ class LatControlTorque(LatControl):
       self.peak_steering_angle = abs_steer
 
     # Unwinding: peak was a real turn (>30°) and wheel is between 5° and peak
-    unwind_detected = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 5.0
+    unwind_detected = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0
 
     # Reset peak when fully settled at center
     if abs_steer < 2.0:
