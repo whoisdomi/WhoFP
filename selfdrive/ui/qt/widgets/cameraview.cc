@@ -259,6 +259,10 @@ void CameraWidget::paintGL() {
   glEnableVertexAttribArray(0);
 
   modelDrawStage = 1107;
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    qDebug() << "After glActiveTexture/target: GL error" << err;
+  }
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (const void *)0);
   glDisableVertexAttribArray(0);
   glBindVertexArray(0);

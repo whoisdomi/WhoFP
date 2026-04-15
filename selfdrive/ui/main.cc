@@ -205,7 +205,22 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // Monitor for stalls (>2s) to capture stage info before manager watchdog SIGKILL
+  // Helper: safe read of thread stack from proc
+static void log_thread_stack(int log_fd) {
+  char path[128];
+  snprintf(path, sizeof(path), "/proc/self/task/%d/stack", getpid());
+  int fd = open(path, O_RDONLY);
+  if (fd >= 0) {
+    const char hdr[] = "--- kernel stack ---\n";
+    write(log_fd, hdr, sizeof(hdr) - 1);
+    char buf[4096];
+    int n = read(fd, buf, sizeof(buf));
+    if (n > 0) write(log_fd, buf, n);
+    close(fd);
+  }
+}
+
+// Monitor for stalls (>2s) to capture stage info before manager watchdog SIGKILL
   std::thread monitor([] {
     uint64_t last_monitor_t = nanos_since_boot();
     while (true) {
@@ -240,7 +255,11 @@ int main(int argc, char *argv[]) {
           }
           
           int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
-          if (fd >= 0) { write(fd, buf, len); close(fd); }
+          if (fd >= 0) { 
+            write(fd, buf, len); 
+            log_thread_stack(fd);
+            close(fd); 
+          }
 
           // Proactive restart: don't wait for manager's 5s watchdog SIGKILL.
           // Exit now to trigger an immediate restart, which is safer for control logic.
