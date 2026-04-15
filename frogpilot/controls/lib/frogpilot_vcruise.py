@@ -288,7 +288,7 @@ class FrogPilotVCruise:
       # 14m → Sessions G, H, I — AUTO stops at 3.9–4.5ft, good
       # 12m → Session L — tighter buffer, 0.0ft tracked on all force stops
       FORCE_STOP_COMFORT_DECEL = 1.0
-      if self.tracked_model_length < 12.0:
+      if self.tracked_model_length < 10.0:
         force_stop_v = 0.0
       else:
         force_stop_v = (2.0 * FORCE_STOP_COMFORT_DECEL * self.tracked_model_length) ** 0.5
