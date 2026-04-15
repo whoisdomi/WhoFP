@@ -1,5 +1,27 @@
-.git/
+# Used by ripgrep (rg) and search tools — applies to all code searches
+# Submodules — large, rarely modified directly
+tinygrad_repo/
+rednose_repo/
+msgq_repo/
+teleoprtc_repo/
+
+# Panda firmware
+panda/board/
+panda/drivers/
+
+# opendbc bulk DBC files (keep car/ and safety/ for tuning work)
+opendbc_repo/opendbc/dbc/
+
+# Third-party
 third_party/
 phonelibs/
+
+# Build artifacts
 **/__pycache__/
 **/*.pyc
+**/*.o
+**/*.so
+**/*.a
+**/*.os
+**/*.rlog
+**/*.bz2
