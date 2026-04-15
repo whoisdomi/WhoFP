@@ -57,6 +57,7 @@ class CarController(CarControllerBase):
     self.apply_torque_last = 0
     self.last_steering_angle = 0.0
     self.peak_steering_angle = 0.0
+    self.unwind_hold_frames = 0
     self.car_fingerprint = CP.carFingerprint
     self.last_button_frame = 0
     self.ecu_disable_failed = False
@@ -82,9 +83,8 @@ class CarController(CarControllerBase):
     if not CC.latActive:
       apply_torque = 0
 
-    # Detect unwind using angle state — no timer needed since the boost
-    # itself is angle-tapered (full at 30°+, zero at 5°). The flag just gates
-    # whether any boost is applied; the taper controls the actual value.
+    # Detect unwind using angle state with hold timer for overshoot protection.
+    # The DAMP_UNWIND_BOOST is angle-tapered (full at 15°+, zero at 0°).
     abs_steer = abs(CS.out.steeringAngleDeg)
 
     # Track peak angle during a turn
@@ -92,16 +92,26 @@ class CarController(CarControllerBase):
       self.peak_steering_angle = abs_steer
 
     # Winding up: actively steering deeper into a turn — reset peak to current
+    # Don't reset if peak is from a big turn (>30°) — the "winding up" may be overshoot
     winding_up = abs_steer > abs(self.last_steering_angle) + 0.5 and abs_steer > 5.0
-    if winding_up:
+    if winding_up and self.peak_steering_angle <= 30.0:
       self.peak_steering_angle = abs_steer
 
-    # Unwinding: peak was a real turn (>30°) and wheel is between 5° and peak
-    # No timer — clears instantly when wheel settles below 5° or enters a new turn
-    self.unwinding = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0
+    # Raw unwinding: peak was a real turn (>30°) and wheel is between 2° and peak
+    raw_unwinding = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0
 
-    # Reset peak when fully settled at center
-    if abs_steer < 2.0:
+    # Hold timer: keep DAMP_UNWIND_BOOST active for 1.5s after raw unwind ends.
+    # This catches overshoot past center — the wheel carries momentum through 0°,
+    # but without the hold, the peak resets and boost disappears during the overshoot.
+    if raw_unwinding:
+      self.unwind_hold_frames = int(1.5 / DT_CTRL)  # ~150 frames at 100Hz
+    elif self.unwind_hold_frames > 0:
+      self.unwind_hold_frames -= 1
+
+    self.unwinding = raw_unwinding or self.unwind_hold_frames > 0
+
+    # Reset peak when fully settled at center AND hold timer has expired
+    if abs_steer < 2.0 and self.unwind_hold_frames == 0:
       self.peak_steering_angle = 0.0
 
     self.last_steering_angle = CS.out.steeringAngleDeg

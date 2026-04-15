@@ -114,6 +114,12 @@ class LatControlTorque(LatControl):
     # Unwind detection state (angle-based, mirrors carcontroller.py)
     self.unwind_last_angle = 0.0
     self.peak_steering_angle = 0.0
+    self.unwind_hold_frames = 0
+
+    # Setpoint smoothing: reduces 20Hz model step jerk during curve following
+    # Alpha 0.3 ≈ 30ms time constant at 100Hz — barely perceptible lag but
+    # spreads each model step across ~5 frames, reducing torque jerk by ~3×
+    self.smoothed_setpoint = 0.0
 
     # Mirror of carcontroller.py's DAMP_UNWIND_BOOST detection (for logging only)
     self._damp_peak_angle = 0.0
@@ -197,9 +203,7 @@ class LatControlTorque(LatControl):
     # Check for KP/KI changes from UI (allows live tuning)
     self.update_pid_gains(frogpilot_toggles)
 
-    # Unwind detection: angle-based, mirrors carcontroller.py
-    # No timer — clears instantly when wheel settles below 5° or enters a new turn.
-    # The DAMP_UNWIND_BOOST angle taper controls the actual damping value.
+    # Unwind detection: angle-based, mirrors carcontroller.py (including hold timer)
     steering_angle = CS.steeringAngleDeg
     abs_steer = abs(steering_angle)
 
@@ -208,15 +212,24 @@ class LatControlTorque(LatControl):
       self.peak_steering_angle = abs_steer
 
     # Winding up: actively steering deeper — reset peak to current
+    # Don't reset if peak is from a big turn (>30°) — may be overshoot
     winding_up = abs_steer > abs(self.unwind_last_angle) + 0.5 and abs_steer > 5.0
-    if winding_up:
+    if winding_up and self.peak_steering_angle <= 30.0:
       self.peak_steering_angle = abs_steer
 
-    # Unwinding: peak was a real turn (>30°) and wheel is between 5° and peak
-    unwind_detected = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0
+    # Raw unwind: peak was a real turn (>30°) and wheel is between 2° and peak
+    raw_unwind = self.peak_steering_angle > 30.0 and abs_steer < self.peak_steering_angle * 0.95 and abs_steer > 2.0
 
-    # Reset peak when fully settled at center
-    if abs_steer < 2.0:
+    # Hold timer: mirrors carcontroller.py — keeps unwind active through overshoot
+    if raw_unwind:
+      self.unwind_hold_frames = int(1.5 / DT_CTRL)
+    elif self.unwind_hold_frames > 0:
+      self.unwind_hold_frames -= 1
+
+    unwind_detected = raw_unwind or self.unwind_hold_frames > 0
+
+    # Reset peak when fully settled at center AND hold timer expired
+    if abs_steer < 2.0 and self.unwind_hold_frames == 0:
       self.peak_steering_angle = 0.0
 
     self.unwind_last_angle = steering_angle
@@ -289,6 +302,14 @@ class LatControlTorque(LatControl):
     setpoint *= low_speed_factor
     measurement *= low_speed_factor
 
+    # Smooth setpoint to reduce 20Hz model step jerk during curve following.
+    # The model updates at 20Hz but the control loop runs at 100Hz, so each model
+    # step appears as a sudden setpoint jump every ~5 frames. With KP multipliers
+    # of 2-4× at moderate speeds, these steps produce noticeable torque jerks.
+    # Alpha 0.3 spreads each step across ~5 frames (30ms), reducing peak jerk ~3×.
+    self.smoothed_setpoint += 0.3 * (setpoint - self.smoothed_setpoint)
+    setpoint = self.smoothed_setpoint
+
     error = setpoint - measurement
 
     # Mid-turn torque floor: prevent measurement overshoot from zeroing torque during an established turn.
@@ -359,8 +380,10 @@ class LatControlTorque(LatControl):
       self.pid.reset()
       self.unwind_last_angle = 0.0
       self.peak_steering_angle = 0.0
+      self.unwind_hold_frames = 0
       self.filtered_measurement = 0.0
       self.filtered_ff = 0.0
+      self.smoothed_setpoint = 0.0
       self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     else:
       # Error correction in lateral acceleration space
@@ -466,7 +489,7 @@ class LatControlTorque(LatControl):
         base_damp = int(np.interp(CS.vEgo, DAMP_FACTOR_SPEED, DAMP_FACTOR))
         if self._damp_boost_active:
           speed_boost = int(np.interp(CS.vEgo, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST))
-          angle_scale = float(np.clip((abs(CS.steeringAngleDeg) - 5.0) / 25.0, 0.0, 1.0))
+          angle_scale = float(np.clip(abs(CS.steeringAngleDeg) / 15.0, 0.0, 1.0))
           boost_damp = int(speed_boost * angle_scale)
         else:
           boost_damp = 0
