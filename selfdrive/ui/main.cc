@@ -168,6 +168,21 @@ static void crash_handler(int sig) {
   raise(sig);
 }
 
+// Helper: safe read of thread stack from proc
+static void log_thread_stack(int log_fd) {
+  char path[128];
+  snprintf(path, sizeof(path), "/proc/self/task/%d/stack", getpid());
+  int fd = open(path, O_RDONLY);
+  if (fd >= 0) {
+    const char hdr[] = "--- kernel stack ---\n";
+    write(log_fd, hdr, sizeof(hdr) - 1);
+    char buf[4096];
+    int n = read(fd, buf, sizeof(buf));
+    if (n > 0) write(log_fd, buf, n);
+    close(fd);
+  }
+}
+
 int main(int argc, char *argv[]) {
   setpriority(PRIO_PROCESS, 0, -20);
 
@@ -204,21 +219,6 @@ int main(int argc, char *argv[]) {
       if (fd >= 0) { write(fd, info, len); close(fd); }
     }
   }
-
-  // Helper: safe read of thread stack from proc
-static void log_thread_stack(int log_fd) {
-  char path[128];
-  snprintf(path, sizeof(path), "/proc/self/task/%d/stack", getpid());
-  int fd = open(path, O_RDONLY);
-  if (fd >= 0) {
-    const char hdr[] = "--- kernel stack ---\n";
-    write(log_fd, hdr, sizeof(hdr) - 1);
-    char buf[4096];
-    int n = read(fd, buf, sizeof(buf));
-    if (n > 0) write(log_fd, buf, n);
-    close(fd);
-  }
-}
 
 // Monitor for stalls (>2s) to capture stage info before manager watchdog SIGKILL
   std::thread monitor([] {
