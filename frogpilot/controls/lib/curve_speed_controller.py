@@ -91,7 +91,8 @@ class CurveSpeedController:
 
     if self.target_set:
       csc_speed = (lateral_acceleration / abs(self.frogpilot_planner.road_curvature))**0.5
-      decel_rate = (v_ego - csc_speed) / self.frogpilot_planner.time_to_curve
+      time_to_curve = max(self.frogpilot_planner.time_to_curve - 2.0, 0.5)
+      decel_rate = (v_ego - csc_speed) / time_to_curve
 
       self.target -= decel_rate * DT_MDL
       self.target = np.clip(self.target, CRUISING_SPEED, csc_speed)
