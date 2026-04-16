@@ -306,8 +306,8 @@ class LatControlTorque(LatControl):
     # The model updates at 20Hz but the control loop runs at 100Hz, so each model
     # step appears as a sudden setpoint jump every ~5 frames. With KP multipliers
     # of 2-4× at moderate speeds, these steps produce noticeable torque jerks.
-    # Alpha 0.3 spreads each step across ~5 frames (30ms), reducing peak jerk ~3×.
-    self.smoothed_setpoint += 0.3 * (setpoint - self.smoothed_setpoint)
+    # Alpha 0.2 spreads each step across ~7 frames (50ms), reducing peak jerk ~4×.
+    self.smoothed_setpoint += 0.2 * (setpoint - self.smoothed_setpoint)
     setpoint = self.smoothed_setpoint
 
     error = setpoint - measurement
@@ -426,30 +426,22 @@ class LatControlTorque(LatControl):
       now = time.monotonic()
 
       # Mirror carcontroller.py's DAMP_UNWIND_BOOST detection for logging
-      steer_ang = CS.steeringAngleDeg
-      abs_sa = abs(steer_ang)
+      # Uses the same peak-based + hold timer logic as the actual carcontroller
+      abs_sa = abs(CS.steeringAngleDeg)
       if abs_sa > self._damp_peak_angle:
         self._damp_peak_angle = abs_sa
-      damp_unwind_cond = (self._damp_peak_angle > 5.0 and
-                          abs_sa < abs(self._damp_last_angle) and
-                          (np.sign(steer_ang) == np.sign(self._damp_last_angle) if self._damp_last_angle != 0 else False))
-      if damp_unwind_cond:
-        self._damp_unwind_frames = min(self._damp_unwind_frames + 1, 15)
-      else:
-        self._damp_unwind_frames = max(self._damp_unwind_frames - 1, 0)
-      damp_unwind_active = self._damp_unwind_frames >= 5
       damp_winding_up = abs_sa > abs(self._damp_last_angle) + 0.5 and abs_sa > 5.0
-      if damp_winding_up:
-        self._damp_hold_timer = 0
-        self._damp_unwind_frames = 0
-      elif damp_unwind_active:
-        self._damp_hold_timer = int(3.0 / DT_CTRL)
+      if damp_winding_up and self._damp_peak_angle <= 30.0:
+        self._damp_peak_angle = abs_sa
+      damp_raw_unwinding = self._damp_peak_angle > 30.0 and abs_sa < self._damp_peak_angle * 0.95 and abs_sa > 2.0
+      if damp_raw_unwinding:
+        self._damp_hold_timer = int(1.5 / DT_CTRL)
       elif self._damp_hold_timer > 0:
         self._damp_hold_timer -= 1
-      if abs_sa < 2.0:
+      self._damp_boost_active = damp_raw_unwinding or self._damp_hold_timer > 0
+      if abs_sa < 2.0 and self._damp_hold_timer == 0:
         self._damp_peak_angle = 0.0
-      self._damp_boost_active = self._damp_hold_timer > 0
-      self._damp_last_angle = steer_ang
+      self._damp_last_angle = CS.steeringAngleDeg
 
       # Start logging when steering exceeds 15°
       if not self._unwind_log_active and abs_angle > 15.0:
