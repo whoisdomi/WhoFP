@@ -242,7 +242,7 @@ class FrogPilotVCruise:
       # Dashboard stop sign: accelerate decay to correct overshoot.
       # Good stops (model revises down): the model clamp below is the binding constraint, so this doesn't matter.
       # Bad stops (model sees through intersection): kinematic decay is all we have, so the boost pulls the stop closer.
-      decay_multiplier = 1.5 if self.stop_sign_confirmed else 1.0
+      decay_multiplier = 1.2 if self.stop_sign_confirmed else 1.0
       self.tracked_model_length = max(self.tracked_model_length - (v_ego * DT_MDL * decay_multiplier), 0)
 
       # Dashboard stop sign cap: cap tracked_model_length to a comfortable stopping
@@ -287,8 +287,10 @@ class FrogPilotVCruise:
       # 18m → 7-13ft past line (too far, MPC creeps forward before stopping)
       # 14m → Sessions G, H, I — AUTO stops at 3.9–4.5ft, good
       # 12m → Session L — tighter buffer, 0.0ft tracked on all force stops
+      # 10m → Session M — still overshooting ~car length
+      # 8m → Session N — testing with 1.2x decay (was 1.5x)
       FORCE_STOP_COMFORT_DECEL = 1.0
-      if self.tracked_model_length < 10.0:
+      if self.tracked_model_length < 8.0:
         force_stop_v = 0.0
       else:
         force_stop_v = (2.0 * FORCE_STOP_COMFORT_DECEL * self.tracked_model_length) ** 0.5
