@@ -1,3 +1,5 @@
+#define ENABLE_UI_DEBUG_LOGGING 0
+
 #include <sys/resource.h>
 #include <csignal>
 #include <fcntl.h>
@@ -76,7 +78,7 @@ static void log_crash_event(const char *msg) {
   int total = tlen + mlen;
   if (total > 0) {
     write(STDERR_FILENO, buf, total);
-    int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+    int fd = ENABLE_UI_DEBUG_LOGGING ? open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644) : -1;
     if (fd >= 0) { write(fd, buf, total); close(fd); }
   }
 }
@@ -148,7 +150,7 @@ static void crash_handler(int sig) {
     sig_name, (int)modelDrawStage, (int)fpWidgetPaintStage, (int)fpUpdateStage, get_rss_mb());
   int total = tlen + mlen;
 
-  int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+  int fd = ENABLE_UI_DEBUG_LOGGING ? open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644) : -1;
   if (total > 0) {
     write(STDERR_FILENO, buf, total);
     if (fd >= 0) write(fd, buf, total);
@@ -215,7 +217,7 @@ int main(int argc, char *argv[]) {
       getpid(), get_rss_mb());
     if (len > 0) {
       fprintf(stderr, "%s", info);
-      int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+      int fd = ENABLE_UI_DEBUG_LOGGING ? open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644) : -1;
       if (fd >= 0) { write(fd, info, len); close(fd); }
     }
   }
@@ -248,13 +250,13 @@ int main(int argc, char *argv[]) {
           write(STDERR_FILENO, buf, len);
           
           // Write to kernel log to bypass eMMC filesystem locks
-          int kmsg_fd = open("/dev/kmsg", O_WRONLY);
+          int kmsg_fd = ENABLE_UI_DEBUG_LOGGING ? open("/dev/kmsg", O_WRONLY) : -1;
           if (kmsg_fd >= 0) { 
             write(kmsg_fd, buf, len); 
             close(kmsg_fd); 
           }
           
-          int fd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+          int fd = ENABLE_UI_DEBUG_LOGGING ? open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644) : -1;
           if (fd >= 0) { 
             write(fd, buf, len); 
             log_thread_stack(fd);

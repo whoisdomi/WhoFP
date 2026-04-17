@@ -218,7 +218,8 @@ void UIState::update() {
       char line[256];
       int len = snprintf(line, sizeof(line), "UI RSS: %dMB (frame %llu)\n", rss, (unsigned long long)frame);
       if (len > 0) {
-        int logfd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+        int logfd = -1; // ENABLE_UI_DEBUG_LOGGING not defined here, just disable it for now
+        // if (ENABLE_UI_DEBUG_LOGGING) logfd = open("/data/ui_crash.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
         if (logfd >= 0) { write(logfd, line, len); close(logfd); }
       }
     }, sm->frame);
