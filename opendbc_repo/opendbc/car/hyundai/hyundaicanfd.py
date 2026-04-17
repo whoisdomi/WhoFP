@@ -47,13 +47,12 @@ DAMP_UNWIND_BOOST =       [120,     100,     80,      60]
 
 
 def create_steering_messages(packer, CP, CAN, enabled, lat_active, apply_torque, v_ego=0., unwinding=False, steering_angle=0.):
-  # Compute unwind boost with angle taper: full at 15°+, zero at 0°.
-  # The steeper taper (vs /30) gives meaningful damping in the 0-10° zone where
-  # wheel momentum causes overshoot past center. Combined with the hold timer in
-  # carcontroller.py, the boost stays active during overshoot correction.
+  # Compute unwind boost with angle taper: full at 15°+, 40% floor at 0°.
+  # The floor prevents DAMP_FACTOR from collapsing at center where wheel momentum
+  # is highest during unwind. Without it, damping drops 60% right at the crossing.
   if unwinding:
     speed_boost = int(np.interp(v_ego, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST))
-    angle_scale = float(np.clip(abs(steering_angle) / 15.0, 0.0, 1.0))  # 0 at 0°, 1 at 15°
+    angle_scale = float(np.clip(abs(steering_angle) / 15.0, 0.4, 1.0))  # 0.4 at 0°, 1 at 15°
     unwind_boost = int(speed_boost * angle_scale)
   else:
     unwind_boost = 0

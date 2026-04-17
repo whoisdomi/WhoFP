@@ -481,7 +481,7 @@ class LatControlTorque(LatControl):
         base_damp = int(np.interp(CS.vEgo, DAMP_FACTOR_SPEED, DAMP_FACTOR))
         if self._damp_boost_active:
           speed_boost = int(np.interp(CS.vEgo, DAMP_UNWIND_BOOST_SPEED, DAMP_UNWIND_BOOST))
-          angle_scale = float(np.clip(abs(CS.steeringAngleDeg) / 15.0, 0.0, 1.0))
+          angle_scale = float(np.clip(abs(CS.steeringAngleDeg) / 15.0, 0.4, 1.0))
           boost_damp = int(speed_boost * angle_scale)
         else:
           boost_damp = 0
