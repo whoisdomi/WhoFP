@@ -183,7 +183,9 @@ class LongitudinalPlanner:
     # Anticipatory pre-braking: compute decel bias when closing on a lead.
     # Applied to both a_desired (feeds next MPC iteration) and output_a_target
     # (affects current frame's actual acceleration command).
-    self.pre_brake = 0.0
+    # Decay gradually instead of resetting to zero — prevents jerky transitions
+    # when lead situation fluctuates frame-to-frame.
+    self.pre_brake = max(0.0, self.pre_brake * 0.90)
     manual_stop = sm['frogpilotCarState'].manualStopAhead
     lead = sm['radarState'].leadOne
     if lead.status:
@@ -204,14 +206,17 @@ class LongitudinalPlanner:
       ttc = self.lead_dist_f / max(rel_v, 0.1) if rel_v > 0.1 else 1e6
       gap_shortfall = max(0.0, desired_gap - self.lead_dist_f)
 
-      pre_brake_trigger = desired_gap + np.interp(v_ego, [0.0, 10.0, 20.0, 30.0], [8.0, 12.0, 18.0, 25.0])
+      pre_brake_trigger = desired_gap + np.interp(v_ego, [0.0, 10.0, 20.0, 30.0], [8.0, 14.0, 22.0, 32.0])
       if rel_v > 0.5 and self.lead_dist_f < pre_brake_trigger:
-        self.pre_brake += np.interp(rel_v, [0.5, 2.0, 5.0, 8.0], [0.0, 0.05, 0.15, 0.30])
-        self.pre_brake += np.interp(ttc, [1.4, 2.5, 4.0, 6.0, 9.0], [0.45, 0.25, 0.12, 0.04, 0.0])
-        self.pre_brake += np.interp(gap_shortfall, [0.0, 5.0, 15.0, 30.0], [0.0, 0.06, 0.18, 0.35])
-        self.pre_brake *= np.interp(v_ego, [0.0, 8.0, 15.0, 25.0], [0.50, 0.70, 0.90, 1.00])
-        self.pre_brake = min(self.pre_brake, np.interp(v_ego, [0.0, 5.0, 15.0, 30.0], [0.15, 0.30, 0.55, 0.80]))
-        self.a_desired = float(self.a_desired - self.pre_brake)
+        new_pre_brake = 0.0
+        new_pre_brake += np.interp(rel_v, [0.5, 2.0, 5.0, 8.0], [0.0, 0.05, 0.15, 0.30])
+        new_pre_brake += np.interp(ttc, [1.4, 2.5, 4.0, 6.0, 9.0], [0.45, 0.25, 0.12, 0.04, 0.0])
+        new_pre_brake += np.interp(gap_shortfall, [0.0, 5.0, 15.0, 30.0], [0.0, 0.06, 0.18, 0.35])
+        new_pre_brake *= np.interp(v_ego, [0.0, 8.0, 15.0, 25.0], [0.50, 0.70, 0.90, 1.00])
+        new_pre_brake = min(new_pre_brake, np.interp(v_ego, [0.0, 5.0, 15.0, 30.0], [0.15, 0.30, 0.55, 0.80]))
+        # Ramp up instantly, decay gradually (handled by 0.90 decay above)
+        self.pre_brake = max(self.pre_brake, float(new_pre_brake))
+      self.a_desired = float(self.a_desired - self.pre_brake)
     else:
       self.lead_dist_f = None
 

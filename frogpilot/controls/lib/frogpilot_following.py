@@ -89,7 +89,7 @@ class FrogPilotFollowing:
       # Coast window: far enough from desired gap to not need braking yet,
       # but close enough that continued acceleration would be wasteful.
       coast_window_open = lead_distance > desired_gap + max(4.0, 0.2 * v_ego)
-      coast_window_far = lead_distance < desired_gap + max(25.0, 1.2 * v_ego)
+      coast_window_far = lead_distance < desired_gap + max(18.0, 0.8 * v_ego)
       gentle_closing = closing_speed < max(2.0, 0.12 * v_ego)
 
       self.disable_throttle = (not self.following_lead and v_ego > 5.0 and coast_window_open and
