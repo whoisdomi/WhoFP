@@ -544,6 +544,35 @@ def test_pace_matched_lead_clears_slow_lead_quickly():
   assert not cem.slow_lead_detected
 
 
+def test_tracked_stale_slow_lead_clears_after_short_timeout(monkeypatch):
+  v_ego = 65 * CV.MPH_TO_MS
+  cem = make_cem(
+    model_length=v_ego * 5.0,
+    tracking_lead=True,
+    lead_status=True,
+    lead_d_rel=55.0,
+    lead_v_lead=v_ego - 0.8,
+    lead_model_prob=0.98,
+  )
+  toggles = SimpleNamespace(conditional_slower_lead=True, conditional_stopped_lead=False)
+
+  cem.slow_lead_filter.x = 1.0
+  cem.slow_lead_detected = True
+  cem.starpilot_planner.starpilot_following.slower_lead = False
+
+  monotonic_values = iter([50.0, 50.3, 50.9])
+  monkeypatch.setattr(conditional_experimental_mode_module.time, "monotonic", lambda: next(monotonic_values))
+
+  cem.slow_lead(toggles, v_ego)
+  assert cem.slow_lead_detected
+
+  cem.slow_lead(toggles, v_ego)
+  assert cem.slow_lead_detected
+
+  cem.slow_lead(toggles, v_ego)
+  assert not cem.slow_lead_detected
+
+
 class DummyThemeManager:
   def update_wheel_image(self, *args, **kwargs):
     pass

@@ -53,6 +53,7 @@ class ConditionalExperimentalMode:
   SLOW_LEAD_CONTINUITY_MAX_DISTANCE_TIME = 4.0
   SLOW_LEAD_CONTINUITY_MIN_EGO = 2.5
   SLOW_LEAD_CONTINUITY_HOLD_TIME = 1.25
+  SLOW_LEAD_FORCE_CLEAR_TIME = 0.75
   SLOW_LEAD_MIN_CLOSING_SPEED = 0.75
   SLOW_LEAD_CLEAR_FASTER_FACTOR = 0.5
 
@@ -88,6 +89,7 @@ class ConditionalExperimentalMode:
     self.curve_detected = False
     self.slow_lead_detected = False
     self.prev_tracking_lead = bool(getattr(self.starpilot_planner, "tracking_lead", False))
+    self.slow_lead_clear_since = 0.0
     self.slow_lead_continuity_until = 0.0
     self.experimental_mode = False
     self.stop_light_detected = False
@@ -224,10 +226,7 @@ class ConditionalExperimentalMode:
     min_closing_speed = max(self.SLOW_LEAD_MIN_CLOSING_SPEED, 0.04 * v_ego)
 
     if not starpilot_toggles.conditional_stopped_lead and v_ego < self.SLOW_LEAD_CONTINUITY_MIN_EGO:
-      self.slow_lead_filter.update(False)
-      self.slow_lead_detected = False
-      self.slow_lead_continuity_until = 0.0
-      self.prev_tracking_lead = tracking_lead
+      self.clear_slow_lead_state(tracking_lead)
       return
 
     slower_lead = starpilot_toggles.conditional_slower_lead and self.starpilot_planner.starpilot_following.slower_lead
@@ -244,10 +243,7 @@ class ConditionalExperimentalMode:
     adjusted_threshold = lead_threshold * (1.0 + 0.2 * (1.0 - lead_prob))  # Higher threshold for lower confidence
 
     if lead_status and not slower_lead and not stopped_lead and closing_speed < (min_closing_speed * self.SLOW_LEAD_CLEAR_FASTER_FACTOR):
-      self.slow_lead_filter.update(False)
-      self.slow_lead_detected = False
-      self.slow_lead_continuity_until = 0.0
-      self.prev_tracking_lead = tracking_lead
+      self.clear_slow_lead_state(tracking_lead)
       return
 
     if tracking_lead and (slower_lead or stopped_lead or vision_slow_lead_candidate):
@@ -262,13 +258,30 @@ class ConditionalExperimentalMode:
       vision_slow_lead_candidate
     )
 
-    if tracking_lead or raw_vision_slow_lead or stopped_lead:
-      self.slow_lead_filter.update(slower_lead or raw_vision_slow_lead or stopped_lead)
+    slow_lead_active = bool(slower_lead or raw_vision_slow_lead or stopped_lead)
+    if slow_lead_active:
+      self.slow_lead_clear_since = 0.0
+      self.slow_lead_filter.update(True)
       self.slow_lead_detected = bool(self.slow_lead_filter.x >= adjusted_threshold)
-    else:
-      self.slow_lead_filter.update(False)
-      self.slow_lead_detected = False
+    elif tracking_lead:
+      if self.slow_lead_clear_since == 0.0:
+        self.slow_lead_clear_since = now
 
+      if (now - self.slow_lead_clear_since) >= self.SLOW_LEAD_FORCE_CLEAR_TIME:
+        self.clear_slow_lead_state(tracking_lead)
+      else:
+        self.slow_lead_filter.update(False)
+        self.slow_lead_detected = bool(self.slow_lead_filter.x >= adjusted_threshold)
+    else:
+      self.clear_slow_lead_state(tracking_lead)
+
+    self.prev_tracking_lead = tracking_lead
+
+  def clear_slow_lead_state(self, tracking_lead):
+    self.slow_lead_filter.update(False)
+    self.slow_lead_detected = False
+    self.slow_lead_clear_since = 0.0
+    self.slow_lead_continuity_until = 0.0
     self.prev_tracking_lead = tracking_lead
 
   def stop_sign_and_light(self, v_ego, sm, model_time):
