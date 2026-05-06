@@ -92,6 +92,33 @@ private:
   bool speedLimitChanged;
   bool weatherDaytime;
 
+  // Cached toggle values — refreshed once per updateState(), used in paint code
+  bool cachedAdjacentPathMetrics = false;
+  bool cachedBlindSpotPath = false;
+  bool cachedCemStatus = false;
+  bool cachedCompass = false;
+  bool cachedCscStatus = false;
+  bool cachedDynamicPedalsOnUi = false;
+  bool cachedHideSpeedLimit = false;
+  bool cachedOpenpilotLongitudinal = false;
+  bool cachedPedalsOnUi = false;
+  bool cachedRadarTracks = false;
+  bool cachedRoadNameUi = false;
+  bool cachedShowSpeedLimitOffset = false;
+  bool cachedShowSpeedLimits = false;
+  bool cachedShowStoppingPoint = false;
+  bool cachedShowStoppingPointMetrics = false;
+  bool cachedSimpleMode = false;
+  bool cachedSpeedLimitController = false;
+  bool cachedSpeedLimitSources = false;
+  bool cachedSpeedLimitVienna = false;
+  bool cachedStaticPedalsOnUi = false;
+  bool cachedStoppedTimer = false;
+  double cachedLaneDetectionWidth = 3.7;
+  QString cachedColorScheme;
+  QString cachedPathEdgesColor;
+  QString cachedSignalIcons;
+
   int animationFrameIndex;
   int desiredFollowDistance;
   int frogHopCount;

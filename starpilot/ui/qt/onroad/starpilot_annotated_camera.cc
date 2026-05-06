@@ -141,14 +141,42 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   const cereal::ModelDataV2::Reader &modelV2 = sm["modelV2"].getModelV2();
   const cereal::SelfdriveState::Reader &selfdriveState = sm["selfdriveState"].getSelfdriveState();
 
-  if (scene.is_metric || starpilot_toggles.value("use_si_metrics").toBool()) {
+  // Cache toggle lookups once per frame — avoids 30+ QJsonObject tree-walks in paint code
+  const bool cachedUseSiMetrics = starpilot_toggles.value("use_si_metrics").toBool();
+  cachedAdjacentPathMetrics    = starpilot_toggles.value("adjacent_path_metrics").toBool();
+  cachedBlindSpotPath          = starpilot_toggles.value("blind_spot_path").toBool();
+  cachedCemStatus              = starpilot_toggles.value("cem_status").toBool();
+  cachedColorScheme            = starpilot_toggles.value("color_scheme").toString();
+  cachedCompass                = starpilot_toggles.value("compass").toBool();
+  cachedCscStatus              = starpilot_toggles.value("csc_status").toBool();
+  cachedDynamicPedalsOnUi      = starpilot_toggles.value("dynamic_pedals_on_ui").toBool();
+  cachedHideSpeedLimit         = starpilot_toggles.value("hide_speed_limit").toBool();
+  cachedLaneDetectionWidth     = starpilot_toggles.value("lane_detection_width").toDouble();
+  cachedOpenpilotLongitudinal  = starpilot_toggles.value("openpilot_longitudinal").toBool();
+  cachedPathEdgesColor         = starpilot_toggles.value("path_edges_color").toString();
+  cachedPedalsOnUi             = starpilot_toggles.value("pedals_on_ui").toBool();
+  cachedRadarTracks            = starpilot_toggles.value("radar_tracks").toBool();
+  cachedRoadNameUi             = starpilot_toggles.value("road_name_ui").toBool();
+  cachedShowSpeedLimitOffset   = starpilot_toggles.value("show_speed_limit_offset").toBool();
+  cachedShowSpeedLimits        = starpilot_toggles.value("show_speed_limits").toBool();
+  cachedShowStoppingPoint      = starpilot_toggles.value("show_stopping_point").toBool();
+  cachedShowStoppingPointMetrics = starpilot_toggles.value("show_stopping_point_metrics").toBool();
+  cachedSignalIcons            = starpilot_toggles.value("signal_icons").toString();
+  cachedSimpleMode             = starpilot_toggles.value("simple_mode").toBool();
+  cachedSpeedLimitController   = starpilot_toggles.value("speed_limit_controller").toBool();
+  cachedSpeedLimitSources      = starpilot_toggles.value("speed_limit_sources").toBool();
+  cachedSpeedLimitVienna       = starpilot_toggles.value("speed_limit_vienna").toBool();
+  cachedStaticPedalsOnUi       = starpilot_toggles.value("static_pedals_on_ui").toBool();
+  cachedStoppedTimer           = starpilot_toggles.value("stopped_timer").toBool();
+
+  if (scene.is_metric || cachedUseSiMetrics) {
     leadDistanceUnit = tr(" meters");
-    leadSpeedUnit = starpilot_toggles.value("use_si_metrics").toBool() ? tr(" m/s") : tr(" km/h");
+    leadSpeedUnit = cachedUseSiMetrics ? tr(" m/s") : tr(" km/h");
     speedUnit = scene.is_metric ? tr("km/h") : tr("mph");
 
     distanceConversion = 1.0f;
     speedConversion = scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
-    speedConversionMetrics = starpilot_toggles.value("use_si_metrics").toBool() ? 1.0f : MS_TO_KPH;
+    speedConversionMetrics = cachedUseSiMetrics ? 1.0f : MS_TO_KPH;
   } else {
     leadDistanceUnit = tr(" feet");
     leadSpeedUnit = tr(" mph");
@@ -196,7 +224,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   hideBottomIcons |= starpilotSelfdriveState.getAlertSize() != cereal::StarPilotSelfdriveState::AlertSize::NONE;
   hideBottomIcons |= signalStyle.startsWith("traditional") && (blinkerLeft || blinkerRight);
 
-  if (slcOverriddenSpeed == 0 && !starpilot_toggles.value("show_speed_limit_offset").toBool()) {
+  if (slcOverriddenSpeed == 0 && !cachedShowSpeedLimitOffset) {
     speedLimit += starpilotPlan.getSlcSpeedLimitOffset();
   }
   speedLimit *= (scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
@@ -204,7 +232,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   speedLimitOffsetStr = (speedLimitOffset != 0) ? QString::number(speedLimitOffset, 'f', 0).prepend((speedLimitOffset > 0) ? "+" : "-") : "–";
 
   static int lastFrameIndex;
-  if (lastFrameIndex > animationFrameIndex && starpilot_toggles.value("signal_icons").toString() == "frog") {
+  if (lastFrameIndex > animationFrameIndex && cachedSignalIcons == "frog") {
     frogHopCount++;
   }
   lastFrameIndex = animationFrameIndex;
@@ -234,7 +262,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
     pendingLimitTimer.invalidate();
   }
 
-  if (starpilot_scene.standstill && starpilot_toggles.value("stopped_timer").toBool()) {
+  if (starpilot_scene.standstill && cachedStoppedTimer) {
     if (!standstillTimer.isValid()) {
       standstillTimer.start();
     } else {
@@ -262,7 +290,7 @@ void StarPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *mouseEvent) {
 }
 
 void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState &s) {
-  if (starpilot_toggles.value("simple_mode").toBool()) {
+  if (cachedSimpleMode) {
     cemStatusPosition = QPoint(0, 0);
     compassPosition = QPoint(0, 0);
     lateralPausedPosition = QPoint(0, 0);
@@ -271,21 +299,21 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
     return;
   }
 
-  if (!hideBottomIcons && starpilot_toggles.value("cem_status").toBool()) {
+  if (!hideBottomIcons && cachedCemStatus) {
     paintCEMStatus(p);
   } else {
     cemStatusPosition.setX(0);
     cemStatusPosition.setY(0);
   }
 
-  if (!hideBottomIcons && starpilot_toggles.value("compass").toBool()) {
+  if (!hideBottomIcons && cachedCompass) {
     paintCompass(p);
   } else {
     compassPosition.setX(0);
     compassPosition.setY(0);
   }
 
-  if (!speedLimitChanged && !(signalStyle == "static" && blinkerLeft) && starpilot_toggles.value("csc_status").toBool()) {
+  if (!speedLimitChanged && !(signalStyle == "static" && blinkerLeft) && cachedCscStatus) {
     if (cscTraining) {
       paintCurveSpeedControlTraining(p);
     } else if (isCruiseSet && cscControllingSpeed) {
@@ -304,7 +332,7 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
     paintLongitudinalPaused(p);
   }
 
-  if (starpilot_toggles.value("pedals_on_ui").toBool()) {
+  if (cachedPedalsOnUi) {
     paintPedalIcons(p);
   }
 
@@ -312,22 +340,22 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
     paintPendingSpeedLimit(p);
   }
 
-  if (starpilot_toggles.value("radar_tracks").toBool()) {
+  if (cachedRadarTracks) {
     paintRadarTracks(p);
   }
 
-  if (starpilot_toggles.value("road_name_ui").toBool()) {
+  if (cachedRoadNameUi) {
     paintRoadName(p);
   }
 
-  bool hideSpeedLimit = !speedLimitChanged && starpilot_toggles.value("hide_speed_limit").toBool();
-  if (!hideSpeedLimit && (starpilot_toggles.value("show_speed_limits").toBool() || starpilot_toggles.value("speed_limit_controller").toBool())) {
+  bool hideSpeedLimit = !speedLimitChanged && cachedHideSpeedLimit;
+  if (!hideSpeedLimit && (cachedShowSpeedLimits || cachedSpeedLimitController)) {
     paintSpeedLimit(p);
   } else {
     speedLimitHeight = 0;
   }
 
-  if (starpilot_toggles.value("speed_limit_sources").toBool()) {
+  if (cachedSpeedLimitSources) {
     paintSpeedLimitSources(p);
   }
 
@@ -335,7 +363,7 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
     paintStandstillTimer(p);
   }
 
-  if (track_vertices.length() >= 1 && redLight && starpilot_toggles.value("show_stopping_point").toBool()) {
+  if (track_vertices.length() >= 1 && redLight && cachedShowStoppingPoint) {
     paintStoppingPoint(p);
   }
 
@@ -357,12 +385,12 @@ void StarPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p) {
     p.save();
 
     QLinearGradient gradient(0, height(), 0, 0);
-    if (isBlindSpot && starpilot_toggles.value("blind_spot_path").toBool()) {
+    if (isBlindSpot && cachedBlindSpotPath) {
       gradient.setColorAt(0.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.4f));
       gradient.setColorAt(0.5f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.35f));
       gradient.setColorAt(1.0f, QColor::fromHslF(0.0f, 0.75f, 0.5f, 0.0f));
     } else {
-      float ratio = std::clamp(laneWidth / starpilot_toggles.value("lane_detection_width").toDouble(), 0.0, 1.0);
+      float ratio = std::clamp(laneWidth / cachedLaneDetectionWidth, 0.0, 1.0);
       float hue = (ratio * ratio) * (120.0f / 360.0f);
 
       gradient.setColorAt(0.0f, QColor::fromHslF(hue, 0.75f, 0.5f, 0.4f));
@@ -373,9 +401,9 @@ void StarPilotAnnotatedCameraWidget::paintAdjacentPaths(QPainter &p) {
     p.setBrush(gradient);
     p.drawPolygon(path);
 
-    if (starpilot_toggles.value("adjacent_path_metrics").toBool()) {
+    if (cachedAdjacentPathMetrics) {
       QString text;
-      if (isBlindSpot && starpilot_toggles.value("blind_spot_path").toBool()) {
+      if (isBlindSpot && cachedBlindSpotPath) {
         text = tr("Vehicle in blind spot");
       } else {
         text = QString::number(laneWidth * distanceConversion, 'f', 2) + leadDistanceUnit;
@@ -657,7 +685,7 @@ void StarPilotAnnotatedCameraWidget::paintLeadMetrics(QPainter &p, bool adjacent
     textLines.append(QString("%1 %2").arg(distanceString, leadDistanceUnit));
     textLines.append(QString("%1 %2").arg(speedString, leadSpeedUnit));
   } else {
-    if (starpilot_toggles.value("openpilot_longitudinal").toBool()) {
+    if (cachedOpenpilotLongitudinal) {
       int desiredDistance = std::max(0, qRound(desiredFollowDistance * distanceConversion));
       textLines.append(QString("%1 %2 (%3)").arg(distanceString, leadDistanceUnit, tr("Desired: %1").arg(desiredDistance)));
     } else {
@@ -764,8 +792,8 @@ void StarPilotAnnotatedCameraWidget::paintPathEdges(QPainter &p, int height) {
     setPathEdgeColors(bg_colors[STATUS_EXPERIMENTAL_MODE_ENABLED]);
   } else if (starpilot_scene.traffic_mode_enabled) {
     setPathEdgeColors(bg_colors[STATUS_TRAFFIC_MODE_ENABLED]);
-  } else if (starpilot_toggles.value("color_scheme").toString() != "stock") {
-    setPathEdgeColors(QColor(starpilot_toggles.value("path_edges_color").toString()));
+  } else if (cachedColorScheme != "stock") {
+    setPathEdgeColors(QColor(cachedPathEdgesColor));
   } else {
     gradient.setColorAt(0.0f, QColor::fromHslF(148.0f / 360.0f, 0.94f, 0.41f, 0.4f));
     gradient.setColorAt(0.5f, QColor::fromHslF(112.0f / 360.0f, 1.0f, 0.54f, 0.35f));
@@ -788,10 +816,10 @@ void StarPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p) {
   float brakeOpacity = 1.0f;
   float gasOpacity = 1.0f;
 
-  if (starpilot_toggles.value("dynamic_pedals_on_ui").toBool()) {
+  if (cachedDynamicPedalsOnUi) {
     brakeOpacity = starpilot_scene.standstill ? 1.0f : accelerationEgo < -0.25f ? std::max(0.25f, std::abs(accelerationEgo)) : 0.25f;
     gasOpacity = std::max(0.25f, accelerationEgo);
-  } else if (starpilot_toggles.value("static_pedals_on_ui").toBool()) {
+  } else if (cachedStaticPedalsOnUi) {
     brakeOpacity = starpilot_scene.standstill || brakeLights || accelerationEgo < -0.25f ? 1.0f : 0.25f;
     gasOpacity = accelerationEgo > 0.25 ? 1.0f : 0.25f;
   }
@@ -814,7 +842,7 @@ void StarPilotAnnotatedCameraWidget::paintPendingSpeedLimit(QPainter &p) {
   QString newSpeedLimitStr = (unconfirmedSpeedLimit > 1) ? QString::number(std::nearbyint(unconfirmedSpeedLimit * speedConversion)) : "–";
   newSpeedLimitRect = speedLimitRect.translated(speedLimitRect.width() + UI_BORDER_SIZE, 0);
 
-  if (!starpilot_toggles.value("speed_limit_vienna").toBool()) {
+  if (!cachedSpeedLimitVienna) {
     newSpeedLimitRect.setWidth(newSpeedLimitStr.size() >= 3 ? 200 : 175);
 
     p.setBrush(whiteColor());
@@ -924,7 +952,7 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
   QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
 
-  bool hasUsSpeedLimit = !starpilot_toggles.value("speed_limit_vienna").toBool();
+  bool hasUsSpeedLimit = !cachedSpeedLimitVienna;
   bool hasEuSpeedLimit = !hasUsSpeedLimit;
 
   int euSignSize = 176;
@@ -953,7 +981,7 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
     p.drawRoundedRect(signRect.adjusted(9, 9, -9, -9), 16, 16);
 
     p.setOpacity(slcOverriddenSpeed == 0 ? 1.0 : 0.25);
-    if (slcOverriddenSpeed == 0 && starpilot_toggles.value("show_speed_limit_offset").toBool()) {
+    if (slcOverriddenSpeed == 0 && cachedShowSpeedLimitOffset) {
       p.setFont(InterFont(28, QFont::DemiBold));
       p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
@@ -978,7 +1006,7 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
     p.setOpacity(slcOverriddenSpeed == 0 ? 1.0 : 0.25);
     p.setPen(blackColor());
-    if (starpilot_toggles.value("show_speed_limit_offset").toBool()) {
+    if (cachedShowSpeedLimitOffset) {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect.adjusted(0, -25, 0, 0), Qt::AlignCenter, speedLimitStr);
       p.setFont(InterFont(40, QFont::DemiBold));
@@ -1110,7 +1138,7 @@ void StarPilotAnnotatedCameraWidget::paintStoppingPoint(QPainter &p) {
   QPointF stopSignPosition = centerPoint - QPointF(stopSignImg.width() / 2.0f, stopSignImg.height());
   p.drawPixmap(stopSignPosition, stopSignImg);
 
-  if (starpilot_toggles.value("show_stopping_point_metrics").toBool()) {
+  if (cachedShowStoppingPointMetrics) {
     float distance = stoppingDistance * distanceConversion;
     QString distanceText = QString::number(std::nearbyint(distance)) + leadDistanceUnit;
 
