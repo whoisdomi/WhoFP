@@ -206,6 +206,13 @@ class StarPilotPlanner:
     starpilotPlan.cscSpeed = float(self.starpilot_vcruise.csc_target)
     starpilotPlan.cscTraining = self.starpilot_vcruise.csc.enable_training
 
+    starpilotPlan.lstscControllingSpeed = self.starpilot_vcruise.lstsc_controlling_speed
+    starpilotPlan.lstscSpeed = float(self.starpilot_vcruise.lstsc_target)
+    starpilotPlan.lstscTorquePct = float(self.starpilot_vcruise.lstsc.torque_pct)
+    starpilotPlan.lstscTraining = self.starpilot_vcruise.lstsc.enable_training
+    starpilotPlan.lstscCalibrating = self.starpilot_vcruise.lstsc.calibrate_mode_active
+    starpilotPlan.lstscCalibrationProgress = float(self.starpilot_vcruise.lstsc.calibration_progress)
+
     starpilotPlan.desiredFollowDistance = int(self.starpilot_following.desired_follow_distance)
     starpilotPlan.disableThrottle = self.starpilot_following.disable_throttle
     starpilotPlan.trackingLead = self.tracking_lead
