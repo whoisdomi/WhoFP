@@ -38,7 +38,9 @@ BUILTIN_MODEL_KEY = "sc2"
 BUILTIN_MODEL_ALIASES = {BUILTIN_MODEL_KEY, "sc"}
 
 
-LAT_SMOOTH_SECONDS = 0.0
+LAT_SMOOTH_SECONDS = 0.0  # kept at 0 — lat_delay must not be inflated; smoothing applied conditionally below
+LAT_SMOOTH_TAU = 0.20      # EMA time constant used when hwy_smoothing toggle is on
+LAT_SMOOTH_MIN_SPEED = 20.1  # ~45 mph in m/s
 LONG_SMOOTH_SECONDS = 0.3
 MIN_LAT_CONTROL_SPEED = 0.3
 
@@ -108,7 +110,9 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
 
       desired_accel = smooth_value(float(desired_accel), prev_action.desiredAcceleration, LONG_SMOOTH_SECONDS)
       if v_ego > MIN_LAT_CONTROL_SPEED:
-        desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
+        hwy_smoothing = getattr(starpilot_toggles, "hwy_smoothing", False)
+        lat_smooth = LAT_SMOOTH_TAU if (hwy_smoothing and v_ego >= LAT_SMOOTH_MIN_SPEED) else 0.0
+        desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth)
       else:
         desired_curvature = prev_action.desiredCurvature
 
@@ -138,7 +142,9 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     else:
       desired_curvature = get_curvature_from_output(model_output, plan, v_ego, lat_action_t, mlsim=mlsim)
     if v_ego > MIN_LAT_CONTROL_SPEED:
-      desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
+      hwy_smoothing = getattr(starpilot_toggles, "hwy_smoothing", False)
+      lat_smooth = LAT_SMOOTH_TAU if (hwy_smoothing and v_ego >= LAT_SMOOTH_MIN_SPEED) else 0.0
+      desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, lat_smooth)
     else:
       desired_curvature = prev_action.desiredCurvature
 

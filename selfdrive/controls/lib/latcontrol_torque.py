@@ -35,6 +35,10 @@ LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y = [12, 10.5, 8, 5]
 MAX_LAT_JERK_UP = 2.5            # m/s^3
 
+IONIQ_6_HWY_FF_FILTER_HZ = 1.5   # low-pass cutoff for FF path above 50 mph
+IONIQ_6_HWY_FF_SCALE = 0.85      # reduce base FF amplitude above 50 mph
+IONIQ_6_HWY_MIN_SPEED = 20.1     # ~45 mph in m/s
+
 LP_FILTER_CUTOFF_HZ = 1.2
 JERK_LOOKAHEAD_SECONDS = 0.19
 JERK_GAIN = 0.22
@@ -1263,6 +1267,7 @@ class LatControlTorque(LatControl):
       self.torque_params.latAccelFactor *= IONIQ_5_BASE_LAT_ACCEL_FACTOR_MULT
     if self.is_ioniq_6:
       self.torque_params.latAccelFactor *= IONIQ_6_BASE_LAT_ACCEL_FACTOR_MULT
+      self.ioniq_6_ff_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * IONIQ_6_HWY_FF_FILTER_HZ), self.dt)
     if self.is_civic_bosch_modified:
       self.torque_params.latAccelFactor *= CIVIC_BOSCH_MODIFIED_B_LAT_ACCEL_FACTOR_MULT
       if civic_bosch_modified_a_lateral_testing_ground_active():
@@ -1386,6 +1391,12 @@ class LatControlTorque(LatControl):
         friction_threshold = get_ioniq_5_friction_threshold(CS.vEgo, setpoint, desired_lateral_jerk)
         friction_scale = get_ioniq_5_friction_scale(CS.vEgo, setpoint, desired_lateral_jerk)
       elif ioniq_6_active:
+        hwy = CS.vEgo >= IONIQ_6_HWY_MIN_SPEED and starpilot_toggles.hwy_smoothing
+        if hwy:
+          ff_filtered = self.ioniq_6_ff_filter.update(ff)
+          ff = ff_filtered * IONIQ_6_HWY_FF_SCALE
+        else:
+          self.ioniq_6_ff_filter.x = ff  # track raw value so filter is primed when speed rises
         ff *= get_ioniq_6_ff_scale(setpoint, desired_lateral_jerk, CS.vEgo) * ioniq_6_center_taper
         friction_threshold = get_ioniq_6_friction_threshold(CS.vEgo, setpoint, desired_lateral_jerk) / max(ioniq_6_center_taper, 1e-3)
         friction_scale = get_ioniq_6_friction_scale(CS.vEgo, setpoint, desired_lateral_jerk)

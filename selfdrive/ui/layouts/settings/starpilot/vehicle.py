@@ -467,6 +467,19 @@ class VehicleSettingsManagerView(Widget):
       rows.append({"target_id": "toggle:FrogsGoMoosTweak", "type": "toggle",
                     "title": tr("FrogsGoMoo Tweak"), "get_state": lambda: self._controller._params.get_bool("FrogsGoMoosTweak")})
 
+    rows.append({"target_id": "toggle:RemapCancelToDistance", "type": "toggle",
+                  "title": tr("Remap Cancel Button"), "subtitle": tr("Remap the Cancel button to act as the Distance button."),
+                  "get_state": lambda: self._controller._params.get_bool("RemapCancelToDistance")})
+    if cs.isHKG:
+      rows.append({"target_id": "toggle:HwySmoothing", "type": "toggle",
+                    "title": tr("Highway Smoothing"),
+                    "subtitle": tr("Smooth lateral control above 50 mph to reduce steering oscillation on straight highways."),
+                    "get_state": lambda: self._controller._params.get_bool("HwySmoothing")})
+    if cs.isHKGCanFd:
+      rows.append({"target_id": "toggle:AlwaysIPedal", "type": "toggle",
+                    "title": tr("Always I-Pedal"),
+                    "subtitle": tr("Spoof the left paddle after shifting into Drive until i-Pedal latches."),
+                    "get_state": lambda: self._controller._params.get_bool("AlwaysIPedal")})
     if cs.isBolt and cs.hasPedal:
       rows.append({"target_id": "toggle:RemapCancelToDistance", "type": "toggle",
                     "title": tr("Remap Cancel Button"), "subtitle": tr("Treat the Cancel button as an extra mappable steering-wheel button."),

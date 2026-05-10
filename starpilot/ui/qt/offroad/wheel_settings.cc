@@ -55,6 +55,21 @@ StarPilotWheelPanel::StarPilotWheelPanel(StarPilotSettingsWindow *parent, bool f
     update();
   });
 
+  ParamControl *hwySmoothingToggle = new ParamControl(
+    "HwySmoothing",
+    tr("Highway Smoothing"),
+    tr("<b>Smooth lateral control above 50 mph</b> to reduce steering oscillation on straight highways. Applies LAT_SMOOTH and feedforward filtering for Hyundai, Genesis, and Kia vehicles."),
+    "../../starpilot/assets/toggle_icons/icon_mute.png"
+  );
+  toggles["HwySmoothing"] = hwySmoothingToggle;
+  addItem(hwySmoothingToggle);
+  QObject::connect(hwySmoothingToggle, &AbstractControl::hideDescriptionEvent, [this]() {
+    update();
+  });
+  QObject::connect(hwySmoothingToggle, &AbstractControl::showDescriptionEvent, [this]() {
+    update();
+  });
+
   const std::vector<std::tuple<QString, QString, QString, QString>> wheelToggles {
     {"CancelButtonControl", tr("Cancel Button"), tr("<b>Action performed when the remapped \"Cancel\" button is pressed.</b>"), "../../starpilot/assets/toggle_icons/icon_mute.png"},
     {"DistanceButtonControl", tr("Distance Button"), tr("<b>Action performed when the \"Distance\" button is pressed.</b>"), "../../starpilot/assets/toggle_icons/icon_mute.png"},
@@ -133,6 +148,14 @@ void StarPilotWheelPanel::updateToggles() {
     if (!showAllToggles && key == "NostalgiaMode") {
       setVisible &= parent->isHKGCanFd;
       setVisible &= parent->hasOpenpilotLongitudinal;
+    }
+
+    if (!showAllToggles && key == "AlwaysIPedal") {
+      setVisible &= parent->isHKGCanFd;
+    }
+
+    if (!showAllToggles && key == "HwySmoothing") {
+      setVisible &= parent->isHKG;
     }
 
     if (!showAllToggles && (

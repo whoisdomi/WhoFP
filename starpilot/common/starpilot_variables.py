@@ -805,6 +805,7 @@ class StarPilotVariables:
     toggle.no_uploads = self.get_value("NoUploads", condition=device_management and not self.vetting_branch)
     toggle.no_onroad_uploads = self.get_value("DisableOnroadUploads", condition=toggle.no_uploads)
 
+    toggle.hwy_smoothing = self.get_value("HwySmoothing", condition=toggle.car_make == "hyundai")
     toggle.nostalgia_mode = self.get_value("NostalgiaMode", condition=toggle.openpilot_longitudinal and toggle.car_model == HYUNDAI_CAR.HYUNDAI_IONIQ_6)
     toggle.remap_cancel_to_distance = self.get_value(
       "RemapCancelToDistance",
