@@ -132,8 +132,8 @@ class CurveSpeedController:
 
     self.starpilot_planner.params.put_nonblocking("CalibratedLateralAcceleration", self.lateral_acceleration)
 
-  def update_target(self, v_ego):
-    lateral_acceleration = self.lateral_acceleration
+  def update_target(self, v_ego, lateral_acceleration_offset=0.0):
+    lateral_acceleration = self.lateral_acceleration + lateral_acceleration_offset
     if self.starpilot_planner.starpilot_weather.weather_id != 0:
       lateral_acceleration -= self.lateral_acceleration * self.starpilot_planner.starpilot_weather.reduce_lateral_acceleration
 

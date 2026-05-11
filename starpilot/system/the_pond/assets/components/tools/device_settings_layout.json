@@ -558,6 +558,18 @@
         "is_parent_toggle": true
       },
       {
+        "key": "CSCLateralAccelerationOffset",
+        "label": "CSC Offset",
+        "description": "Add or subtract from your learned lateral acceleration. Increase to take curves faster; decrease for more caution. 0.0 uses the calibrated value as-is.",
+        "data_type": "float",
+        "ui_type": "slider",
+        "min": -1.0,
+        "max": 1.0,
+        "step": 0.1,
+        "unit": " m/s²",
+        "parent_key": "CurveSpeedController"
+      },
+      {
         "key": "ShowCSCStatus",
         "label": "Status Widget",
         "description": "Show the \"Curve Speed Controller\" target speed on the driving screen.",

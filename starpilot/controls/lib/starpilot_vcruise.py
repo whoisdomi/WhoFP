@@ -145,7 +145,7 @@ class StarPilotVCruise:
 
     # FrogsGoMoo's Curve Speed Controller
     if long_control_active and v_ego > CRUISING_SPEED and self.starpilot_planner.road_curvature_detected and starpilot_toggles.curve_speed_controller:
-      self.csc.update_target(v_ego)
+      self.csc.update_target(v_ego, starpilot_toggles.csc_lateral_acceleration_offset)
 
       self.csc_controlling_speed = True
 

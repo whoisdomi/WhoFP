@@ -100,6 +100,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
     {"ShowCEMStatus", tr("Status Widget"), tr("<b>Show which condition triggered \"Experimental Mode\"</b> on the driving screen."), ""},
 
     {"CurveSpeedController", tr("Curve Speed Controller"), tr("<b>Automatically slow down for upcoming curves</b> using data learned from your driving style, adapting to curves as you would."), "../../starpilot/assets/toggle_icons/icon_speed_map.png"},
+    {"CSCLateralAccelerationOffset", tr("CSC Offset"), tr("<b>Add or subtract from your learned lateral acceleration.</b> Increase to take curves faster; decrease for more caution. 0.0 uses the calibrated value as-is."), ""},
     {"CalibratedLateralAcceleration", tr("Calibrated Lateral Acceleration"), tr("<b>The learned lateral acceleration from collected driving data.</b> This sets how fast openpilot will take curves. Higher values allow faster cornering; lower values slow the vehicle for gentler turns."), ""},
     {"CalibrationProgress", tr("Calibration Progress"), tr("<b>How much curve data has been collected.</b> This is a progress meter; it is normal for the value to stay low and rarely reach 100%."), ""},
     {"ResetCurveData", tr("Reset Curve Data"), tr("<b>Reset collected user data for \"Curve Speed Controller\".</b>"), ""},
@@ -288,6 +289,8 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
         longitudinalLayout->setCurrentWidget(curveSpeedPanel);
       });
       longitudinalToggle = curveControlToggle;
+    } else if (param == "CSCLateralAccelerationOffset") {
+      longitudinalToggle = new StarPilotParamValueButtonControl(param, title, desc, icon, -1.0, 1.0, tr(" m/s²"), std::map<float, QString>(), 0.1, false, {}, {});
     } else if (param == "CalibrationProgress") {
       calibrationProgressLabel = new LabelControl(title, QString::number(params.getFloat("CalibrationProgress"), 'f', 2) + "%", desc);
       longitudinalToggle = calibrationProgressLabel;

@@ -685,6 +685,7 @@ class StarPilotVariables:
 
     toggle.curve_speed_controller = toggle.openpilot_longitudinal and self.get_value("CurveSpeedController")
     toggle.csc_status = self.get_value("ShowCSCStatus", condition=toggle.curve_speed_controller) or toggle.debug_mode
+    toggle.csc_lateral_acceleration_offset = self.get_value("CSCLateralAccelerationOffset", cast=float, condition=toggle.curve_speed_controller, default=0.0)
 
     toggle.low_speed_turn_speed_controller = toggle.openpilot_longitudinal and self.get_value("LowSpeedTurnSpeedController")
     toggle.lstsc_calibrate_mode = self.get_value("LSTSCCalibrateMode", condition=toggle.low_speed_turn_speed_controller)
