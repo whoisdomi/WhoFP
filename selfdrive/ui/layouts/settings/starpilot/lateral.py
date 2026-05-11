@@ -168,6 +168,11 @@ class StarPilotLateralLayout(_SettingsPage):
                    get_value=lambda: f"{self._params.get_int('PauseLateralSpeed')} mph",
                    on_click=lambda: self._show_slider("PauseLateralSpeed", 0, 100, unit=" mph"),
                    visible=lambda: self._params.get_bool("QOLLateral")),
+        SettingRow("PauseLateralOnSignal", "toggle", tr_noop("Turn Signal Only"),
+                   subtitle=tr_noop("Only pause steering when the turn signal is active."),
+                   get_state=lambda: self._params.get_bool("PauseLateralOnSignal"),
+                   set_state=lambda s: self._params.put_bool("PauseLateralOnSignal", s),
+                   visible=lambda: self._params.get_bool("QOLLateral") and self._params.get_int("PauseLateralSpeed") > 0),
       ], tab_key="steering"),
 
       # ── Lane tab ──

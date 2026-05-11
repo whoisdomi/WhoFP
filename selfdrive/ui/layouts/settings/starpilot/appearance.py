@@ -290,6 +290,10 @@ class StarPilotAppearanceLayout(_SettingsPage):
                            subtitle="",
                            get_state=lambda: self._params.get_bool("HideDMIcon"),
                            set_state=lambda s: self._params.put_bool("HideDMIcon", s)),
+                SettingRow("HideSteeringWheel", "toggle", tr_noop("Hide Steering Wheel"),
+                           subtitle="",
+                           get_state=lambda: self._params.get_bool("HideSteeringWheel"),
+                           set_state=lambda s: self._params.put_bool("HideSteeringWheel", s)),
             ], tab_key="display", column_pair="display"),
 
             SettingSection(tr_noop("Speed Info"), [

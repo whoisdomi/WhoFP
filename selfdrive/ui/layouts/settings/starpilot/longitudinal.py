@@ -1198,7 +1198,11 @@ class StarPilotSLCQOLLayout(_SettingsPage):
         SettingRow("SLCMapbox", "toggle", tr_noop("Mapbox Fallback"),
                    subtitle="",
                    get_state=lambda: self._params.get_bool("SLCMapboxFiller"),
-                    set_state=lambda s: self._params.put_bool("SLCMapboxFiller", s)),
+                     set_state=lambda s: self._params.put_bool("SLCMapboxFiller", s)),
+        SettingRow("VisionSpeedLimit", "toggle", tr_noop("Vision Detection"),
+                   subtitle=tr_noop("Use the road camera to detect speed limit signs for SLC."),
+                   get_state=lambda: self._params.get_bool("VisionSpeedLimitDetection"),
+                   set_state=lambda s: self._params.put_bool("VisionSpeedLimitDetection", s)),
       ]),
     ]
     self._manager_view = AetherSettingsView(
