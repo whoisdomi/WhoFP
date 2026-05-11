@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 import time
 import pyray as rl
@@ -278,6 +278,19 @@ DEFAULT_PANEL_STYLE = PanelStyle(
   underline_color=rl.Color(116, 136, 168, 150),
   accent=AetherListColors.PRIMARY,
 )
+
+
+def panel_style_from_color(hex_color: str, base: PanelStyle | None = None) -> PanelStyle:
+    color = hex_to_color(hex_color)
+    if base is None:
+        base = DEFAULT_PANEL_STYLE
+    return replace(
+        base,
+        accent=color,
+        current_fill=rl.Color(color.r, color.g, color.b, 16),
+        current_border=rl.Color(color.r, color.g, color.b, 42),
+        underline_color=rl.Color(color.r, color.g, color.b, 150),
+    )
 
 
 def _inflate_rect(rect: rl.Rectangle, pad_x: float = 10, pad_y: float = 6) -> rl.Rectangle:

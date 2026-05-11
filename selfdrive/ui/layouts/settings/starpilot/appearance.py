@@ -13,7 +13,7 @@ from openpilot.selfdrive.ui.lib.starpilot_state import starpilot_state
 from openpilot.selfdrive.ui.layouts.settings.starpilot.panel import _SettingsPage
 from openpilot.selfdrive.ui.layouts.settings.starpilot.aethergrid import (
     AetherSliderDialog,
-    DEFAULT_PANEL_STYLE,
+    panel_style_from_color,
 )
 from openpilot.selfdrive.ui.layouts.settings.starpilot.longitudinal import (
     SettingRow,
@@ -21,7 +21,7 @@ from openpilot.selfdrive.ui.layouts.settings.starpilot.longitudinal import (
     AetherSettingsView,
 )
 
-PANEL_STYLE = DEFAULT_PANEL_STYLE
+PANEL_STYLE = panel_style_from_color("#8B5CF6")
 
 # ── Theme paths & config (preserved from themes.py) ──
 

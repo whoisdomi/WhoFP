@@ -16,14 +16,14 @@ from openpilot.selfdrive.ui.layouts.settings.starpilot.aethergrid import (
   AETHER_LIST_METRICS,
   AetherAdjustorRow,
   AetherListColors,
-  DEFAULT_PANEL_STYLE,
+  panel_style_from_color,
   _point_hits,
   draw_settings_panel_header,
   draw_toggle_pill,
   init_list_panel,
 )
 
-PANEL_STYLE = DEFAULT_PANEL_STYLE
+PANEL_STYLE = panel_style_from_color("#E63956")
 SECTION_GAP = AETHER_LIST_METRICS.section_gap
 
 
