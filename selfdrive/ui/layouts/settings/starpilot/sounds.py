@@ -73,7 +73,7 @@ class SoundsManagerView(Widget):
         is_active=lambda k=key: self._active_adjustor_key == k,
         set_active=lambda active, k=key: self._set_active_adjustor(k, active),
         style=PANEL_STYLE,
-        color=AetherListColors.PRIMARY,
+        color=PANEL_STYLE.accent,
       )
       self._adjustor_rows[key] = adjustor
 
@@ -94,7 +94,7 @@ class SoundsManagerView(Widget):
       is_active=lambda: self._active_adjustor_key == cd_key,
       set_active=lambda active: self._set_active_adjustor(cd_key, active),
       style=PANEL_STYLE,
-      color=AetherListColors.PRIMARY,
+      color=PANEL_STYLE.accent,
     )
     self._adjustor_rows[cd_key] = cd_adjustor
 
@@ -204,7 +204,7 @@ class SoundsManagerView(Widget):
     status_str = tr("ON") if current_val else tr("OFF")
     if not is_enabled: status_str = tr(info.get("disabled_label", "UNAVAILABLE"))
 
-    draw_toggle_pill(padded_rect, current_val, is_enabled, tr(info["title"]), status_str, hovered, pressed)
+    draw_toggle_pill(padded_rect, current_val, is_enabled, tr(info["title"]), status_str, hovered, pressed, style=PANEL_STYLE)
 
     self._toggle_rects[key] = padded_rect
 

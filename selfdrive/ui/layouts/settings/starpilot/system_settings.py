@@ -760,7 +760,7 @@ class SystemSettingsManagerView(Widget):
       action_text_size=18,
       row_separator=PANEL_STYLE.divider_color,
       action_fill=AetherListColors.CURRENT_BG,
-      action_border=rl.Color(89, 116, 151, 42),
+      action_border=PANEL_STYLE.current_border,
       action_text_color=AetherListColors.HEADER,
     )
 

@@ -637,7 +637,7 @@ class StarPilotVehicleSettingsLayout(_SettingsPage):
         self._params.put_int("LockDoorsTimer", int(val))
 
     gui_app.push_widget(AetherSliderDialog(tr("Lock Doors Timer"), 0, 300, 5,
-                                            self._params.get_int("LockDoorsTimer"), on_close, labels=_lock_doors_timer_labels()))
+                                            self._params.get_int("LockDoorsTimer"), on_close, labels=_lock_doors_timer_labels(), color=PANEL_STYLE.accent))
 
   def _show_offset_selector(self):
     def on_close(res, val):
@@ -645,7 +645,7 @@ class StarPilotVehicleSettingsLayout(_SettingsPage):
         self._params.put_float("ClusterOffset", float(val))
 
     gui_app.push_widget(AetherSliderDialog(tr("Dashboard Speed Offset"), 1.000, 1.050, 0.001,
-                                            self._params.get_float("ClusterOffset"), on_close, unit="x"))
+                                            self._params.get_float("ClusterOffset"), on_close, unit="x", color=PANEL_STYLE.accent))
 
   def _get_display_make(self) -> str:
     make = self._params.get("CarMake", encoding="utf-8") or ""

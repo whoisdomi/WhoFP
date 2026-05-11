@@ -275,7 +275,7 @@ class MapStatusCard(Widget):
 
     if self._controller._download_state.active:
       center = rl.Vector2(primary_rect.x + primary_rect.width - 22, primary_rect.y + primary_rect.height / 2)
-      draw_busy_ring(center, rl.get_time() * 160, AetherListColors.PRIMARY, inner_radius=9, outer_radius=13, sweep=210, thickness=20)
+      draw_busy_ring(center, rl.get_time() * 160, PANEL_STYLE.accent, inner_radius=9, outer_radius=13, sweep=210, thickness=20)
 
 
 class MapBrowserCard(Widget):

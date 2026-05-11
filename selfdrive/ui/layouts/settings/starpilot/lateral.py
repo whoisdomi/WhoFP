@@ -257,4 +257,4 @@ class StarPilotLateralLayout(_SettingsPage):
       if res == DialogResult.CONFIRM:
         self._params.put_int("LaneChangeSmoothing", int(val))
     current = self._params.get_int("LaneChangeSmoothing") if self._params.get_int("LaneChangeSmoothing") > 0 else 10
-    gui_app.set_modal_overlay(AetherSliderDialog(tr("Lane Change Smoothing"), 1, 10, 1, current, on_close, color="#597497"))
+    gui_app.set_modal_overlay(AetherSliderDialog(tr("Lane Change Smoothing"), 1, 10, 1, current, on_close, color=PANEL_STYLE.accent))

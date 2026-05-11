@@ -499,7 +499,7 @@ class DrivingModelManagerView(Widget):
   def _draw_downloading_action(self, rect: rl.Rectangle, progress_text: str):
     center = rl.Vector2(rect.x + rect.width / 2, rect.y + rect.height / 2 - 8)
     phase = (time.monotonic() * 240.0) % 360.0
-    draw_busy_ring(center, phase, AetherListColors.PRIMARY)
+    draw_busy_ring(center, phase, PANEL_STYLE.accent)
 
     label = progress_text if progress_text else tr("Downloading")
     gui_label(
@@ -543,15 +543,15 @@ class DrivingModelManagerView(Widget):
 
       # Favorite toggle button
       is_fav = entry.user_favorite
-      fav_fill = rl.Color(210, 100, 130, 44) if is_fav else AetherListColors.PRIMARY_SOFT
-      fav_border = rl.Color((210 if is_fav else AetherListColors.PRIMARY.r), (100 if is_fav else AetherListColors.PRIMARY.g), (130 if is_fav else AetherListColors.PRIMARY.b), min((255 if is_fav else AetherListColors.PRIMARY.a), 70))
-      fav_text_color = rl.Color(210, 100, 130, 255) if is_fav else AetherListColors.PRIMARY
+      fav_fill = rl.Color(210, 100, 130, 44) if is_fav else rl.Color(PANEL_STYLE.accent.r, PANEL_STYLE.accent.g, PANEL_STYLE.accent.b, 26)
+      fav_border = rl.Color((210 if is_fav else PANEL_STYLE.accent.r), (100 if is_fav else PANEL_STYLE.accent.g), (130 if is_fav else PANEL_STYLE.accent.b), min((255 if is_fav else PANEL_STYLE.accent.a), 70))
+      fav_text_color = rl.Color(210, 100, 130, 255) if is_fav else PANEL_STYLE.accent
       fav_label = tr("Unfavorite") if is_fav else tr("Favorite")
       draw_action_pill(fav_rect, fav_label, fav_fill, fav_border, fav_text_color)
 
   def _draw_current_action(self, rect: rl.Rectangle):
     chip_rect = rl.Rectangle(rect.x + 24, rect.y + (rect.height - 42) / 2, rect.width - 48, 42)
-    AetherChip(tr("Current"), rl.Color(89, 116, 151, 26), rl.Color(116, 136, 168, 52), AetherListColors.HEADER, font_size=18).render(chip_rect)
+    AetherChip(tr("Current"), PANEL_STYLE.current_fill, PANEL_STYLE.current_border, AetherListColors.HEADER, font_size=18).render(chip_rect)
 
   def _draw_protected_action(self, rect: rl.Rectangle):
     chip_rect = rl.Rectangle(rect.x + 20, rect.y + (rect.height - 42) / 2, rect.width - 40, 42)
@@ -1137,10 +1137,10 @@ class StarPilotDrivingModelLayout(_SettingsPage):
     self._update_model_metadata()
 
   def _on_recovery_power_clicked(self):
-    self._show_slider("RecoveryPower", 0.5, 2.0, step=0.1, unit="x", value_type="float", title="Recovery Power")
+    self._show_slider("RecoveryPower", 0.5, 2.0, step=0.1, unit="x", value_type="float", title="Recovery Power", color=PANEL_STYLE.accent)
 
   def _on_stop_distance_clicked(self):
-    self._show_slider("StopDistance", 4.0, 10.0, step=0.1, unit="m", value_type="float", title="Stop Distance")
+    self._show_slider("StopDistance", 4.0, 10.0, step=0.1, unit="m", value_type="float", title="Stop Distance", color=PANEL_STYLE.accent)
 
   def _on_blacklist_clicked(self):
     blacklisted = [m.strip() for m in (self._params.get("BlacklistedModels", encoding="utf-8") or "").split(",") if m.strip()]

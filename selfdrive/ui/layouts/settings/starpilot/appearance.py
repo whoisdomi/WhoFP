@@ -542,7 +542,7 @@ class StarPilotAppearanceLayout(_SettingsPage):
             if res == DialogResult.CONFIRM:
                 self._params.put_int(key, int(val))
         gui_app.push_widget(AetherSliderDialog(tr(key), min_v, max_v, 1, self._params.get_int(key), on_close,
-                                                 unit=unit, color="#8B5CF6"))
+                                                 unit=unit, color=PANEL_STYLE.accent))
 
     def _show_float_selector(self, key, min_v, max_v, step, unit="", convert=None, unconvert=None):
         current = self._params.get_float(key)
@@ -557,7 +557,7 @@ class StarPilotAppearanceLayout(_SettingsPage):
                 self._params.put_float(key, v)
 
         gui_app.push_widget(AetherSliderDialog(tr(key), min_v, max_v, step, current, on_close,
-                                                 unit=unit, color="#8B5CF6"))
+                                                 unit=unit, color=PANEL_STYLE.accent))
 
     # ── Unit-aware display helpers ──
 

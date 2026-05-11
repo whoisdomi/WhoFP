@@ -3115,10 +3115,10 @@ class TileGrid(Widget):
         tile_idx += 1
 
 
-def draw_toggle_pill(rect: rl.Rectangle, is_on: bool, is_enabled: bool, title: str, status_str: str, hovered: bool, pressed: bool):
+def draw_toggle_pill(rect: rl.Rectangle, is_on: bool, is_enabled: bool, title: str, status_str: str, hovered: bool, pressed: bool, style: PanelStyle = DEFAULT_PANEL_STYLE):
   rect = _snap_rect(rect)
   bg_color = rl.Color(28, 32, 40, 170 if not is_enabled else 255)
-  accent = AetherListColors.PRIMARY if is_on and is_enabled else rl.Color(255, 255, 255, 52 if is_enabled else 20)
+  accent = style.accent if is_on and is_enabled else rl.Color(255, 255, 255, 52 if is_enabled else 20)
   _draw_rounded_fill(rect, bg_color, radius_px=18)
   _draw_rounded_stroke(rect, _with_alpha(accent, 92 if is_on and is_enabled else accent.a), radius_px=18)
 
@@ -3127,7 +3127,7 @@ def draw_toggle_pill(rect: rl.Rectangle, is_on: bool, is_enabled: bool, title: s
     _draw_rounded_fill(rect, overlay, radius_px=18)
 
   if is_on and is_enabled:
-    rl.draw_rectangle_rec(rl.Rectangle(rect.x, rect.y, 1, rect.height), _with_alpha(AetherListColors.PRIMARY, 160))
+    rl.draw_rectangle_rec(rl.Rectangle(rect.x, rect.y, 1, rect.height), _with_alpha(style.accent, 160))
 
   font = gui_app.font(FontWeight.BOLD)
   title_size = max(16, min(22, int(rect.height * 0.26)))
