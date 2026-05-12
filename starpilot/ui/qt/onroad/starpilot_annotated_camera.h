@@ -69,7 +69,6 @@ private:
   void paintLateralPaused(QPainter &p);
   void paintLongitudinalPaused(QPainter &p);
   void paintPedalIcons(QPainter &p);
-  void paintPendingSpeedLimit(QPainter &p);
   void paintRadarTracks(QPainter &p);
   void paintRoadName(QPainter &p);
   void paintSpeedLimit(QPainter &p);
@@ -99,6 +98,7 @@ private:
   bool longitudinalPaused;
   bool redLight;
   bool speedLimitChanged;
+  bool unconfirmedSpeedLimitValid = false;
   bool weatherDaytime;
 
   // Cached toggle values — refreshed once per updateState(), used in paint code
@@ -194,7 +194,6 @@ private:
   QPoint compassPosition;
   QPoint lateralPausedPosition;
 
-  QRect newSpeedLimitRect;
   QRect speedLimitRect;
 
   QSharedPointer<QMovie> cemCurveIcon;

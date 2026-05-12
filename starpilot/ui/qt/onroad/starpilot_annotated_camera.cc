@@ -224,6 +224,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   slcOverriddenSpeed = starpilotPlan.getSlcOverriddenSpeed();
   speedLimit = slcOverriddenSpeed != 0 ? slcOverriddenSpeed : starpilotPlan.getSlcSpeedLimit();
   speedLimitChanged = starpilotPlan.getSpeedLimitChanged();
+  unconfirmedSpeedLimitValid = starpilotPlan.getUnconfirmedSlcSpeedLimit() > 1;
   speedLimitSource = starpilotPlan.getSlcSpeedLimitSource();
   stoppingDistance = modelV2.getPosition().getX().size() > 33 - 1 ? modelV2.getPosition().getX()[33 - 1] : 0.0;
   unconfirmedSpeedLimit = starpilotPlan.getUnconfirmedSlcSpeedLimit();
@@ -273,7 +274,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
     lstscGlowTimer.invalidate();
   }
 
-  if (speedLimitChanged) {
+  if (speedLimitChanged && unconfirmedSpeedLimitValid) {
     if (!pendingLimitTimer.isValid()) {
       pendingLimitTimer.start();
     }
@@ -299,7 +300,7 @@ void StarPilotAnnotatedCameraWidget::mousePressEvent(QMouseEvent *mouseEvent) {
     return;
   }
 
-  if (speedLimitChanged && newSpeedLimitRect.contains(mouseEvent->pos())) {
+  if (speedLimitChanged && unconfirmedSpeedLimitValid && speedLimitRect.contains(mouseEvent->pos())) {
     params_memory.putBool("SpeedLimitAccepted", true);
     mouseEvent->accept();
     return;
@@ -313,7 +314,6 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
     cemStatusPosition = QPoint(0, 0);
     compassPosition = QPoint(0, 0);
     lateralPausedPosition = QPoint(0, 0);
-    newSpeedLimitRect = QRect();
     speedLimitHeight = 0;
     return;
   }
@@ -364,10 +364,6 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
 
   if (cachedPedalsOnUi) {
     paintPedalIcons(p);
-  }
-
-  if (speedLimitChanged) {
-    paintPendingSpeedLimit(p);
   }
 
   if (cachedRadarTracks) {
@@ -943,41 +939,6 @@ void StarPilotAnnotatedCameraWidget::paintPedalIcons(QPainter &p) {
   p.restore();
 }
 
-void StarPilotAnnotatedCameraWidget::paintPendingSpeedLimit(QPainter &p) {
-  p.save();
-
-  QString newSpeedLimitStr = (unconfirmedSpeedLimit > 1) ? QString::number(std::nearbyint(unconfirmedSpeedLimit * speedConversion)) : "–";
-  newSpeedLimitRect = speedLimitRect.translated(speedLimitRect.width() + UI_BORDER_SIZE, 0);
-
-  if (!cachedSpeedLimitVienna) {
-    newSpeedLimitRect.setWidth(newSpeedLimitStr.size() >= 3 ? 200 : 175);
-
-    p.setBrush(whiteColor());
-    p.setPen(Qt::NoPen);
-    p.drawRoundedRect(newSpeedLimitRect, 24, 24);
-    p.setPen(pendingLimitTimer.elapsed() % 1000 < 500 ? QPen(blackColor(), 6) : QPen(redColor(), 6));
-    p.drawRoundedRect(newSpeedLimitRect.adjusted(9, 9, -9, -9), 16, 16);
-
-    p.setFont(InterFont(28, QFont::DemiBold));
-    p.drawText(newSpeedLimitRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("PENDING"));
-    p.drawText(newSpeedLimitRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
-    p.setFont(InterFont(70, QFont::Bold));
-    p.drawText(newSpeedLimitRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, newSpeedLimitStr);
-  } else {
-    p.setBrush(whiteColor());
-    p.setPen(Qt::NoPen);
-    p.drawEllipse(newSpeedLimitRect);
-    p.setPen(QPen(Qt::red, 20));
-    p.drawEllipse(newSpeedLimitRect.adjusted(16, 16, -16, -16));
-
-    p.setPen(pendingLimitTimer.elapsed() % 1000 < 500 ? QPen(blackColor(), 6) : QPen(redColor(), 6));
-    p.setFont(InterFont((newSpeedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
-    p.drawText(newSpeedLimitRect, Qt::AlignCenter, newSpeedLimitStr);
-  }
-
-  p.restore();
-}
-
 void StarPilotAnnotatedCameraWidget::paintRainbowPath(QPainter &p, QLinearGradient &bg, float lin_grad_point) {
   p.save();
 
@@ -1057,7 +1018,17 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 
   p.save();
 
-  QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
+  bool isFlashingPending = speedLimitChanged && unconfirmedSpeedLimitValid && (pendingLimitTimer.isValid() && pendingLimitTimer.elapsed() % 1000 >= 500);
+
+  QString speedLimitStr;
+  if (isFlashingPending) {
+    speedLimitStr = QString::number(std::nearbyint(unconfirmedSpeedLimit * speedConversion));
+  } else {
+    speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
+  }
+
+  QColor borderColor = isFlashingPending ? redColor() : blackColor();
+  QColor textColor = isFlashingPending ? redColor() : blackColor();
 
   bool hasUsSpeedLimit = !cachedSpeedLimitVienna;
   bool hasEuSpeedLimit = !hasUsSpeedLimit;
@@ -1084,20 +1055,23 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
     p.setPen(Qt::NoPen);
     p.setBrush(whiteColor());
     p.drawRoundedRect(signRect, 24, 24);
-    p.setPen(QPen(blackColor(), 6));
+    p.setPen(QPen(borderColor, 6));
     p.drawRoundedRect(signRect.adjusted(9, 9, -9, -9), 16, 16);
 
     p.setOpacity(slcOverriddenSpeed == 0 ? 1.0 : 0.25);
+    p.setPen(textColor);
     if (slcOverriddenSpeed == 0 && cachedShowSpeedLimitOffset) {
       p.setFont(InterFont(28, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, isFlashingPending ? tr("PENDING") : tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
       p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
       p.setFont(InterFont(50, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      if (!isFlashingPending) {
+        p.drawText(signRect.adjusted(0, 120, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      }
     } else {
       p.setFont(InterFont(28, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
+      p.drawText(signRect.adjusted(0, 22, 0, 0), Qt::AlignTop | Qt::AlignHCenter, isFlashingPending ? tr("PENDING") : tr("SPEED"));
       p.drawText(signRect.adjusted(0, 51, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
       p.setFont(InterFont(70, QFont::Bold));
       p.drawText(signRect.adjusted(0, 85, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
@@ -1112,12 +1086,14 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
     p.drawEllipse(signRect.adjusted(16, 16, -16, -16));
 
     p.setOpacity(slcOverriddenSpeed == 0 ? 1.0 : 0.25);
-    p.setPen(blackColor());
+    p.setPen(textColor);
     if (cachedShowSpeedLimitOffset) {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect.adjusted(0, -25, 0, 0), Qt::AlignCenter, speedLimitStr);
       p.setFont(InterFont(40, QFont::DemiBold));
-      p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      if (!isFlashingPending) {
+        p.drawText(signRect.adjusted(0, 100, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitOffsetStr);
+      }
     } else {
       p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60 : 70, QFont::Bold));
       p.drawText(signRect, Qt::AlignCenter, speedLimitStr);
