@@ -167,6 +167,8 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   cachedSimpleMode             = starpilot_toggles.value("simple_mode").toBool();
   cachedSpeedLimitController   = starpilot_toggles.value("speed_limit_controller").toBool();
   cachedSpeedLimitSources      = starpilot_toggles.value("speed_limit_sources").toBool();
+  cachedSlcAbbreviatedSources  = starpilot_toggles.value("slc_abbreviated_sources").toBool();
+  cachedSlcActiveSourcesOnly   = starpilot_toggles.value("slc_active_sources_only").toBool();
   cachedSpeedLimitVienna       = starpilot_toggles.value("speed_limit_vienna").toBool();
   cachedStaticPedalsOnUi       = starpilot_toggles.value("static_pedals_on_ui").toBool();
   cachedStoppedTimer           = starpilot_toggles.value("stopped_timer").toBool();
@@ -1030,7 +1032,11 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimit(QPainter &p) {
 void StarPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p) {
   p.save();
 
-  std::function<void(QRect&, QPixmap&, const QString&, const double)> drawSource = [&](QRect &rect, QPixmap &icon, const QString &title, double speedLimitValue) {
+  const bool abbreviated = cachedSlcAbbreviatedSources;
+  const bool activeOnly = cachedSlcActiveSourcesOnly;
+
+  std::function<void(QRect&, QPixmap&, const QString&, const QString&, const double)> drawSource =
+      [&](QRect &rect, QPixmap &icon, const QString &title, const QString &abbrev, double speedLimitValue) {
     bool isActive = QString::fromUtf8(speedLimitSource.c_str()) == title && speedLimitValue != 0;
 
     if (isActive) {
@@ -1043,29 +1049,38 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p) {
       p.setPen(QPen(blackColor(), 10));
     }
 
-    QSize size(img_size / 4, img_size / 4);
-    QRect iconRect = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignLeft | Qt::AlignVCenter, size, rect.adjusted(20, 0, 0, 0));
-
-    QString speedText;
-    if (speedLimitValue != 0) {
-      speedText = QString::number(std::nearbyint(speedLimitValue)) + speedUnit;
+    QString fullText;
+    if (abbreviated) {
+      if (speedLimitValue != 0) {
+        fullText = abbrev + "-" + QString::number(std::nearbyint(speedLimitValue));
+      } else {
+        fullText = abbrev + "-X";
+      }
     } else {
-      speedText = "N/A";
+      QString speedText = (speedLimitValue != 0)
+          ? QString::number(std::nearbyint(speedLimitValue)) + speedUnit
+          : "N/A";
+      fullText = tr(title.toUtf8().constData()) + " - " + speedText;
     }
-
-    QString fullText = tr(title.toUtf8().constData()) + " - " + speedText;
 
     p.setOpacity(1.0);
     p.drawRoundedRect(rect, 24, 24);
-    p.drawPixmap(iconRect, icon);
+
+    QRect textRect;
+    if (abbreviated) {
+      textRect = QRect(rect.x() + 20, rect.y(), rect.width() - 40, rect.height());
+    } else {
+      QSize size(img_size / 4, img_size / 4);
+      QRect iconRect = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignLeft | Qt::AlignVCenter, size, rect.adjusted(20, 0, 0, 0));
+      p.drawPixmap(iconRect, icon);
+      textRect = QRect(iconRect.right() + 10, rect.y(), rect.width() - iconRect.width() - 30, rect.height());
+    }
 
     p.setPen(QPen(whiteColor(), 6));
-    QRect textRect(iconRect.right() + 10, rect.y(), rect.width() - iconRect.width() - 30, rect.height());
 
     if (isActive) {
       QFontMetrics fm(p.font());
       int textYPosition = textRect.y() + (textRect.height() - fm.height()) / 2 + fm.ascent();
-
       QPainterPath path;
       path.addText(textRect.x(), textYPosition, p.font(), fullText);
       p.strokePath(path, QPen(Qt::black, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -1075,19 +1090,41 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p) {
     }
   };
 
-  int signMargin = 12;
+  struct SrcEntry { QPixmap *icon; QString title; QString abbrev; double value; };
+  std::vector<SrcEntry> sources = {
+    {&dashboardIcon, "Dashboard", "Dash", dashboardSpeedLimit * speedConversion},
+    {&mapDataIcon,   "Map Data",  "MapD", mapSpeedLimit      * speedConversion},
+    {&visionIcon,    "Vision",    "Vision",  visionSpeedLimit   * speedConversion},
+    {&mapboxIcon,    "Mapbox",    "MapB", mapboxSpeedLimit   * speedConversion},
+    {&nextMapsIcon,  "Upcoming",  "Next", nextSpeedLimit     * speedConversion},
+  };
 
-  QRect dashboardRect(speedLimitRect.x() - signMargin, speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE, 450, 60);
-  QRect mapDataRect(dashboardRect.x(), dashboardRect.y() + dashboardRect.height() + UI_BORDER_SIZE / 2, 450, 60);
-  QRect visionRect(mapDataRect.x(), mapDataRect.y() + mapDataRect.height() + UI_BORDER_SIZE / 2, 450, 60);
-  QRect mapboxRect(visionRect.x(), visionRect.y() + visionRect.height() + UI_BORDER_SIZE / 2, 450, 60);
-  QRect nextLimitRect(mapboxRect.x(), mapboxRect.y() + mapboxRect.height() + UI_BORDER_SIZE / 2, 450, 60);
+  const int signMargin = 12;
+  const int rectH = 60;
+  const int gap = UI_BORDER_SIZE / 2;
+  const int xPos = abbreviated ? speedLimitRect.x() : speedLimitRect.x() - signMargin;
+  int yPos = speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE;
 
-  drawSource(dashboardRect, dashboardIcon, "Dashboard", dashboardSpeedLimit * speedConversion);
-  drawSource(mapDataRect, mapDataIcon, "Map Data", mapSpeedLimit * speedConversion);
-  drawSource(visionRect, visionIcon, "Vision", visionSpeedLimit * speedConversion);
-  drawSource(mapboxRect, mapboxIcon, "Mapbox", mapboxSpeedLimit * speedConversion);
-  drawSource(nextLimitRect, nextMapsIcon, "Upcoming", nextSpeedLimit * speedConversion);
+  int rectW = abbreviated ? speedLimitRect.width() : 450;
+  if (abbreviated) {
+    // Pre-compute the widest label across all visible rows so every box is the same width.
+    QFontMetrics fm(InterFont(35, QFont::DemiBold));
+    for (auto &s : sources) {
+      if (activeOnly && s.value == 0) continue;
+      QString label = s.value != 0
+          ? s.abbrev + "-" + QString::number(std::nearbyint(s.value))
+          : s.abbrev + "-na";
+      int needed = fm.horizontalAdvance(label) + 40;
+      if (needed > rectW) rectW = needed;
+    }
+  }
+
+  for (auto &s : sources) {
+    if (activeOnly && s.value == 0) continue;
+    QRect rect(xPos, yPos, rectW, rectH);
+    drawSource(rect, *s.icon, s.title, s.abbrev, s.value);
+    yPos += rectH + gap;
+  }
 
   p.restore();
 }

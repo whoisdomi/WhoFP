@@ -491,6 +491,8 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SignalMetrics", {PERSISTENT, BOOL, "0", "0", 3}},
     {"SignalToDownload", {CLEAR_ON_MANAGER_START, STRING, "", ""}},
     {"SimpleMode", {PERSISTENT, BOOL, "0", "0", 0}},
+    {"SLCAbbreviatedSources", {PERSISTENT, BOOL, "0", "0", 3}},
+    {"SLCActiveSourcesOnly", {PERSISTENT, BOOL, "0", "0", 3}},
     {"SLCConfirmation", {PERSISTENT, BOOL, "0", "0", 0}},
     {"SLCConfirmationHigher", {PERSISTENT, BOOL, "0", "0", 0}},
     {"SLCConfirmationLower", {PERSISTENT, BOOL, "0", "0", 0}},

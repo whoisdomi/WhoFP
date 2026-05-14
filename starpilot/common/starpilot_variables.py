@@ -1162,6 +1162,8 @@ class StarPilotVariables:
     toggle.speed_limit_priority_highest = toggle.speed_limit_priority1 == "Highest"
     toggle.speed_limit_priority_lowest = toggle.speed_limit_priority1 == "Lowest"
     toggle.speed_limit_sources = self.get_value("SpeedLimitSources", condition=speed_limit_display) or toggle.debug_mode
+    toggle.slc_abbreviated_sources = self.get_value("SLCAbbreviatedSources", condition=speed_limit_display)
+    toggle.slc_active_sources_only = self.get_value("SLCActiveSourcesOnly", condition=speed_limit_display)
 
     toggle.speed_limit_filler = self.get_value("SpeedLimitFiller")
     toggle.vision_speed_limit_detection = self.get_value("VisionSpeedLimitDetection")
