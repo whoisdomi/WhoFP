@@ -1176,10 +1176,10 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p) {
   };
 
   const int signMargin = 12;
-  const int rectW = 450;
+  const int rectW = abbreviated ? speedLimitRect.width() : 450;
   const int rectH = 60;
   const int gap = UI_BORDER_SIZE / 2;
-  const int xPos = speedLimitRect.x() - signMargin;
+  const int xPos = abbreviated ? speedLimitRect.x() : speedLimitRect.x() - signMargin;
   int yPos = speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE;
 
   for (auto &s : sources) {
