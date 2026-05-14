@@ -121,6 +121,8 @@ private:
   bool cachedSimpleMode = false;
   bool cachedSpeedLimitController = false;
   bool cachedSpeedLimitSources = false;
+  bool cachedSlcAbbreviatedSources = false;
+  bool cachedSlcActiveSourcesOnly = false;
   bool cachedSpeedLimitVienna = false;
   bool cachedStaticPedalsOnUi = false;
   bool cachedStoppedTimer = false;
