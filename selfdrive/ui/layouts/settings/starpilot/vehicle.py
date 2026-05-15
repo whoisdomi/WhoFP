@@ -468,6 +468,11 @@ class VehicleSettingsManagerView(Widget):
       rows.append({"target_id": "toggle:RemapCancelToDistance", "type": "toggle",
                     "title": tr("Remap Cancel Button"), "subtitle": tr("Treat the Cancel button as an extra mappable steering-wheel button."),
                     "get_state": lambda: self._controller._params.get_bool("RemapCancelToDistance")})
+    if cs.isHKG:
+      rows.append({"target_id": "toggle:HwySmoothing", "type": "toggle",
+                    "title": tr("Highway Smoothing"),
+                    "subtitle": tr("Smooth lateral control above 50 mph to reduce steering oscillation on straight highways."),
+                    "get_state": lambda: self._controller._params.get_bool("HwySmoothing")})
     if cs.isHKGCanFd and cs.hasOpenpilotLongitudinal:
       rows.append({"target_id": "toggle:NostalgiaMode", "type": "toggle",
                     "title": tr("Nostalgia Mode"),

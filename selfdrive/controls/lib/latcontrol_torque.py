@@ -36,6 +36,9 @@ LOW_SPEED_Y = [12, 10.5, 8, 5]
 MAX_LAT_JERK_UP = 2.5            # m/s^3
 
 LP_FILTER_CUTOFF_HZ = 1.2
+IONIQ_6_HWY_FF_FILTER_HZ = 1.5
+IONIQ_6_HWY_FF_SCALE = 0.85
+IONIQ_6_HWY_MIN_SPEED = 20.1
 JERK_LOOKAHEAD_SECONDS = 0.19
 JERK_GAIN = 0.22
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
@@ -1402,6 +1405,7 @@ class LatControlTorque(LatControl):
     self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
     self.lookahead_frames = int(JERK_LOOKAHEAD_SECONDS / self.dt)
     self.jerk_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
+    self.ioniq_6_ff_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * IONIQ_6_HWY_FF_FILTER_HZ), self.dt)
     self.previous_measurement = 0.0
     self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * (MAX_LAT_JERK_UP - 0.5)), self.dt)
     self.low_speed_reset_threshold = max(CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED)
@@ -1579,6 +1583,12 @@ class LatControlTorque(LatControl):
         friction_threshold = get_ioniq_6_friction_threshold(CS.vEgo, setpoint, desired_lateral_jerk) / max(ioniq_6_center_taper, 1e-3)
         friction_scale = get_ioniq_6_friction_scale(CS.vEgo, setpoint, desired_lateral_jerk)
         friction_scale = 1.0 + ((friction_scale - 1.0) * ioniq_6_center_taper)
+        hwy = CS.vEgo >= IONIQ_6_HWY_MIN_SPEED and starpilot_toggles.hwy_smoothing
+        if hwy:
+          ff_filtered = self.ioniq_6_ff_filter.update(ff)
+          ff = ff_filtered * IONIQ_6_HWY_FF_SCALE
+        else:
+          self.ioniq_6_ff_filter.x = ff
       elif sonata_hybrid_active:
         ff *= get_sonata_hybrid_ff_scale(setpoint, desired_lateral_jerk, CS.vEgo) * sonata_hybrid_center_taper
       elif kia_ev6_test_active:

@@ -1047,6 +1047,7 @@ class StarPilotVariables:
     toggle.recovery_power = self.get_value("RecoveryPower", cast=float, condition=longitudinal_tuning, default=1.0, min=0.5, max=2.0)
     toggle.stop_distance = self.get_value("StopDistance", cast=float, condition=longitudinal_tuning, default=6.0)
     toggle.taco_tune = self.get_value("TacoTune", condition=longitudinal_tuning)
+    toggle.hwy_smoothing = self.get_value("HwySmoothing", condition=toggle.car_make == "hyundai")
 
     toggle.model = self.get_value("Model", cast=None, default="sc2")
     if not toggle.model:
