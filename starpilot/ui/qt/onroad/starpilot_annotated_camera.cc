@@ -1130,7 +1130,7 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p) {
       if (speedLimitValue != 0) {
         fullText = abbrev + "-" + QString::number(std::nearbyint(speedLimitValue));
       } else {
-        fullText = abbrev + "-N/A";
+        fullText = abbrev + "-na";
       }
     } else {
       QString speedText = (speedLimitValue != 0)
@@ -1176,11 +1176,24 @@ void StarPilotAnnotatedCameraWidget::paintSpeedLimitSources(QPainter &p) {
   };
 
   const int signMargin = 12;
-  const int rectW = abbreviated ? speedLimitRect.width() : 450;
   const int rectH = 60;
   const int gap = UI_BORDER_SIZE / 2;
   const int xPos = abbreviated ? speedLimitRect.x() : speedLimitRect.x() - signMargin;
   int yPos = speedLimitRect.y() + speedLimitRect.height() + UI_BORDER_SIZE;
+
+  int rectW = abbreviated ? speedLimitRect.width() : 450;
+  if (abbreviated) {
+    // Pre-compute the widest label across all visible rows so every box is the same width.
+    QFontMetrics fm(InterFont(35, QFont::DemiBold));
+    for (auto &s : sources) {
+      if (activeOnly && s.value == 0) continue;
+      QString label = s.value != 0
+          ? s.abbrev + "-" + QString::number(std::nearbyint(s.value))
+          : s.abbrev + "-na";
+      int needed = fm.horizontalAdvance(label) + 40;
+      if (needed > rectW) rectW = needed;
+    }
+  }
 
   for (auto &s : sources) {
     if (activeOnly && s.value == 0) continue;
