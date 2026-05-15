@@ -441,9 +441,6 @@ class VehicleSettingsManagerView(Widget):
     if cs.isGM and cs.isVolt and not cs.hasSNG:
       rows.append({"target_id": "toggle:VoltSNG", "type": "toggle",
                     "title": tr("Volt SNG Hack"), "get_state": lambda: self._controller._params.get_bool("VoltSNG")})
-    if cs.isHKG and cs.isHKGCanFd:
-      rows.append({"target_id": "toggle:TacoTuneHacks", "type": "toggle",
-                    "title": tr("Taco Bell Torque Hack"), "get_state": lambda: self._controller._params.get_bool("TacoTuneHacks")})
     if cs.isSubaru:
       rows.append({"target_id": "toggle:SubaruSNG", "type": "toggle",
                     "title": tr("Stop and Go"), "get_state": lambda: self._controller._params.get_bool("SubaruSNG")})
