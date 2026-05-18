@@ -18,6 +18,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
   StarPilotListWidget *aggressivePersonalityList = new StarPilotListWidget(this);
   StarPilotListWidget *conditionalExperimentalList = new StarPilotListWidget(this);
   StarPilotListWidget *curveSpeedList = new StarPilotListWidget(this);
+  StarPilotListWidget *lowSpeedTurnList = new StarPilotListWidget(this);
   StarPilotListWidget *customDrivingPersonalityList = new StarPilotListWidget(this);
   StarPilotListWidget *longitudinalTuneList = new StarPilotListWidget(this);
   StarPilotListWidget *qolList = new StarPilotListWidget(this);
@@ -38,6 +39,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
   ScrollView *aggressivePersonalityPanel = new ScrollView(aggressivePersonalityList, this);
   ScrollView *conditionalExperimentalPanel = new ScrollView(conditionalExperimentalList, this);
   ScrollView *curveSpeedPanel = new ScrollView(curveSpeedList, this);
+  ScrollView *lowSpeedTurnPanel = new ScrollView(lowSpeedTurnList, this);
   ScrollView *customDrivingPersonalityPanel = new ScrollView(customDrivingPersonalityList, this);
   ScrollView *longitudinalTunePanel = new ScrollView(longitudinalTuneList, this);
   ScrollView *qolPanel = new ScrollView(qolList, this);
@@ -58,6 +60,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
   longitudinalLayout->addWidget(aggressivePersonalityPanel);
   longitudinalLayout->addWidget(conditionalExperimentalPanel);
   longitudinalLayout->addWidget(curveSpeedPanel);
+  longitudinalLayout->addWidget(lowSpeedTurnPanel);
   longitudinalLayout->addWidget(customDrivingPersonalityPanel);
   longitudinalLayout->addWidget(longitudinalTunePanel);
   longitudinalLayout->addWidget(qolPanel);
@@ -103,6 +106,12 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
     {"CalibrationProgress", tr("Calibration Progress"), tr("<b>How much curve data has been collected.</b> This is a progress meter; it is normal for the value to stay low and rarely reach 100%."), ""},
     {"ResetCurveData", tr("Reset Curve Data"), tr("<b>Reset collected user data for \"Curve Speed Controller\".</b>"), ""},
     {"ShowCSCStatus", tr("Status Widget"), tr("<b>Show the \"Curve Speed Controller\" target speed on the driving screen.</b>"), ""},
+
+    {"LowSpeedTurnSpeedController", tr("Low-Speed Turn Speed Controller"), tr("<b>Slow down during tight low-speed turns (5–25 mph)</b> when steering torque approaches saturation, keeping enough authority to complete the turn."), "../../starpilot/assets/toggle_icons/icon_speed_map.png"},
+    {"LSTSCCalibrateMode", tr("Calibrate Low-Speed Turns (AOL)"), tr("<b>Drive low-speed turns yourself with Always-On Lateral active</b> to teach safe torque levels per steering angle. Disables LSTSC longitudinal intervention while on."), ""},
+    {"LowSpeedTurnCalibrationProgress", tr("Calibration Progress"), tr("<b>How much low-speed torque data has been collected.</b> Progress is tracked per visited steering-angle bucket."), ""},
+    {"ResetLSTSCData", tr("Reset Low-Speed Turn Data"), tr("<b>Reset collected torque data for the \"Low-Speed Turn Speed Controller\".</b>"), ""},
+    {"ShowLSTSCStatus", tr("Status Widget"), tr("<b>Show the \"Low-Speed Turn Speed Controller\" status indicator on the driving screen.</b>"), ""},
 
     {"CustomPersonalities", tr("Driving Personalities"), tr("<b>Customize the \"Driving Personalities\"</b> to better match your driving style."), "../../starpilot/assets/toggle_icons/icon_personality.png"},
 
@@ -304,6 +313,27 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
         }
       });
       longitudinalToggle = resetCurveDataButton;
+
+    } else if (param == "LowSpeedTurnSpeedController") {
+      StarPilotManageControl *lstscControlToggle = new StarPilotManageControl(param, title, desc, icon);
+      QObject::connect(lstscControlToggle, &StarPilotManageControl::manageButtonClicked, [longitudinalLayout, lowSpeedTurnPanel]() {
+        longitudinalLayout->setCurrentWidget(lowSpeedTurnPanel);
+      });
+      longitudinalToggle = lstscControlToggle;
+    } else if (param == "LowSpeedTurnCalibrationProgress") {
+      lstscCalibrationProgressLabel = new LabelControl(title, QString::number(params.getFloat("LowSpeedTurnCalibrationProgress"), 'f', 2) + "%", desc);
+      longitudinalToggle = lstscCalibrationProgressLabel;
+    } else if (param == "ResetLSTSCData") {
+      ButtonControl *resetLSTSCDataButton = new ButtonControl(title, tr("RESET"), desc);
+      QObject::connect(resetLSTSCDataButton, &ButtonControl::clicked, [this]() {
+        if (StarPilotConfirmationDialog::yesorno(tr("Are you sure you want to completely reset your low-speed turn torque data?"), this)) {
+          params.remove("LowSpeedTurnCalibrationProgress");
+          params.remove("LowSpeedTurnTorqueData");
+
+          lstscCalibrationProgressLabel->setText(QString::number(0.00, 'f', 2) + "%");
+        }
+      });
+      longitudinalToggle = resetLSTSCDataButton;
 
     } else if (param == "CustomPersonalities") {
       StarPilotManageControl *customPersonalitiesToggle = new StarPilotManageControl(param, title, desc, icon);
@@ -592,6 +622,8 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
       conditionalExperimentalList->addItem(longitudinalToggle);
     } else if (curveSpeedKeys.contains(param)) {
       curveSpeedList->addItem(longitudinalToggle);
+    } else if (lowSpeedTurnKeys.contains(param)) {
+      lowSpeedTurnList->addItem(longitudinalToggle);
     } else if (customDrivingPersonalityKeys.contains(param)) {
       customDrivingPersonalityList->addItem(longitudinalToggle);
     } else if (longitudinalTuneKeys.contains(param)) {
@@ -808,6 +840,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
 void StarPilotLongitudinalPanel::showEvent(QShowEvent *event) {
   calibratedLateralAccelerationLabel->setText(QString::number(params.getFloat("CalibratedLateralAcceleration"), 'f', 2) + tr(" m/s²"));
   calibrationProgressLabel->setText(QString::number(params.getFloat("CalibrationProgress"), 'f', 2) + "%");
+  lstscCalibrationProgressLabel->setText(QString::number(params.getFloat("LowSpeedTurnCalibrationProgress"), 'f', 2) + "%");
 
   longitudinalActuatorDelayToggle->setTitle(QString(tr("Actuator Delay (Default: %1)")).arg(QString::number(parent->longitudinalActuatorDelay, 'f', 2)));
   startAccelToggle->setTitle(QString(tr("Start Acceleration (Default: %1)")).arg(QString::number(parent->startAccel, 'f', 2)));
@@ -1043,6 +1076,8 @@ void StarPilotLongitudinalPanel::updateToggles() {
         toggles["ConditionalExperimental"]->setVisible(true);
       } else if (curveSpeedKeys.contains(key)) {
         toggles["CurveSpeedController"]->setVisible(true);
+      } else if (lowSpeedTurnKeys.contains(key)) {
+        toggles["LowSpeedTurnSpeedController"]->setVisible(true);
       } else if (customDrivingPersonalityKeys.contains(key)) {
         toggles["CustomPersonalities"]->setVisible(true);
       } else if (longitudinalTuneKeys.contains(key)) {

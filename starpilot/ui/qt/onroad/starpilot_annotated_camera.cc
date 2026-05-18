@@ -151,6 +151,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   cachedColorScheme            = starpilot_toggles.value("color_scheme").toString();
   cachedCompass                = starpilot_toggles.value("compass").toBool();
   cachedCscStatus              = starpilot_toggles.value("csc_status").toBool();
+  cachedLstscStatus            = starpilot_toggles.value("lstsc_status").toBool();
   cachedDynamicPedalsOnUi      = starpilot_toggles.value("dynamic_pedals_on_ui").toBool();
   cachedHideSpeedLimit         = starpilot_toggles.value("hide_speed_limit").toBool();
   cachedLaneDetectionWidth     = starpilot_toggles.value("lane_detection_width").toDouble();
@@ -200,6 +201,11 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   cscControllingSpeed = starpilotPlan.getCscControllingSpeed();
   cscSpeed = starpilotPlan.getCscSpeed();
   cscTraining = starpilotPlan.getCscTraining();
+  lstscControllingSpeed = starpilotPlan.getLstscControllingSpeed();
+  lstscSpeed = starpilotPlan.getLstscSpeed();
+  lstscTorquePct = starpilotPlan.getLstscTorquePct();
+  lstscTraining = starpilotPlan.getLstscTraining();
+  lstscCalibrating = starpilotPlan.getLstscCalibrating();
   dashboardSpeedLimit = starpilotCarState.getDashboardSpeedLimit();
   desiredFollowDistance = starpilotPlan.getDesiredFollowDistance();
   experimentalMode = selfdriveState.getExperimentalMode();
@@ -262,6 +268,14 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
     glowTimer.invalidate();
   }
 
+  if (lstscTraining || lstscCalibrating) {
+    if (!lstscGlowTimer.isValid()) {
+      lstscGlowTimer.start();
+    }
+  } else {
+    lstscGlowTimer.invalidate();
+  }
+
   if (speedLimitChanged && unconfirmedSpeedLimitValid) {
     if (!pendingLimitTimer.isValid()) {
       pendingLimitTimer.start();
@@ -322,11 +336,20 @@ void StarPilotAnnotatedCameraWidget::paintStarPilotWidgets(QPainter &p, UIState 
 
   if (forcingStop) {
     paintForceStop(p);
-  } else if (!speedLimitChanged && !(signalStyle == "static" && blinkerLeft) && cachedCscStatus) {
-    if (cscTraining) {
-      paintCurveSpeedControlTraining(p);
-    } else if (isCruiseSet && cscControllingSpeed) {
-      paintCurveSpeedControl(p);
+  } else if (!speedLimitChanged && !(signalStyle == "static" && blinkerLeft)) {
+    if (cachedCscStatus) {
+      if (cscTraining) {
+        paintCurveSpeedControlTraining(p);
+      } else if (isCruiseSet && cscControllingSpeed) {
+        paintCurveSpeedControl(p);
+      }
+    }
+    if (cachedLstscStatus) {
+      if (lstscCalibrating || lstscTraining) {
+        paintLowSpeedTurnSpeedControlTraining(p);
+      } else if (isCruiseSet && lstscControllingSpeed) {
+        paintLowSpeedTurnSpeedControl(p);
+      }
     }
   }
 
@@ -644,6 +667,83 @@ void StarPilotAnnotatedCameraWidget::paintCurveSpeedControlTraining(QPainter &p)
   p.drawRoundedRect(textRect, 24, 24);
   p.setPen(QPen(whiteColor(), 6));
   p.drawText(textRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft, "Training...");
+
+  p.restore();
+}
+
+void StarPilotAnnotatedCameraWidget::paintLowSpeedTurnSpeedControl(QPainter &p) {
+  p.save();
+
+  // Stack below the CSC slot: top-left of LSTSC widget = below the CSC pill area.
+  int slotWidth = defaultSize.width() * 1.25;
+  int verticalOffset = slotWidth + 100 + 20;  // CSC icon + speed pill + gap
+  QRect curveSpeedRect(QPoint(setSpeedRect.right() + UI_BORDER_SIZE, setSpeedRect.top() + verticalOffset), QSize(slotWidth, slotWidth));
+
+  QPixmap &curveSpeedImage = roadCurvature < 0 ? curveSpeedIcon : curveSpeedIconFlipped;
+  QSize curveSpeedSize = curveSpeedImage.size();
+  QPoint curveSpeedPoint = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, curveSpeedSize, curveSpeedRect).topLeft();
+
+  p.setOpacity(1.0);
+
+  // Speed pill (top) — orange instead of blue
+  QRect speedPillRect(curveSpeedRect.topLeft() + QPoint(0, curveSpeedRect.height() + 10), QSize(curveSpeedRect.width(), 70));
+  p.setBrush(orangeColor(166));
+  p.setFont(InterFont(40, QFont::Bold));
+  p.setPen(QPen(orangeColor(), 10));
+  p.drawRoundedRect(speedPillRect, 24, 24);
+  p.setPen(QPen(whiteColor(), 6));
+  p.drawText(speedPillRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft,
+             QString::number(std::nearbyint(fmin(speed, lstscSpeed * speedConversion))) + speedUnit);
+
+  // Torque % pill (smaller, below)
+  QRect torquePillRect(speedPillRect.topLeft() + QPoint(0, speedPillRect.height() + 8), QSize(curveSpeedRect.width(), 50));
+  p.setBrush(blackColor(166));
+  p.setFont(InterFont(28, QFont::Bold));
+  p.setPen(QPen(orangeColor(), 6));
+  p.drawRoundedRect(torquePillRect, 18, 18);
+  p.setPen(QPen(whiteColor(), 4));
+  p.drawText(torquePillRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft,
+             QString::number(static_cast<int>(std::nearbyint(lstscTorquePct * 100.0f))) + "% trq");
+
+  p.drawPixmap(curveSpeedPoint, curveSpeedImage);
+
+  p.restore();
+}
+
+void StarPilotAnnotatedCameraWidget::paintLowSpeedTurnSpeedControlTraining(QPainter &p) {
+  p.save();
+
+  qreal phase = (lstscGlowTimer.elapsed() % 2000) / 2000.0 * 2 * M_PI;
+  qreal alphaFactor = 0.5 + 0.5 * sin(phase);
+
+  QColor glowColor = orangeColor();
+  glowColor.setAlphaF(0.3 + 0.7 * alphaFactor);
+
+  int glowWidth = 8 + static_cast<int>(2 * alphaFactor);
+
+  int slotWidth = defaultSize.width() * 1.25;
+  int verticalOffset = slotWidth + 100 + 20;
+  QRect curveSpeedRect(QPoint(setSpeedRect.right() + UI_BORDER_SIZE, setSpeedRect.top() + verticalOffset), QSize(slotWidth, slotWidth));
+
+  QPixmap &curveSpeedImage = roadCurvature < 0 ? curveSpeedIcon : curveSpeedIconFlipped;
+  QSize curveSpeedSize = curveSpeedImage.size();
+  QPoint curveSpeedPoint = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, curveSpeedSize, curveSpeedRect).topLeft();
+
+  p.setOpacity(1.0);
+
+  p.setBrush(blackColor(166));
+  p.setPen(QPen(glowColor, glowWidth));
+  p.drawRoundedRect(curveSpeedRect, 24, 24);
+  p.drawPixmap(curveSpeedPoint, curveSpeedImage);
+  p.setBrush(blackColor(166));
+  p.setFont(InterFont(32, QFont::Bold));
+  p.setPen(QPen(blackColor(), 10));
+
+  QRect textRect(curveSpeedRect.topLeft() + QPoint(0, curveSpeedRect.height() + 10), QSize(curveSpeedRect.width(), 50));
+  p.drawRoundedRect(textRect, 24, 24);
+  p.setPen(QPen(whiteColor(), 6));
+  p.drawText(textRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft,
+             lstscCalibrating ? "Calibrating..." : "Training...");
 
   p.restore();
 }

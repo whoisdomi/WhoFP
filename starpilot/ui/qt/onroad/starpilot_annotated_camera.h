@@ -35,6 +35,7 @@ public:
   StarPilotUIScene starpilot_scene;
 
   QColor blueColor(int alpha = 255) { return QColor(0, 0, 255, alpha); }
+  QColor orangeColor(int alpha = 255) { return QColor(255, 140, 0, alpha); }
   QColor purpleColor(int alpha = 255) { return QColor(128, 0, 128, alpha); }
   QColor whiteColor(int alpha = 255) { return QColor(255, 255, 255, alpha); }
 
@@ -63,6 +64,8 @@ private:
   void paintCompass(QPainter &p);
   void paintCurveSpeedControl(QPainter &p);
   void paintCurveSpeedControlTraining(QPainter &p);
+  void paintLowSpeedTurnSpeedControl(QPainter &p);
+  void paintLowSpeedTurnSpeedControlTraining(QPainter &p);
   void paintLateralPaused(QPainter &p);
   void paintLongitudinalPaused(QPainter &p);
   void paintPedalIcons(QPainter &p);
@@ -86,6 +89,9 @@ private:
   bool forcingStop;
   bool stopSignConfirmed;
   bool cscTraining;
+  bool lstscControllingSpeed;
+  bool lstscTraining;
+  bool lstscCalibrating;
   bool experimentalMode;
   bool forceCoast;
   bool lateralPaused;
@@ -101,6 +107,7 @@ private:
   bool cachedCemStatus = false;
   bool cachedCompass = false;
   bool cachedCscStatus = false;
+  bool cachedLstscStatus = false;
   bool cachedDynamicPedalsOnUi = false;
   bool cachedHideSpeedLimit = false;
   bool cachedOpenpilotLongitudinal = false;
@@ -136,6 +143,8 @@ private:
 
   float accelerationEgo;
   float cscSpeed;
+  float lstscSpeed;
+  float lstscTorquePct;
   float forcingStopLength;
   float dashboardSpeedLimit;
   float distanceConversion;
@@ -163,6 +172,7 @@ private:
   QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
 
   QElapsedTimer glowTimer;
+  QElapsedTimer lstscGlowTimer;
   QElapsedTimer pendingLimitTimer;
   QElapsedTimer standstillTimer;
 
