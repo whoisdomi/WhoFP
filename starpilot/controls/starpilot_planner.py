@@ -214,6 +214,8 @@ class StarPilotPlanner:
     starpilotPlan.lstscTraining = self.starpilot_vcruise.lstsc.enable_training
     starpilotPlan.lstscCalibrating = self.starpilot_vcruise.lstsc.calibrate_mode_active
     starpilotPlan.lstscCalibrationProgress = float(self.starpilot_vcruise.lstsc.calibration_progress)
+    starpilotPlan.lstscPredictiveActive = self.starpilot_vcruise.lstsc._predictive_active
+    starpilotPlan.lstscPreTurnBuckets = len(self.starpilot_vcruise.lstsc.pre_turn_data)
 
     starpilotPlan.desiredFollowDistance = int(self.starpilot_following.desired_follow_distance)
     starpilotPlan.disableThrottle = self.starpilot_following.disable_throttle

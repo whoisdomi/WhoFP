@@ -92,6 +92,7 @@ private:
   bool lstscControllingSpeed;
   bool lstscTraining;
   bool lstscCalibrating;
+  bool lstscPredictiveActive;
   bool experimentalMode;
   bool forceCoast;
   bool lateralPaused;

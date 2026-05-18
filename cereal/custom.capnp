@@ -204,6 +204,8 @@ struct StarPilotPlan @0xf98d843bfd7004a3 {
   lstscTraining @41 :Bool;
   lstscCalibrating @42 :Bool;
   lstscCalibrationProgress @43 :Float32;
+  lstscPredictiveActive @44 :Bool;
+  lstscPreTurnBuckets @45 :UInt16;
 }
 
 struct StarPilotRadarState @0xb86e6369214c01c8 {

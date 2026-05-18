@@ -333,6 +333,7 @@ class LowSpeedTurnSpeedController:
         "count": count + 1,
       }
       self.starpilot_planner.params.put_nonblocking("LSTSCPreTurnData", self.pre_turn_data)
+      self.starpilot_planner.params.put_nonblocking("LSTSCPreTurnBuckets", len(self.pre_turn_data))
 
     self._predictive_active = False
     self._predictive_turn_in_progress = False

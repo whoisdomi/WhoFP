@@ -372,6 +372,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"LSTSCPredictiveMode", {PERSISTENT, BOOL, "0", "0", 2}},
     {"LSTSCPredictiveBlinkerTime", {PERSISTENT, FLOAT, "3.0", "3.0", 2}},
     {"LSTSCPreTurnData", {PERSISTENT, JSON, "{}", "{}"}},
+    {"LSTSCPreTurnBuckets", {PERSISTENT, INT, "0", "0"}},
     {"ShowLSTSCStatus", {PERSISTENT, BOOL, "0", "0", 2}},
     {"LoudBlindspotAlert", {PERSISTENT, BOOL, "0", "0", 0}},
     {"LowVoltageShutdown", {PERSISTENT, FLOAT, "11.8", "11.8", 3}},

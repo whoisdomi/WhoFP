@@ -206,6 +206,7 @@ void StarPilotAnnotatedCameraWidget::updateState(const UIState &s, const StarPil
   lstscTorquePct = starpilotPlan.getLstscTorquePct();
   lstscTraining = starpilotPlan.getLstscTraining();
   lstscCalibrating = starpilotPlan.getLstscCalibrating();
+  lstscPredictiveActive = starpilotPlan.getLstscPredictiveActive();
   dashboardSpeedLimit = starpilotCarState.getDashboardSpeedLimit();
   desiredFollowDistance = starpilotPlan.getDesiredFollowDistance();
   experimentalMode = selfdriveState.getExperimentalMode();
@@ -695,15 +696,19 @@ void StarPilotAnnotatedCameraWidget::paintLowSpeedTurnSpeedControl(QPainter &p) 
   p.drawText(speedPillRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft,
              QString::number(std::nearbyint(fmin(speed, lstscSpeed * speedConversion))) + speedUnit);
 
-  // Torque % pill (smaller, below)
+  // Secondary pill: "Pre-Turn" during predictive approach, torque % during reactive
   QRect torquePillRect(speedPillRect.topLeft() + QPoint(0, speedPillRect.height() + 8), QSize(curveSpeedRect.width(), 50));
   p.setBrush(blackColor(166));
   p.setFont(InterFont(28, QFont::Bold));
   p.setPen(QPen(orangeColor(), 6));
   p.drawRoundedRect(torquePillRect, 18, 18);
   p.setPen(QPen(whiteColor(), 4));
-  p.drawText(torquePillRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft,
-             QString::number(static_cast<int>(std::nearbyint(lstscTorquePct * 100.0f))) + "% trq");
+  if (lstscPredictiveActive) {
+    p.drawText(torquePillRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft, "Pre-Turn");
+  } else {
+    p.drawText(torquePillRect.adjusted(20, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft,
+               QString::number(static_cast<int>(std::nearbyint(lstscTorquePct * 100.0f))) + "% trq");
+  }
 
   p.drawPixmap(curveSpeedPoint, curveSpeedImage);
 

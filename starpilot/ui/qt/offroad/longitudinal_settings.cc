@@ -110,6 +110,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
     {"LowSpeedTurnSpeedController", tr("Low-Speed Turn Speed Controller"), tr("<b>Slow down during tight low-speed turns (5–25 mph)</b> when steering torque approaches saturation, keeping enough authority to complete the turn."), "../../starpilot/assets/toggle_icons/icon_speed_map.png"},
     {"LSTSCCalibrateMode", tr("Calibrate Low-Speed Turns (AOL)"), tr("<b>Drive low-speed turns yourself with Always-On Lateral active</b> to teach safe torque levels per steering angle. Disables LSTSC longitudinal intervention while on."), ""},
     {"LowSpeedTurnCalibrationProgress", tr("Calibration Progress"), tr("<b>How much low-speed torque data has been collected.</b> Progress is tracked per visited steering-angle bucket."), ""},
+    {"LSTSCPreTurnBuckets", tr("Pre-Turn Buckets"), tr("<b>Number of pre-turn budget entries learned so far.</b> Each bucket represents a unique blinker direction, speed, and time-to-curve combination."), ""},
     {"ResetLSTSCData", tr("Reset Low-Speed Turn Data"), tr("<b>Reset collected torque data for the \"Low-Speed Turn Speed Controller\".</b>"), ""},
     {"ShowLSTSCStatus", tr("Status Widget"), tr("<b>Show the \"Low-Speed Turn Speed Controller\" status indicator on the driving screen.</b>"), ""},
 
@@ -323,14 +324,20 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
     } else if (param == "LowSpeedTurnCalibrationProgress") {
       lstscCalibrationProgressLabel = new LabelControl(title, QString::number(params.getFloat("LowSpeedTurnCalibrationProgress"), 'f', 2) + "%", desc);
       longitudinalToggle = lstscCalibrationProgressLabel;
+    } else if (param == "LSTSCPreTurnBuckets") {
+      lstscPreTurnBucketsLabel = new LabelControl(title, QString::number(params.getInt("LSTSCPreTurnBuckets")), desc);
+      longitudinalToggle = lstscPreTurnBucketsLabel;
     } else if (param == "ResetLSTSCData") {
       ButtonControl *resetLSTSCDataButton = new ButtonControl(title, tr("RESET"), desc);
       QObject::connect(resetLSTSCDataButton, &ButtonControl::clicked, [this]() {
         if (StarPilotConfirmationDialog::yesorno(tr("Are you sure you want to completely reset your low-speed turn torque data?"), this)) {
           params.remove("LowSpeedTurnCalibrationProgress");
           params.remove("LowSpeedTurnTorqueData");
+          params.remove("LSTSCPreTurnData");
+          params.remove("LSTSCPreTurnBuckets");
 
           lstscCalibrationProgressLabel->setText(QString::number(0.00, 'f', 2) + "%");
+          lstscPreTurnBucketsLabel->setText("0");
         }
       });
       longitudinalToggle = resetLSTSCDataButton;
@@ -841,6 +848,7 @@ void StarPilotLongitudinalPanel::showEvent(QShowEvent *event) {
   calibratedLateralAccelerationLabel->setText(QString::number(params.getFloat("CalibratedLateralAcceleration"), 'f', 2) + tr(" m/s²"));
   calibrationProgressLabel->setText(QString::number(params.getFloat("CalibrationProgress"), 'f', 2) + "%");
   lstscCalibrationProgressLabel->setText(QString::number(params.getFloat("LowSpeedTurnCalibrationProgress"), 'f', 2) + "%");
+  lstscPreTurnBucketsLabel->setText(QString::number(params.getInt("LSTSCPreTurnBuckets")));
 
   longitudinalActuatorDelayToggle->setTitle(QString(tr("Actuator Delay (Default: %1)")).arg(QString::number(parent->longitudinalActuatorDelay, 'f', 2)));
   startAccelToggle->setTitle(QString(tr("Start Acceleration (Default: %1)")).arg(QString::number(parent->startAccel, 'f', 2)));
