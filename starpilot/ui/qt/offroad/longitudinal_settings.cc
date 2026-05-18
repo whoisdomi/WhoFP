@@ -290,7 +290,7 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
       calibratedLateralAccelerationLabel = new LabelControl(title, QString::number(params.getFloat("CalibratedLateralAcceleration"), 'f', 2) + tr(" m/s²"), desc);
       longitudinalToggle = calibratedLateralAccelerationLabel;
     } else if (param == "CSCManualLateralAcceleration") {
-      longitudinalToggle = new StarPilotParamValueButtonControl(param, title, desc, icon, 10, 40, tr(" m/s²"), std::map<float, QString>(), 0.1, true, {}, {});
+      longitudinalToggle = new StarPilotParamValueButtonControl(param, title, desc, icon, 1.0, 4.0, tr(" m/s²"), std::map<float, QString>(), 0.1, true, {}, {});
     } else if (param == "ResetCurveData") {
       ButtonControl *resetCurveDataButton = new ButtonControl(title, tr("RESET"), desc);
       QObject::connect(resetCurveDataButton, &ButtonControl::clicked, [this]() {
