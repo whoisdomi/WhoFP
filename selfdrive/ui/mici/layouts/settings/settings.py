@@ -8,6 +8,7 @@ from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici
 from openpilot.selfdrive.ui.mici.layouts.settings.developer import DeveloperLayoutMici
 from openpilot.selfdrive.ui.mici.layouts.settings.driving_model import DrivingModelBigButton
 from openpilot.selfdrive.ui.mici.layouts.settings.galaxy import GalaxyBigButton
+from openpilot.selfdrive.ui.mici.layouts.settings.starpilot import StarPilotLayoutMici
 from openpilot.selfdrive.ui.mici.layouts.settings.visuals import VisualsLayoutMici
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 
@@ -62,6 +63,10 @@ class SettingsLayout(NavScroller):
     toggles_btn = SettingsBigButton("toggles", "", gui_app.texture("icons_mici/settings.png", 64, 64))
     toggles_btn.set_click_callback(lambda: gui_app.push_widget(toggles_panel))
 
+    starpilot_panel = StarPilotLayoutMici()
+    starpilot_btn = SettingsBigButton("starpilot", "", gui_app.texture("icons_mici/settings.png", 64, 64))
+    starpilot_btn.set_click_callback(lambda: gui_app.push_widget(starpilot_panel))
+
     network_panel = NetworkLayoutMici()
     network_btn = SettingsBigButton("network", "", gui_app.texture("icons_mici/settings/network/wifi_strength_full.png", 76, 56))
     network_btn.set_click_callback(lambda: gui_app.push_widget(network_panel))
@@ -88,6 +93,7 @@ class SettingsLayout(NavScroller):
 
     self._scroller.add_widgets([
       toggles_btn,
+      starpilot_btn,
       network_btn,
       self._force_drive_state_btn,
       vehicle_btn,
