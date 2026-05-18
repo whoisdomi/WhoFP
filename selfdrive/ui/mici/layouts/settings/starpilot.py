@@ -21,9 +21,12 @@ class CurveSpeedLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
     self._params = Params()
+    self._params_memory = Params(memory=True)
 
     self._csc_btn = BigParamControl("curve speed controller", "CurveSpeedController",
                                     toggle_callback=lambda _: self._refresh())
+
+    self._calibrated_btn = BigButton("calibrated lateral accel", "")
 
     self._manual_enabled_btn = BigParamControl("manual lateral accel", "CSCManualLateralAccelerationEnabled",
                                                toggle_callback=lambda _: self._refresh())
@@ -38,6 +41,7 @@ class CurveSpeedLayoutMici(NavScroller):
 
     self._scroller.add_widgets([
       self._csc_btn,
+      self._calibrated_btn,
       self._manual_enabled_btn,
       self._manual_value_btn,
       self._reset_btn,
@@ -48,10 +52,19 @@ class CurveSpeedLayoutMici(NavScroller):
     super().show_event()
     self._refresh()
 
+  def _update_state(self):
+    super()._update_state()
+    self._refresh()
+
   def _refresh(self):
     csc_on = self._params.get_bool("CurveSpeedController")
-    calibrated = self._params.get_float("CalibrationProgress", return_default=True, default=0.0) > 0
+    calibration_progress = self._params_memory.get_float("CalibrationProgress", return_default=True, default=0.0)
+    calibrated = calibration_progress > 0
     manual_enabled = self._params.get_bool("CSCManualLateralAccelerationEnabled")
+
+    self._calibrated_btn.set_visible(csc_on)
+    cal_val = self._params_memory.get_float("CalibratedLateralAcceleration", return_default=True, default=2.0)
+    self._calibrated_btn.set_value(f"{cal_val:.2f} m/s²")
 
     self._manual_enabled_btn.set_visible(csc_on and calibrated)
     self._manual_value_btn.set_visible(csc_on and calibrated and manual_enabled)
@@ -83,9 +96,10 @@ class CurveSpeedLayoutMici(NavScroller):
 
   def _confirm_reset(self):
     def on_confirm():
-      self._params.put_float("CalibratedLateralAcceleration", 2.0)
-      self._params.remove("CalibrationProgress")
+      self._params_memory.put_float("CalibratedLateralAcceleration", 2.0)
+      self._params_memory.remove("CalibrationProgress")
       self._params.remove("CurvatureData")
+      self._params.put_bool("CSCManualLateralAccelerationEnabled", False)
       self._refresh()
 
     icon = gui_app.texture("icons_mici/settings/network/new/trash.png", 54, 64)
