@@ -198,6 +198,12 @@ struct StarPilotPlan @0xf98d843bfd7004a3 {
   disableThrottle @35 :Bool;
   trackingLead @36 :Bool;
   stopSignConfirmed @37 :Bool;
+  lstscControllingSpeed @38 :Bool;
+  lstscSpeed @39 :Float32;
+  lstscTorquePct @40 :Float32;
+  lstscTraining @41 :Bool;
+  lstscCalibrating @42 :Bool;
+  lstscCalibrationProgress @43 :Float32;
 }
 
 struct StarPilotRadarState @0xb86e6369214c01c8 {

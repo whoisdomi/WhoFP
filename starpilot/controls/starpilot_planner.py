@@ -66,6 +66,7 @@ class StarPilotPlanner:
     self._lane_width_counter = 0
     self.lateral_acceleration = 0
     self.model_length = 0
+    self.peak_lateral_acceleration = 0.0
     self.road_curvature = 0
     self.time_to_curve = 0
     self.v_cruise = 0
@@ -133,7 +134,7 @@ class StarPilotPlanner:
     self.raw_model_stopped = self.model_length < CRUISING_SPEED * PLANNER_TIME
     self.model_stopped = self.raw_model_stopped or self.starpilot_vcruise.forcing_stop
 
-    self.road_curvature, self.time_to_curve = calculate_road_curvature(sm["modelV2"], v_ego)
+    self.road_curvature, self.time_to_curve, self.peak_lateral_acceleration = calculate_road_curvature(sm["modelV2"], v_ego)
 
     self.road_curvature_detected = (1 / abs(self.road_curvature))**0.5 < v_ego > CRUISING_SPEED and not (sm["carState"].leftBlinker or sm["carState"].rightBlinker)
 
@@ -206,6 +207,13 @@ class StarPilotPlanner:
     starpilotPlan.cscControllingSpeed = self.starpilot_vcruise.csc_controlling_speed
     starpilotPlan.cscSpeed = float(self.starpilot_vcruise.csc_target)
     starpilotPlan.cscTraining = self.starpilot_vcruise.csc.enable_training
+
+    starpilotPlan.lstscControllingSpeed = self.starpilot_vcruise.lstsc_controlling_speed
+    starpilotPlan.lstscSpeed = float(self.starpilot_vcruise.lstsc_target)
+    starpilotPlan.lstscTorquePct = float(self.starpilot_vcruise.lstsc.torque_pct)
+    starpilotPlan.lstscTraining = self.starpilot_vcruise.lstsc.enable_training
+    starpilotPlan.lstscCalibrating = self.starpilot_vcruise.lstsc.calibrate_mode_active
+    starpilotPlan.lstscCalibrationProgress = float(self.starpilot_vcruise.lstsc.calibration_progress)
 
     starpilotPlan.desiredFollowDistance = int(self.starpilot_following.desired_follow_distance)
     starpilotPlan.disableThrottle = self.starpilot_following.disable_throttle

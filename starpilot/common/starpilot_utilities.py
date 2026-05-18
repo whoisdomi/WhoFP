@@ -135,7 +135,7 @@ def calculate_road_curvature(modelData, v_ego):
   predicted_lateral_acc = float(lateral_acceleration[index])
   time_to_curve = float(timebase[index])
 
-  return float(predicted_lateral_acc / max(v_ego, 1)**2), max(time_to_curve, 1)
+  return float(predicted_lateral_acc / max(v_ego, 1)**2), max(time_to_curve, 1), predicted_lateral_acc
 
 
 def clean_model_name(name):

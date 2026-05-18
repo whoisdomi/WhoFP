@@ -6,6 +6,7 @@ from openpilot.common.realtime import DT_MDL
 
 from openpilot.starpilot.common.starpilot_variables import CITY_SPEED_LIMIT, CRUISING_SPEED, PLANNER_TIME
 from openpilot.starpilot.controls.lib.curve_speed_controller import CurveSpeedController
+from openpilot.starpilot.controls.lib.low_speed_turn_speed_controller import LowSpeedTurnSpeedController, LSTSC_MIN_SPEED, LSTSC_MAX_SPEED, LSTSC_MIN_STEER_ANGLE_DEG
 from openpilot.starpilot.controls.lib.speed_limit_controller import SpeedLimitController
 
 CSC_MIN_SPEED = CITY_SPEED_LIMIT * CV.MPH_TO_MS
@@ -45,6 +46,7 @@ class StarPilotVCruise:
     self.starpilot_planner = StarPilotPlanner
 
     self.csc = CurveSpeedController(self)
+    self.lstsc = LowSpeedTurnSpeedController(self)
     self.slc = SpeedLimitController(self)
 
     self.forcing_stop = False
@@ -158,6 +160,41 @@ class StarPilotVCruise:
 
       self.csc_target = v_cruise
 
+    # Low Speed Turn Speed Controller
+    in_low_speed_turn = (LSTSC_MIN_SPEED < v_ego < LSTSC_MAX_SPEED
+                         and abs(sm["carState"].steeringAngleDeg) >= LSTSC_MIN_STEER_ANGLE_DEG)
+
+    self.lstsc.update_blinker_timer(sm)
+
+    if starpilot_toggles.low_speed_turn_speed_controller:
+      if starpilot_toggles.lstsc_calibrate_mode:
+        self.lstsc.calibration_log(v_ego, sm, in_low_speed_turn)
+        self.lstsc_controlling_speed = False
+        self.lstsc.target_set = False
+        self.lstsc_target = v_cruise
+      elif long_control_active and in_low_speed_turn:
+        self.lstsc.update_target(v_ego, sm)
+        self.lstsc_controlling_speed = True
+        self.lstsc_target = self.lstsc.target
+      elif long_control_active and self.lstsc.predictive_eligible(v_ego, sm, starpilot_toggles):
+        self.lstsc.update_target(v_ego, sm, predictive=True)
+        self.lstsc_controlling_speed = True
+        self.lstsc_target = self.lstsc.target
+      else:
+        if self.lstsc._predictive_turn_in_progress:
+          self.lstsc._close_predictive_turn()
+        self.lstsc.log_data(v_ego, sm)
+        self.lstsc_controlling_speed = False
+        self.lstsc.target_set = False
+        self.lstsc_target = v_cruise
+    else:
+      if self.lstsc._predictive_turn_in_progress:
+        self.lstsc._close_predictive_turn()
+      self.lstsc.log_data(v_ego, sm)
+      self.lstsc_controlling_speed = False
+      self.lstsc.target_set = False
+      self.lstsc_target = v_cruise
+
     # Pfeiferj's Speed Limit Controller
     self.slc.starpilot_toggles = starpilot_toggles
 
@@ -215,7 +252,7 @@ class StarPilotVCruise:
 
       self.tracked_model_length = self.starpilot_planner.model_length
 
-      targets = [self.csc_target, v_cruise]
+      targets = [self.csc_target, self.lstsc_target, v_cruise]
       slc_control_target = get_active_slc_control_target(
         starpilot_toggles.speed_limit_controller,
         getattr(starpilot_toggles, "set_speed_limit", False),
