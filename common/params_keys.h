@@ -204,6 +204,8 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"Compass", {PERSISTENT, BOOL, "0", "0", 1}},
     {"CommunityFavorites", {PERSISTENT, STRING, "", "", 1}},
     {"ConditionalExperimental", {PERSISTENT, BOOL, "1", "0", 1}},
+    {"CSCManualLateralAcceleration", {PERSISTENT, FLOAT, "2.0", "2.0", 2}},
+    {"CSCManualLateralAccelerationEnabled", {PERSISTENT, BOOL, "0", "0", 2}},
     {"CurvatureData", {PERSISTENT | DONT_LOG, JSON, "{}", "{}"}},
     {"CurveSpeedController", {PERSISTENT, BOOL, "1", "0", 1}},
     {"CustomAlerts", {PERSISTENT, BOOL, "0", "0", 0}},

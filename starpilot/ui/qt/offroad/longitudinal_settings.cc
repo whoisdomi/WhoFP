@@ -98,6 +98,8 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
 
     {"CurveSpeedController", tr("Curve Speed Controller"), tr("<b>Automatically slow down for upcoming curves</b> using data learned from your driving style, adapting to curves as you would."), "../../starpilot/assets/toggle_icons/icon_speed_map.png"},
     {"CalibratedLateralAcceleration", tr("Calibrated Lateral Acceleration"), tr("<b>The learned lateral acceleration from collected driving data.</b> This sets how fast openpilot will take curves. Higher values allow faster cornering; lower values slow the vehicle for gentler turns."), ""},
+    {"CSCManualLateralAccelerationEnabled", tr("Manual Lateral Accel"), tr("<b>Override the learned lateral acceleration with a fixed value</b> instead of the calibrated one."), ""},
+    {"CSCManualLateralAcceleration", tr("Manual Lateral Accel Value"), tr("<b>Fixed lateral acceleration to use for curve speed calculations.</b> Range: 1.0–4.0 m/s²."), ""},
     {"CalibrationProgress", tr("Calibration Progress"), tr("<b>How much curve data has been collected.</b> This is a progress meter; it is normal for the value to stay low and rarely reach 100%."), ""},
     {"ResetCurveData", tr("Reset Curve Data"), tr("<b>Reset collected user data for \"Curve Speed Controller\".</b>"), ""},
     {"ShowCSCStatus", tr("Status Widget"), tr("<b>Show the \"Curve Speed Controller\" target speed on the driving screen.</b>"), ""},
@@ -287,6 +289,8 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
     } else if (param == "CalibratedLateralAcceleration") {
       calibratedLateralAccelerationLabel = new LabelControl(title, QString::number(params.getFloat("CalibratedLateralAcceleration"), 'f', 2) + tr(" m/s²"), desc);
       longitudinalToggle = calibratedLateralAccelerationLabel;
+    } else if (param == "CSCManualLateralAcceleration") {
+      longitudinalToggle = new StarPilotParamValueButtonControl(param, title, desc, icon, 10, 40, tr(" m/s²"), std::map<float, QString>(), 0.1, true);
     } else if (param == "ResetCurveData") {
       ButtonControl *resetCurveDataButton = new ButtonControl(title, tr("RESET"), desc);
       QObject::connect(resetCurveDataButton, &ButtonControl::clicked, [this]() {

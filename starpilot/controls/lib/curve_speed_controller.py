@@ -132,10 +132,10 @@ class CurveSpeedController:
 
     self.starpilot_planner.params.put_nonblocking("CalibratedLateralAcceleration", self.lateral_acceleration)
 
-  def update_target(self, v_ego):
-    lateral_acceleration = self.lateral_acceleration
+  def update_target(self, v_ego, manual_lateral_acceleration_enabled=False, manual_lateral_acceleration=2.0):
+    lateral_acceleration = manual_lateral_acceleration if manual_lateral_acceleration_enabled else self.lateral_acceleration
     if self.starpilot_planner.starpilot_weather.weather_id != 0:
-      lateral_acceleration -= self.lateral_acceleration * self.starpilot_planner.starpilot_weather.reduce_lateral_acceleration
+      lateral_acceleration -= lateral_acceleration * self.starpilot_planner.starpilot_weather.reduce_lateral_acceleration
 
     if self.target_set:
       csc_speed = (lateral_acceleration / abs(self.starpilot_planner.road_curvature))**0.5

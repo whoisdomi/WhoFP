@@ -566,6 +566,26 @@
         "parent_key": "CurveSpeedController"
       },
       {
+        "key": "CSCManualLateralAccelerationEnabled",
+        "label": "Manual Lateral Accel",
+        "description": "Override the learned lateral acceleration with a fixed value instead of the calibrated one.",
+        "data_type": "bool",
+        "ui_type": "toggle",
+        "parent_key": "CurveSpeedController"
+      },
+      {
+        "key": "CSCManualLateralAcceleration",
+        "label": "Manual Lateral Accel Value",
+        "description": "Fixed lateral acceleration to use for curve speed calculations. Range: 1.0–4.0 m/s².",
+        "data_type": "float",
+        "ui_type": "slider",
+        "min": 1.0,
+        "max": 4.0,
+        "step": 0.1,
+        "unit": " m/s²",
+        "parent_key": "CSCManualLateralAccelerationEnabled"
+      },
+      {
         "key": "CustomPersonalities",
         "label": "Driving Personalities",
         "description": "Customize the \"Driving Personalities\" to better match your driving style.",

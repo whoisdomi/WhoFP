@@ -684,6 +684,8 @@ class StarPilotVariables:
     toggle.cem_status = self.get_value("ShowCEMStatus", condition=toggle.conditional_experimental_mode) or toggle.debug_mode
 
     toggle.curve_speed_controller = toggle.openpilot_longitudinal and self.get_value("CurveSpeedController")
+    toggle.csc_manual_lateral_acceleration_enabled = self.get_value("CSCManualLateralAccelerationEnabled", condition=toggle.curve_speed_controller)
+    toggle.csc_manual_lateral_acceleration = self.get_value("CSCManualLateralAcceleration", cast=float, condition=toggle.csc_manual_lateral_acceleration_enabled, default=2.0, min=1.0, max=4.0)
     toggle.csc_status = self.get_value("ShowCSCStatus", condition=toggle.curve_speed_controller) or toggle.debug_mode
 
     custom_alerts = self.get_value("CustomAlerts")
