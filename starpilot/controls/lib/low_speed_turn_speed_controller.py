@@ -7,7 +7,8 @@ from openpilot.common.realtime import DT_MDL
 from openpilot.starpilot.common.starpilot_variables import CITY_SPEED_LIMIT
 
 LSTSC_MIN_SPEED = 5 * CV.MPH_TO_MS
-LSTSC_MAX_SPEED = CITY_SPEED_LIMIT * CV.MPH_TO_MS
+LSTSC_MAX_SPEED = CITY_SPEED_LIMIT * CV.MPH_TO_MS  # 25 mph — reactive window
+LSTSC_PREDICTIVE_MAX_SPEED = 45 * CV.MPH_TO_MS     # wider window for pre-turn approach
 
 LSTSC_MIN_STEER_ANGLE_DEG = 30.0
 
@@ -271,7 +272,7 @@ class LowSpeedTurnSpeedController:
   def predictive_eligible(self, v_ego, sm, starpilot_toggles):
     if not getattr(starpilot_toggles, "lstsc_predictive_mode", False):
       return False
-    if not (LSTSC_MIN_SPEED < v_ego < LSTSC_MAX_SPEED):
+    if not (LSTSC_MIN_SPEED < v_ego < LSTSC_PREDICTIVE_MAX_SPEED):
       return False
     if sm["carState"].standstill or sm["carState"].steeringPressed:
       return False

@@ -109,6 +109,8 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
 
     {"LowSpeedTurnSpeedController", tr("Low-Speed Turn Speed Controller"), tr("<b>Slow down during tight low-speed turns (5–25 mph)</b> when steering torque approaches saturation, keeping enough authority to complete the turn."), "../../starpilot/assets/toggle_icons/icon_speed_map.png"},
     {"LSTSCCalibrateMode", tr("Calibrate Low-Speed Turns (AOL)"), tr("<b>Drive low-speed turns yourself with Always-On Lateral active</b> to teach safe torque levels per steering angle. Disables LSTSC longitudinal intervention while on."), ""},
+    {"LSTSCPredictiveMode", tr("Predictive Mode (Blinker)"), tr("<b>Begin slowing before the wheel turns</b> when the blinker has been held and the model sees a curve ahead. Defers to a lead vehicle."), ""},
+    {"LSTSCPredictiveBlinkerTime", tr("Predictive Blinker Delay"), tr("<b>How long the blinker must be held before predictive mode engages.</b> Higher values reject more lane changes."), ""},
     {"LowSpeedTurnCalibrationProgress", tr("Calibration Progress"), tr("<b>How much low-speed torque data has been collected.</b> Progress is tracked per visited steering-angle bucket."), ""},
     {"LSTSCPreTurnBuckets", tr("Pre-Turn Buckets"), tr("<b>Number of pre-turn budget entries learned so far.</b> Each bucket represents a unique blinker direction, speed, and time-to-curve combination."), ""},
     {"ResetLSTSCData", tr("Reset Low-Speed Turn Data"), tr("<b>Reset collected torque data for the \"Low-Speed Turn Speed Controller\".</b>"), ""},
@@ -321,6 +323,8 @@ StarPilotLongitudinalPanel::StarPilotLongitudinalPanel(StarPilotSettingsWindow *
         longitudinalLayout->setCurrentWidget(lowSpeedTurnPanel);
       });
       longitudinalToggle = lstscControlToggle;
+    } else if (param == "LSTSCPredictiveBlinkerTime") {
+      longitudinalToggle = new StarPilotParamValueButtonControl(param, title, desc, icon, 1.0, 5.0, tr("s"), std::map<float, QString>(), 0.5, true, {}, {});
     } else if (param == "LowSpeedTurnCalibrationProgress") {
       lstscCalibrationProgressLabel = new LabelControl(title, QString::number(params.getFloat("LowSpeedTurnCalibrationProgress"), 'f', 2) + "%", desc);
       longitudinalToggle = lstscCalibrationProgressLabel;
